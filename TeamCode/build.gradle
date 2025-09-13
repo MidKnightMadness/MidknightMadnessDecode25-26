@@ -30,9 +30,16 @@ apply from: '../build.dependencies.gradle'
 // Apply Sloth Load plugin
 apply plugin: 'dev.frozenmilk.sinister.sloth.load'
 
+// Kotlin Plugin
+apply plugin: 'org.jetbrains.kotlin.android'
+
 android {
     namespace = 'org.firstinspires.ftc.teamcode'
 
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    
     compileSdk 35
 
     defaultConfig {
@@ -56,5 +63,6 @@ repositories {
 dependencies {
     implementation project(':FtcRobotController')
     implementation("dev.frozenmilk.dairy:Core:2.2.4")
+    implementation("dev.frozenmilk.sinister:Sloth:0.2.4")
     implementation('com.squareup.okhttp3:okhttp:4.10.0')
 }
