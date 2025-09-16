@@ -8,6 +8,9 @@ buildscript {
     repositories {
         mavenCentral()
         google()
+        maven {
+            url = "https://mymaven.bylazar.com/releases"
+        }
     }
     dependencies {
         // Note for FTC Teams: Do not modify this yourself.

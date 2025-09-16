@@ -8,6 +8,18 @@
 // please think carefully as to whether such customizations are really necessary
 // before doing so.
 
+// Sloth Load Plugin
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://repo.dairy.foundation/releases"
+        }
+    }
+    dependencies {
+        classpath "dev.frozenmilk:Load:0.2.4"
+    }
+}
 
 // Custom definitions may go here
 
@@ -15,14 +27,36 @@
 apply from: '../build.common.gradle'
 apply from: '../build.dependencies.gradle'
 
+// Apply Sloth Load plugin
+apply plugin: 'dev.frozenmilk.sinister.sloth.load'
+
 android {
     namespace = 'org.firstinspires.ftc.teamcode'
+
+    compileSdk 35
+
+    defaultConfig {
+        minSdk 24
+    }
+
 
     packagingOptions {
         jniLibs.useLegacyPackaging true
     }
 }
 
+repositories {
+    maven {
+        url = "https://repo.dairy.foundation/releases"
+    }
+    maven {
+        url = "https://repo.dairy.foundation/snapshots"
+    }
+    maven { url = "https://mymaven.bylazar.com/releases" }
+}
+
 dependencies {
     implementation project(':FtcRobotController')
+    implementation("dev.frozenmilk.dairy:Core:2.2.4")
+    implementation 'com.bylazar:fullpanels:1.0.2'
 }
