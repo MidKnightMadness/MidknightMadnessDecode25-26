@@ -1,46 +1,24 @@
 package org.firstinspires.ftc.teamcode.Util;
 
-import com.qualcomm.robotcore.util.ElapsedTime;
-
-
 public class Timer {
-    ElapsedTime elapsedTime;
-    double previousTime;
-    double currentTime;
-    double deltaTime;
+    private long startTime;
+    private long previousTime;
 
-    public Timer(){
-        elapsedTime = new ElapsedTime();
-        elapsedTime.startTime();
+    public Timer() {
+        resetTimer();
     }
 
-    public double getDeltaTime(){
-        return deltaTime;
+    public void resetTimer() {
+        startTime = System.currentTimeMillis();
+        previousTime = startTime;
     }
 
-    public double getPreviousTime(){
-        return previousTime;
+    public long getElapsedTime() {
+        previousTime = System.currentTimeMillis();
+        return previousTime - startTime;
     }
 
-    public double updateTime(){
-        currentTime = elapsedTime.time();
-        deltaTime = currentTime - previousTime;
-        previousTime = currentTime;
-
-        return currentTime;
+    public long getLastUpdateTime() {
+        return System.currentTimeMillis() - previousTime;
     }
-
-
-    public void updatePreviousTime(){
-        previousTime = currentTime;
-    }
-
-    public void restart(){
-        elapsedTime = new ElapsedTime();
-        previousTime = 0;
-        currentTime = 0;
-        deltaTime = 0;
-        elapsedTime.startTime();
-    }
-
 }
