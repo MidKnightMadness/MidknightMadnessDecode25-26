@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.Util.ButtonToggle;
 import org.firstinspires.ftc.teamcode.Util.Timer;
 
 @Configurable
-@TeleOp(name = "Flywheel")
+@TeleOp(name = "Flywheel", group = "Experiments")
 public class DoubleFlywheelTest extends OpMode {
     DcMotorEx left;
     DcMotorEx right;
