@@ -1,3 +1,22 @@
+## What is this?
+On top of FtcRobotController, this repository adds additions dependencies such as Sloth Load, Panels, and Pedro Pathing. It also includes Kotlin language support. To use this base for a fresh start, fork this repository. If you want to update the depedencies in an existing branch `<my-branch>`, run:
+```bash
+git remote add base-dependencies https://github.com/MidKnightMadness/FtcBaseDependencies
+git fetch base-dependencies main
+git checkout <my-branch>
+git merge base-dependencies/main
+```
+Resolve any conflicts you may have, and then commit the new dependency updates. You may always merge from this remote.
+
+When a robotics season ends, create a new branch and name it the season. For example, `25-decode` would be good:
+```bash
+git checkout -b 25-decode
+git push -u 25-decode
+```
+Always use the `main` branch for the current season. The new branch is only for archival purposes.
+
+# FtcRobotController README
+
 ## NOTICE
 
 This repository contains the public FTC SDK for the DECODE (2025-2026) competition season.
