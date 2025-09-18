@@ -1,21 +1,30 @@
-## What is this?
-On top of FtcRobotController, this repository adds additions dependencies such as Sloth Load, Panels, and Pedro Pathing. It also includes Kotlin language support. To use this base for a fresh start, fork this repository. If you want to update the depedencies in an existing branch `<my-branch>`, run:
+# FtcBaseDependencies
+
+On top of FtcRobotController, this repository adds additional dependencies such as Sloth Load, Panels, and Pedro Pathing. It also includes Kotlin language support. 
+
+## Using this base for a fresh start
+Fork this repository to start a new project.
+
+## Updating dependencies in an existing branch
+If you want to update the dependencies in an existing branch `<my-branch>`, run:
 ```bash
 git remote add base-dependencies https://github.com/MidKnightMadness/FtcBaseDependencies
 git fetch base-dependencies main
 git checkout <my-branch>
 git merge base-dependencies/main
 ```
-Resolve any conflicts you may have, and then commit the new dependency updates. You may always merge from this remote.
+Resolve any conflicts, then commit the updated dependencies. You can merge from this remote anytime to keep dependencies up to date.
 
-When a robotics season ends, create a new branch and name it the season. For example, `25-decode` would be good:
+## Archiving a season
+When a robotics season ends, create a new branch named after the season. For example, for `25-decode`:
 ```bash
 git checkout -b 25-decode
-git push -u 25-decode
+git push -u origin 25-decode
 ```
-Always use the `main` branch for the current season. The new branch is only for archival purposes.
+- Always use the main branch for the current season.
+- Seasonal branches are for archival purposes only.
 
-# FtcRobotController README
+# FtcRobotController (upstream)
 
 ## NOTICE
 
