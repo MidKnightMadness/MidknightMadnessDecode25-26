@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Experiments.OutakeTesting;
+package org.firstinspires.ftc.teamcode.Outake;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.graph.GraphManager;
@@ -9,14 +9,13 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.Util.ButtonToggle;
 import org.firstinspires.ftc.teamcode.Util.Timer;
 
 @Configurable
 @TeleOp(name = "Flywheel")
-public class FlywheelTesting extends OpMode {
+public class DoubleFlywheelTest extends OpMode {
     DcMotorEx left;
     DcMotorEx right;
     //nominal to actual gear ratios
@@ -90,13 +89,13 @@ public class FlywheelTesting extends OpMode {
         graph.addData("Power", power);
         graph.update();
 
-        telemetry.addData("Left rpm nominal", leftRpmNominal);
-        telemetry.addData("Right rpm nominal", rightRpmNominal);
-        telemetry.addData("Left rpm actual", leftRpmActual);
-        telemetry.addData("Right rpm actual", rightRpmActual);
-        telemetry.addData("Update rate", 1/ timer.getLastUpdateTime());
-        telemetry.addData("Average Exit Velocity", (leftExitVel + rightExitVel) / 2);
-        telemetry.addData("Power", power);
+        panelsTelemetry.addData("Left rpm nominal", leftRpmNominal);
+        panelsTelemetry.addData("Right rpm nominal", rightRpmNominal);
+        panelsTelemetry.addData("Left rpm actual", leftRpmActual);
+        panelsTelemetry.addData("Right rpm actual", rightRpmActual);
+        panelsTelemetry.addData("Update rate", 1/ timer.getLastUpdateTime());
+        panelsTelemetry.addData("Average Exit Velocity", (leftExitVel + rightExitVel) / 2);
+        panelsTelemetry.addData("Power", power);
 
         panelsTelemetry.update(telemetry);
     }

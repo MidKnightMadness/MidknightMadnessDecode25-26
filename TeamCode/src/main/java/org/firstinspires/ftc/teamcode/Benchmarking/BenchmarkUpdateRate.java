@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Experiments.ControlHubTesting;
+package org.firstinspires.ftc.teamcode.Benchmarking;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.teamcode.Util.Timer;
@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 // Measures loop times
-public class Benchmark extends OpMode {
+public class BenchmarkUpdateRate extends OpMode {
     Timer timer;
     ArrayList<Long> loopTimes;
     String loopTimeFile = "loop_times.csv";
