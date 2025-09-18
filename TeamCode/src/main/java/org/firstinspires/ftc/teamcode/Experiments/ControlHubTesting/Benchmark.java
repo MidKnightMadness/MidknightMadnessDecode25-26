@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.ControlHubTesting;
+package org.firstinspires.ftc.teamcode.Experiments.ControlHubTesting;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.teamcode.Util.Timer;
