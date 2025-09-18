@@ -12,7 +12,8 @@ buildscript {
     }
     dependencies {
         // Note for FTC Teams: Do not modify this yourself.
-        classpath 'com.android.tools.build:gradle:8.7.3'
+        // Extra note: Do not update or it will break for some reason
+        classpath 'com.android.tools.build:gradle:8.7.0'
     }
 }
 
