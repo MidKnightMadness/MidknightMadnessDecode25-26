@@ -40,8 +40,8 @@ public class DoubleFlywheelTest extends OpMode {
     //Replaced power with rpm
 
     //change left and right rpm to add spin, can edit through FTC panels under configurables
-    public static double leftRpm = 1200;
-    public static double rightRpm = 1200;
+    public static double leftRpm = 1300;
+    public static double rightRpm = 1000;
 
 
     //diameter of the wheel to calculate approximate exit velocity(not needed right now)
@@ -68,8 +68,9 @@ public class DoubleFlywheelTest extends OpMode {
         graph = PanelsGraph.INSTANCE.getManager();
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
         timer = new Timer();
-        left.setVelocityPIDFCoefficients(pGain, iGain, dGain, fGain);
-        right.setVelocityPIDFCoefficients(pGain, iGain, dGain, fGain);
+
+//        left.setVelocityPIDFCoefficients(pGain, iGain, dGain, fGain);
+//        right.setVelocityPIDFCoefficients(pGain, iGain, dGain, fGain);
     }
 
 
@@ -89,6 +90,7 @@ public class DoubleFlywheelTest extends OpMode {
             resetEncoders();
         }
 
+
         //Set the motors to the target velocities from the target RPMs
         double targetLeftRPMNom = leftRpm * fourToOneGR;
         double targetLeftVel = targetLeftRPMNom / 60 * ticksPerRevolution;//ticks per revolution
@@ -96,8 +98,16 @@ public class DoubleFlywheelTest extends OpMode {
         double targetRightRPMNom = rightRpm * fourToOneGR;
         double targetRightVel = targetRightRPMNom / 60 * ticksPerRevolution;//ticks per revolution
 
+        telemetry.addData("Target Left", leftRpm);
+        telemetry.addData("Target Right", rightRpm);
+        telemetry.addData("Target Left Nom", targetLeftRPMNom);
+        telemetry.addData("Target Right Nom", targetRightRPMNom);
+
         left.setVelocity(targetLeftVel);
         right.setVelocity(targetRightVel);
+
+        telemetry.addData("Left Vel:", targetLeftVel);
+        telemetry.addData("Right Vel:", targetRightVel);
 
 //        left.setPower(power);
 //        right.setPower(power);
