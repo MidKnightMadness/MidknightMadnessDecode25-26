@@ -11,15 +11,14 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
-import com.qualcomm.robotcore.hardware.PIDCoefficients;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.Util.ButtonToggle;
 import org.firstinspires.ftc.teamcode.Util.Timer;
 
 @Configurable
-@TeleOp(name = "Flywheel", group = "Experiments")
-public class DoubleFlywheelTest extends OpMode {
+@TeleOp(name = "2FlywheelPID", group = "Experiments")
+public class DoubleFlywheelCustomPID extends OpMode {
     DcMotorEx left;
     DcMotorEx right;
 
@@ -41,8 +40,8 @@ public class DoubleFlywheelTest extends OpMode {
     Timer timer;
 
     //change left and right rpm to add spin, can edit through FTC panels under configurables
-    public static double targetLeftRpm = 1600;
-    public static double targetRightRpm = 1300;
+    public static double targetLeftRpm = 1200;
+    public static double targetRightRpm = 900;
 
 
 
@@ -52,6 +51,9 @@ public class DoubleFlywheelTest extends OpMode {
     public static double iGain = 0;
     public static double dGain = 0;
     public static double fGain = 1/ maxRPM;
+
+    public static boolean leftForward = true;
+    public static boolean rightForward = false;
 
 
     @Override
@@ -63,8 +65,9 @@ public class DoubleFlywheelTest extends OpMode {
         left.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         right.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        left.setDirection(DcMotorEx.Direction.FORWARD);
-        right.setDirection(DcMotorEx.Direction.REVERSE);
+        left.setDirection(leftForward ? DcMotorEx.Direction.FORWARD : DcMotorSimple.Direction.REVERSE);
+        right.setDirection(rightForward ? DcMotorEx.Direction.FORWARD : DcMotorSimple.Direction.REVERSE);
+
 
         graph = PanelsGraph.INSTANCE.getManager();
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
@@ -87,7 +90,7 @@ public class DoubleFlywheelTest extends OpMode {
 
     @Override
     public void loop() {
-        timer.resetTimer();
+        timer.updateTime();
 
         if(toggle.update(gamepad1.x)){
             resetEncoders();
@@ -95,14 +98,15 @@ public class DoubleFlywheelTest extends OpMode {
 
         //Assuming we want different speeds for the flywheel
         //Get current rpms
-        double currLeftRpm = left.getVelocity() / ticksPerRevolution * 60 / fourToOneGR;
-        double currRightRpm = right.getVelocity() / ticksPerRevolution * 60 / fourToOneGR;
+        double currLeftRpm = left.getVelocity() / ticksPerRevolution * 60 / threeToOneGR;
+        double currRightRpm = right.getVelocity() / ticksPerRevolution * 60 / threeToOneGR;
 
         //PIDF logic
         double leftError = targetLeftRpm - currLeftRpm;
         double rightError = targetRightRpm - currRightRpm;
 
-        double deltaTime = timer.getLastUpdateTime();
+        double deltaTime = timer.getDeltaTime();
+ 
         leftIntegralComponent += leftError * deltaTime;
         rightIntegralComponent += rightError * deltaTime;
 

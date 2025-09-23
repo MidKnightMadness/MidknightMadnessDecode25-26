@@ -17,21 +17,22 @@ import java.util.ArrayList;
 @TeleOp(name = "BenchmarkUpdateRate", group = "Experiments")
 public class BenchmarkUpdateRate extends OpMode {
     Timer timer;
-    ArrayList<Long> loopTimes;
+    ArrayList<Double> loopTimes;
     String loopTimeFile = "loop_times.csv";
     TelemetryManager panelsTelemetry;
 
     @Override
     public void init() {
         timer = new Timer();
-        loopTimes = new ArrayList<Long>();
+        loopTimes = new ArrayList<Double>();
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
     }
 
     @Override
     public void loop() {
+        timer.updateTime();
         if (loopTimes.size() < 1000){
-            loopTimes.add(timer.getLastUpdateTime());
+            loopTimes.add(timer.getDeltaTime());
         }
         if (loopTimes.size() == 1000) {
             try (FileWriter writer = new FileWriter(loopTimeFile)) {
