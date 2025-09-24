@@ -12,20 +12,26 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 @Configurable
 @TeleOp(group="Motors")
 public class MotorTest extends OpMode {
-    public static String motorName = "BR";
+    public static double motorNum = 1;
+    //1 = BR, 2 = BL, 3 = FL, 4 = FR
+    int loop = 1;
     TelemetryManager panelsTelemetry;
     DcMotorEx motor;
+    String motorName = "FL";
 
     @Override
     public void init() {
-        motor = hardwareMap.get(DcMotorEx.class, motorName);
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
     }
 
     @Override
     public void loop() {
+        loop += 1;
+        motorName = motorNum == 1 ? "BR" : motorNum == 2 ? "BL" : motorNum == 3 ? "FL" : "FR";
+        motor = hardwareMap.get(DcMotorEx.class, motorName);
         motor.setPower(0.5);
         panelsTelemetry.addData("Motor name",  motorName);
+        panelsTelemetry.addData("Loop",  loop);
         panelsTelemetry.update();
     }
 }
