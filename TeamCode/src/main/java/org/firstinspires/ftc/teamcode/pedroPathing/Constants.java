@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.pedroPathing;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.pedropathing.control.FilteredPIDFCoefficients;
 import com.pedropathing.control.PIDFCoefficients;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.FollowerConstants;
@@ -17,11 +18,23 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 @Configurable
 public class Constants {
     public static FollowerConstants followerConstants = new FollowerConstants()
-            .forwardZeroPowerAcceleration(52)
+            .forwardZeroPowerAcceleration(-52)
             .lateralZeroPowerAcceleration(-87.8)
+            // Translational PIDF
+            .translationalPIDFSwitch(4)
+            .translationalPIDFCoefficients(new PIDFCoefficients(0.1, 0, 0.01, 0.03))
+            .secondaryTranslationalPIDFCoefficients(new PIDFCoefficients(0.15, 0, 0.03, 0.03))
+            // Heading PIDF
+            .headingPIDFCoefficients(new PIDFCoefficients(1.5, 0, 0.1, 0.02))
+            // Drive PIDF
+            .drivePIDFSwitch(15)
+            .useSecondaryDrivePIDF(true)
+            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.1, 0, 0.002, 0.6, 0.03))
+            .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(0.02, 0, 0.02, 0.6, 0.03))
+            .centripetalScaling(0.0005)
             .mass(11.80);
 
-    public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
+    public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 2, 1);
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
             .forwardPodY(-5.875)
