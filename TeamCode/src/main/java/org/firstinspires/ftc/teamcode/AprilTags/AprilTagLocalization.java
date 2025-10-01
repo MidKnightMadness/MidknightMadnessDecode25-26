@@ -8,24 +8,25 @@ import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.Util.ButtonToggle;
 import org.firstinspires.ftc.teamcode.Util.PoseBuffer;
 import org.firstinspires.ftc.teamcode.Util.Timer;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @TeleOp(group = "Vision", name = "AprilTagTesting")
 @Configurable
-public class AprilTagTesting extends OpMode{
+public class AprilTagLocalization extends OpMode{
 
     private Limelight3A limelight;
     public static String configName = "limelight";
@@ -37,9 +38,13 @@ public class AprilTagTesting extends OpMode{
     private int previousPipelineNum = leftPipeline;
     TelemetryManager panelsTelemetry;
     Timer timer;
-    PoseBuffer buffer;
-
+    PoseBuffer mt1Buffer;
+    PoseBuffer mt2Buffer;
     ButtonToggle x1;
+    RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection;
+    RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection;
+    RevHubOrientationOnRobot orientation;
+    IMU imu;
 
     @Override
     public void init() {
@@ -52,7 +57,13 @@ public class AprilTagTesting extends OpMode{
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
         x1 = new ButtonToggle();
-        buffer = new PoseBuffer();
+        mt1Buffer = new PoseBuffer();
+        mt2Buffer = new PoseBuffer();
+
+        logoFacingDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
+        usbFacingDirection = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
+        orientation = new RevHubOrientationOnRobot(logoFacingDirection, usbFacingDirection);
+        imu.initialize(new IMU.Parameters(orientation));
     }
 
 
@@ -64,11 +75,16 @@ public class AprilTagTesting extends OpMode{
 
     @Override
     public void loop() {
+        YawPitchRollAngles imuAngles = imu.getRobotYawPitchRollAngles();
+        limelight.updateRobotOrientation(imuAngles.getYaw(AngleUnit.DEGREES));
+
+
         createDashboardTelemetry();
 
         timer.updateTime();
-        telemetry.addData("Update rate", 1/ timer.getDeltaTime());
 
+        telemetry.addData("Update rate", 1/ timer.getDeltaTime());
+        telemetry.addData("Yaw(Deg): ", imuAngles.getYaw(AngleUnit.DEGREES));
 
         if(previousPipelineNum != currentPipeline){
             limelight.pipelineSwitch(currentPipeline);
@@ -79,22 +95,25 @@ public class AprilTagTesting extends OpMode{
             telemetry.update();
             LLResult result = limelight.getLatestResult();
 
-            Pose3D megaTag1Pose = result.getBotpose();
-            Position averagedPose = buffer.update(megaTag1Pose);
-
-
-            telemetry.addData("MegaTagLocalizationPose X", megaTag1Pose.getPosition().x);
-            telemetry.addData("MegaTagLocalizationPose Y", megaTag1Pose.getPosition().y);
-            telemetry.addData("MegaTagLocalizationPose Z", megaTag1Pose.getPosition().z);
-            telemetry.addData("Averaged MegaPose X", averagedPose.x);
-            telemetry.addData("Averaged MegaPose Y", averagedPose.y);
-            telemetry.addData("Averaged MegaPose Z", averagedPose.z);
-
             if (result != null && result.isValid()) {
+
+                Pose3D megaTag1Pose = result.getBotpose();
+                Position averaged1Pose = mt1Buffer.update(megaTag1Pose);
+
+                Pose3D megaTag2Pose = result.getBotpose_MT2();
+                Position averaged2Pose = mt2Buffer.update(megaTag2Pose);
+
+                telemetry.addData("MT1Pose: ", megaTag1Pose.toString());
+                telemetry.addData("MT1Position(Buffered): ", averaged1Pose.toString());
+                telemetry.addData("MT2Pose: ", megaTag2Pose.toString());
+                telemetry.addData("MT2Position(Buffered): ", averaged2Pose.toString());
+
                 List<LLResultTypes.FiducialResult> list = result.getFiducialResults();
+
+                telemetry.addLine("--------------");
                 for (LLResultTypes.FiducialResult f : list) {
                     Position camPoseTarget = f.getCameraPoseTargetSpace().getPosition().toUnit(DistanceUnit.INCH);
-                    updatePanelsTelemetry(f, camPoseTarget, megaTag1Pose.getPosition(), averagedPose);
+                    updatePanelsTelemetry(f, camPoseTarget, megaTag1Pose.getPosition(), averaged1Pose);
 
                     telemetry.addData("April Tag ID", f.getFiducialId());
 //                    telemetry.addData("Corners",  f.getTargetCorners().toString());

@@ -42,6 +42,7 @@ public class PoseBuffer {
         double avgX = sumX / BUFFER_SIZE;
         double avgY = sumY / BUFFER_SIZE;
         double avgZ = sumZ / BUFFER_SIZE;
+        list.clear();
         return new Position(DistanceUnit.INCH, avgX, avgY, avgZ, 0);
     }
 
