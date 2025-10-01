@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.AprilTags;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.hardware.limelightvision.LLResult;
@@ -8,8 +11,15 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.RobotLog;
+
 import android.os.Environment;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.Util.Timer;
 
 import java.io.File;
@@ -17,6 +27,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.List;
 
 @Autonomous(group = "Vision", name = "MotifAutonomous")
@@ -25,9 +36,10 @@ public class MotifAutonomous extends OpMode{
     public static String configName = "limelight";
     private int motifPipeline = 1;
     TelemetryManager panelsTelemetry;
+
     Timer timer;
     boolean finishedWriting = false;
-    double detectionMaxTime = 3;
+    static double detectionMaxTime = 20;
 
     PrintWriter pw;
     String fileName = "motif_value.txt";
@@ -45,10 +57,11 @@ public class MotifAutonomous extends OpMode{
         limelight.start();
 
         file = createFile(fileName, directoryName);
+
         try {
             fileWriter = new FileWriter(file);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+           RobotLog.ee("Log", "Error instantiating file writer of file: " + e.getMessage());
         }
 
     }
@@ -64,46 +77,73 @@ public class MotifAutonomous extends OpMode{
     }
 
 
+    private void writeToFile(FileWriter fileWriter, String s){
+        try {
+            fileWriter.write(s);
+            fileWriter.flush();
+        } catch (IOException e) {
+            RobotLog.ee("Log", "No file writer detected: " + e.getMessage());
+        }
+    }
+
+    private void closeFileWriter(FileWriter fileWriter){
+        try {
+            fileWriter.close();
+        } catch (IOException e) {
+            RobotLog.ee("Log", "Cannot close file writer: " + e.getMessage());
+        }
+    }
+
     @Override
     public void init_loop(){
 
-        if(finishedWriting == false && timer.updateTime() < detectionMaxTime) {
+        createDashboardTelemetry();
+
+        telemetry.addData("Finished writing:", finishedWriting);
+        telemetry.addData("Current Time:", timer.updateTime());
+        telemetry.addData("Update Rate:", 1 / timer.getDeltaTime());
+        if(!finishedWriting && timer.updateTime() < detectionMaxTime) {
             LLResult result = limelight.getLatestResult();
             if (result != null && result.isValid()) {
                 List<LLResultTypes.FiducialResult> list = result.getFiducialResults();
+                ArrayList<Integer> aprilTagsIDDetected = new ArrayList<>();
+
                 for (LLResultTypes.FiducialResult f : list) {
-                    updatePanelsTelemetry(f);
+                    Position camPoseTarget = f.getCameraPoseTargetSpace().getPosition().toUnit(DistanceUnit.INCH);
+
+                    updatePanelsTelemetry(f, camPoseTarget);
                     telemetry.addLine("April Tag ID" + f.getFiducialId());
                     telemetry.addLine("Corners" + f.getTargetCorners().toString());
-                    telemetry.addLine("Camera Pos" + f.getCameraPoseTargetSpace().toString());
-                    telemetry.addLine("Robot Pos Field" + f.getRobotPoseFieldSpace().toString());
-                    telemetry.addLine("Robot Pos Target" + f.getRobotPoseTargetSpace().toString());
+                    telemetry.addLine("Camera Pos" + camPoseTarget.toString());
+                    telemetry.addLine("Heading(Deg) Field" + f.getCameraPoseTargetSpace().getOrientation().getYaw(AngleUnit.DEGREES));
                     telemetry.addLine("X Angle" + f.getTargetXDegrees());
                     telemetry.addLine("Y Angle" + f.getTargetYDegrees());
-                    try {
-                        fileWriter.write(f.getFiducialId());
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
+                    aprilTagsIDDetected.add(f.getFiducialId());
+//                    if((f.getFiducialId() != 21) && (f.getFiducialId() != 22) && (f.getFiducialId() != 23)){
+//                        continue;
+//                    }
                 }
+
+                writeToFile(fileWriter, aprilTagsIDDetected.toString());
+                telemetry.update();
                 finishedWriting = true;
             }
         }
 
-        if(timer.updateTime() > detectionMaxTime) {
-            try {
-                fileWriter.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+        if(timer.updateTime() > detectionMaxTime || finishedWriting) {
+            closeFileWriter(fileWriter);
         }
     }
-    public void updatePanelsTelemetry(LLResultTypes.FiducialResult f){
+
+    private void createDashboardTelemetry(){
+        FtcDashboard dashboard = FtcDashboard.getInstance();
+        telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
+    }
+
+    private void updatePanelsTelemetry(LLResultTypes.FiducialResult f, Position camPoseTarget){
         panelsTelemetry.addLine("April Tag ID" +  f.getFiducialId());
         panelsTelemetry.addLine("Corners" +  f.getTargetCorners().toString());
-        panelsTelemetry.addLine("Camera Pos" +  f.getCameraPoseTargetSpace().toString());
-        panelsTelemetry.addLine("Robot Pos Field" + f.getRobotPoseFieldSpace().toString());
-        panelsTelemetry.addLine("Robot Pos Target" + f.getRobotPoseTargetSpace().toString());
+        panelsTelemetry.addLine("Camera Pos" +  camPoseTarget.toString());
         panelsTelemetry.addLine("X Angle" + f.getTargetXDegrees());
         panelsTelemetry.addLine("Y Angle" + f.getTargetYDegrees());
         panelsTelemetry.update();
