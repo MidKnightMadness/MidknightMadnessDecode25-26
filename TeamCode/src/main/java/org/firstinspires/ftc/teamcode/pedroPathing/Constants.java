@@ -29,8 +29,8 @@ public class Constants {
             // Drive PIDF
             .drivePIDFSwitch(15)
             .useSecondaryDrivePIDF(true)
-            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.1, 0, 0.002, 0.6, 0.03))
-            .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(0.02, 0, 0.02, 0.6, 0.03))
+            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.03, 0, 0.002, 0.6, 0.03))
+            .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(0.02, 0, 0.01, 0.6, 0.03))
             .centripetalScaling(0.0005)
             .mass(11.80);
 

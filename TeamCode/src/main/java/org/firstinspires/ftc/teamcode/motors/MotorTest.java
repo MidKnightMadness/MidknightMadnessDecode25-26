@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Motors;
+package org.firstinspires.ftc.teamcode.motors;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;

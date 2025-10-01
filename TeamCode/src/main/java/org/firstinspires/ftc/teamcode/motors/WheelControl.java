@@ -1,12 +1,8 @@
-package org.firstinspires.ftc.teamcode.Motors;
+package org.firstinspires.ftc.teamcode.motors;
 
-import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.VoltageSensor;
-
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 //
 public class WheelControl {
@@ -74,10 +70,10 @@ public class WheelControl {
         rotate_power += Math.signum(rotate_power)*rf;
 
         // Calculate motor powers
-        double BLPower = -forward + right + rotate_power;
-        double BRPower = -forward - right - rotate_power;
-        double FLPower = -forward - right + rotate_power;
-        double FRPower = -forward + right - rotate_power;
+        double BLPower = forward - right - rotate_power;
+        double BRPower = forward + right + rotate_power;
+        double FLPower = forward + right - rotate_power;
+        double FRPower = forward - right + rotate_power;
 
         // Get max power to make sure powers <= max_power
         double new_max_power = 1;
