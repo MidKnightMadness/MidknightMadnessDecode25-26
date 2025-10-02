@@ -43,7 +43,7 @@ public class AprilTagLocalization extends OpMode{
     ButtonToggle x1;
     RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection;
     RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection;
-    RevHubOrientationOnRobot orientation;
+
     IMU imu;
 
     @Override
@@ -62,8 +62,8 @@ public class AprilTagLocalization extends OpMode{
 
         logoFacingDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
         usbFacingDirection = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
-        orientation = new RevHubOrientationOnRobot(logoFacingDirection, usbFacingDirection);
-        imu.initialize(new IMU.Parameters(orientation));
+        imu = hardwareMap.get(IMU.class, "imu");
+        imu.initialize(new IMU.Parameters(new RevHubOrientationOnRobot(logoFacingDirection, usbFacingDirection)));
     }
 
 
@@ -92,16 +92,18 @@ public class AprilTagLocalization extends OpMode{
         }
 
         if(x1.update(gamepad1.x)) {
-            telemetry.update();
+
             LLResult result = limelight.getLatestResult();
 
             if (result != null && result.isValid()) {
 
                 Pose3D megaTag1Pose = result.getBotpose();
                 Position averaged1Pose = mt1Buffer.update(megaTag1Pose);
+                averaged1Pose = averaged1Pose.toUnit(DistanceUnit.INCH);
 
                 Pose3D megaTag2Pose = result.getBotpose_MT2();
                 Position averaged2Pose = mt2Buffer.update(megaTag2Pose);
+                averaged2Pose = averaged2Pose.toUnit(DistanceUnit.INCH);
 
                 telemetry.addData("MT1Pose: ", megaTag1Pose.toString());
                 telemetry.addData("MT1Position(Buffered): ", averaged1Pose.toString());
@@ -125,9 +127,12 @@ public class AprilTagLocalization extends OpMode{
                     telemetry.addData("Y Angle", f.getTargetYDegrees());
 
                 }
+
             }
 
             previousPipelineNum = currentPipeline;
+            telemetry.update();
+
         }
 
     }
