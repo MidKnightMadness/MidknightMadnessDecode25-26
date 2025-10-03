@@ -20,4 +20,3 @@ dependencies {
     implementation 'com.bylazar:fullpanels:1.0.3'
     implementation "com.bylazar:limelightproxy:1.0.2"
 }
-
