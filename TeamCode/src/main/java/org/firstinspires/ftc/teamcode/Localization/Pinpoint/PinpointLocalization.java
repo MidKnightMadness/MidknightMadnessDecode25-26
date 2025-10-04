@@ -1,6 +1,5 @@
-package org.firstinspires.ftc.teamcode.Localization;
+package org.firstinspires.ftc.teamcode.Localization.Pinpoint;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -13,11 +12,11 @@ public class PinpointLocalization {
 
     Pose2D initPose;
     Pose2D currPose;
-    public void initialize(HardwareMap hardwareMap, Pose2D startingPos) {
+    public PinpointLocalization(HardwareMap hardwareMap, Pose2D startingPos) {
 
-        pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
+        pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "Pinpoint");
 
-        pinpoint.setOffsets(-138.874, -33, DistanceUnit.MM); //these are tuned for 3110-0002-0001 Product Insight #1
+        pinpoint.setOffsets(-138.874, -33, DistanceUnit.MM);
 
         setPose(startingPos);
         pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
@@ -30,7 +29,7 @@ public class PinpointLocalization {
     }
 
     public void setPose(Pose2D pose){
-        pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, pose.getX(DistanceUnit.INCH), pose.getX(DistanceUnit.INCH), AngleUnit.RADIANS, pose.getHeading(AngleUnit.RADIANS)));
+        pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, pose.getX(DistanceUnit.INCH), pose.getY(DistanceUnit.INCH), AngleUnit.RADIANS, pose.getHeading(AngleUnit.RADIANS)));
     }
 
     public void recalibrateIMU(){

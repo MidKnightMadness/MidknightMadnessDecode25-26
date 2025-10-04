@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Localization;
+package org.firstinspires.ftc.teamcode.Localization.AprilTag;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -24,9 +24,9 @@ import org.firstinspires.ftc.teamcode.Util.Timer;
 
 import java.util.List;
 
-@TeleOp(group = "Localization", name = "LocalizationTest")
+@TeleOp(group = "Localization", name = "AprilTagOpMode")
 @Configurable
-public class LocalizationTest extends OpMode{
+public class AprilTagOpMode extends OpMode{
 
     private Limelight3A limelight;
     public static String configName = "limelight";

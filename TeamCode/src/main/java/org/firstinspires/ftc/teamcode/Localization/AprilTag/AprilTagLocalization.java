@@ -1,16 +1,8 @@
-package org.firstinspires.ftc.teamcode.Localization;
+package org.firstinspires.ftc.teamcode.Localization.AprilTag;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.telemetry.PanelsTelemetry;
-import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 
@@ -20,12 +12,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
-import org.firstinspires.ftc.teamcode.Util.ButtonToggle;
 import org.firstinspires.ftc.teamcode.Util.ConfigNames;
 import org.firstinspires.ftc.teamcode.Util.PoseBuffer;
 import org.firstinspires.ftc.teamcode.Util.Timer;
-
-import java.util.List;
 
 
 public class AprilTagLocalization {
@@ -45,8 +34,8 @@ public class AprilTagLocalization {
     RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection;
     RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection;
     Pose2D initPose;
-    Pose2D megaTag1Pose;
-    Pose2D megaTag2Pose;
+    Pose3D megaTag1Pose;
+    Pose3D megaTag2Pose;
 
 
     //Pose (0,0) is on the back left side
@@ -55,7 +44,7 @@ public class AprilTagLocalization {
 
     IMU imu;
 
-    public void initialize(HardwareMap hardwareMap, Pose2D initPos){
+    public AprilTagLocalization(HardwareMap hardwareMap, Pose2D initPos){
         timer = new Timer();
         limelight = hardwareMap.get(Limelight3A.class, configName);
         limelight.pipelineSwitch(currentPipeline);//set it to motif pipeline
@@ -76,6 +65,20 @@ public class AprilTagLocalization {
         tag2Buffer = new PoseBuffer();
     }
 
+    public void swapPipeline(int pipeline){
+        if(pipeline == leftPipeline || pipeline == rightPipeline){
+            limelight.pipelineSwitch(pipeline);
+        }
+    }
+
+    public Pose3D getMegaTag1Pose(){
+        return megaTag1Pose;
+    }
+
+
+    public Pose3D getMegaTag2Pose(){
+        return megaTag2Pose;
+    }
 
     public void update(){
         YawPitchRollAngles imuAngles = imu.getRobotYawPitchRollAngles();
@@ -87,24 +90,23 @@ public class AprilTagLocalization {
         LLResult result = limelight.getLatestResult();
 
         if (result != null && result.isValid()) {
-            Pose3D megaTag1Pose = result.getBotpose();
-            megaTag1Pose = offsetToBackLeftOrigin(convertMetersToInch(megaTag1Pose));
+            megaTag1Pose = result.getBotpose();
+            megaTag1Pose = offsetToBackLeftOrigin(convertMetersToInch(megaTag1Pose), 72, 72);
 
-            Pose3D megaTag2Pose = result.getBotpose_MT2();
-            megaTag2Pose = convertMetersToInch(megaTag2Pose);
-
+            megaTag2Pose = result.getBotpose_MT2();
+            megaTag2Pose = offsetToBackLeftOrigin(convertMetersToInch(megaTag2Pose), 72, 72);
         }
 
     }
 
-    private Pose3D offsetCenter(Pose3D pose3D, double xOffset, double yOffset) {
+    private Pose3D offsetToBackLeftOrigin(Pose3D pose3D, double xOffset, double yOffset) {
         Position position = pose3D.getPosition();
-        double x = position.x + xOffset;
+        double x = position.x - xOffset;//reverse so positive = forward
         double y = position.y + yOffset;
-        return new Pose3D(new Position(x, y))
+        return new Pose3D(new Position(DistanceUnit.INCH, x, y, position.z, 0 ), pose3D.getOrientation());
     }
 
-    public Pose3D convertMetersToInch(Pose3D pose){
+    private Pose3D convertMetersToInch(Pose3D pose){
         Position position = pose.getPosition();
         double x = position.x * 100 / 2.54;
         double y = position.y * 100 / 2.54;
@@ -114,20 +116,7 @@ public class AprilTagLocalization {
     }
 
 
-    public void loop() {
 
-
-        if(previousPipelineNum != currentPipeline){
-            limelight.pipelineSwitch(currentPipeline);
-        }
-
-
-
-
-            previousPipelineNum = currentPipeline;
-
-
-    }
 
 
 
