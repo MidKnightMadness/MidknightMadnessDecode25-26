@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.Localization;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
@@ -24,7 +25,9 @@ import org.firstinspires.ftc.teamcode.Localization.AprilTag.AprilTagLocalization
 import org.firstinspires.ftc.teamcode.Localization.Pinpoint.PinpointLocalization;
 import org.firstinspires.ftc.teamcode.Util.ButtonToggle;
 import org.firstinspires.ftc.teamcode.Util.PoseBuffer;
-import org.firstinspires.ftc.teamcode.Util.Timer;
+import org.firstinspires.ftc.teamcode.Util.Timer;import com.bylazar.configurables.annotations.Configurable;
+
+
 
 @TeleOp(group = "Localization", name = "LocalizationComparison")
 @Configurable
@@ -38,27 +41,31 @@ public class LocalizationComparison extends OpMode{
     ButtonToggle x1;
     RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection;
     RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection;
-    Pose3D megaTag1Pose = new Pose3D(new Position(DistanceUnit.INCH, 0, 0, AngleUnit.RADIANS.ordinal(), 0), new YawPitchRollAngles(AngleUnit.RADIANS, 0, 0, 0, 0));
-    Pose3D megaTag2Pose = new Pose3D(new Position(DistanceUnit.INCH, 0, 0, AngleUnit.RADIANS.ordinal(), 0), new YawPitchRollAngles(AngleUnit.RADIANS, 0, 0, 0, 0));
-
+    Pose3D megaTag1Pose;
+    Pose3D megaTag2Pose;
     IMU imu;
     AprilTagLocalization aprilTagLocalization;
     PinpointLocalization pinpointLocalization;
 
 
-    static Pose2D startingPose = new Pose2D(DistanceUnit.INCH, 8, 72, AngleUnit.RADIANS, Math.toRadians(90));
+    public final static Pose2D startingPose = new Pose2D(DistanceUnit.INCH, 203.2 /25.4, 72, AngleUnit.RADIANS, Math.toRadians(90));
 
-    Pose3D mt1Pose = new Pose3D(new Position(), new YawPitchRollAngles(AngleUnit.RADIANS, 0, 0, 0, 0));
-
-    Pose3D mt2Pose = new Pose3D(new Position(), new YawPitchRollAngles(AngleUnit.RADIANS, 0, 0, 0, 0));
-
-    Position averagedMT1Pose = new Position();
-    Position averagedMT2Pose = new Position();
+    Pose3D mt1Pose;
+    Pose3D mt2Pose;
+    Position averagedMT1Pose;
+    Position averagedMT2Pose;
     YawPitchRollAngles imuAngles;
     Pose2D pinpointPose = new Pose2D(DistanceUnit.INCH, 8, 72, AngleUnit.RADIANS, Math.toRadians(90));
 
+    Pose2D fusedKalmanPose = new Pose2D(DistanceUnit.INCH, 8, 72, AngleUnit.RADIANS, Math.toRadians(90));
+
+    KalmanFilter kalmanFilter;
+    public static double Q = 0.2;
+    public static double R = 0.6;
+    FtcDashboard dashboard;
     @Override
     public void init() {
+
         timer = new Timer();
         telemetry.setMsTransmissionInterval(10);
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
@@ -77,12 +84,15 @@ public class LocalizationComparison extends OpMode{
 
         imu = hardwareMap.get(IMU.class, "imu");
         imu.initialize(new IMU.Parameters(new RevHubOrientationOnRobot(logoFacingDirection, usbFacingDirection)));
+        kalmanFilter = new KalmanFilter(Q, R);
+
+        mergeDashboardTelemetry();
     }
 
 
 
-    private void updateDashboardTelemetry(){
-        FtcDashboard dashboard = FtcDashboard.getInstance();
+    private void mergeDashboardTelemetry(){
+        dashboard = FtcDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
     }
 
@@ -101,37 +111,77 @@ public class LocalizationComparison extends OpMode{
         pinpointLocalization.update();
 
 
+        pinpointPose = pinpointLocalization.getCurrentPose();
         mt1Pose = aprilTagLocalization.getMegaTag1Pose();
         mt2Pose = aprilTagLocalization.getMegaTag2Pose();
         averagedMT1Pose = mt1Buffer.update(mt1Pose);
         averagedMT2Pose = mt2Buffer.update(mt2Pose);
 
-        updateDashboardTelemetry();
+
+        double fusedX = kalmanFilter.update(pinpointPose.getX(DistanceUnit.INCH), mt1Pose.getPosition().x, aprilTagLocalization.aprilTagDetected());
+        double fusedY = kalmanFilter.update(pinpointPose.getY(DistanceUnit.INCH), mt1Pose.getPosition().y, aprilTagLocalization.aprilTagDetected());
+        double fusedTheta = kalmanFilter.updateAngle(pinpointPose.getHeading(AngleUnit.RADIANS), mt1Pose.getOrientation().getYaw(AngleUnit.RADIANS), aprilTagLocalization.aprilTagDetected());
+        fusedKalmanPose = new Pose2D(DistanceUnit.INCH, fusedX, fusedY, AngleUnit.RADIANS, fusedTheta);
+
 
         timer.updateTime();
 
         updateTelemetry();
         updatePanelsTelemetry();
+
+        drawPosesDashboard();
+        previousPipeline = currentPipeline;
+    }
+
+    private void drawPosesDashboard() {
+        TelemetryPacket packet = new TelemetryPacket();
+        packet.fieldOverlay().drawImage("ftcDecodeField.png", 0, 0, 144, 144);
+        packet.fieldOverlay().
+        dashboard.sendTelemetryPacket(packet);
+
+    }
+
+    private void telemetryPose2D(String s, Pose2D pose){
+        telemetry.addData(s + " X", pose.getX(DistanceUnit.INCH));
+        telemetry.addData(s + " Y", pose.getY(DistanceUnit.INCH));
+        telemetry.addData(s + " Yaw(Deg)", pose.getHeading(AngleUnit.DEGREES));
+        panelsTelemetry.addData(s + " X", pose.getX(DistanceUnit.INCH));
+        panelsTelemetry.addData(s + " Y", pose.getY(DistanceUnit.INCH));
+        panelsTelemetry.addData(s + " Yaw(Deg)", pose.getHeading(AngleUnit.DEGREES));
+    }
+
+    private void telemetryPose3D(String s, Pose3D pose){
+        telemetry.addData(s + " X", pose.getPosition().x);
+        telemetry.addData(s + " Y", pose.getPosition().y);
+        telemetry.addData(s + " Yaw(Deg)", pose.getOrientation().getYaw(AngleUnit.DEGREES));
+        panelsTelemetry.addData(s + " X", pose.getPosition().x);
+        panelsTelemetry.addData(s + " Y", pose.getPosition().y);
+        panelsTelemetry.addData(s + " Yaw(Deg)", pose.getOrientation().getYaw(AngleUnit.DEGREES));
     }
 
     private void updateTelemetry(){
-        telemetry.addData("Update rate", 1/ timer.getDeltaTime());
-        telemetry.addData("Yaw(Deg): ", imuAngles.getYaw(AngleUnit.DEGREES));
-        telemetry.addData("MT1Pose", mt1Pose.getPosition() != null ? mt1Pose.getPosition() : "Null");
-        telemetry.addData("MT1Position Averaged", averagedMT1Pose != null ? averagedMT1Pose: "Null");
-        telemetry.addData("MT2Pose", mt2Pose.getPosition() != null ? mt2Pose.getPosition() : "Null");
-        telemetry.addData("MT2Position Averaged", averagedMT2Pose != null ? averagedMT2Pose : "Null");
+        telemetry.addLine("Update rate" +  1/ timer.getDeltaTime());
+        telemetry.addLine("IMU Yaw(Deg): " +  imuAngles.getYaw(AngleUnit.DEGREES));
+        telemetryPose2D("Pinpoint Pose", pinpointPose);
+
+        if(mt1Pose != null) {
+            telemetryPose3D("MT1 Pose", mt1Pose);
+            telemetryPose3D("MT1 Pose Avged", new Pose3D(averagedMT1Pose, mt1Pose.getOrientation()));
+            telemetryPose2D("Fused Kalman Pose", fusedKalmanPose);
+        }
+
+        if(mt2Pose!= null) {
+            telemetryPose3D("MT2 Pose", mt2Pose);
+            telemetryPose3D("MT2 Pose Avged", new Pose3D(averagedMT2Pose, mt2Pose.getOrientation()));
+
+        }
         telemetry.update();
     }
 
 
     private void updatePanelsTelemetry(){
-        panelsTelemetry.addData("Update rate", 1/ timer.getDeltaTime()) ;
-        panelsTelemetry.addData("Yaw(Deg): ", imuAngles.getYaw(AngleUnit.DEGREES));
-        panelsTelemetry.addData("MT1Pose", mt1Pose.getPosition() != null ? mt1Pose.getPosition() : "Null");
-        panelsTelemetry.addData("MT1Position Averaged", averagedMT1Pose != null ? averagedMT1Pose: "Null");
-        panelsTelemetry.addData("MT2Pose", mt2Pose.getPosition() != null ? mt2Pose.getPosition() : "Null");
-        panelsTelemetry.addData("MT2Position Averaged", averagedMT2Pose != null ? averagedMT2Pose : "Null");
+        panelsTelemetry.addData("Update rate", 1/ timer.getDeltaTime());
+        panelsTelemetry.addData("IMU Yaw(Deg): ", imuAngles.getYaw(AngleUnit.DEGREES));
         panelsTelemetry.update();
     }
 

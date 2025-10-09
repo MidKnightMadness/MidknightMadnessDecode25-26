@@ -1,4 +1,6 @@
 package org.firstinspires.ftc.teamcode.Localization.Pinpoint;
+import androidx.core.util.Pools;
+
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -7,7 +9,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
 public class PinpointLocalization {
-    // Create an instance of the sensor
+    // Create an instance of the senso
     GoBildaPinpointDriver pinpoint;
 
     Pose2D initPose;
@@ -42,7 +44,9 @@ public class PinpointLocalization {
 
     public Pose2D update() {
         pinpoint.update();
-        Pose2D pose2D = pinpoint.getPosition();
+
+        Pose2D pose2D = new Pose2D(DistanceUnit.INCH, pinpoint.getPosX(DistanceUnit.INCH), pinpoint.getPosY(DistanceUnit.INCH),AngleUnit.DEGREES, pinpoint.getHeading(AngleUnit.DEGREES));
+        currPose = pose2D;
         return pose2D;
     }
 

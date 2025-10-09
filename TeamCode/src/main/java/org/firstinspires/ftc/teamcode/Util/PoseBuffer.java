@@ -22,7 +22,9 @@ public class PoseBuffer {
 
 
     public Position update(Pose3D pose){
-        list.add(pose);
+        if(pose != null) {
+            list.add(pose);
+        }
         if(list.size() == BUFFER_SIZE){
             previousAvgPose = averagePoses();
         }

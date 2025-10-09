@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Localization.AprilTag;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -16,6 +17,8 @@ import org.firstinspires.ftc.teamcode.Util.ConfigNames;
 import org.firstinspires.ftc.teamcode.Util.PoseBuffer;
 import org.firstinspires.ftc.teamcode.Util.Timer;
 
+import java.util.List;
+
 
 public class AprilTagLocalization {
 
@@ -25,7 +28,7 @@ public class AprilTagLocalization {
     int leftPipeline = 0;
     int rightPipeline = 2;
 
-    int currentPipeline = leftPipeline;
+    int currentPipeline = rightPipeline;
 
     int previousPipelineNum = leftPipeline;
     Timer timer;
@@ -43,6 +46,8 @@ public class AprilTagLocalization {
     PoseBuffer tag2Buffer;
 
     IMU imu;
+    boolean detected;
+
 
     public AprilTagLocalization(HardwareMap hardwareMap, Pose2D initPos){
         timer = new Timer();
@@ -54,8 +59,8 @@ public class AprilTagLocalization {
         mt1Buffer = new PoseBuffer();
         mt2Buffer = new PoseBuffer();
 
-        logoFacingDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
-        usbFacingDirection = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
+        logoFacingDirection = RevHubOrientationOnRobot.LogoFacingDirection.LEFT;
+        usbFacingDirection = RevHubOrientationOnRobot.UsbFacingDirection.UP;
 
         imu = hardwareMap.get(IMU.class, "imu");
         imu.initialize(new IMU.Parameters(new RevHubOrientationOnRobot(logoFacingDirection, usbFacingDirection)));
@@ -71,6 +76,9 @@ public class AprilTagLocalization {
         }
     }
 
+    public boolean aprilTagDetected(){
+        return detected;
+    }
     public Pose3D getMegaTag1Pose(){
         return megaTag1Pose;
     }
@@ -82,7 +90,7 @@ public class AprilTagLocalization {
 
     public void update(){
         YawPitchRollAngles imuAngles = imu.getRobotYawPitchRollAngles();
-        limelight.updateRobotOrientation(imuAngles.getYaw(AngleUnit.DEGREES));
+        limelight.updateRobotOrientation(imuAngles.getYaw());
 
 
         timer.updateTime();
@@ -90,6 +98,7 @@ public class AprilTagLocalization {
         LLResult result = limelight.getLatestResult();
 
         if (result != null && result.isValid()) {
+            detected = true;
             megaTag1Pose = result.getBotpose();
             megaTag1Pose = offsetToBackLeftOrigin(convertMetersToInch(megaTag1Pose), 72, 72);
 
@@ -97,11 +106,15 @@ public class AprilTagLocalization {
             megaTag2Pose = offsetToBackLeftOrigin(convertMetersToInch(megaTag2Pose), 72, 72);
         }
 
+        else{
+            detected = false;
+        }
+
     }
 
     private Pose3D offsetToBackLeftOrigin(Pose3D pose3D, double xOffset, double yOffset) {
         Position position = pose3D.getPosition();
-        double x = position.x - xOffset;//reverse so positive = forward
+        double x = -position.x + xOffset;//reverse so positive = forward
         double y = position.y + yOffset;
         return new Pose3D(new Position(DistanceUnit.INCH, x, y, position.z, 0 ), pose3D.getOrientation());
     }
