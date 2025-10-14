@@ -6,9 +6,11 @@ import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.PathChain;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.util.Timer;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
@@ -17,26 +19,34 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Drawing;
 import java.util.concurrent.TimeUnit;
 
 @Configurable
-@TeleOp
-public class PanelsTemplate extends OpMode {
+@Autonomous
+public class PedroPanelsTemplate extends OpMode {
     TelemetryManager telemetryM;
     GraphManager graphM;
     Follower follower;
     Timer timer;
+    PathChain path;
 
-    Pose startPose = new Pose(72, 72, Math.toRadians(0));
+    public static Pose startPose = new Pose(0, 72, Math.toRadians(0));
+    public static Pose endPose = new Pose(72, 72, Math.toRadians(0));
     Pose currentPose;
     double speed;
     double acceleration;
+
 
     @Override
     public void init() {
         Drawing.init();
         timer = new Timer();
-        follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(startPose);
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         graphM = PanelsGraph.INSTANCE.getManager();
+
+        follower = Constants.createFollower(hardwareMap);
+        follower.setStartingPose(startPose);
+        path = follower.pathBuilder()
+                .addPath(new BezierLine(startPose, endPose))
+                .setLinearHeadingInterpolation(startPose.getHeading(), endPose.getHeading())
+                .build();
     }
 
     @Override
@@ -54,6 +64,7 @@ public class PanelsTemplate extends OpMode {
     public void loop() {
         updateData();
         updateTelemetry();
+        follower.followPath(path);
     }
 
     public void updateData() {
@@ -63,7 +74,7 @@ public class PanelsTemplate extends OpMode {
         acceleration = follower.getAcceleration().getMagnitude();
     }
 
-    public void addDataTeleGraph(String key, Number value) {
+    public void addDataTelemetryGraph(String key, Number value) {
         telemetryM.addData(key, value);
         graphM.addData(key, value);
     }
@@ -75,12 +86,12 @@ public class PanelsTemplate extends OpMode {
         Drawing.sendPacket();
 
         // Telemetry
-        addDataTeleGraph("Loop time (ms)", timer.getDeltaTime(TimeUnit.MILLISECONDS));
+        addDataTelemetryGraph("Loop time (ms)", timer.getDeltaTime(TimeUnit.MILLISECONDS));
         telemetryM.addData("Pose X (in)", currentPose.getX());
         telemetryM.addData("Pose Y (in)", currentPose.getY());
         telemetryM.addData("Pose Heading (rad)", currentPose.getHeading());
-        addDataTeleGraph("Speed (in/s)", speed);
-        addDataTeleGraph("Acceleration (in/s^2)", acceleration);
+        addDataTelemetryGraph("Speed (in/s)", speed);
+        addDataTelemetryGraph("Acceleration (in/s^2)", acceleration);
 
         // Updates
         telemetryM.update(telemetry);

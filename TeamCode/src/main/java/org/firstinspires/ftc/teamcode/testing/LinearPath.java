@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.testing;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.graph.GraphManager;
+import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
@@ -12,31 +14,45 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.util.Timer;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.pedroPathing.Drawing;
 
 import java.util.concurrent.TimeUnit;
 
 @Configurable
-@Autonomous(group = "Testing")
+@Autonomous
 public class LinearPath extends OpMode {
-    private Follower follower;
-    private PathChain pathChain;
-
-    private Timer timer;
-    private TelemetryManager telemetryM;
+    TelemetryManager telemetryM;
+    GraphManager graphM;
+    Follower follower;
+    Timer timer;
+    PathChain path;
 
     public static Pose startPose = new Pose(0, 72, Math.toRadians(0));
     public static Pose endPose = new Pose(72, 72, Math.toRadians(0));
+    Pose currentPose;
+    double speed;
+    double acceleration;
+
 
     @Override
     public void init() {
+        Drawing.init();
         timer = new Timer();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
+        graphM = PanelsGraph.INSTANCE.getManager();
 
         follower = Constants.createFollower(hardwareMap);
-        pathChain = follower.pathBuilder()
+        follower.setStartingPose(startPose);
+        path = follower.pathBuilder()
                 .addPath(new BezierLine(startPose, endPose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), endPose.getHeading())
                 .build();
+    }
+
+    @Override
+    public void init_loop() {
+        updateData();
+        updateTelemetry();
     }
 
     @Override
@@ -46,12 +62,39 @@ public class LinearPath extends OpMode {
 
     @Override
     public void loop() {
-        follower.update();
-        follower.followPath(pathChain, true);
+        updateData();
+        updateTelemetry();
+        follower.followPath(path);
+    }
 
-        telemetryM.addData("Loop time (ms)", timer.getDeltaTime(TimeUnit.MILLISECONDS));
-        telemetryM.addData("Drive PIDF", follower.constants.coefficientsDrivePIDF);
-        telemetryM.addData("Is busy", follower.isBusy());
+    public void updateData() {
+        follower.update();
+        currentPose = follower.getPose();
+        speed = follower.getVelocity().getMagnitude();
+        acceleration = follower.getAcceleration().getMagnitude();
+    }
+
+    public void addDataTelemetryGraph(String key, Number value) {
+        telemetryM.addData(key, value);
+        graphM.addData(key, value);
+    }
+
+    public void updateTelemetry() {
+        // Field
+        Drawing.drawRobot(currentPose);
+        Drawing.drawPoseHistory(follower.getPoseHistory());
+        Drawing.sendPacket();
+
+        // Telemetry
+        addDataTelemetryGraph("Loop time (ms)", timer.getDeltaTime(TimeUnit.MILLISECONDS));
+        telemetryM.addData("Pose X (in)", currentPose.getX());
+        telemetryM.addData("Pose Y (in)", currentPose.getY());
+        telemetryM.addData("Pose Heading (rad)", currentPose.getHeading());
+        addDataTelemetryGraph("Speed (in/s)", speed);
+        addDataTelemetryGraph("Acceleration (in/s^2)", acceleration);
+
+        // Updates
         telemetryM.update(telemetry);
+        graphM.update();
     }
 }
