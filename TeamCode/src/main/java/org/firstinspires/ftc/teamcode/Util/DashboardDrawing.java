@@ -1,15 +1,19 @@
 package org.firstinspires.ftc.teamcode.Util;
 
-import android.graphics.Point;
+
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.localization.PoseTracker;
 import com.pedropathing.math.Vector;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This is the Drawing class. It handles the drawing of stuff on FTC Dashboard, like the robot.
@@ -22,6 +26,7 @@ public class DashboardDrawing {
     public static final double ROBOT_RADIUS = 9;
 
     private static TelemetryPacket packet;
+    public static List<Pose> poseHistory = new ArrayList<>();
 
     /**
      * This draws everything that will be used in the Follower's telemetryDebug() method. This takes
@@ -32,10 +37,10 @@ public class DashboardDrawing {
     public static void drawDebug(Follower follower) {
         if (follower.getCurrentPath() != null) {
             drawPath(follower.getCurrentPath(), "#3F51B5");
-            Point closestPoint = follower.getPointFromPath(follower.getCurrentPath().getClosestPointTValue());
+            Pose closestPoint = follower.getPointFromPath(follower.getCurrentPath().getClosestPointTValue());
             drawRobot(new Pose(closestPoint.getX(), closestPoint.getY(), follower.getCurrentPath().getHeadingGoal(follower.getCurrentPath().getClosestPointTValue())), "#3F51B5");
         }
-        drawPoseHistory(follower.getDashboardPoseTracker(), "#4CAF50");
+        drawPoseHistory(follower.getPoseTracker(), "#4CAF50");
         drawRobot(follower.getPose(), "#4CAF50");
 
         sendPacket();
@@ -52,7 +57,7 @@ public class DashboardDrawing {
         if (packet == null) packet = new TelemetryPacket();
 
         packet.fieldOverlay().setStroke(color);
-        PanelsDrawing.drawRobotOnCanvas(packet.fieldOverlay(), pose.copy());
+        DashboardDrawing.drawRobotOnCanvas(packet.fieldOverlay(), pose.copy());
     }
 
     /**
@@ -66,7 +71,7 @@ public class DashboardDrawing {
         if (packet == null) packet = new TelemetryPacket();
 
         packet.fieldOverlay().setStroke(color);
-        PanelsDrawing.drawPath(packet.fieldOverlay(), path.getDashboardDrawingPoints());
+        DashboardDrawing.drawPath(packet.fieldOverlay(), path.getPanelsDrawingPoints());
     }
 
     /**
@@ -89,11 +94,25 @@ public class DashboardDrawing {
      * @param poseTracker the DashboardPoseTracker to get the pose history from
      * @param color the color to draw the pose history with
      */
-    public static void drawPoseHistory(DashboardPoseTracker poseTracker, String color) {
+    public static void drawPoseHistory(PoseTracker poseTracker, String color) {
         if (packet == null) packet = new TelemetryPacket();
-
+        if(poseHistory.size() < 2){
+            return;
+        }
         packet.fieldOverlay().setStroke(color);
-        packet.fieldOverlay().strokePolyline(poseTracker.getXPositionsArray(), poseTracker.getYPositionsArray());
+        packet.fieldOverlay().setStrokeWidth(1);
+        for(int i = 0; i < poseHistory.size() - 1; i++) {
+            Pose p1 = poseHistory.get(i);
+            Pose p2 = poseHistory.get(i+1);
+            packet.fieldOverlay().strokeLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
+        }
+    }
+
+    public static void addPoseToList(Pose pose){
+        poseHistory.add(pose);
+    }
+    public static void clearPoseHistory(){
+        poseHistory.clear();
     }
 
     /**
@@ -120,11 +139,15 @@ public class DashboardDrawing {
         c.setStrokeWidth(1);
         c.strokeCircle(t.getX(), t.getY(), ROBOT_RADIUS);
 
-        Vector halfv = new Vector(0.5 * ROBOT_RADIUS, t.getTheta());
-        Vector p1 = MathFunctions.addVectors(halfv, new Vector(t.getR(), t.getTheta()));
-        Vector p2 = MathFunctions.addVectors(p1, halfv);
-        c.strokeLine(p1.getXComponent(), p1.getYComponent(), p2.getXComponent(), p2.getYComponent());
+        double theta = t.getThetaRadians();
+        double x1 = t.getX() + Math.cos(theta) * ROBOT_RADIUS * 0.5;
+        double y1 = t.getY() + Math.sin(theta) * ROBOT_RADIUS * 0.5;
+        double x2 = t.getX() + Math.cos(theta) * ROBOT_RADIUS;
+        double y2 = t.getY() + Math.sin(theta) * ROBOT_RADIUS;
+
+        c.strokeLine(x1, y1, x2, y2);
     }
+
 
     /**
      * This draws a robot on the Dashboard at a specified Pose. This is more useful for drawing the
@@ -135,8 +158,8 @@ public class DashboardDrawing {
      */
     public static void drawRobotOnCanvas(Canvas c, Pose t) {
         c.strokeCircle(t.getX(), t.getY(), ROBOT_RADIUS);
-        Vector v = t.getHeadingVector();
-        v.setMagnitude(v.getMagnitude() * ROBOT_RADIUS);
+        Vector v = t.getHeadingAsUnitVector();
+        v.setMagnitude(ROBOT_RADIUS);
         double x1 = t.getX() + v.getXComponent() / 2, y1 = t.getY() + v.getYComponent() / 2;
         double x2 = t.getX() + v.getXComponent(), y2 = t.getY() + v.getYComponent();
         c.strokeLine(x1, y1, x2, y2);

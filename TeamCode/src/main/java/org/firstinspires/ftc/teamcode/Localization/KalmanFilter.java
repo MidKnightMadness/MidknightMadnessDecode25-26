@@ -7,8 +7,8 @@ import com.bylazar.configurables.annotations.Configurable;
 @Config
 public class KalmanFilter {
 
-    double Q;//uncertainty in pinpoint
-    double R ;//uncertainty in april tags
+    double Q;//pinpoint noise
+    double R ;//april tags noise
 
     double x;//estimated value
     double p; //estimated value uncertainty
@@ -36,8 +36,9 @@ public class KalmanFilter {
 
 
     double updateAngle(double pinpointTheta, double aprilTagTheta, boolean tagDetected){//input as radians
+        double angularKt = tagDetected == true ? Kt : 0;
         double dTheta = wrapAngleRad(aprilTagTheta - pinpointTheta);
-        double correctAngle = tagDetected ? dTheta * Kt + pinpointTheta : pinpointTheta;
+        double correctAngle = tagDetected ? dTheta * angularKt + pinpointTheta : pinpointTheta;
         return wrapAngleRad(correctAngle);
     }
 
