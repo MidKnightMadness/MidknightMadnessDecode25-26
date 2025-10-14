@@ -59,12 +59,16 @@ public class LinearPath extends OpMode {
     public void start() {
         timer.restartTimer();
     }
+    boolean startedPath = false;
 
     @Override
     public void loop() {
         updateData();
         updateTelemetry();
-        follower.followPath(path);
+        if(!follower.isBusy() && !startedPath) {
+            startedPath = true;
+            follower.followPath(path);
+        }
     }
 
     public void updateData() {
