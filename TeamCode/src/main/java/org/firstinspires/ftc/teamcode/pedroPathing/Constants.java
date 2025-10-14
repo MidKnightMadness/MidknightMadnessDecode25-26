@@ -22,19 +22,19 @@ public class Constants {
             .lateralZeroPowerAcceleration(-87.8)
             // Translational PIDF
             .translationalPIDFSwitch(4)
-            .translationalPIDFCoefficients(new PIDFCoefficients(0.08, 0, 0.01, 0.01))
-            .secondaryTranslationalPIDFCoefficients(new PIDFCoefficients(0.08, 0, 0.02, 0.01))
+            .translationalPIDFCoefficients(new PIDFCoefficients(0.1, 0, 0.01, 0.03))
+            .secondaryTranslationalPIDFCoefficients(new PIDFCoefficients(0.1, 0, 0.02, 0.03))
             // Heading PIDF
             .headingPIDFCoefficients(new PIDFCoefficients(1.5, 0, 0.1, 0.02))
             // Drive PIDF
             .drivePIDFSwitch(15)
             .useSecondaryDrivePIDF(true)
-            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.015, 0, 0.002, 0.6, 0.03))
-            .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(0.02, 0, 0.005, 0.6, 0.03))
+            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.03, 0, 0.003, 0.6, 0.03))
+            .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(0.02, 0, 0.003, 0.6, 0.03))
             .centripetalScaling(0.0005)
             .mass(11.80);
 
-    public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
+    public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1.1, 1);
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
             .forwardPodY(-5.875)

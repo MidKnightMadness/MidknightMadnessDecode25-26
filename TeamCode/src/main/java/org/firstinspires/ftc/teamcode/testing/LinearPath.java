@@ -32,7 +32,7 @@ public class LinearPath extends OpMode {
     Pose currentPose;
     double speed;
     double acceleration;
-
+    boolean startedPath = false;
 
     @Override
     public void init() {
@@ -59,13 +59,12 @@ public class LinearPath extends OpMode {
     public void start() {
         timer.restartTimer();
     }
-    boolean startedPath = false;
 
     @Override
     public void loop() {
         updateData();
         updateTelemetry();
-        if(!follower.isBusy() && !startedPath) {
+        if (!follower.isBusy() && !startedPath) {
             startedPath = true;
             follower.followPath(path);
         }
