@@ -14,28 +14,30 @@ public class ColorSensorTesting extends OpMode {
     ButtonToggle buttonToggle;
 
     int r, g, b, alpha;
+    double normR, normG, normB;
     String detectedColor = "No reading yet";
 
     // Thresholds for Green Ball (0.75" distance)
-    int greenRedMin = 111;
-    int greenRedMax = 113;
-    int greenGreenMin = 404;
-    int greenGreenMax = 408;
-    int greenBlueMin = 309;
-    int greenBlueMax = 311;
+    double greenRedMin = 0.05;
+    double greenRedMax = 0.40;
+    double greenGreenMin = 0.645;
+    double greenGreenMax = 0.93;
+    double greenBlueMin = 0.44;
+    double greenBlueMax = 0.75;
 
     // Thresholds for Purple Ball (0.75" distance)
-    int purpleRedMin = 175;
-    int purpleRedMax = 192;
-    int purpleGreenMin = 206;
-    int purpleGreenMax = 232;
-    int purpleBlueMin = 316;
-    int purpleBlueMax = 347;
+    double purpleRedMin = 0.28;
+    double purpleRedMax = 0.53;
+    double purpleGreenMin = 0.30;
+    double purpleGreenMax = 0.73;
+    double purpleBlueMin = 0.5875;
+    double purpleBlueMax = 0.93;
 
     @Override
     public void init() {
         colorSensor = hardwareMap.get(RevColorSensorV3.class, "colorSensor");
         buttonToggle = new ButtonToggle();
+        colorSensor.enableLed(true); //maybe not needed idk
     }
 
     @Override
@@ -49,20 +51,27 @@ public class ColorSensorTesting extends OpMode {
             g = colorSensor.green();
             b = colorSensor.blue();
             alpha = colorSensor.alpha();
-
-            // Detect color based on RGB thresholds
-            detectedColor = detectBallColor(r, g, b);
+            //normalize colors
+            colorNormalizer norm = new colorNormalizer(r, g, b);
+            normR = norm.normalizeRed();
+            normG = norm.normalizeGreen();
+            normB = norm.normalizeBlue();
+            // Detect color based on normalized RGB thresholds
+            detectedColor = detectBallColor(normR, normG, normB);
         }
 
         telemetry.addData("Red", r);
         telemetry.addData("Green", g);
         telemetry.addData("Blue", b);
+        telemetry.addData("Normalized Red", normR);
+        telemetry.addData("Normalized Green", normG);
+        telemetry.addData("Normalized Blue", normB);
         telemetry.addData("Alpha", alpha);
         telemetry.addData("Detected Color", detectedColor);
         telemetry.update();
     }
 
-    private String detectBallColor(int r, int g, int b) {
+    private String detectBallColor(double r, double g, double b) {
         if (r >= greenRedMin && r <= greenRedMax &&
                 g >= greenGreenMin && g <= greenGreenMax &&
                 b >= greenBlueMin && b <= greenBlueMax) {
