@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.Localization.Pinpoint;
 import androidx.core.util.Pools;
 
+import com.acmerobotics.dashboard.config.Config;
+import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -8,22 +10,29 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
+@Configurable
+@Config
 public class PinpointLocalization {
     // Create an instance of the senso
     GoBildaPinpointDriver pinpoint;
 
     Pose2D initPose;
     Pose2D currPose;
+    public static double xOffsetMultiplier = 1;
+    public static double yOffsetMulitplier = 1;
+    public static double xOffset = 138.874;
+    public static double yOffset = 33;
     public PinpointLocalization(HardwareMap hardwareMap, Pose2D startingPos) {
 
         pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "Pinpoint");
 
-        pinpoint.setOffsets(-138.874, -33, DistanceUnit.MM);
+        pinpoint.setOffsets(xOffset * xOffsetMultiplier, yOffset * yOffsetMulitplier, DistanceUnit.MM);//swapped so xy planar cartesian
+        //using left odometry pod
 
         setPose(startingPos);
         pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
         pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD,
-                GoBildaPinpointDriver.EncoderDirection.FORWARD);
+                GoBildaPinpointDriver.EncoderDirection.REVERSED);
         pinpoint.recalibrateIMU();
         pinpoint.resetPosAndIMU();
 
@@ -38,6 +47,9 @@ public class PinpointLocalization {
         pinpoint.recalibrateIMU();
     }
 
+    public double getPinpointHeading(){
+        return pinpoint.getHeading(AngleUnit.DEGREES);
+    }
     public Pose2D getCurrentPose(){
         return currPose;
     }
@@ -45,9 +57,9 @@ public class PinpointLocalization {
     public Pose2D update() {
         pinpoint.update();
 
-        Pose2D pose2D = new Pose2D(DistanceUnit.INCH, pinpoint.getPosX(DistanceUnit.INCH), pinpoint.getPosY(DistanceUnit.INCH),AngleUnit.DEGREES, pinpoint.getHeading(AngleUnit.DEGREES));
-        currPose = pose2D;
-        return pose2D;
+        currPose = new Pose2D(DistanceUnit.INCH, pinpoint.getPosX(DistanceUnit.INCH) + initPose.getX(DistanceUnit.INCH), pinpoint.getPosY(DistanceUnit.INCH) + initPose.getY(DistanceUnit.INCH),
+                AngleUnit.DEGREES, pinpoint.getHeading(AngleUnit.DEGREES));
+        return currPose;
     }
 
 }

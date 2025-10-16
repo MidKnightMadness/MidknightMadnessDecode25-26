@@ -31,6 +31,9 @@ public class AprilTagLocalization {
     int currentPipeline = rightPipeline;
 
     int previousPipelineNum = leftPipeline;
+
+    double cameraToCenterXOffset = 0;//0.2032 * 1000 / 25.4;
+    double cameraToCenterYOffset = 0;//0.217 * 1000 /25.4;
     Timer timer;
     PoseBuffer mt1Buffer;
     PoseBuffer mt2Buffer;
@@ -90,7 +93,7 @@ public class AprilTagLocalization {
 
     public void update(){
         YawPitchRollAngles imuAngles = imu.getRobotYawPitchRollAngles();
-        limelight.updateRobotOrientation(imuAngles.getYaw());
+        limelight.updateRobotOrientation(imuAngles.getYaw() + Math.toRadians(180));
 
 
         timer.updateTime();
@@ -114,10 +117,11 @@ public class AprilTagLocalization {
 
     private Pose3D offsetToBackLeftOrigin(Pose3D pose3D, double xOffset, double yOffset) {
         Position position = pose3D.getPosition();
-        double x = -position.x + xOffset;//reverse so positive = forward
-        double y = position.y + yOffset;
+        double x = -position.x + xOffset - cameraToCenterXOffset;//reverse so positive = forward
+        double y = position.y + yOffset - cameraToCenterYOffset;
         return new Pose3D(new Position(DistanceUnit.INCH, x, y, position.z, 0 ), pose3D.getOrientation());
     }
+
 
     private Pose3D convertMetersToInch(Pose3D pose){
         Position position = pose.getPosition();

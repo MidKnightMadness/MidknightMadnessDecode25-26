@@ -63,8 +63,8 @@ public class LocalizationComparison extends OpMode{
     Pose2D fusedKalmanPose = new Pose2D(DistanceUnit.INCH, 8, 72, AngleUnit.RADIANS, Math.toRadians(90));
 
     KalmanFilter kalmanFilter;
-    public static double Q = 0.1;
-    public static double R = 0.6;
+    public static double Q = 0.01;
+    public static double R = 2;
     FtcDashboard dashboard;
     @Override
     public void init() {
@@ -122,8 +122,8 @@ public class LocalizationComparison extends OpMode{
 
 
         if(mt1Pose != null) {
-            double fusedX = kalmanFilter.update(pinpointPose.getX(DistanceUnit.INCH), mt1Pose.getPosition().x, aprilTagLocalization.aprilTagDetected());
-            double fusedY = kalmanFilter.update(pinpointPose.getY(DistanceUnit.INCH), mt1Pose.getPosition().y, aprilTagLocalization.aprilTagDetected());
+            double fusedX = kalmanFilter.update(pinpointPose.getX(DistanceUnit.INCH), averagedMT1Pose.x, aprilTagLocalization.aprilTagDetected());
+            double fusedY = kalmanFilter.update(pinpointPose.getY(DistanceUnit.INCH), averagedMT1Pose.y, aprilTagLocalization.aprilTagDetected());
             double fusedTheta = kalmanFilter.updateAngle(pinpointPose.getHeading(AngleUnit.RADIANS), mt1Pose.getOrientation().getYaw(AngleUnit.RADIANS), aprilTagLocalization.aprilTagDetected());
             fusedKalmanPose = new Pose2D(DistanceUnit.INCH, fusedX, fusedY, AngleUnit.RADIANS, fusedTheta);
         }
@@ -155,7 +155,7 @@ public class LocalizationComparison extends OpMode{
     private void drawPosesDashboard() {
         drawIndividualPose(mt1Pose, "#FF0000");
         drawIndividualPose(mt2Pose, "#1656AD");
-        drawIndividualPose(pinpointPose, "#FOC807");
+        drawIndividualPose(pinpointPose, "#000000");
         drawIndividualPose(fusedKalmanPose, "#808080");
 
 
