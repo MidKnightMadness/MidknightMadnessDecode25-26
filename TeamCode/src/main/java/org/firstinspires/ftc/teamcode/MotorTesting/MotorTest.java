@@ -1,4 +1,3 @@
-/*
 package org.firstinspires.ftc.teamcode.MotorTesting;
 
 import com.bylazar.configurables.annotations.Configurable;
@@ -23,4 +22,3 @@ public class MotorTest extends OpMode {
         motor.setPower(motorPower);
     }
 }
-*/
