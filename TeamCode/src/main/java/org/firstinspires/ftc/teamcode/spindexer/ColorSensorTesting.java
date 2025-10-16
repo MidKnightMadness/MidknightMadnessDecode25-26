@@ -32,12 +32,24 @@ public class ColorSensorTesting extends OpMode {
     double purpleGreenMax = 0.73;
     double purpleBlueMin = 0.5875;
     double purpleBlueMax = 0.93;
+    double strRed = 0;
+    double strGreen = 0;
+    double strBlue = 0;
+    double red2;
+    double green2;
+    double blue2;
+    int count = 0;
+
+    int bufferNum = 3;//probably 2 or 3 three is kinda slow but 2 may be too fast idk
+
+    colorNormalizer norm;
 
     @Override
     public void init() {
         colorSensor = hardwareMap.get(RevColorSensorV3.class, "colorSensor");
         buttonToggle = new ButtonToggle();
         colorSensor.enableLed(true); //maybe not needed idk
+        norm = new colorNormalizer(r, g, b);
     }
 
     @Override
@@ -51,13 +63,32 @@ public class ColorSensorTesting extends OpMode {
             g = colorSensor.green();
             b = colorSensor.blue();
             alpha = colorSensor.alpha();
+            norm.red = r;
+            norm.green = g;
+            norm.blue = b;
             //normalize colors
-            colorNormalizer norm = new colorNormalizer(r, g, b);
             normR = norm.normalizeRed();
             normG = norm.normalizeGreen();
             normB = norm.normalizeBlue();
+
+            //making buffer
+            if (count <= bufferNum){
+                strRed = strRed + normR;
+                strGreen = strGreen + normG;
+                strBlue = strBlue + normB;
+                count = count+1;
+            }
+            else{
+                red2 = strRed / count;
+                green2 = strGreen / count;
+                blue2 = strBlue / count;
+                strRed = 0;
+                strGreen = 0;
+                strBlue = 0;
+                count = 0;
+            }
             // Detect color based on normalized RGB thresholds
-            detectedColor = detectBallColor(normR, normG, normB);
+            detectedColor = detectBallColor(red2, green2, blue2);
         }
 
         telemetry.addData("Red", r);
@@ -68,6 +99,9 @@ public class ColorSensorTesting extends OpMode {
         telemetry.addData("Normalized Blue", normB);
         telemetry.addData("Alpha", alpha);
         telemetry.addData("Detected Color", detectedColor);
+        telemetry.addData("buffered Red", red2);
+        telemetry.addData("buffered green", green2);
+        telemetry.addData("buffered blue", blue2);
         telemetry.update();
     }
 
