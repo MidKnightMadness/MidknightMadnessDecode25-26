@@ -10,12 +10,17 @@ import org.firstinspires.ftc.teamcode.util.ButtonToggle;
 
 @TeleOp(name = "ColorSensorTesting")
 public class ColorSensorTesting extends OpMode {
+
+    ColorSensorBuffer bufferRed;
+    ColorSensorBuffer bufferGreen;
+    ColorSensorBuffer bufferBlue;
     ColorSensor colorSensor;
     ButtonToggle buttonToggle;
 
     int r, g, b, alpha;
     double normR, normG, normB;
     String detectedColor = "No reading yet";
+    String detectedColorBuffer = "No buffered reading yet";
 
     // Thresholds for Green Ball (0.75" distance)
     double greenRedMin = 0.05;
@@ -32,24 +37,19 @@ public class ColorSensorTesting extends OpMode {
     double purpleGreenMax = 0.73;
     double purpleBlueMin = 0.5875;
     double purpleBlueMax = 0.93;
-    double strRed = 0;
-    double strGreen = 0;
-    double strBlue = 0;
-    double red2;
-    double green2;
-    double blue2;
-    int count = 0;
 
-    int bufferNum = 3;//probably 2 or 3 three is kinda slow but 2 may be too fast idk
 
-    colorNormalizer norm;
+    ColorNormalizer norm;
 
     @Override
     public void init() {
         colorSensor = hardwareMap.get(RevColorSensorV3.class, "colorSensor");
         buttonToggle = new ButtonToggle();
         colorSensor.enableLed(true); //maybe not needed idk
-        norm = new colorNormalizer(r, g, b);
+        norm = new ColorNormalizer(r, g, b);
+        bufferRed = new ColorSensorBuffer();
+        bufferGreen = new ColorSensorBuffer();
+        bufferBlue = new ColorSensorBuffer();
     }
 
     @Override
@@ -70,25 +70,13 @@ public class ColorSensorTesting extends OpMode {
             normR = norm.normalizeRed();
             normG = norm.normalizeGreen();
             normB = norm.normalizeBlue();
-
-            //making buffer
-            if (count <= bufferNum){
-                strRed = strRed + normR;
-                strGreen = strGreen + normG;
-                strBlue = strBlue + normB;
-                count = count+1;
-            }
-            else{
-                red2 = strRed / count;
-                green2 = strGreen / count;
-                blue2 = strBlue / count;
-                strRed = 0;
-                strGreen = 0;
-                strBlue = 0;
-                count = 0;
-            }
+            //Buffer
+            bufferRed.addList(normR);
+            bufferGreen.addList(normG);
+            bufferBlue.addList(normB);
             // Detect color based on normalized RGB thresholds
-            detectedColor = detectBallColor(red2, green2, blue2);
+            detectedColor = detectBallColor(normR, normG, normG);
+            detectedColorBuffer = detectBallColor(bufferRed.num, bufferGreen.num, bufferBlue.num);
         }
 
         telemetry.addData("Red", r);
@@ -97,11 +85,12 @@ public class ColorSensorTesting extends OpMode {
         telemetry.addData("Normalized Red", normR);
         telemetry.addData("Normalized Green", normG);
         telemetry.addData("Normalized Blue", normB);
+        telemetry.addData("Buffered Red", bufferRed.num);
+        telemetry.addData("Buffered Green", bufferGreen.num);
+        telemetry.addData("Buffered Blue", bufferBlue.num);
         telemetry.addData("Alpha", alpha);
         telemetry.addData("Detected Color", detectedColor);
-        telemetry.addData("buffered Red", red2);
-        telemetry.addData("buffered green", green2);
-        telemetry.addData("buffered blue", blue2);
+        telemetry.addData("Detected Color(Buffer)", detectedColorBuffer);
         telemetry.update();
     }
 

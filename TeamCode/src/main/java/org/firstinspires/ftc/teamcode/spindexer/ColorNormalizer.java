@@ -1,15 +1,15 @@
 package org.firstinspires.ftc.teamcode.spindexer;
 
-public class colorNormalizer {
+public class ColorNormalizer {
     double red;
     double green;
     double blue;
-    public colorNormalizer(double r, double g, double b){
+    public ColorNormalizer(double r, double g, double b){
         red = r;
         green = g;
         blue = b;
     }
-    public colorNormalizer(){
+    public ColorNormalizer(){
         red = 0;
         green = 0;
         blue = 0;
