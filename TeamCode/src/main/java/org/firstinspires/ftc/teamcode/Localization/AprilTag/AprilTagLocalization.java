@@ -19,6 +19,7 @@ import org.firstinspires.ftc.teamcode.Util.Timer;
 
 import java.util.List;
 
+@Deprecated
 
 public class AprilTagLocalization {
 
@@ -100,7 +101,9 @@ public class AprilTagLocalization {
 
         LLResult result = limelight.getLatestResult();
 
+
         if (result != null && result.isValid()) {
+            double time = result.getStaleness();
             detected = true;
             megaTag1Pose = result.getBotpose();
             megaTag1Pose = offsetToBackLeftOrigin(convertMetersToInch(megaTag1Pose), 72, 72);
@@ -119,7 +122,8 @@ public class AprilTagLocalization {
         Position position = pose3D.getPosition();
         double x = -position.x + xOffset - cameraToCenterXOffset;//reverse so positive = forward
         double y = position.y + yOffset - cameraToCenterYOffset;
-        return new Pose3D(new Position(DistanceUnit.INCH, x, y, position.z, 0 ), pose3D.getOrientation());
+        YawPitchRollAngles yawPitchRollAngles = pose3D.getOrientation();
+        return new Pose3D(new Position(DistanceUnit.INCH, x, y, position.z, 0 ), new YawPitchRollAngles(AngleUnit.RADIANS, yawPitchRollAngles.getYaw(AngleUnit.RADIANS) + Math.PI * 2, yawPitchRollAngles.getPitch(), yawPitchRollAngles.getRoll(), 0));
     }
 
 

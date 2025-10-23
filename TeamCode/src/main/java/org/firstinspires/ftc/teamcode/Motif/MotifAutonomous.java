@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.AprilTagTesting;
+package org.firstinspires.ftc.teamcode.Motif;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -25,7 +25,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-@Autonomous(group = "Vision", name = "MotifAutonomous")
+@Autonomous(group = "Motif" , name = "Write")
 public class MotifAutonomous extends OpMode{
     private Limelight3A limelight;
     public static String configName = "limelight";
@@ -36,7 +36,6 @@ public class MotifAutonomous extends OpMode{
     boolean finishedWriting = false;
     static double detectionMaxTime = 20;
 
-    PrintWriter pw;
     String fileName = "motif_value.txt";
     String directoryName = "Vision";
     File file;

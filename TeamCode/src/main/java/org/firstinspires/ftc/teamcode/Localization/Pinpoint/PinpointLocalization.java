@@ -10,6 +10,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
+
+@Deprecated
 @Configurable
 @Config
 public class PinpointLocalization {
@@ -22,6 +24,8 @@ public class PinpointLocalization {
     public static double yOffsetMulitplier = 1;
     public static double xOffset = 138.874;
     public static double yOffset = 33;
+    public static GoBildaPinpointDriver.EncoderDirection xPod = GoBildaPinpointDriver.EncoderDirection.FORWARD;
+    public static GoBildaPinpointDriver.EncoderDirection yPod = GoBildaPinpointDriver.EncoderDirection.FORWARD;
     public PinpointLocalization(HardwareMap hardwareMap, Pose2D startingPos) {
 
         pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "Pinpoint");
@@ -31,8 +35,7 @@ public class PinpointLocalization {
 
         setPose(startingPos);
         pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
-        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD,
-                GoBildaPinpointDriver.EncoderDirection.REVERSED);
+        pinpoint.setEncoderDirections(xPod, yPod);
         pinpoint.recalibrateIMU();
         pinpoint.resetPosAndIMU();
 
@@ -57,7 +60,7 @@ public class PinpointLocalization {
     public Pose2D update() {
         pinpoint.update();
 
-        currPose = new Pose2D(DistanceUnit.INCH, pinpoint.getPosX(DistanceUnit.INCH) + initPose.getX(DistanceUnit.INCH), pinpoint.getPosY(DistanceUnit.INCH) + initPose.getY(DistanceUnit.INCH),
+        currPose = new Pose2D(DistanceUnit.INCH, pinpoint.getPosX(DistanceUnit.INCH) + initPose.getX(DistanceUnit.INCH), -pinpoint.getPosY(DistanceUnit.INCH) + initPose.getY(DistanceUnit.INCH),
                 AngleUnit.DEGREES, pinpoint.getHeading(AngleUnit.DEGREES));
         return currPose;
     }

@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.Localization;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.field.Style;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -15,22 +14,20 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.Localization.AprilTag.AprilTagLocalization;
+import org.firstinspires.ftc.teamcode.Localization.KalmanFilter.KalmanFilter;
 import org.firstinspires.ftc.teamcode.Localization.Pinpoint.PinpointLocalization;
 import org.firstinspires.ftc.teamcode.Util.ButtonToggle;
 import org.firstinspires.ftc.teamcode.Util.DashboardDrawing;
 import org.firstinspires.ftc.teamcode.Util.PanelsDrawing;
 import org.firstinspires.ftc.teamcode.Util.PoseBuffer;
-import org.firstinspires.ftc.teamcode.Util.Timer;import com.bylazar.configurables.annotations.Configurable;
+import org.firstinspires.ftc.teamcode.Util.Timer;
 
 @TeleOp(group = "Localization", name = "LocalizationComparison")
 @Configurable
@@ -58,9 +55,9 @@ public class LocalizationComparison extends OpMode{
     Position averagedMT1Pose;
     Position averagedMT2Pose;
     YawPitchRollAngles imuAngles;
-    Pose2D pinpointPose = new Pose2D(DistanceUnit.INCH, 8, 72, AngleUnit.RADIANS, Math.toRadians(90));
+    Pose2D pinpointPose = new Pose2D(DistanceUnit.INCH, 8, 72, AngleUnit.RADIANS, Math.toRadians(0));
 
-    Pose2D fusedKalmanPose = new Pose2D(DistanceUnit.INCH, 8, 72, AngleUnit.RADIANS, Math.toRadians(90));
+    Pose2D fusedKalmanPose = new Pose2D(DistanceUnit.INCH, 8, 72, AngleUnit.RADIANS, Math.toRadians(0));
 
     KalmanFilter kalmanFilter;
     public static double Q = 0.01;
@@ -145,16 +142,16 @@ public class LocalizationComparison extends OpMode{
 
     private void drawIndividualPose(Pose3D pose, String color){
         DashboardDrawing.drawRobot(new Pose(pose.getPosition().x, pose.getPosition().y, pose.getOrientation().getYaw(AngleUnit.RADIANS)), color);
-        PanelsDrawing.drawRobot(new Pose(pose.getPosition().x, pose.getPosition().y, pose.getOrientation().getYaw(AngleUnit.RADIANS)), new Style("", color, 1.0));
+        PanelsDrawing.drawRobot(new Pose(72 - pose.getPosition().x, pose.getPosition().y - 72, pose.getOrientation().getYaw(AngleUnit.RADIANS)), new Style("", color, 1.0));
     }
     private void drawIndividualPose(Pose2D pose, String color){
         DashboardDrawing.drawRobot(new Pose(pose.getX(DistanceUnit.INCH), pose.getY(DistanceUnit.INCH), pose.getHeading(AngleUnit.RADIANS)), color);
-        PanelsDrawing.drawRobot(new Pose(pose.getX(DistanceUnit.INCH), pose.getY(DistanceUnit.INCH), pose.getHeading(AngleUnit.RADIANS)), new Style("", color, 1.0));
+        PanelsDrawing.drawRobot(new Pose(72 - pose.getX(DistanceUnit.INCH), pose.getY(DistanceUnit.INCH) - 72, pose.getHeading(AngleUnit.RADIANS)), new Style("", color, 1.0));
     }
 
     private void drawPosesDashboard() {
         drawIndividualPose(mt1Pose, "#FF0000");
-        drawIndividualPose(mt2Pose, "#1656AD");
+        drawIndividualPose(mt2Pose, "#FFFF00");
         drawIndividualPose(pinpointPose, "#000000");
         drawIndividualPose(fusedKalmanPose, "#808080");
 
@@ -185,7 +182,7 @@ public class LocalizationComparison extends OpMode{
         telemetry.addLine("Update rate" +  1/ timer.getDeltaTime());
         telemetry.addLine("IMU Yaw(Deg): " +  imuAngles.getYaw(AngleUnit.DEGREES));
         telemetry.addLine("Pinpoint Yaw(Deg)"  + pinpointPose.getHeading(AngleUnit.DEGREES));
-        telemetry.addLine("Mt1 = red, Mt2 = blue, pinpoint = yellow, kalman = gray");
+        telemetry.addLine("Mt1 = red, Mt2 = yellow, pinpoint = black, kalman = gray");
         telemetryPose2D("Pinpoint Pose", pinpointPose);
 
         if(mt1Pose != null) {

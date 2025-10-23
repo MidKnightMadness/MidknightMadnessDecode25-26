@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Localization;
+package org.firstinspires.ftc.teamcode.Localization.KalmanFilter;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
@@ -6,7 +6,6 @@ import com.bylazar.configurables.annotations.Configurable;
 @Configurable
 @Config
 public class KalmanFilter {
-
     double Q;//pinpoint noise
     double R ;//april tags noise
 
@@ -20,7 +19,7 @@ public class KalmanFilter {
         this.Q = Q;
         this.R = R;
     }
-    double update(double pinpointVal, double aprilTagVal, boolean tagDetected){
+    public double update(double pinpointVal, double aprilTagVal, boolean tagDetected){
         x = pinpointVal;
 
         p = p_prev + Q;
@@ -35,7 +34,7 @@ public class KalmanFilter {
     }
 
 
-    double updateAngle(double pinpointTheta, double aprilTagTheta, boolean tagDetected){//input as radians
+    public double updateAngle(double pinpointTheta, double aprilTagTheta, boolean tagDetected){//input as radians
         double angularKt = tagDetected == true ? Kt : 0;
         double dTheta = wrapAngleRad(aprilTagTheta - pinpointTheta);
         double correctAngle = tagDetected ? dTheta * angularKt + pinpointTheta : pinpointTheta;
