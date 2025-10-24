@@ -17,6 +17,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 @Config
 @Configurable
@@ -80,6 +81,25 @@ public class KalmanPinpointAprilLocalizer implements Localizer {
         pinpoint.resetPosAndIMU();
     }
 
+    private Pose offsetToBackLeftOrigin(Pose pose) {//wraps the angle to 0 -360 degrees per pedro
+        double x =  pose.getY() + 48;//reverse so positive = forward
+        double y =  pose.getX() + 48;
+        //transform from center y-x plane to traditional x-y plane from back corner left
+        double heading = pose.getHeading();
+        heading = wrapAngleRad(heading + Math.PI/2);
+        return new Pose(x, y, heading);
+    }
+
+    double wrapAngleRad(double value){
+        while(value <= - Math.PI){
+            value += 2 * Math.PI;
+        }
+        while(value >=  Math.PI){
+            value -=  2 * Math.PI;
+        }
+        return value;
+    }
+
 
     private Pose convertMetersToInch(Pose pose){
         double x = pose.getX() * 100 / 2.54;
@@ -123,7 +143,7 @@ public class KalmanPinpointAprilLocalizer implements Localizer {
         if (result != null && result.isValid()) {
             aprilTagDetected = true;
             aprilTagPose = new Pose(result.getBotpose().getPosition().x, result.getBotpose().getPosition().y, result.getBotpose().getOrientation().getYaw(AngleUnit.RADIANS));
-            aprilTagPose = convertMetersToInch(aprilTagPose);
+            aprilTagPose = offsetToBackLeftOrigin(convertMetersToInch(aprilTagPose));
         }
         return aprilTagPose;
     }
