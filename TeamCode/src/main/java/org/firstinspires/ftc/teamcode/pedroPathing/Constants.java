@@ -5,15 +5,19 @@ import com.pedropathing.control.FilteredPIDFCoefficients;
 import com.pedropathing.control.PIDFCoefficients;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.FollowerConstants;
-import com.pedropathing.ftc.FollowerBuilder;
 import com.pedropathing.ftc.drivetrains.MecanumConstants;
 import com.pedropathing.ftc.localization.constants.PinpointConstants;
+import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathConstraints;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.Localization.KalmanFilter;
+import org.firstinspires.ftc.teamcode.Localization.KalmanPinpointAprilLocalizer;
+import org.firstinspires.ftc.teamcode.Localization.KalmanPinpointAprilConstants;
+import org.firstinspires.ftc.teamcode.pedroPathing.FollowerBuilder;
 
 @Configurable
 public class Constants {
@@ -36,7 +40,7 @@ public class Constants {
 
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1.1, 1);
 
-    public static PinpointConstants localizerConstants = new PinpointConstants()
+    public static PinpointConstants pinpointLocalizerConstants = new PinpointConstants()
             .forwardPodY(-5.875)
             .strafePodX(1.50)
             .distanceUnit(DistanceUnit.INCH)
@@ -44,6 +48,21 @@ public class Constants {
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
             .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
             .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD);
+    public static KalmanPinpointAprilConstants mergedLocalizerConstants = new KalmanPinpointAprilConstants()
+            .setIMUName("imu")
+            .setLimelightName("limelight")
+            .setLeftPipelineNum(0)
+            .setRightPipelineNum(2)
+            .setPinpointHardwareConfig("pinpoint")
+            .setQ(0.01)
+            .setR(2)
+            .setMotifTrue(true)
+            .setXOffset(138.874)
+            .setYOffset(33)
+            .setDistUnit(DistanceUnit.MM)
+            .setStartPipeline(2)
+            .setEncoderXDir(GoBildaPinpointDriver.EncoderDirection.FORWARD)
+            .setEncoderYDir(GoBildaPinpointDriver.EncoderDirection.FORWARD);
 
     public static MecanumConstants driveConstants = new MecanumConstants()
             .maxPower(1)
@@ -58,12 +77,22 @@ public class Constants {
             .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
             .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD);
 
-    public static Follower createFollower(HardwareMap hardwareMap) {
+    public static Follower createPinpointFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(followerConstants, hardwareMap)
-                .pinpointLocalizer(localizerConstants)
+                .pinpointLocalizer(pinpointLocalizerConstants)
                 .mecanumDrivetrain(driveConstants)
                 .pathConstraints(pathConstraints)
                 .build();
+    }
+
+    public static Follower createKalmanPinpointAprilFollower(HardwareMap hardwareMap, Pose startPose){//global startPose
+        return new FollowerBuilder(followerConstants, hardwareMap)
+                .mergedKalmanLocalizer(mergedLocalizerConstants, startPose)
+                .mecanumDrivetrain(driveConstants)
+                .pathConstraints(pathConstraints)
+                .build();
+
+
     }
 }
 
