@@ -22,7 +22,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 @Config
 @Configurable
 public class KalmanPinpointAprilLocalizer implements Localizer {
-    public boolean MOTIF_DETECTION = false;
     KalmanPinpointAprilConstants constants;
     private Pose startPose;
     private Pose currentMergedPose;
