@@ -20,6 +20,6 @@ dependencies {
     implementation "com.bylazar:limelightproxy:1.0.2"
     implementation 'com.pedropathing:ftc:2.0.2'
     implementation 'com.pedropathing:telemetry:1.0.0'
-    implementation "org.solverslib:core:0.3.3" // core
-    implementation "org.solverslib:pedroPathing:0.3.3"
+//    implementation "org.solverslib:core:0.3.3" // core
+//    implementation "org.solverslib:pedroPathing:0.3.3"
 }

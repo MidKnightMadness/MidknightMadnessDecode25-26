@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.Motif;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.hardware.limelightvision.LLResult;
@@ -25,6 +27,9 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+
+@Configurable
+@Config
 @Autonomous(group = "Motif" , name = "Write")
 public class MotifAutonomous extends OpMode{
     private Limelight3A limelight;
@@ -65,7 +70,6 @@ public class MotifAutonomous extends OpMode{
         if(!dir.exists()){
             dir.mkdirs();
         }
-
         File file = new File(dir, fileName);
         return file;
     }
@@ -113,9 +117,6 @@ public class MotifAutonomous extends OpMode{
                     telemetry.addLine("X Angle" + f.getTargetXDegrees());
                     telemetry.addLine("Y Angle" + f.getTargetYDegrees());
                     aprilTagsIDDetected.add(f.getFiducialId());
-//                    if((f.getFiducialId() != 21) && (f.getFiducialId() != 22) && (f.getFiducialId() != 23)){
-//                        continue;
-//                    }
                 }
 
                 writeToFile(fileWriter, aprilTagsIDDetected.toString());
