@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.testing;
+package org.firstinspires.ftc.teamcode.oldOpModes;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.graph.GraphManager;
@@ -8,7 +8,7 @@ import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.PathChain;
+import com.pedropathing.paths.Path;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
@@ -20,19 +20,38 @@ import java.util.concurrent.TimeUnit;
 
 @Configurable
 @Autonomous
-public class LinearPath extends OpMode {
+public class BackSixBallAutoFSM extends OpMode {
+    public enum Motif {
+        GPP,
+        PGP,
+        PPG
+    }
+
+    public enum PathState {
+        shootLoaded,
+        driveToPickup,
+        waitForHumanLoad,
+        driveToScore
+    }
+
     TelemetryManager telemetryM;
     GraphManager graphM;
     Follower follower;
     Timer timer;
-    PathChain path;
 
-    public static Pose startPose = new Pose(0, 72, Math.toRadians(0));
-    public static Pose endPose = new Pose(72, 72, Math.toRadians(0));
+    Path driveToPickupPath;
+    Path drivePickupToScorePath;
+
+    public static Pose startPose = new Pose(84, 7, Math.toRadians(90));
+    public static Pose pickupPose = new Pose(120, 7, Math.toRadians(90));
+    public static Pose endPose = new Pose(120, 7, Math.toRadians(90));
     Pose currentPose;
     double speed;
     double acceleration;
-    boolean startedPath = false;
+
+    Motif motif;
+    PathState pathState;
+    int shootingState; // How many times you've shot from zone
 
     @Override
     public void init() {
@@ -43,10 +62,8 @@ public class LinearPath extends OpMode {
 
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(startPose);
-        path = follower.pathBuilder()
-                .addPath(new BezierLine(startPose, endPose))
-                .setLinearHeadingInterpolation(startPose.getHeading(), endPose.getHeading())
-                .build();
+        pathState = PathState.shootLoaded;
+        shootingState = 0;
     }
 
     @Override
@@ -64,10 +81,7 @@ public class LinearPath extends OpMode {
     public void loop() {
         updateData();
         updateTelemetry();
-        if (!follower.isBusy() && !startedPath) {
-            startedPath = true;
-            follower.followPath(path);
-        }
+        pathUpdate();
     }
 
     public void updateData() {
@@ -99,5 +113,53 @@ public class LinearPath extends OpMode {
         // Updates
         telemetryM.update(telemetry);
         graphM.update();
+    }
+
+    public void setPathState(PathState newPathState) {
+        pathState = newPathState;
+        timer.restartTimer();
+    }
+
+    // Will return true if currently shooting, false if done shooting
+    public boolean shootMotif(Motif motif) {
+        // Placeholder to simulate time
+        return timer.getTime(TimeUnit.MILLISECONDS) < 2000;
+    }
+
+    public void buildPaths() {
+        driveToPickupPath = new Path(new BezierLine(startPose, pickupPose));
+        drivePickupToScorePath = new Path(new BezierLine(pickupPose, endPose));
+    }
+
+    public void pathUpdate() {
+        switch (pathState) {
+            case shootLoaded:
+                shootingState++;
+                // Only transition if you've shot the first time
+                if (!shootMotif(motif) && shootingState < 2) {
+                    follower.followPath(driveToPickupPath);
+                    setPathState(PathState.driveToPickup);
+                }
+                break;
+
+            case driveToPickup:
+                if(!follower.isBusy()) {
+                    setPathState(PathState.waitForHumanLoad);
+                }
+                break;
+
+            case waitForHumanLoad:
+                if (timer.getTime(TimeUnit.MILLISECONDS) > 5000) {
+                    follower.followPath(drivePickupToScorePath);
+                    setPathState(PathState.driveToScore);
+                }
+                break;
+
+            case driveToScore:
+                if(!follower.isBusy()) {
+                    setPathState(PathState.shootLoaded);
+                }
+                break;
+        }
     }
 }
