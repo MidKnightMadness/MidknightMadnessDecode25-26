@@ -57,7 +57,7 @@ public class AccelTest extends OpMode {
     public void init() {
         Drawing.init();
         timer = new Timer();
-        follower = Constants.createFollower(hardwareMap);
+        follower = Constants.createPinpointFollower(hardwareMap);
         follower.setStartingPose(startPose);
         wheelControl = new WheelControl(hardwareMap);
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();

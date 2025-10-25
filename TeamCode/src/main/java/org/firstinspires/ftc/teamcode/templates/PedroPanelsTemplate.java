@@ -41,7 +41,7 @@ public class PedroPanelsTemplate extends OpMode {
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         graphM = PanelsGraph.INSTANCE.getManager();
 
-        follower = Constants.createFollower(hardwareMap);
+        follower = Constants.createPinpointFollower(hardwareMap);
         follower.setStartingPose(startPose);
         path = follower.pathBuilder()
                 .addPath(new BezierLine(startPose, endPose))

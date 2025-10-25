@@ -22,11 +22,11 @@ public class KalmanPinpointAprilConstants {
     public int rightPipelineNum = 2;
     public int startPipeline = 2;
     public String LIMELIGHT_NAME = "limelight";
-    public boolean MOTIF_DETECTION = true;
+    public boolean MOTIF_DETECTION = false;
 
     //------------------------------------------------------------
 
-    public String PINPOINT_NAME = "pinpoint";
+    public String PINPOINT_NAME = "Pinpoint";
     public double xOffset = 138.874;
     public double yOffset = 33;
     public GoBildaPinpointDriver.EncoderDirection xDir = GoBildaPinpointDriver.EncoderDirection.FORWARD;
@@ -101,7 +101,7 @@ public class KalmanPinpointAprilConstants {
     }
 
     public KalmanPinpointAprilConstants setMotifTrue(boolean val){
-        this.MOTIF_DETECTION = true;
+        this.MOTIF_DETECTION = val;
         return this;
     }
 
