@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.command.Subsystem;
+import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.hardware.AbsoluteAnalogEncoder;
 import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
@@ -15,7 +16,7 @@ import org.firstinspires.ftc.teamcode.util.Angle;
 import org.firstinspires.ftc.teamcode.util.BallColor;
 
 @Configurable
-public class Spindexer implements Subsystem {
+public class Spindexer extends SubsystemBase {
     static class BallSensor {
         BallDetector sensor;
         Angle angle;
@@ -30,7 +31,6 @@ public class Spindexer implements Subsystem {
 
     // 0 is defined as the position of the shooter
     public static Angle detectRange = Angle.fromDegrees(40); // How far off from the center of the spot that you detect. You don't want to trust measurements that are too off from the center
-    public static Angle turnerRange = Angle.fromDegrees(360); // Physical range of encoder from 0 to 1
     public static Angle shooterAngle = Angle.fromDegrees(0);
     public static Angle inColorSensorAngle = Angle.fromDegrees(180);
     public static Angle outColorSensorAngle = Angle.fromDegrees(0);
@@ -68,6 +68,13 @@ public class Spindexer implements Subsystem {
         ballColors = new BallColor[] { BallColor.NONE, BallColor.NONE, BallColor.NONE };
     }
 
+    @Override
+    public void periodic() {
+        currentAngle = Angle.fromDegrees(
+                turner.getAbsoluteEncoder().getCurrentPosition() - spotZeroOffset.toDegrees()
+        );
+    }
+
     public CRServoEx getTurner() {
         return turner;
     }
@@ -78,13 +85,6 @@ public class Spindexer implements Subsystem {
 
     public BallColor[] getBallColors() {
         return getBallColors();
-    }
-
-    @Override
-    public void periodic() {
-        currentAngle = Angle.fromDegrees(
-                turner.getAbsoluteEncoder().getCurrentPosition() - spotZeroOffset.toDegrees()
-        );
     }
 
     public void updateBallColors() {

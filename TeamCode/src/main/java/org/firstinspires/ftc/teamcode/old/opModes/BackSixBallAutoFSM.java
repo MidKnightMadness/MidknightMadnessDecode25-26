@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.oldOpModes;
+package org.firstinspires.ftc.teamcode.old.opModes;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.graph.GraphManager;
