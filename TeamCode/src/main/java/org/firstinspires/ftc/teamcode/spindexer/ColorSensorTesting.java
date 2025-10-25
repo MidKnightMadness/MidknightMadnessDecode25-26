@@ -2,10 +2,13 @@ package org.firstinspires.ftc.teamcode.spindexer;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.hardware.maxbotix.MaxSonarI2CXL;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
+
+import org.firstinspires.ftc.teamcode.ultrasonics.ultrasonics;
 import org.firstinspires.ftc.teamcode.util.ButtonToggle;
 
 @TeleOp(name = "ColorSensorTesting")
@@ -14,6 +17,7 @@ public class ColorSensorTesting extends OpMode {
     ButtonToggle buttonToggle;
 
     int r, g, b, alpha;
+
     String detectedColor = "No reading yet";
 
     // Thresholds for Green Ball (0.75" distance)
@@ -25,13 +29,16 @@ public class ColorSensorTesting extends OpMode {
     int greenBlueMax = 311;
 
     // Thresholds for Purple Ball (0.75" distance)
-    int purpleRedMin = 175;
-    int purpleRedMax = 192;
-    int purpleGreenMin = 206;
-    int purpleGreenMax = 232;
-    int purpleBlueMin = 316;
-    int purpleBlueMax = 347;
-
+    int purpleRedMin = 400;
+    int purpleRedMax = 600;
+    int purpleGreenMin = 400;
+    int purpleGreenMax = 600;
+    int purpleBlueMin = 900;
+    int purpleBlueMax = 1000;
+    ultrasonics ultrasonics;
+    final double constantDistance = 5;
+    final double distance1 = 1;
+    final double distance2 = 1;
     @Override
     public void init() {
         colorSensor = hardwareMap.get(RevColorSensorV3.class, "colorSensor");
@@ -40,11 +47,12 @@ public class ColorSensorTesting extends OpMode {
 
     @Override
     public void loop() {
-        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        double distance1 = ultrasonics.();
 
-        // Check if dpad_up is pressed (with button toggle to avoid repeats)
+
+
         if (buttonToggle.update(gamepad1.dpad_up)) {
-            // Read current color sensor values
+
             r = colorSensor.red();
             g = colorSensor.green();
             b = colorSensor.blue();
