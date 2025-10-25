@@ -1,6 +1,7 @@
 repositories {
     mavenCentral()
     google() // Needed for androidx
+    maven { url = 'https://maven.pedropathing.com' }
     maven { url = "https://mymaven.bylazar.com/releases" }
     maven { url = 'https://maven.brott.dev/' }
 }
@@ -14,12 +15,13 @@ dependencies {
     implementation 'org.firstinspires.ftc:Hardware:11.0.0'
     implementation 'org.firstinspires.ftc:FtcCommon:11.0.0'
     implementation 'org.firstinspires.ftc:Vision:11.0.0'
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'com.acmerobotics.dashboard:dashboard:0.5.0'
-    implementation 'com.bylazar:fullpanels:1.0.7'
-    implementation "com.bylazar:limelightproxy:1.0.2"
-    implementation 'com.pedropathing:ftc:2.0.2'
+    implementation 'androidx.appcompat:appcompat:1.7.1'
+    implementation 'com.pedropathing:ftc:2.0.3'
     implementation 'com.pedropathing:telemetry:1.0.0'
-//    implementation "org.solverslib:core:0.3.3" // core
-//    implementation "org.solverslib:pedroPathing:0.3.3"
+    implementation 'com.acmerobotics.dashboard:dashboard:0.5.0'
+    implementation "com.bylazar:limelightproxy:1.0.2"
+    //implementation "org.solverslib:core:0.3.3" // core
+    //implementation "org.solverslib:pedroPathing:0.3.3"
+
 }
+

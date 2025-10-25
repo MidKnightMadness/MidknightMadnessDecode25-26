@@ -5,15 +5,14 @@
  */
 
 buildscript {
-    ext.kotlin_version = '2.2.20'
-
+    ext.kotlin_version = "2.2.20" // or latest version
     repositories {
         mavenCentral()
         google()
     }
-
     dependencies {
         // Note for FTC Teams: Do not modify this yourself.
+        // Extra note: Do not update or it will break for some reason
         classpath 'com.android.tools.build:gradle:8.7.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }

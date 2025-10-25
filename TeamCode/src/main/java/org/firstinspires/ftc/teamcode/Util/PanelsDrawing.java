@@ -9,6 +9,9 @@ import com.pedropathing.math.Vector;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.PoseHistory;
+
+import java.util.ArrayList;
+
 /**
  * This is the Drawing class. It handles the drawing of stuff on Panels Dashboard, like the robot.
  *
@@ -128,6 +131,22 @@ public class PanelsDrawing {
      */
     public static void drawPoseHistory(PoseHistory poseTracker) {
         drawPoseHistory(poseTracker, historyLook);
+    }
+    /**
+     * This draws the pose history from an ArrayList of poses
+     *
+     * @author qykr
+     * @param poseHistory the PoseHistory to get the pose history from
+     * @param style       the parameters used to draw the pose history with
+     */
+    public static void drawPoseHistoryAL(ArrayList<Pose> poseHistory, Style style) {
+        panelsField.setStyle(style);
+
+        int size = poseHistory.size();
+        for (int i = 0; i < size - 1; i++) {
+            panelsField.moveCursor(poseHistory.get(i).getX(), poseHistory.get(i).getY());
+            panelsField.line(poseHistory.get(i + 1).getX(), poseHistory.get(i + 1).getY());
+        }
     }
     /**
      * This tries to send the current packet to FTControl Panels.

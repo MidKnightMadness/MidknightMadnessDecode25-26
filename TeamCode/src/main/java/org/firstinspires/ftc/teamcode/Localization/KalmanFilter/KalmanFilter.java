@@ -35,7 +35,7 @@ public class KalmanFilter {
 
 
     public double updateAngle(double pinpointTheta, double aprilTagTheta, boolean tagDetected){//input as radians
-        double angularKt = tagDetected == true ? Kt : 0;
+        double angularKt = tagDetected  ? Kt : 0;
         double dTheta = wrapAngleRad(aprilTagTheta - pinpointTheta);
         double correctAngle = tagDetected ? dTheta * angularKt + pinpointTheta : pinpointTheta;
         return wrapAngleRad(correctAngle);

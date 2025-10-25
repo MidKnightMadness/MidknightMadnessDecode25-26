@@ -8,48 +8,36 @@
 // please think carefully as to whether such customizations are really necessary
 // before doing so.
 
-// Sloth Load Plugin
+
+// Custom definitions may go here
 buildscript {
     repositories {
         mavenCentral()
-//        maven {
-//            url "https://repo.dairy.foundation/releases"
-//        }
+        maven {
+            url "https://repo.dairy.foundation/releases"
+        }
     }
-//    dependencies {
-//        classpath "dev.frozenmilk:Load:0.2.4"
-//    }
+    dependencies {
+        classpath "dev.frozenmilk:Load:0.2.4"
+    }
 }
-
-// Custom definitions may go here
 
 // Include common definitions from above.
 apply from: '../build.common.gradle'
 apply from: '../build.dependencies.gradle'
 
-// Apply Sloth Load plugin
-//apply plugin: 'dev.frozenmilk.sinister.sloth.load'
+// Sloth Load
+apply plugin: 'dev.frozenmilk.sinister.sloth.load'
 
-// Kotlin Plugin
-apply plugin: 'org.jetbrains.kotlin.android'
+// Kotlin
+apply plugin: 'kotlin-android'
 
 android {
     namespace = 'org.firstinspires.ftc.teamcode'
 
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
-    compileSdk 36
-
-
+    compileSdk 35
     defaultConfig {
         minSdk 24
-        multiDexEnabled true
-    }
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
     }
 
     packagingOptions {
@@ -61,15 +49,10 @@ repositories {
     maven {
         url = "https://repo.dairy.foundation/releases"
     }
-    maven {
-        url = "https://repo.dairy.foundation/snapshots"
-    }
-
 }
 
 dependencies {
     implementation project(':FtcRobotController')
-//    implementation("dev.frozenmilk.dairy:Core:2.2.4")
-//    implementation("dev.frozenmilk.sinister:Sloth:0.2.4")
-//    implementation('com.squareup.okhttp3:okhttp:4.10.0')
+    // implementation("dev.frozenmilk.sinister:Sloth:0.2.4")
+    implementation "com.bylazar:fullpanels:1.0.6"
 }

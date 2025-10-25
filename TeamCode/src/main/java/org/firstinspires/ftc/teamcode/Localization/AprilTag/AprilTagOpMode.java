@@ -23,6 +23,7 @@ import org.firstinspires.ftc.teamcode.Util.PoseBuffer;
 import org.firstinspires.ftc.teamcode.Util.Timer;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @TeleOp(group = "Localization", name = "AprilTagOpMode")
 @Configurable
@@ -92,9 +93,8 @@ public class AprilTagOpMode extends OpMode{
 
         createDashboardTelemetry();
 
-        timer.updateTime();
 
-        telemetry.addData("Update rate", 1/ timer.getDeltaTime());
+        telemetry.addData("Update rate", 1/ timer.getDeltaTime(TimeUnit.SECONDS));
         telemetry.addData("Yaw(Deg): ", imuAngles.getYaw(AngleUnit.DEGREES));
 
         if(previousPipelineNum != currentPipeline){

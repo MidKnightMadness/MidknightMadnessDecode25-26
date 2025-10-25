@@ -29,6 +29,8 @@ import org.firstinspires.ftc.teamcode.Util.PanelsDrawing;
 import org.firstinspires.ftc.teamcode.Util.PoseBuffer;
 import org.firstinspires.ftc.teamcode.Util.Timer;
 
+import java.util.concurrent.TimeUnit;
+
 @TeleOp(group = "Localization", name = "LocalizationComparison")
 @Configurable
 @Config
@@ -131,7 +133,6 @@ public class LocalizationComparison extends OpMode{
             fusedKalmanPose = new Pose2D(DistanceUnit.INCH, fusedX, fusedY, AngleUnit.RADIANS, fusedTheta);
         }
 
-        timer.updateTime();
 
         updateTelemetry();
         updatePanelsTelemetry();
@@ -179,7 +180,7 @@ public class LocalizationComparison extends OpMode{
     }
 
     private void updateTelemetry(){
-        telemetry.addLine("Update rate" +  1/ timer.getDeltaTime());
+        telemetry.addLine("Update rate" +  1/ timer.getDeltaTime(TimeUnit.SECONDS));
         telemetry.addLine("IMU Yaw(Deg): " +  imuAngles.getYaw(AngleUnit.DEGREES));
         telemetry.addLine("Pinpoint Yaw(Deg)"  + pinpointPose.getHeading(AngleUnit.DEGREES));
         telemetry.addLine("Mt1 = red, Mt2 = yellow, pinpoint = black, kalman = gray");
@@ -200,7 +201,7 @@ public class LocalizationComparison extends OpMode{
 
 
     private void updatePanelsTelemetry(){
-        panelsTelemetry.addData("Update rate", 1/ timer.getDeltaTime());
+        panelsTelemetry.addData("Update rate", 1/ timer.getDeltaTime(TimeUnit.SECONDS));
         panelsTelemetry.addData("IMU Yaw(Deg): ", imuAngles.getYaw(AngleUnit.DEGREES));
         panelsTelemetry.update();
     }
