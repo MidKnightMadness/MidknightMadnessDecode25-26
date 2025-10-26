@@ -102,6 +102,7 @@ public class LocalizationComparison extends OpMode{
 
     @Override
     public void loop() {
+        timer.updateTime();
         if(previousPipeline != currentPipeline){
             aprilTagLocalization.swapPipeline(currentPipeline);
             telemetry.addLine("Updating Pipeline to " + currentPipeline);
@@ -180,7 +181,7 @@ public class LocalizationComparison extends OpMode{
     }
 
     private void updateTelemetry(){
-        telemetry.addLine("Update rate" +  1/ timer.getDeltaTime(TimeUnit.SECONDS));
+        telemetry.addLine("Update rate" +  1/ timer.getDeltaTime());
         telemetry.addLine("IMU Yaw(Deg): " +  imuAngles.getYaw(AngleUnit.DEGREES));
         telemetry.addLine("Pinpoint Yaw(Deg)"  + pinpointPose.getHeading(AngleUnit.DEGREES));
         telemetry.addLine("Mt1 = red, Mt2 = yellow, pinpoint = black, kalman = gray");
@@ -201,7 +202,7 @@ public class LocalizationComparison extends OpMode{
 
 
     private void updatePanelsTelemetry(){
-        panelsTelemetry.addData("Update rate", 1/ timer.getDeltaTime(TimeUnit.SECONDS));
+        panelsTelemetry.addData("Update rate", 1/ timer.getDeltaTime());
         panelsTelemetry.addData("IMU Yaw(Deg): ", imuAngles.getYaw(AngleUnit.DEGREES));
         panelsTelemetry.update();
     }

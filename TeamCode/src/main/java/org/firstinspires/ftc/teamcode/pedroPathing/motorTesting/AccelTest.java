@@ -75,11 +75,12 @@ public class AccelTest extends OpMode {
 
     @Override
     public void start() {
-        timer.restartTimer();
+        timer.restart();
     }
 
     @Override
     public void loop() {
+        timer.updateTime();
         updateData();
         switch (state) {
             case accel:
@@ -126,7 +127,7 @@ public class AccelTest extends OpMode {
         PanelsDrawing.sendPacket();
 
         // Telemetry
-        addDataTeleGraph("Loop time (ms)", timer.getDeltaTime(TimeUnit.MILLISECONDS));
+        addDataTeleGraph("Loop time (ms)", timer.getDeltaTime());
         telemetryM.addData("Pose X (in)", pose.getX());
         telemetryM.addData("Pose Y (in)", pose.getY());
         telemetryM.addData("Pose Heading (rad)", pose.getHeading());

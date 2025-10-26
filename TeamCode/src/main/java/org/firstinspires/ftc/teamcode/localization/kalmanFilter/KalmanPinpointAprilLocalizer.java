@@ -184,6 +184,7 @@ public class KalmanPinpointAprilLocalizer implements Localizer {
 
     @Override
     public void update() {
+        timer.updateTime();
 
         if(!limelight.isRunning()){//if the limelight is not currently running a pipeline, we start running it
             limelight.start();
@@ -213,7 +214,7 @@ public class KalmanPinpointAprilLocalizer implements Localizer {
         return totalHeading;
     }
     private Pose updateVelocityPose() {
-        double deltaTime = timer.getDeltaTime(TimeUnit.SECONDS);
+        double deltaTime = timer.getDeltaTime();
         currentVelocity = new Pose((currentMergedPose.getX() - previousMergedPose.getX()) / deltaTime, (currentMergedPose.getY() - previousMergedPose.getY()) / deltaTime, (currentMergedPose.getHeading() - previousMergedPose.getHeading()) / deltaTime);
         return currentVelocity;
     }
