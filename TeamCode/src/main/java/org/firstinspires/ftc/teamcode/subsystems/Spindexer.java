@@ -1,15 +1,10 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.PwmControl;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.seattlesolvers.solverslib.command.Subsystem;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.hardware.AbsoluteAnalogEncoder;
 import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
-import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.util.Angle;
@@ -26,8 +21,6 @@ public class Spindexer extends SubsystemBase {
             this.angle = angle;
         }
     }
-
-    public static double shootWaitMs = 200; // Time between shots
 
     // 0 is defined as the position of the shooter
     public static Angle detectRange = Angle.fromDegrees(40); // How far off from the center of the spot that you detect. You don't want to trust measurements that are too off from the center
@@ -125,16 +118,16 @@ public class Spindexer extends SubsystemBase {
 
     public boolean isAtSpot(int spot) {
         assert spot < NUM_SPOTS : "Spot must be less than " + spot;
-        return currentAngle.absGap(getSpotAngle(spot)).toDegrees()
+        return currentAngle.absGap(getSpotAngle(spot).neg()).toDegrees()
                 < finishedThreshold.abs().toDegrees();
     }
 
     public void goToAngle(Angle angle) {
         turner.setRunMode(CRServoEx.RunMode.OptimizedPositionalControl);
-        turner.set(angle.toDegrees());
+        turner.set(-angle.toDegrees()); // Rotate in opposite direction to get to angle
     }
 
     public void goToSpot(int spot) {
-        goToAngle(getSpotAngle(spot));
+        goToAngle(getSpotAngle(spot).neg());
     }
 }

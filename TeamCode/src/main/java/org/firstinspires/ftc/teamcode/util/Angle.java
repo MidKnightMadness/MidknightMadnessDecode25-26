@@ -64,20 +64,20 @@ public class Angle {
         return new Angle(sum, unit).wrap();
     }
 
-    public Angle subtract(Angle other) {
+    public Angle sub(Angle other) {
         double diff = this.toRadians() - other.toRadians();
         return new Angle(diff, unit).wrap();
     }
 
     public Angle absGap(Angle other) {
-        return this.subtract(other).abs();
+        return this.sub(other).abs();
     }
 
     public Angle abs() {
         return new Angle(Math.abs(value), unit);
     }
 
-    public Angle invert() {
+    public Angle neg() {
         return new Angle(-value, unit);
     }
 
