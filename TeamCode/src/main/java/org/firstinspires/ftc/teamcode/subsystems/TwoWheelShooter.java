@@ -8,6 +8,8 @@ import com.seattlesolvers.solverslib.util.InterpLUT;
 
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 
+import java.util.Map;
+
 public class TwoWheelShooter extends SubsystemBase {
     public enum RunMode {
         RawPower,
@@ -18,11 +20,17 @@ public class TwoWheelShooter extends SubsystemBase {
 
     // fill in later
     public static double[] distArr = {};
-    public static double[] velocityArr = {};
+    public static double[] velocityArr = {}; // Ticks per second when 1:1 gear ratio
 
+    public static double gearRatio = 3;
     public final MotorEx low;
     public final MotorEx high;
     private RunMode runMode;
+    public static Map<Double, Double> grToMultiplier = Map.of(
+            3., 2.89,
+            4., 3.61,
+            5., 5.23
+    ); // Unused for now
 
     public TwoWheelShooter(HardwareMap hardwareMap, RunMode runMode) {
         low = new MotorEx(hardwareMap, ConfigNames.lowFlywheel);
@@ -61,15 +69,13 @@ public class TwoWheelShooter extends SubsystemBase {
     }
 
     public void setFlywheels(double dist) {
-        double velocity;
+        double velocity = distToVelocityLut.get(dist) * gearRatio;
         switch (runMode) {
             case VelocityControl:
-                velocity = distToVelocityLut.get(dist);
                 low.set(velocity); high.set(velocity);
                 break;
 
             case RawPower:
-                velocity = distToVelocityLut.get(dist);
                 low.set(velocity / low.ACHIEVABLE_MAX_TICKS_PER_SECOND);
                 high.set(velocity / high.ACHIEVABLE_MAX_TICKS_PER_SECOND);
                 break;
