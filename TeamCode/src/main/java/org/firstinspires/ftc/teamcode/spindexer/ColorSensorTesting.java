@@ -15,9 +15,7 @@ import org.firstinspires.ftc.teamcode.util.ButtonToggle;
 public class ColorSensorTesting extends OpMode {
     ColorSensor colorSensor;
     ButtonToggle buttonToggle;
-
     int r, g, b, alpha;
-
     String detectedColor = "No reading yet";
 
     // Thresholds for Green Ball (0.75" distance)

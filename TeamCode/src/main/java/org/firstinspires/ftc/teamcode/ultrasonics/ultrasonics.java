@@ -27,8 +27,8 @@ public class ultrasonics extends OpMode {
     private I2cDevice sensorRight;
 
     // I²C addresses for each sensor (change right one if needed)
-    private static final I2cAddr SENSOR_ADDR_LEFT  = I2cAddr.create7bit(0x70);
-    private static final I2cAddr SENSOR_ADDR_RIGHT = I2cAddr.create7bit(0x71);
+    private static final I2cAddr SENSOR_ADDRESS_LEFT  = I2cAddr.create7bit(0x70);
+    private static final I2cAddr SENSOR_ADDRESS_RIGHT = I2cAddr.create7bit(0x71);
 
     // Start register for distance data
     private static final int DISTANCE_REG = 0x02;
@@ -48,14 +48,14 @@ public class ultrasonics extends OpMode {
         // Left sensor setup
         readCacheLeft = sensorLeft.getI2cReadCache();
         readCacheLockLeft = sensorLeft.getI2cReadCacheLock();
-        sensorLeft.enableI2cReadMode(SENSOR_ADDR_LEFT, DISTANCE_REG, 2);
+        sensorLeft.enableI2cReadMode(SENSOR_ADDRESS_LEFT, DISTANCE_REG, 2);
         sensorLeft.setI2cPortActionFlag();
         sensorLeft.writeI2cCacheToController();
 
         // Right sensor setup
         readCacheRight = sensorRight.getI2cReadCache();
         readCacheLockRight = sensorRight.getI2cReadCacheLock();
-        sensorRight.enableI2cReadMode(SENSOR_ADDR_RIGHT, DISTANCE_REG, 2);
+        sensorRight.enableI2cReadMode(SENSOR_ADDRESS_RIGHT, DISTANCE_REG, 2);
         sensorRight.setI2cPortActionFlag();
         sensorRight.writeI2cCacheToController();
 
