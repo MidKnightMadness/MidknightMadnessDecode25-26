@@ -22,8 +22,8 @@ import com.pedropathing.localization.Localizer;
 import com.pedropathing.paths.PathConstraints;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.localization.KalmanFilter.KalmanPinpointAprilConstants;
-import org.firstinspires.ftc.teamcode.localization.KalmanFilter.KalmanPinpointAprilLocalizer;
+import org.firstinspires.ftc.teamcode.localization.kalmanFilter.KalmanPinpointAprilConstants;
+import org.firstinspires.ftc.teamcode.localization.kalmanFilter.KalmanPinpointAprilLocalizer;
 
 /** This is the FollowerBuilder.
  * It is used to create Followers with a specific drivetrain + localizer without having to use a full constructor

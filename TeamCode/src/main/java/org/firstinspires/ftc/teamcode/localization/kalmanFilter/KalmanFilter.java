@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.localization.KalmanFilter;
+package org.firstinspires.ftc.teamcode.localization.kalmanFilter;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;

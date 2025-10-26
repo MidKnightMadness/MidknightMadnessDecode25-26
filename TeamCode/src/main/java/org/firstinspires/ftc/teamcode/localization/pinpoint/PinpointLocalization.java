@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.localization.Pinpoint;
+package org.firstinspires.ftc.teamcode.localization.pinpoint;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;

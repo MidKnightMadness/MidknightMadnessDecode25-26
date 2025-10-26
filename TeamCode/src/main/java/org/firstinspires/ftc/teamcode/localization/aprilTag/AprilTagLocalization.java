@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.localization.AprilTag;
+package org.firstinspires.ftc.teamcode.localization.aprilTag;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -40,7 +40,6 @@ public class AprilTagLocalization {
     Pose2D initPose;
     Pose3D megaTag1Pose;
     Pose3D megaTag2Pose;
-
 
     //Pose (0,0) is on the back left side
     PoseBuffer tag1Buffer;
@@ -93,8 +92,6 @@ public class AprilTagLocalization {
         YawPitchRollAngles imuAngles = imu.getRobotYawPitchRollAngles();
         limelight.updateRobotOrientation(imuAngles.getYaw() + Math.toRadians(180));
 
-
-        timer.updateTime();
 
         LLResult result = limelight.getLatestResult();
 
