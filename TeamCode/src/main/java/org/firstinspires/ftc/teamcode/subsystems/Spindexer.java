@@ -26,7 +26,6 @@ public class Spindexer extends SubsystemBase {
 
     // 0 is defined as the position of the shooter
     public static Angle detectRange = Angle.fromDegrees(40); // How far off from the center of the spot that you detect. You don't want to trust measurements that are too off from the center
-    public static Angle shooterAngle = Angle.fromDegrees(0);
     public static Angle inColorSensorAngle = Angle.fromDegrees(180);
     public static Angle outColorSensorAngle = Angle.fromDegrees(0);
     public static Angle spotZeroReading = Angle.fromDegrees(0); // Raw encoder reading when spot 0 is aligned with shooter
