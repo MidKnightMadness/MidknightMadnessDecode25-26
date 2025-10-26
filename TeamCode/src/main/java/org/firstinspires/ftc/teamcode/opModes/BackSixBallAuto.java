@@ -1,25 +1,21 @@
-package org.firstinspires.ftc.teamcode.oldOpModes;
+package org.firstinspires.ftc.teamcode.opModes;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.graph.GraphManager;
-import com.bylazar.graph.PanelsGraph;
-import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
-import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
+import org.firstinspires.ftc.teamcode.util.PanelsDrawing;
 import org.firstinspires.ftc.teamcode.util.Timer;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.pedroPathing.Drawing;
 
 import java.util.concurrent.TimeUnit;
 
@@ -45,7 +41,7 @@ public class BackSixBallAuto extends CommandOpMode {
     public void initialize() {
         super.reset();
 
-        follower = Constants.createFollower(hardwareMap);
+        follower = Constants.createPinpointFollower(hardwareMap);
         follower.setStartingPose(startPose);
         buildPaths();
 
@@ -80,9 +76,9 @@ public class BackSixBallAuto extends CommandOpMode {
 
     public void updateTelemetry() {
         // Field
-        Drawing.drawRobot(currentPose);
-        Drawing.drawPoseHistory(follower.getPoseHistory());
-        Drawing.sendPacket();
+        org.firstinspires.ftc.teamcode.util.PanelsDrawing.drawRobot(currentPose);
+        PanelsDrawing.drawPoseHistory(follower.getPoseHistory());
+        PanelsDrawing.sendPacket();
 
         // Telemetry
         addDataTelemetryGraph("Loop time (ms)", timer.getDeltaTime(TimeUnit.MILLISECONDS));

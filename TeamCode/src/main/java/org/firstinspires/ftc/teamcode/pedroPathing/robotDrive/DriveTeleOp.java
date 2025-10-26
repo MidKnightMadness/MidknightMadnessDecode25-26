@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.Util.PanelsDrawing;
+import org.firstinspires.ftc.teamcode.util.PanelsDrawing;
 
 @Configurable
 @TeleOp(name = "DriveTeleOp")

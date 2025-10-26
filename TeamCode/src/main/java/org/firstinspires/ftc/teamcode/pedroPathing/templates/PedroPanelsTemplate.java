@@ -12,8 +12,8 @@ import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.teamcode.Util.PanelsDrawing;
-import org.firstinspires.ftc.teamcode.Util.Timer;
+import org.firstinspires.ftc.teamcode.util.PanelsDrawing;
+import org.firstinspires.ftc.teamcode.util.Timer;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 import java.util.concurrent.TimeUnit;

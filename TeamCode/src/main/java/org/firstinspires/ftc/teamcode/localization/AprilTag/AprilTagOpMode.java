@@ -18,9 +18,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
-import org.firstinspires.ftc.teamcode.Util.ButtonToggle;
-import org.firstinspires.ftc.teamcode.Util.PoseBuffer;
-import org.firstinspires.ftc.teamcode.Util.Timer;
+import org.firstinspires.ftc.teamcode.util.ButtonToggle;
+import org.firstinspires.ftc.teamcode.util.PoseBuffer;
+import org.firstinspires.ftc.teamcode.util.Timer;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;

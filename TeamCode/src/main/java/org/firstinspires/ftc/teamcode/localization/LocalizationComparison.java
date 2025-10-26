@@ -23,11 +23,11 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.localization.AprilTag.AprilTagLocalization;
 import org.firstinspires.ftc.teamcode.localization.KalmanFilter.KalmanFilter;
 import org.firstinspires.ftc.teamcode.localization.Pinpoint.PinpointLocalization;
-import org.firstinspires.ftc.teamcode.Util.ButtonToggle;
-import org.firstinspires.ftc.teamcode.Util.DashboardDrawing;
-import org.firstinspires.ftc.teamcode.Util.PanelsDrawing;
-import org.firstinspires.ftc.teamcode.Util.PoseBuffer;
-import org.firstinspires.ftc.teamcode.Util.Timer;
+import org.firstinspires.ftc.teamcode.util.ButtonToggle;
+import org.firstinspires.ftc.teamcode.util.DashboardDrawing;
+import org.firstinspires.ftc.teamcode.util.PanelsDrawing;
+import org.firstinspires.ftc.teamcode.util.PoseBuffer;
+import org.firstinspires.ftc.teamcode.util.Timer;
 
 import java.util.concurrent.TimeUnit;
 
