@@ -14,26 +14,26 @@ public class TwoWheelShooter extends SubsystemBase {
         VelocityControl
     }
 
-    InterpLUT distToVeloLut;
+    InterpLUT distToVelocityLut;
 
     // fill in later
     public static double[] distArr = {};
     public static double[] velocityArr = {};
 
-    private final MotorEx low;
-    private final MotorEx high;
-    RunMode runMode;
+    public final MotorEx low;
+    public final MotorEx high;
+    private RunMode runMode;
 
     public TwoWheelShooter(HardwareMap hardwareMap, RunMode runMode) {
         low = new MotorEx(hardwareMap, ConfigNames.lowFlywheel);
         high = new MotorEx(hardwareMap, ConfigNames.highFlywheel);
         setRunMode(runMode);
 
-        distToVeloLut = new InterpLUT();
+        distToVelocityLut = new InterpLUT();
         for (int i = 0; i < distArr.length; i++) {
-            distToVeloLut.add(distArr[i], velocityArr[i]);
+            distToVelocityLut.add(distArr[i], velocityArr[i]);
         }
-        distToVeloLut.createLUT();
+        distToVelocityLut.createLUT();
     }
 
     public void setLowDirection(Motor.Direction direction) {
@@ -64,12 +64,12 @@ public class TwoWheelShooter extends SubsystemBase {
         double velocity;
         switch (runMode) {
             case VelocityControl:
-                velocity = distToVeloLut.get(dist);
+                velocity = distToVelocityLut.get(dist);
                 low.set(velocity); high.set(velocity);
                 break;
 
             case RawPower:
-                velocity = distToVeloLut.get(dist);
+                velocity = distToVelocityLut.get(dist);
                 low.set(velocity / low.ACHIEVABLE_MAX_TICKS_PER_SECOND);
                 high.set(velocity / high.ACHIEVABLE_MAX_TICKS_PER_SECOND);
                 break;
