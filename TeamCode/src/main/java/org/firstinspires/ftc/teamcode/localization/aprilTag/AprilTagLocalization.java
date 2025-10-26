@@ -22,7 +22,7 @@ public class AprilTagLocalization {
 
     Limelight3A limelight;
 
-    String configName = ConfigNames.externalUSB;
+    String configName = ConfigNames.limelight;
     int leftPipeline = 0;
     int rightPipeline = 2;
 

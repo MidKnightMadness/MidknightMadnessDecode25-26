@@ -6,17 +6,9 @@ import com.bylazar.configurables.annotations.Configurable;
 @Config
 @Configurable
 public class ConfigNames {
-    public static String motor0 = "";
-    public static String motor1 = "";
-    public static String motor2 = "";
-    public static String motor3 = "";
-    public static String servo0 = "";
-    public static String servo1 = "";
-    public static String servo2 = "";
-    public static String servo3 = "";
-    public static String servo4 = "";
-    public static String servo5 = "";
-    public static String I2C0 = "imu";
-    public static String I2C1 = "pinpoint";
-    public static String externalUSB = "limelight";
+    public static String imu = "imu";
+    public static String pinpoint = "pinpoint";
+    public static String limelight = "limelight";
+    public static String lowFlywheel = "lowFlywheel";
+    public static String highFlywheel = "highFlywheel";
 }
