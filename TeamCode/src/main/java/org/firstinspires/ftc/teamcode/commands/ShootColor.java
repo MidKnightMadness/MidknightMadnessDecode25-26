@@ -5,32 +5,23 @@ import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 
-import org.firstinspires.ftc.teamcode.motif.MotifEnums;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
+import org.firstinspires.ftc.teamcode.util.Angle;
 
-public class ShootSequence extends SequentialCommandGroup {
-    public static long waitMs = 200;
+public class ShootColor extends SequentialCommandGroup {
     public static long finalWaitMs = 500;
 
-    public ShootSequence(
+    public ShootColor(
             Spindexer spindexer,
             TwoWheelShooter shooter,
-            MotifEnums.Motif motif,
             CRServoEx.RunMode runMode,
             double dist
     ) {
-        int[] sequence = spindexer.getOptimalSequence(motif);
-        addCommands(new InstantCommand(() -> shooter.setFlywheels(dist)));
-        for (int i = 0; i < sequence.length; i++) {
-            if (i > 0) addCommands(new WaitCommand(waitMs));
-            int spot = sequence[i];
-            addCommands(
-                    new SpindexerGoto(spindexer, spot, runMode),
-                    new InstantCommand(() -> spindexer.removeBall(spot))
-            );
-        }
+        int spot = spindexer.getNearestSpotIndex(Angle.fromDegrees(0));
         addCommands(
+                new InstantCommand(() -> shooter.setFlywheels(dist)),
+                new SpindexerGoto(spindexer, spot, runMode),
                 new WaitCommand(finalWaitMs),
                 new InstantCommand(shooter::stopFlywheels)
         );

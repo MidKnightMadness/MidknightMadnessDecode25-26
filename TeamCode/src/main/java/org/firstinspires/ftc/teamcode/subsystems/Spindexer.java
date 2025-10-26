@@ -23,6 +23,9 @@ public class Spindexer extends SubsystemBase {
         }
     }
 
+    public static double intakeSpinPower = 0.3;
+    public static double shootRawPower = 1;
+
     // 0 is defined as the position of the shooter
     public static Angle detectRange = Angle.fromDegrees(40); // How far off from the center of the spot that you detect. You don't want to trust measurements that are too off from the center
     public static Angle inColorSensorAngle = Angle.fromDegrees(180);
@@ -151,11 +154,11 @@ public class Spindexer extends SubsystemBase {
     }
 
     // Get index of nearest spot
-    public int getNearestSpotIndex(Angle query, boolean ignoreNone) {
+    public int getNearestSpotIndex(Angle query, BallColor matchColor) {
         int nearestSpot = 0;
         double smallestGap = 180;
         for (int spot = 0; spot < NUM_SPOTS; spot++) {
-            if (ignoreNone && ballColors[spot] == BallColor.NONE) break;
+            if (ballColors[spot] == matchColor) break;
             double gap = query.absGap(getSpotAngle(spot)).toDegrees();
             if (gap < smallestGap) {
                 smallestGap = gap;
@@ -165,9 +168,19 @@ public class Spindexer extends SubsystemBase {
         return nearestSpot;
     }
 
+    // TODO: remove duplicate function but it's annoying
     // Get index of nearest spot
     public int getNearestSpotIndex(Angle query) {
-        return getNearestSpotIndex(query, false);
+        int nearestSpot = 0;
+        double smallestGap = 180;
+        for (int spot = 0; spot < NUM_SPOTS; spot++) {
+            double gap = query.absGap(getSpotAngle(spot)).toDegrees();
+            if (gap < smallestGap) {
+                smallestGap = gap;
+                nearestSpot = spot;
+            }
+        }
+        return nearestSpot;
     }
 
     // Sign of power is direction of spin
@@ -186,12 +199,16 @@ public class Spindexer extends SubsystemBase {
         ballColors[spot] = BallColor.NONE;
     }
 
-    public void goToAngle(Angle angle) {
-        turner.setRunMode(CRServoEx.RunMode.OptimizedPositionalControl);
-        turner.set(-angle.toDegrees()); // Rotate in opposite direction to get to angle
+    public void goToAngle(Angle angle, CRServoEx.RunMode runMode) {
+        turner.setRunMode(runMode);
+        if (runMode == CRServoEx.RunMode.OptimizedPositionalControl) {
+            turner.set(-angle.toDegrees());
+        } else {
+            turner.set(currentAngle.sub(angle).sign() * shootRawPower); // Careful signs work out
+        }
     }
 
-    public void goToSpot(int spot) {
-        goToAngle(getSpotAngle(spot).neg());
+    public void goToSpot(int spot, CRServoEx.RunMode runMode) {
+        goToAngle(getSpotAngle(spot), runMode);
     }
 }
