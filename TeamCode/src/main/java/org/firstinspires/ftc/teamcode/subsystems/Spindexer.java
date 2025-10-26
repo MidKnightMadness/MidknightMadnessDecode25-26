@@ -182,6 +182,10 @@ public class Spindexer extends SubsystemBase {
                 < finishedThreshold.abs().toDegrees();
     }
 
+    public void removeBall(int spot) {
+        ballColors[spot] = BallColor.NONE;
+    }
+
     public void goToAngle(Angle angle) {
         turner.setRunMode(CRServoEx.RunMode.OptimizedPositionalControl);
         turner.set(-angle.toDegrees()); // Rotate in opposite direction to get to angle

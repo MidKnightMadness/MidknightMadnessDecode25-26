@@ -22,7 +22,11 @@ public class ShootSequence extends SequentialCommandGroup {
         addCommands(new InstantCommand(() -> shooter.setFlywheels(dist)));
         for (int i = 0; i < sequence.length; i++) {
             if (i > 0) addCommands(new WaitCommand(waitMs));
-            addCommands(new SpindexerGoto(spindexer, sequence[i]));
+            int spot = sequence[i];
+            addCommands(
+                    new SpindexerGoto(spindexer, spot),
+                    new InstantCommand(() -> spindexer.removeBall(spot))
+            );
         }
         addCommands(
                 new WaitCommand(finalWaitMs),
