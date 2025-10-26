@@ -8,7 +8,6 @@ import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.motif.MotifEnums;
-import org.firstinspires.ftc.teamcode.old.opModes.BackSixBallAutoFSM;
 import org.firstinspires.ftc.teamcode.util.Angle;
 import org.firstinspires.ftc.teamcode.util.BallColor;
 
@@ -92,7 +91,7 @@ public class Spindexer extends SubsystemBase {
         }
     }
 
-    public int[] getMotifSequence(MotifEnums.Motif motif) {
+    public int[] getOptimalSequence(MotifEnums.Motif motif) {
         int[] sequence = new int[3];
         int greenSpot = -1;
         double greenCount = 0;
