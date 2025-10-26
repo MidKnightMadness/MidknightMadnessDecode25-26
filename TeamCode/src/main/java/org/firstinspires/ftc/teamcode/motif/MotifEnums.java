@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.motif;
 
 public class MotifEnums {
-    enum Motif{
+    public enum Motif {
         GPP,
         PGP,
         PPG,

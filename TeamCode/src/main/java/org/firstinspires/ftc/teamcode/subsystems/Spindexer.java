@@ -7,6 +7,8 @@ import com.seattlesolvers.solverslib.hardware.AbsoluteAnalogEncoder;
 import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.motif.MotifEnums;
+import org.firstinspires.ftc.teamcode.old.opModes.BackSixBallAutoFSM;
 import org.firstinspires.ftc.teamcode.util.Angle;
 import org.firstinspires.ftc.teamcode.util.BallColor;
 
@@ -27,7 +29,7 @@ public class Spindexer extends SubsystemBase {
     public static Angle shooterAngle = Angle.fromDegrees(0);
     public static Angle inColorSensorAngle = Angle.fromDegrees(180);
     public static Angle outColorSensorAngle = Angle.fromDegrees(0);
-    public static Angle spotZeroOffset = Angle.fromDegrees(0); // What the encoder says when spot 0 is in place for launch
+    public static Angle spotZeroReading = Angle.fromDegrees(0); // Raw encoder reading when spot 0 is aligned with shooter
     public static Angle finishedThreshold = Angle.fromDegrees(20); // Threshold at which it's finished turning to a spot
 
     CRServoEx turner;
@@ -64,7 +66,7 @@ public class Spindexer extends SubsystemBase {
     @Override
     public void periodic() {
         currentAngle = Angle.fromDegrees(
-                turner.getAbsoluteEncoder().getCurrentPosition() - spotZeroOffset.toDegrees()
+                turner.getAbsoluteEncoder().getCurrentPosition() + spotZeroReading.toDegrees()
         );
     }
 
@@ -91,16 +93,71 @@ public class Spindexer extends SubsystemBase {
         }
     }
 
+    public int[] getMotifSequence(MotifEnums.Motif motif) {
+        int[] sequence = new int[3];
+        int greenSpot = -1;
+        double greenCount = 0;
+        double purpleCount = 0;
+        for (int i = 0; i < ballColors.length; i++) {
+            if (ballColors[i] == BallColor.GREEN) {
+                greenCount++;
+                greenSpot = i;
+            }
+            else if (ballColors[i] == BallColor.PURPLE) purpleCount++;
+        }
+
+        if (!motif.equals(MotifEnums.Motif.NONE) && greenCount == 1 && purpleCount == 2) {
+            double greenOrder;
+            if (motif.equals(MotifEnums.Motif.GPP)) greenOrder = 0;
+            else if (motif.equals(MotifEnums.Motif.PGP)) greenOrder = 1;
+            else greenOrder = 2;
+
+            int momentum = 0; // 1 or -1 for CW or CCW respectively
+            for (int i = 0; i < 3; i++) {
+                int spot;
+                if (i == greenOrder) spot = greenSpot;
+                else {
+                    if (i == 0) {
+                        spot = getNearestSpotIndex(Angle.fromDegrees(0));
+                    } else {
+                        spot = (sequence[i - 1] + momentum) % NUM_SPOTS;
+                        if (ballColors[spot] != BallColor.PURPLE) spot++; // You only need to check 2 spots total
+                    }
+                }
+
+                sequence[i] = spot;
+                momentum = getSpotAngle(spot).sign();
+            }
+        } else {
+            int momentum = 0; // 1 or -1 for CW or CCW respectively
+            for (int i = 0; i < greenCount + purpleCount; i++) {
+                int spot;
+                if (i == 0) {
+                    spot = getNearestSpotIndex(Angle.fromDegrees(0));
+                } else {
+                    spot = (sequence[i - 1] + momentum) % NUM_SPOTS;
+                    if (ballColors[spot] != BallColor.PURPLE) spot++; // You only need to check 2 spots total
+                }
+
+                sequence[i] = spot;
+                momentum = getSpotAngle(spot).sign();
+            }
+        }
+        return sequence;
+    }
+
+    // The current angle of a spot relative to the outtake
     public Angle getSpotAngle(int spot) {
         assert spot < NUM_SPOTS : "Spot must be less than " + spot;
         return currentAngle.add(Angle.fromDegrees(360f * spot / NUM_SPOTS));
     }
 
     // Get index of nearest spot
-    public int getNearestSpotIndex(Angle query) {
+    public int getNearestSpotIndex(Angle query, boolean ignoreNone) {
         int nearestSpot = 0;
         double smallestGap = 180;
         for (int spot = 0; spot < NUM_SPOTS; spot++) {
+            if (ignoreNone && ballColors[spot] == BallColor.NONE) break;
             double gap = query.absGap(getSpotAngle(spot)).toDegrees();
             if (gap < smallestGap) {
                 smallestGap = gap;
@@ -108,6 +165,11 @@ public class Spindexer extends SubsystemBase {
             }
         }
         return nearestSpot;
+    }
+
+    // Get index of nearest spot
+    public int getNearestSpotIndex(Angle query) {
+        return getNearestSpotIndex(query, false);
     }
 
     // Sign of power is direction of spin

@@ -81,6 +81,10 @@ public class Angle {
         return new Angle(-value, unit);
     }
 
+    public int sign() {
+        return (int) Math.signum(value);
+    }
+
     @NonNull
     @Override
     public String toString() {
