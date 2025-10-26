@@ -12,12 +12,13 @@ import com.pedropathing.paths.Path;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
+import org.firstinspires.ftc.teamcode.util.PanelsDrawing;
 import org.firstinspires.ftc.teamcode.util.Timer;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.pedroPathing.Drawing;
 
 import java.util.concurrent.TimeUnit;
 
+@Deprecated
 @Configurable
 @Autonomous
 public class BackSixBallAutoFSM extends OpMode {
@@ -55,12 +56,12 @@ public class BackSixBallAutoFSM extends OpMode {
 
     @Override
     public void init() {
-        Drawing.init();
+        PanelsDrawing.init();
         timer = new Timer();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         graphM = PanelsGraph.INSTANCE.getManager();
 
-        follower = Constants.createFollower(hardwareMap);
+        follower = Constants.createPinpointFollower(hardwareMap);
         follower.setStartingPose(startPose);
         pathState = PathState.shootLoaded;
         shootingState = 0;
@@ -98,9 +99,9 @@ public class BackSixBallAutoFSM extends OpMode {
 
     public void updateTelemetry() {
         // Field
-        Drawing.drawRobot(currentPose);
-        Drawing.drawPoseHistory(follower.getPoseHistory());
-        Drawing.sendPacket();
+        PanelsDrawing.drawRobot(currentPose);
+        PanelsDrawing.drawPoseHistory(follower.getPoseHistory());
+        PanelsDrawing.sendPacket();
 
         // Telemetry
         addDataTelemetryGraph("Loop time (ms)", timer.getDeltaTime(TimeUnit.MILLISECONDS));

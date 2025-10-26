@@ -77,7 +77,7 @@ public class Spindexer extends SubsystemBase {
     }
 
     public BallColor[] getBallColors() {
-        return getBallColors();
+        return ballColors;
     }
 
     public void updateBallColors() {
