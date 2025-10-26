@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.PedroPathing.MotorTesting;
+package org.firstinspires.ftc.teamcode.pedroPathing.motorTesting;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.field.Style;
@@ -13,7 +13,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Util.PanelsDrawing;
 import org.firstinspires.ftc.teamcode.Util.Timer;
-import org.firstinspires.ftc.teamcode.PedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.PedroPathing;
+package org.firstinspires.ftc.teamcode.pedroPathing;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.control.FilteredPIDFCoefficients;
@@ -14,7 +14,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.Localization.KalmanFilter.KalmanPinpointAprilConstants;
+import org.firstinspires.ftc.teamcode.localization.KalmanFilter.KalmanPinpointAprilConstants;
 
 @Configurable
 public class Constants {

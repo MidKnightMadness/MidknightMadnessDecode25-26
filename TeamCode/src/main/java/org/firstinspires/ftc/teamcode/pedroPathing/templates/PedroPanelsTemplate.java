@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.PedroPathing.Templates;
+package org.firstinspires.ftc.teamcode.pedroPathing.templates;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.graph.GraphManager;
@@ -14,7 +14,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.Util.PanelsDrawing;
 import org.firstinspires.ftc.teamcode.Util.Timer;
-import org.firstinspires.ftc.teamcode.PedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 import java.util.concurrent.TimeUnit;
 

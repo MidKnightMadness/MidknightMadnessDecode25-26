@@ -1,20 +1,12 @@
-package org.firstinspires.ftc.teamcode.Motif;
+package org.firstinspires.ftc.teamcode.motif;
 
 import android.os.Environment;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ReadWriteFile;
-import com.qualcomm.robotcore.util.RobotLog;
-
-import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.util.StringTokenizer;
 
 @TeleOp(group = "Motif", name = "Read")
 public class MotifReadingTeleOp extends OpMode {

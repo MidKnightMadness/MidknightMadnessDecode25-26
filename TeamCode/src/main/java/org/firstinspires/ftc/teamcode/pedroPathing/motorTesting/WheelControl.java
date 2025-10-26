@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.PedroPathing.MotorTesting;
+package org.firstinspires.ftc.teamcode.pedroPathing.motorTesting;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;

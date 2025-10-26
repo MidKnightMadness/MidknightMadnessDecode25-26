@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.PedroPathing.RobotDrive;
+package org.firstinspires.ftc.teamcode.pedroPathing.robotDrive;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.graph.GraphManager;
@@ -10,7 +10,7 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.PedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.Util.PanelsDrawing;
 
 @Configurable

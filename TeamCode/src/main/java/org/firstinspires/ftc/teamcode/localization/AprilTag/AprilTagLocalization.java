@@ -1,7 +1,6 @@
-package org.firstinspires.ftc.teamcode.Localization.AprilTag;
+package org.firstinspires.ftc.teamcode.localization.AprilTag;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -16,8 +15,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.Util.ConfigNames;
 import org.firstinspires.ftc.teamcode.Util.PoseBuffer;
 import org.firstinspires.ftc.teamcode.Util.Timer;
-
-import java.util.List;
 
 @Deprecated
 

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Motif;
+package org.firstinspires.ftc.teamcode.motif;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -23,7 +23,6 @@ import org.firstinspires.ftc.teamcode.Util.Timer;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;

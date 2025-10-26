@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Localization;
+package org.firstinspires.ftc.teamcode.localization;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -20,9 +20,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
-import org.firstinspires.ftc.teamcode.Localization.AprilTag.AprilTagLocalization;
-import org.firstinspires.ftc.teamcode.Localization.KalmanFilter.KalmanFilter;
-import org.firstinspires.ftc.teamcode.Localization.Pinpoint.PinpointLocalization;
+import org.firstinspires.ftc.teamcode.localization.AprilTag.AprilTagLocalization;
+import org.firstinspires.ftc.teamcode.localization.KalmanFilter.KalmanFilter;
+import org.firstinspires.ftc.teamcode.localization.Pinpoint.PinpointLocalization;
 import org.firstinspires.ftc.teamcode.Util.ButtonToggle;
 import org.firstinspires.ftc.teamcode.Util.DashboardDrawing;
 import org.firstinspires.ftc.teamcode.Util.PanelsDrawing;
