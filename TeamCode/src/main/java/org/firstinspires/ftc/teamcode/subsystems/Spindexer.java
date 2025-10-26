@@ -134,7 +134,7 @@ public class Spindexer extends SubsystemBase {
                     spot = getNearestSpotIndex(Angle.fromDegrees(0));
                 } else {
                     spot = (sequence[i - 1] + momentum) % NUM_SPOTS;
-                    if (ballColors[spot] != BallColor.PURPLE) spot++; // You only need to check 2 spots total
+                    if (ballColors[spot] == BallColor.NONE) spot++; // You only need to check 2 spots total
                 }
 
                 sequence[i] = spot;
