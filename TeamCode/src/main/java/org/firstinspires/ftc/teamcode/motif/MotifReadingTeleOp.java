@@ -19,7 +19,7 @@ public class MotifReadingTeleOp extends OpMode {
     Map<String, MotifEnums.Motif> idMap = Map.of(
         "[21]", MotifEnums.Motif.GPP,
         "[22]", MotifEnums.Motif.PGP,
-        "[223", MotifEnums.Motif.PPG
+        "[23]", MotifEnums.Motif.PPG
     );
 
     @Override
