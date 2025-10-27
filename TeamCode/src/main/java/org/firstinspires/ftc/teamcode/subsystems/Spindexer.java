@@ -14,6 +14,7 @@ import org.firstinspires.ftc.teamcode.util.BallColor;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.teamcode.util.ExtraFns;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Configurable
@@ -40,11 +41,10 @@ public class Spindexer extends SubsystemBase {
         }
 
         void resetVotes() {
-            votes = Map.of(
-                    BallColor.GREEN, 0.,
-                    BallColor.PURPLE, 0.,
-                    BallColor.NONE, 0.
-            );
+            votes = new HashMap<>();
+            votes.put(BallColor.GREEN, 0.0);
+            votes.put(BallColor.PURPLE, 0.0);
+            votes.put(BallColor.NONE, 0.0);
         }
     }
 
@@ -69,7 +69,7 @@ public class Spindexer extends SubsystemBase {
         AbsoluteAnalogEncoder turnerEncoder = new AbsoluteAnalogEncoder(
                 hardwareMap,
                 ConfigNames.turnerEncoder,
-                10, // TODO: I don't know what ts does so fix it later
+                1, // TODO: I don't know what ts does so fix it later
                 AngleUnit.DEGREES
         );
         turner = new CRServoEx(
@@ -92,7 +92,7 @@ public class Spindexer extends SubsystemBase {
     @Override
     public void periodic() {
         currentAngle = Angle.fromDegrees(
-                turner.getAbsoluteEncoder().getCurrentPosition() + spotZeroReading.toDegrees()
+                turner.getAbsoluteEncoder().getCurrentPosition() - spotZeroReading.toDegrees()
         );
         updateBallColors();
     }
@@ -136,11 +136,63 @@ public class Spindexer extends SubsystemBase {
         }
     }
 
+    private int computeMomentum(int[] seq, int i, int nextSpot) {
+        if (i == 0) return getRelativeAngle(nextSpot).sign();
+        int diff = (nextSpot - seq[i-1] + NUM_SPOTS) % NUM_SPOTS;
+        if (diff == 0) return 0;
+        return (diff <= NUM_SPOTS / 2) ? 1 : -1;
+    }
+
+    private int[] sequenceForMotif(MotifEnums.Motif motif, int greenSpot) {
+        int greenOrder;
+        int[] seq = new int[NUM_SPOTS];
+        if (motif.equals(MotifEnums.Motif.GPP)) greenOrder = 0;
+        else if (motif.equals(MotifEnums.Motif.PGP)) greenOrder = 1;
+        else greenOrder = 2;
+
+        int momentum = 0;
+        for (int i = 0; i < NUM_SPOTS; i++) {
+            int spot;
+            if (i == greenOrder) {
+                spot = greenSpot;
+            } else {
+                spot = getNextSpot(seq, i, momentum);
+            }
+            seq[i] = spot;
+            momentum = computeMomentum(seq, i, spot);
+        }
+        return seq;
+    }
+
+    private int getNextSpot(int[] seq, int i, int momentum) {
+        int spot;
+        if (i == 0) {
+            spot = getNearestSpotIndex(Angle.fromDegrees(0));
+        } else {
+            spot = (seq[i - 1] + momentum) % NUM_SPOTS;
+            while (ballColors[spot] == BallColor.NONE) {
+                spot = (spot + 1) % NUM_SPOTS;
+            }
+        }
+        return spot;
+    }
+
+    private int[] sequenceDefault(int totalCount) {
+        int[] seq = new int[NUM_SPOTS];
+        int momentum = 0;
+
+        for (int i = 0; i < totalCount; i++) {
+            int spot = getNextSpot(seq, i, momentum);
+            seq[i] = spot;
+            momentum = computeMomentum(seq, i, spot);
+        }
+
+        return seq;
+    }
+
     public int[] getOptimalSequence(MotifEnums.Motif motif) {
-        int[] sequence = new int[3];
-        int greenSpot = -1;
-        double greenCount = 0;
-        double purpleCount = 0;
+        int[] sequence;
+        int greenSpot = -1, greenCount = 0, purpleCount = 0;
         for (int i = 0; i < ballColors.length; i++) {
             if (ballColors[i] == BallColor.GREEN) {
                 greenCount++;
@@ -150,41 +202,9 @@ public class Spindexer extends SubsystemBase {
         }
 
         if (!motif.equals(MotifEnums.Motif.NONE) && greenCount == 1 && purpleCount == 2) {
-            double greenOrder;
-            if (motif.equals(MotifEnums.Motif.GPP)) greenOrder = 0;
-            else if (motif.equals(MotifEnums.Motif.PGP)) greenOrder = 1;
-            else greenOrder = 2;
-
-            int momentum = 0; // 1 or -1 for CW or CCW respectively
-            for (int i = 0; i < 3; i++) {
-                int spot;
-                if (i == greenOrder) spot = greenSpot;
-                else {
-                    if (i == 0) {
-                        spot = getNearestSpotIndex(Angle.fromDegrees(0));
-                    } else {
-                        spot = (sequence[i - 1] + momentum) % NUM_SPOTS;
-                        if (ballColors[spot] != BallColor.PURPLE) spot++; // You only need to check 2 spots total
-                    }
-                }
-
-                sequence[i] = spot;
-                momentum = getRelativeAngle(spot).sign();
-            }
+            sequence = sequenceForMotif(motif, greenSpot);
         } else {
-            int momentum = 0; // 1 or -1 for CW or CCW respectively
-            for (int i = 0; i < greenCount + purpleCount; i++) {
-                int spot;
-                if (i == 0) {
-                    spot = getNearestSpotIndex(Angle.fromDegrees(0));
-                } else {
-                    spot = (sequence[i - 1] + momentum) % NUM_SPOTS;
-                    if (ballColors[spot] == BallColor.NONE) spot++; // You only need to check 2 spots total
-                }
-
-                sequence[i] = spot;
-                momentum = getRelativeAngle(spot).sign();
-            }
+            sequence = sequenceDefault(greenCount + purpleCount);
         }
         return sequence;
     }
@@ -205,7 +225,7 @@ public class Spindexer extends SubsystemBase {
         int nearestSpot = 0;
         double smallestGap = 180;
         for (int spot = 0; spot < NUM_SPOTS; spot++) {
-            if (ballColors[spot] == matchColor) break;
+            if (ballColors[spot] != matchColor) continue;
             double gap = query.absGap(getRelativeAngle(spot)).toDegrees();
             if (gap < smallestGap) {
                 smallestGap = gap;
