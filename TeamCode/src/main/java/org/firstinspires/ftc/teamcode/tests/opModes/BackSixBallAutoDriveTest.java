@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opModes;
+package org.firstinspires.ftc.teamcode.tests.opModes;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.graph.GraphManager;
@@ -13,6 +13,7 @@ import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
+import org.firstinspires.ftc.teamcode.util.ExtraFns;
 import org.firstinspires.ftc.teamcode.util.PanelsDrawing;
 import org.firstinspires.ftc.teamcode.util.Timer;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
@@ -21,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 @Configurable
 @Autonomous
-public class BackSixBallAuto extends CommandOpMode {
+public class BackSixBallAutoDriveTest extends CommandOpMode {
     TelemetryManager telemetryM;
     GraphManager graphM;
     Follower follower;
@@ -31,7 +32,7 @@ public class BackSixBallAuto extends CommandOpMode {
     Path drivePickupToScorePath;
 
     public static Pose startPose = new Pose(84, 7, Math.toRadians(90));
-    public static Pose pickupPose = new Pose(120, 7, Math.toRadians(90));
+    public static Pose pickupPose = new Pose(120, 7); // heading is calculated later
     public static Pose endPose = new Pose(120, 7, Math.toRadians(90));
     Pose currentPose;
     double speed;
@@ -94,7 +95,10 @@ public class BackSixBallAuto extends CommandOpMode {
     }
 
     public void buildPaths() {
-        driveToPickupPath = new Path(new BezierLine(startPose, pickupPose));
-        drivePickupToScorePath = new Path(new BezierLine(pickupPose, endPose));
+        Pose finalPickupPose = pickupPose.setHeading( // To prevent rewriting static variables
+                ExtraFns.getAngle(pickupPose, new Pose(144, 144)).toRadians()
+        );
+        driveToPickupPath = new Path(new BezierLine(startPose, finalPickupPose));
+        drivePickupToScorePath = new Path(new BezierLine(finalPickupPose, endPose));
     }
 }

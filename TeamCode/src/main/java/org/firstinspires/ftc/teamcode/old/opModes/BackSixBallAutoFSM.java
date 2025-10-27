@@ -10,6 +10,7 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.util.PanelsDrawing;
@@ -21,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 @Deprecated
 @Configurable
 @Autonomous
+@Disabled
 public class BackSixBallAutoFSM extends OpMode {
     public enum Motif {
         GPP,

@@ -12,16 +12,39 @@ import org.firstinspires.ftc.teamcode.sensors.BallDetector;
 import org.firstinspires.ftc.teamcode.util.Angle;
 import org.firstinspires.ftc.teamcode.util.BallColor;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
+import org.firstinspires.ftc.teamcode.util.ExtraFns;
+
+import java.util.Map;
 
 @Configurable
 public class Spindexer extends SubsystemBase {
-    static class BallSensor {
+    public static class BallSensor {
         BallDetector sensor;
         Angle angle;
+        int previousSpot;
+        Map<BallColor, Double> votes;
 
         BallSensor(BallDetector sensor, Angle angle) {
             this.sensor = sensor;
             this.angle = angle;
+            this.previousSpot = -1; // -1 for none
+            resetVotes();
+        }
+
+        BallColor aggregateVotes() {
+            return ExtraFns.argmax(votes);
+        }
+
+        void addVote(BallColor color, double weight) {
+            votes.merge(color, weight, Double::sum);
+        }
+
+        void resetVotes() {
+            votes = Map.of(
+                    BallColor.GREEN, 0.,
+                    BallColor.PURPLE, 0.,
+                    BallColor.NONE, 0.
+            );
         }
     }
 
@@ -96,8 +119,19 @@ public class Spindexer extends SubsystemBase {
         for (BallSensor ballSensor: ballSensors) {
             int spot = getNearestSpotIndex(ballSensor.angle);
             double gap = getRelativeAngle(spot).absGap(ballSensor.angle).toDegrees();
-            if (gap < detectRange.toDegrees()) {
-                ballColors[spot] = ballSensor.sensor.readColor();
+            double weight = Math.max(0, 1 - gap / detectRange.toDegrees());
+            if (gap > detectRange.toDegrees()) spot = -1;
+
+            int previousSpot = ballSensor.previousSpot;
+            ballSensor.previousSpot = spot;
+
+            if (spot == previousSpot) { // If in the middle of detecting
+                if (spot >= 0) continue;
+                ballSensor.addVote(ballSensor.sensor.readColor(), weight);
+            } else { // If spot transition
+                if (previousSpot == -1) continue; // Only consider transitions from spots
+                ballColors[previousSpot] = ballSensor.aggregateVotes();
+                ballSensor.resetVotes();
             }
         }
     }
