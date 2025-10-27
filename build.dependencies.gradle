@@ -4,6 +4,7 @@ repositories {
     maven { url = 'https://maven.pedropathing.com' }
     maven { url = "https://mymaven.bylazar.com/releases" }
     maven { url = 'https://maven.brott.dev/' }
+    maven { url = "https://repo.dairy.foundation/releases" }
 }
 
 dependencies {
@@ -16,13 +17,19 @@ dependencies {
     implementation 'org.firstinspires.ftc:FtcCommon:11.0.0'
     implementation 'org.firstinspires.ftc:Vision:11.0.0'
     implementation 'androidx.appcompat:appcompat:1.7.1'
+
+    // Extension libraries
     implementation('com.pedropathing:ftc:2.0.3') {
         exclude group: "com.acmerobotics.dashboard"
     }
     implementation 'com.pedropathing:telemetry:0.0.6'
+    implementation("com.acmerobotics.slothboard:dashboard:0.2.4+0.4.17")
+    implementation "com.bylazar:fullpanels:1.0.6"
     implementation 'com.bylazar:limelightproxy:1.0.2'
     implementation "org.solverslib:core:0.3.3" // core
     implementation "org.solverslib:pedroPathing:0.3.3"
-    implementation 'com.acmerobotics.dashboard:dashboard:0.5.0'
+
+    // Uncomment for sloth (might break stuff)
+    // implementation("dev.frozenmilk.sinister:Sloth:0.2.4")
 }
 

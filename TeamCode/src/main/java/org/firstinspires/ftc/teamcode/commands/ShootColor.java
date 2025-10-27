@@ -20,7 +20,7 @@ public class ShootColor extends SequentialCommandGroup {
     ) {
         int spot = spindexer.getNearestSpotIndex(Angle.fromDegrees(0));
         addCommands(
-                new InstantCommand(() -> shooter.setFlywheels(dist)),
+                new InstantCommand(() -> shooter.setFlywheelsPower(dist)),
                 new SpindexerGotoSpot(spindexer, spot, runMode),
                 new WaitCommand(finalWaitMs),
                 new InstantCommand(shooter::stopFlywheels)

@@ -87,7 +87,7 @@ public class TwoWheelShooter extends SubsystemBase {
         high.setFeedforwardCoefficients(kS, kV, kA);
     }
 
-    public void setFlywheelsPower(double dist) {//assuming facing the shooting area
+    public void setFlywheelsPower(double dist) { //assuming facing the shooting area
         double topVel = distToBottomVel.get(dist) * grToMultiplier.getOrDefault(gearRatio, 3.0);
         double bottomVel = distToTopVel.get(dist) * grToMultiplier.getOrDefault(gearRatio, 3.0);
         switch (runMode) {

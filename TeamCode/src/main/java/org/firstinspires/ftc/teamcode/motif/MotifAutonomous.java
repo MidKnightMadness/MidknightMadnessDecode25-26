@@ -46,8 +46,7 @@ public class MotifAutonomous extends OpMode{
     File file;
     FileWriter fileWriter;
     @Override
-    public void init(){
-
+    public void init() {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
         timer = new Timer();
 
