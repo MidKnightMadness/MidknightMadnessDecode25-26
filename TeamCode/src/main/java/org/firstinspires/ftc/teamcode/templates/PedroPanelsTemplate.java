@@ -57,7 +57,7 @@ public class PedroPanelsTemplate extends OpMode {
 
     @Override
     public void start() {
-        timer.restartTimer();
+        timer.restart();
     }
 
     @Override
@@ -80,13 +80,14 @@ public class PedroPanelsTemplate extends OpMode {
     }
 
     public void updateTelemetry() {
+        timer.updateTime();
         // Field
         PanelsDrawing.drawRobot(currentPose);
         PanelsDrawing.drawPoseHistory(follower.getPoseHistory());
         PanelsDrawing.sendPacket();
 
         // Telemetry
-        addDataTelemetryGraph("Loop time (ms)", timer.getDeltaTime(TimeUnit.MILLISECONDS));
+        addDataTelemetryGraph("Loop time (ms)", timer.getDeltaTime());
         telemetryM.addData("Pose X (in)", currentPose.getX());
         telemetryM.addData("Pose Y (in)", currentPose.getY());
         telemetryM.addData("Pose Heading (rad)", currentPose.getHeading());

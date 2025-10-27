@@ -87,6 +87,7 @@ public class AprilTagOpMode extends OpMode{
     }
     @Override
     public void loop() {
+        timer.updateTime();
         YawPitchRollAngles imuAngles = imu.getRobotYawPitchRollAngles();
         limelight.updateRobotOrientation(imuAngles.getYaw(AngleUnit.DEGREES));
 
@@ -94,7 +95,7 @@ public class AprilTagOpMode extends OpMode{
         createDashboardTelemetry();
 
 
-        telemetry.addData("Update rate", 1/ timer.getDeltaTime(TimeUnit.SECONDS));
+        telemetry.addData("Update rate", 1/ timer.getDeltaTime());
         telemetry.addData("Yaw(Deg): ", imuAngles.getYaw(AngleUnit.DEGREES));
 
         if(previousPipelineNum != currentPipeline){

@@ -1,33 +1,46 @@
 package org.firstinspires.ftc.teamcode.util;
 
-import java.util.concurrent.TimeUnit;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 
 public class Timer {
-    private long startTime;
-    private long previousTime;
+    ElapsedTime elapsedTime;
+    double previousTime;
+    double currentTime;
+    double deltaTime;
 
-    public Timer() {
-        restartTimer();
+    public Timer(){
+        elapsedTime = new ElapsedTime();
+        elapsedTime.startTime();
     }
 
-    public void restartTimer() {
-        startTime = System.nanoTime();
-        previousTime = startTime;
+    public double getDeltaTime(){
+        return deltaTime;
     }
 
-    public long getTime(TimeUnit unit) {
-        long elapsed = System.nanoTime() - startTime;
-        return unit.convert(elapsed, TimeUnit.NANOSECONDS);
+    public double getPreviousTime(){
+        return previousTime;
     }
 
-    public long getDeltaTime(TimeUnit unit) {
-        long now = System.nanoTime();
-        long delta = now - previousTime;
-        previousTime = now;
-        return unit.convert(delta, TimeUnit.NANOSECONDS);
+    public double updateTime(){
+        currentTime = elapsedTime.time();
+        deltaTime = currentTime - previousTime;
+        previousTime = currentTime;
+
+        return currentTime;
     }
 
-    public long getPreviousTime(TimeUnit unit) {
-        return unit.convert(previousTime - startTime, TimeUnit.NANOSECONDS);
+
+    public void updatePreviousTime(){
+        previousTime = currentTime;
     }
+
+    public void restart(){
+        elapsedTime = new ElapsedTime();
+        previousTime = 0;
+        currentTime = 0;
+        deltaTime = 0;
+        elapsedTime.startTime();
+    }
+
 }

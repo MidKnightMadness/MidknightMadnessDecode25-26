@@ -98,9 +98,9 @@ public class MotifAutonomous extends OpMode{
         createDashboardTelemetry();
 
         telemetry.addData("Finished writing:", finishedWriting);
-        telemetry.addData("Current Time:", timer.getTime(TimeUnit.SECONDS));
-        telemetry.addData("Update Rate:", 1 / timer.getDeltaTime(TimeUnit.SECONDS));
-        if(!finishedWriting && timer.getTime(TimeUnit.SECONDS) < detectionMaxTime) {
+        telemetry.addData("Current Time:", timer.updateTime());
+        telemetry.addData("Update Rate:", 1 / timer.getDeltaTime());
+        if(!finishedWriting && timer.updateTime()< detectionMaxTime) {
             LLResult result = limelight.getLatestResult();
             if (result != null && result.isValid()) {
                 List<LLResultTypes.FiducialResult> list = result.getFiducialResults();
@@ -125,7 +125,7 @@ public class MotifAutonomous extends OpMode{
             }
         }
 
-        if(timer.getTime(TimeUnit.SECONDS) > detectionMaxTime || finishedWriting) {
+        if(timer.updateTime() > detectionMaxTime || finishedWriting) {
             closeFileWriter(fileWriter);
         }
     }

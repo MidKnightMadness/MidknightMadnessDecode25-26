@@ -38,12 +38,12 @@ public class TransferTest extends OpMode {
 
     @Override
     public void start() {
-        timer.restartTimer();
+        timer.restart();
     }
 
     @Override
     public void loop() {
-        if (timer.getTime(TimeUnit.MILLISECONDS) < motorPowerSwitchTime) {
+        if (timer.updateTime() < motorPowerSwitchTime) {
             motor.setPower(motorPowerInitial);
         } else {
             motor.setPower(motorPower);

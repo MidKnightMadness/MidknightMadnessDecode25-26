@@ -77,7 +77,7 @@ public class BackSixBallAutoFSM extends OpMode {
 
     @Override
     public void start() {
-        timer.restartTimer();
+        timer.restart();
     }
 
     @Override
@@ -106,7 +106,7 @@ public class BackSixBallAutoFSM extends OpMode {
         PanelsDrawing.sendPacket();
 
         // Telemetry
-        addDataTelemetryGraph("Loop time (ms)", timer.getDeltaTime(TimeUnit.MILLISECONDS));
+        addDataTelemetryGraph("Loop time (ms)", timer.getDeltaTime());
         telemetryM.addData("Pose X (in)", currentPose.getX());
         telemetryM.addData("Pose Y (in)", currentPose.getY());
         telemetryM.addData("Pose Heading (rad)", currentPose.getHeading());
@@ -120,13 +120,13 @@ public class BackSixBallAutoFSM extends OpMode {
 
     public void setPathState(PathState newPathState) {
         pathState = newPathState;
-        timer.restartTimer();
+        timer.restart();
     }
 
     // Will return true if currently shooting, false if done shooting
     public boolean shootMotif(Motif motif) {
         // Placeholder to simulate time
-        return timer.getTime(TimeUnit.MILLISECONDS) < 2000;
+        return timer.updateTime() < 2000;
     }
 
     public void buildPaths() {
@@ -152,7 +152,7 @@ public class BackSixBallAutoFSM extends OpMode {
                 break;
 
             case waitForHumanLoad:
-                if (timer.getTime(TimeUnit.MILLISECONDS) > 5000) {
+                if (timer.updateTime() > 5000) {
                     follower.followPath(drivePickupToScorePath);
                     setPathState(PathState.driveToScore);
                 }
