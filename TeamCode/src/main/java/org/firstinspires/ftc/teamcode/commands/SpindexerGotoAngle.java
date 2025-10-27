@@ -4,14 +4,15 @@ import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
+import org.firstinspires.ftc.teamcode.util.Angle;
 
-public class SpindexerGoto extends CommandBase {
-    private final int spot;
+public class SpindexerGotoAngle extends CommandBase {
+    private final Angle angle;
     private final Spindexer spindexer;
     private final CRServoEx.RunMode runMode;
 
-    public SpindexerGoto(Spindexer spindexer, int spot, CRServoEx.RunMode runMode) {
-        this.spot = spot;
+    public SpindexerGotoAngle(Spindexer spindexer, Angle angle, CRServoEx.RunMode runMode) {
+        this.angle = angle;
         this.spindexer = spindexer;
         this.runMode = runMode;
         addRequirements(this.spindexer);
@@ -19,11 +20,13 @@ public class SpindexerGoto extends CommandBase {
 
     @Override
     public void execute() {
-        spindexer.goToSpot(spot, runMode);
+        spindexer.goToAngle(angle, runMode);
     }
 
     @Override
     public boolean isFinished() {
-        return spindexer.isAtSpot(spot);
+        // Make sure you stop no matter what
+        spindexer.goToAngle(angle, CRServoEx.RunMode.OptimizedPositionalControl);
+        return spindexer.isAtAngle(angle);
     }
 }

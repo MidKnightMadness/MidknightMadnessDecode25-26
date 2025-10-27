@@ -1,4 +1,6 @@
-package org.firstinspires.ftc.teamcode.util;
+package org.firstinspires.ftc.teamcode.sensors;
+
+import org.firstinspires.ftc.teamcode.util.Threshold;
 
 import java.util.Map;
 

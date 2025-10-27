@@ -8,8 +8,10 @@ import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.motif.MotifEnums;
+import org.firstinspires.ftc.teamcode.sensors.BallDetector;
 import org.firstinspires.ftc.teamcode.util.Angle;
 import org.firstinspires.ftc.teamcode.util.BallColor;
+import org.firstinspires.ftc.teamcode.util.ConfigNames;
 
 @Configurable
 public class Spindexer extends SubsystemBase {
@@ -27,10 +29,10 @@ public class Spindexer extends SubsystemBase {
     public static double shootRawPower = 1;
 
     // 0 is defined as the position of the shooter
+    public Angle spotZeroReading = Angle.fromDegrees(0); // Raw encoder reading when spot 0 is aligned with shooter
     public static Angle detectRange = Angle.fromDegrees(40); // How far off from the center of the spot that you detect. You don't want to trust measurements that are too off from the center
     public static Angle inColorSensorAngle = Angle.fromDegrees(180);
     public static Angle outColorSensorAngle = Angle.fromDegrees(0);
-    public static Angle spotZeroReading = Angle.fromDegrees(0); // Raw encoder reading when spot 0 is aligned with shooter
     public static Angle finishedThreshold = Angle.fromDegrees(20); // Threshold at which it's finished turning to a spot
 
     CRServoEx turner;
@@ -43,21 +45,21 @@ public class Spindexer extends SubsystemBase {
     public Spindexer(HardwareMap hardwareMap) {
         AbsoluteAnalogEncoder turnerEncoder = new AbsoluteAnalogEncoder(
                 hardwareMap,
-                "turnerEncoder",
+                ConfigNames.turnerEncoder,
                 10, // TODO: I don't know what ts does so fix it later
                 AngleUnit.DEGREES
         );
         turner = new CRServoEx(
-                hardwareMap, "turner",
+                hardwareMap, ConfigNames.turner,
                 turnerEncoder, CRServoEx.RunMode.RawPower
         );
         ballSensors = new BallSensor[] {
                 new BallSensor(
-                        new BallDetector(hardwareMap, "inColorSensor"),
+                        new BallDetector(hardwareMap, ConfigNames.inColorSensor),
                         inColorSensorAngle
                 ),
                 new BallSensor(
-                        new BallDetector(hardwareMap, "outColorSensor"),
+                        new BallDetector(hardwareMap, ConfigNames.outColorSensor),
                         outColorSensorAngle
                 )
         };
@@ -68,6 +70,13 @@ public class Spindexer extends SubsystemBase {
     public void periodic() {
         currentAngle = Angle.fromDegrees(
                 turner.getAbsoluteEncoder().getCurrentPosition() + spotZeroReading.toDegrees()
+        );
+        updateBallColors();
+    }
+
+    public void init() {
+        spotZeroReading = Angle.fromDegrees(
+                turner.getAbsoluteEncoder().getCurrentPosition()
         );
     }
 
@@ -85,9 +94,8 @@ public class Spindexer extends SubsystemBase {
 
     public void updateBallColors() {
         for (BallSensor ballSensor: ballSensors) {
-            Angle sensorAngle = ballSensor.angle;
             int spot = getNearestSpotIndex(ballSensor.angle);
-            double gap = getSpotAngle(spot).absGap(sensorAngle).toDegrees();
+            double gap = getRelativeAngle(spot).absGap(ballSensor.angle).toDegrees();
             if (gap < detectRange.toDegrees()) {
                 ballColors[spot] = ballSensor.sensor.readColor();
             }
@@ -127,7 +135,7 @@ public class Spindexer extends SubsystemBase {
                 }
 
                 sequence[i] = spot;
-                momentum = getSpotAngle(spot).sign();
+                momentum = getRelativeAngle(spot).sign();
             }
         } else {
             int momentum = 0; // 1 or -1 for CW or CCW respectively
@@ -141,16 +149,21 @@ public class Spindexer extends SubsystemBase {
                 }
 
                 sequence[i] = spot;
-                momentum = getSpotAngle(spot).sign();
+                momentum = getRelativeAngle(spot).sign();
             }
         }
         return sequence;
     }
 
     // The current angle of a spot relative to the outtake
-    public Angle getSpotAngle(int spot) {
+    public Angle getRelativeAngle(int spot) {
+        return currentAngle.add(getAbsoluteAngle(spot));
+    }
+
+    // The absolute angle of a spot relative to spot 0
+    public Angle getAbsoluteAngle(int spot) {
         assert spot < NUM_SPOTS : "Spot must be less than " + spot;
-        return currentAngle.add(Angle.fromDegrees(360f * spot / NUM_SPOTS));
+        return Angle.fromDegrees(360f * spot / NUM_SPOTS);
     }
 
     // Get index of nearest spot
@@ -159,7 +172,7 @@ public class Spindexer extends SubsystemBase {
         double smallestGap = 180;
         for (int spot = 0; spot < NUM_SPOTS; spot++) {
             if (ballColors[spot] == matchColor) break;
-            double gap = query.absGap(getSpotAngle(spot)).toDegrees();
+            double gap = query.absGap(getRelativeAngle(spot)).toDegrees();
             if (gap < smallestGap) {
                 smallestGap = gap;
                 nearestSpot = spot;
@@ -174,7 +187,7 @@ public class Spindexer extends SubsystemBase {
         int nearestSpot = 0;
         double smallestGap = 180;
         for (int spot = 0; spot < NUM_SPOTS; spot++) {
-            double gap = query.absGap(getSpotAngle(spot)).toDegrees();
+            double gap = query.absGap(getRelativeAngle(spot)).toDegrees();
             if (gap < smallestGap) {
                 smallestGap = gap;
                 nearestSpot = spot;
@@ -189,13 +202,19 @@ public class Spindexer extends SubsystemBase {
         turner.set(power);
     }
 
+    public boolean isAtAngle(Angle angle) {
+        return currentAngle.add(angle).abs().toDegrees()
+                < finishedThreshold.abs().toDegrees();
+    }
+
     public boolean isAtSpot(int spot) {
         assert spot < NUM_SPOTS : "Spot must be less than " + spot;
-        return currentAngle.absGap(getSpotAngle(spot).neg()).toDegrees()
+        return getRelativeAngle(spot).abs().toDegrees()
                 < finishedThreshold.abs().toDegrees();
     }
 
     public void removeBall(int spot) {
+        assert spot < NUM_SPOTS : "Spot must be less than " + spot;
         ballColors[spot] = BallColor.NONE;
     }
 
@@ -209,6 +228,6 @@ public class Spindexer extends SubsystemBase {
     }
 
     public void goToSpot(int spot, CRServoEx.RunMode runMode) {
-        goToAngle(getSpotAngle(spot), runMode);
+        goToAngle(getAbsoluteAngle(spot), runMode);
     }
 }

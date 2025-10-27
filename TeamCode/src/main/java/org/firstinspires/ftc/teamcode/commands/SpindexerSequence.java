@@ -7,21 +7,17 @@ import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 
 import org.firstinspires.ftc.teamcode.motif.MotifEnums;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
-import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
 
-public class ShootSequence extends SequentialCommandGroup {
+public class SpindexerSequence extends SequentialCommandGroup {
     public static long waitMs = 200;
     public static long finalWaitMs = 500;
 
-    public ShootSequence(
+    public SpindexerSequence(
             Spindexer spindexer,
-            TwoWheelShooter shooter,
             MotifEnums.Motif motif,
-            CRServoEx.RunMode runMode,
-            double dist
+            CRServoEx.RunMode runMode
     ) {
         int[] sequence = spindexer.getOptimalSequence(motif);
-        addCommands(new InstantCommand(() -> shooter.setFlywheels(dist)));
         for (int i = 0; i < sequence.length; i++) {
             if (i > 0) addCommands(new WaitCommand(waitMs));
             int spot = sequence[i];
@@ -30,11 +26,8 @@ public class ShootSequence extends SequentialCommandGroup {
                     new InstantCommand(() -> spindexer.removeBall(spot))
             );
         }
-        addCommands(
-                new WaitCommand(finalWaitMs),
-                new InstantCommand(shooter::stopFlywheels)
-        );
+        addCommands(new WaitCommand(finalWaitMs));
 
-        addRequirements(spindexer, shooter);
+        addRequirements(spindexer);
     }
 }

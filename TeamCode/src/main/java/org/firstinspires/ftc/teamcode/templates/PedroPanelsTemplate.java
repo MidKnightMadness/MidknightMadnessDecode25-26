@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.pedroPathing.templates;
+package org.firstinspires.ftc.teamcode.templates;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.graph.GraphManager;
