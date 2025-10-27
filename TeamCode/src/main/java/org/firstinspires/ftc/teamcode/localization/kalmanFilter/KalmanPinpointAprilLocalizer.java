@@ -102,8 +102,6 @@ public class KalmanPinpointAprilLocalizer implements Localizer {
 
     @Override
     public void update() {
-        timer.updateTime();
-
         if(!limelight.isRunning()){//if the limelight is not currently running a pipeline, we start running it
             limelight.start();
         }

@@ -91,9 +91,7 @@ public class DoubleFlywheelCustomPID extends OpMode {
 
     @Override
     public void loop() {
-        timer.updateTime();
-
-        if(toggle.update(gamepad1.x)){
+        if (toggle.update(gamepad1.x)){
             resetEncoders();
         }
 

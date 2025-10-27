@@ -33,8 +33,8 @@ public class TwoWheelShooter extends SubsystemBase {
     // fill in later
     public static double[] distArr = {};
     public static double[] bottomVel = {}; // Ticks per second when 1:1 gear ratio
-
     public static double[] topVel = {};
+
     public static double gearRatio = 3;
     public final MotorEx low;
     public final MotorEx high;

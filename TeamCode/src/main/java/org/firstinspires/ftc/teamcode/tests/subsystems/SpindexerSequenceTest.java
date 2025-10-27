@@ -54,7 +54,7 @@ public class SpindexerSequenceTest extends OpMode {
 
     @Override
     public void start() {
-        timer.restartTimer();
+        timer.restart();
         spindexer.init();
     }
 

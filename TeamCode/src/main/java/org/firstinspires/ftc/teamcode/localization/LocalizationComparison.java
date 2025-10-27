@@ -102,8 +102,7 @@ public class LocalizationComparison extends OpMode{
 
     @Override
     public void loop() {
-        timer.updateTime();
-        if(previousPipeline != currentPipeline){
+        if (previousPipeline != currentPipeline){
             aprilTagLocalization.swapPipeline(currentPipeline);
             telemetry.addLine("Updating Pipeline to " + currentPipeline);
         }

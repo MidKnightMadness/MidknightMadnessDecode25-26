@@ -43,7 +43,7 @@ public class TransferTest extends OpMode {
 
     @Override
     public void loop() {
-        if (timer.updateTime() < motorPowerSwitchTime) {
+        if (timer.getTime() < motorPowerSwitchTime) {
             motor.setPower(motorPowerInitial);
         } else {
             motor.setPower(motorPower);

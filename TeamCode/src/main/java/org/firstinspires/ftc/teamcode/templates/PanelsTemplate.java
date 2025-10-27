@@ -35,7 +35,7 @@ public class PanelsTemplate extends OpMode {
 
     @Override
     public void start() {
-        timer.restartTimer();
+        timer.restart();
     }
 
     @Override

@@ -80,7 +80,7 @@ public class PedroPanelsTemplate extends OpMode {
     }
 
     public void updateTelemetry() {
-        timer.updateTime();
+        timer.getTime();
         // Field
         PanelsDrawing.drawRobot(currentPose);
         PanelsDrawing.drawPoseHistory(follower.getPoseHistory());

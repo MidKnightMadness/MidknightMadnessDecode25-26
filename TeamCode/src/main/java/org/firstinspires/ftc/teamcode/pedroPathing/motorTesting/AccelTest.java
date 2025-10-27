@@ -80,7 +80,6 @@ public class AccelTest extends OpMode {
 
     @Override
     public void loop() {
-        timer.updateTime();
         updateData();
         switch (state) {
             case accel:

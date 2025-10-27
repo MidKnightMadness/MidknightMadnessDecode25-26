@@ -126,7 +126,7 @@ public class BackSixBallAutoFSM extends OpMode {
     // Will return true if currently shooting, false if done shooting
     public boolean shootMotif(Motif motif) {
         // Placeholder to simulate time
-        return timer.updateTime() < 2000;
+        return timer.getTime() < 2000;
     }
 
     public void buildPaths() {
@@ -152,7 +152,7 @@ public class BackSixBallAutoFSM extends OpMode {
                 break;
 
             case waitForHumanLoad:
-                if (timer.updateTime() > 5000) {
+                if (timer.getTime() > 5000) {
                     follower.followPath(drivePickupToScorePath);
                     setPathState(PathState.driveToScore);
                 }

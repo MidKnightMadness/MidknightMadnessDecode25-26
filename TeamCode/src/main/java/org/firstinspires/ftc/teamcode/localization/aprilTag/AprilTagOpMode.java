@@ -69,8 +69,6 @@ public class AprilTagOpMode extends OpMode{
         imu.initialize(new IMU.Parameters(new RevHubOrientationOnRobot(logoFacingDirection, usbFacingDirection)));
     }
 
-
-
     private void createDashboardTelemetry(){
         FtcDashboard dashboard = FtcDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
@@ -85,15 +83,13 @@ public class AprilTagOpMode extends OpMode{
         return new Pose3D(new Position(DistanceUnit.INCH, x, y, z, 0), pose.getOrientation());
 
     }
+
     @Override
     public void loop() {
-        timer.updateTime();
         YawPitchRollAngles imuAngles = imu.getRobotYawPitchRollAngles();
         limelight.updateRobotOrientation(imuAngles.getYaw(AngleUnit.DEGREES));
 
-
         createDashboardTelemetry();
-
 
         telemetry.addData("Update rate", 1/ timer.getDeltaTime());
         telemetry.addData("Yaw(Deg): ", imuAngles.getYaw(AngleUnit.DEGREES));
