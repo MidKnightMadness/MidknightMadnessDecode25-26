@@ -126,7 +126,7 @@ public class Spindexer extends SubsystemBase {
             ballSensor.previousSpot = spot;
 
             if (spot == previousSpot) { // If in the middle of detecting
-                if (spot >= 0) continue;
+                if (spot == -1) continue;
                 ballSensor.addVote(ballSensor.sensor.readColor(), weight);
             } else { // If spot transition
                 if (previousSpot == -1) continue; // Only consider transitions from spots
