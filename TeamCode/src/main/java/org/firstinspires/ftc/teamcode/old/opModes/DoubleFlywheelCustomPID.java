@@ -1,10 +1,11 @@
-package org.firstinspires.ftc.teamcode.OutdatedPrograms;
+package org.firstinspires.ftc.teamcode.old.opModes;
 
 import static java.lang.Math.clamp;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.graph.GraphManager;
 import com.bylazar.telemetry.TelemetryManager;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -18,6 +19,8 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 
 
 @Configurable
+@Disabled
+@Deprecated
 @TeleOp(name = "2FlywheelPID", group = "Experiments")
 public class DoubleFlywheelCustomPID extends OpMode {
     DcMotorEx left;
