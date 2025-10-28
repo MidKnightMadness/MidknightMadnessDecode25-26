@@ -2,73 +2,99 @@ package org.firstinspires.ftc.teamcode.spindexer;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.qualcomm.hardware.maxbotix.MaxSonarI2CXL;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
-
-import org.firstinspires.ftc.teamcode.ultrasonics.ultrasonics;
 import org.firstinspires.ftc.teamcode.util.ButtonToggle;
 
 @TeleOp(name = "ColorSensorTesting")
 public class ColorSensorTesting extends OpMode {
+
+    ColorSensorBuffer bufferRed;
+    ColorSensorBuffer bufferGreen;
+    ColorSensorBuffer bufferBlue;
     ColorSensor colorSensor;
     ButtonToggle buttonToggle;
+
     int r, g, b, alpha;
+    double normR, normG, normB;
     String detectedColor = "No reading yet";
+    String detectedColorBuffer = "No buffered reading yet";
 
     // Thresholds for Green Ball (0.75" distance)
-    int greenRedMin = 111;
-    int greenRedMax = 113;
-    int greenGreenMin = 404;
-    int greenGreenMax = 408;
-    int greenBlueMin = 309;
-    int greenBlueMax = 311;
+    double greenRedMin = 0.05;
+    double greenRedMax = 0.40;
+    double greenGreenMin = 0.645;
+    double greenGreenMax = 0.93;
+    double greenBlueMin = 0.44;
+    double greenBlueMax = 0.75;
 
     // Thresholds for Purple Ball (0.75" distance)
-    int purpleRedMin = 400;
-    int purpleRedMax = 600;
-    int purpleGreenMin = 400;
-    int purpleGreenMax = 600;
-    int purpleBlueMin = 900;
-    int purpleBlueMax = 1000;
-    ultrasonics ultrasonics;
-    final double constantDistance = 5;
-    final double distance1 = 1;
-    final double distance2 = 1;
+    double purpleRedMin = 0.28;
+    double purpleRedMax = 0.53;
+    double purpleGreenMin = 0.30;
+    double purpleGreenMax = 0.73;
+    double purpleBlueMin = 0.5875;
+    double purpleBlueMax = 0.93;
+
+
+    ColorNormalizer norm;
+
     @Override
     public void init() {
         colorSensor = hardwareMap.get(RevColorSensorV3.class, "colorSensor");
         buttonToggle = new ButtonToggle();
+        colorSensor.enableLed(true); //maybe not needed idk
+        norm = new ColorNormalizer(r, g, b);
+        bufferRed = new ColorSensorBuffer();
+        bufferGreen = new ColorSensorBuffer();
+        bufferBlue = new ColorSensorBuffer();
     }
 
     @Override
     public void loop() {
-        double distance1 = ultrasonics.();
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
-
-
+        // Check if dpad_up is pressed (with button toggle to avoid repeats)
         if (buttonToggle.update(gamepad1.dpad_up)) {
-
+            // Read current color sensor values
             r = colorSensor.red();
             g = colorSensor.green();
             b = colorSensor.blue();
             alpha = colorSensor.alpha();
-
-            // Detect color based on RGB thresholds
-            detectedColor = detectBallColor(r, g, b);
+            norm.red = r;
+            norm.green = g;
+            norm.blue = b;
+            //normalize colors
+            normR = norm.normalizeRed();
+            normG = norm.normalizeGreen();
+            normB = norm.normalizeBlue();
+            //Buffer
+            bufferRed.addList(normR);
+            bufferGreen.addList(normG);
+            bufferBlue.addList(normB);
+            // Detect color based on normalized RGB thresholds
+            detectedColor = detectBallColor(normR, normG, normG);
+            detectedColorBuffer = detectBallColor(bufferRed.num, bufferGreen.num, bufferBlue.num);
         }
 
         telemetry.addData("Red", r);
         telemetry.addData("Green", g);
         telemetry.addData("Blue", b);
+        telemetry.addData("Normalized Red", normR);
+        telemetry.addData("Normalized Green", normG);
+        telemetry.addData("Normalized Blue", normB);
+        telemetry.addData("Buffered Red", bufferRed.num);
+        telemetry.addData("Buffered Green", bufferGreen.num);
+        telemetry.addData("Buffered Blue", bufferBlue.num);
         telemetry.addData("Alpha", alpha);
         telemetry.addData("Detected Color", detectedColor);
+        telemetry.addData("Detected Color(Buffer)", detectedColorBuffer);
         telemetry.update();
     }
 
-    private String detectBallColor(int r, int g, int b) {
+    private String detectBallColor(double r, double g, double b) {
         if (r >= greenRedMin && r <= greenRedMax &&
                 g >= greenGreenMin && g <= greenGreenMax &&
                 b >= greenBlueMin && b <= greenBlueMax) {

@@ -4,6 +4,8 @@ import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.HardwareDevice;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.I2cDevice;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -12,11 +14,11 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 import java.util.concurrent.locks.Lock;
 
+public class UltrasonicDistance {
 
-@Config
-@TeleOp(name = "Dual Maxbotix I2C + IMU", group = "Sensor")
-public class ultrasonics extends OpMode {
-
+    double leftDist;
+    double rightDist;
+    public static double distBetween  = 5;//INCH
     // Initialize IMU
     // imu = hardwareMap.get(IMU.class, "imu");
 
@@ -38,10 +40,7 @@ public class ultrasonics extends OpMode {
 
     // IMU (built into Rev Hub)
     private IMU imu;
-
-    @Override
-    public void init() {
-        // Match configuration names
+    public UltrasonicDistance(HardwareMap hardwareMap){
         sensorLeft = hardwareMap.i2cDevice.get("ultrasonicLeft");
         sensorRight = hardwareMap.i2cDevice.get("ultrasonicRight");
 
@@ -61,56 +60,73 @@ public class ultrasonics extends OpMode {
 
         imu.initialize(new IMU.Parameters(
                 new RevHubOrientationOnRobot(
-                       logoFacingDirection, usbFacingDirection
-                )
-        ));
+                        logoFacingDirection, usbFacingDirection)));
+        imu.resetYaw();
 
-
-        telemetry.addLine("Initialized Dual Ultrasonic Sensors + IMU");
     }
 
-    @Override
-    public void loop() {
-        // Refresh sensor data from controller
+
+    double imuRobotHeading;
+    double ultrasonicAngle;
+    double predictedFieldAngle;
+
+    public void update(){
         sensorLeft.readI2cCacheFromController();
         sensorRight.readI2cCacheFromController();
 
-        int distanceLeft = 0;
-        int distanceRight = 0;
 
         // Left Sensor
         readCacheLockLeft.lock();
         try {
             int high = readCacheLeft[4] & 0xFF;
             int low = readCacheLeft[5] & 0xFF;
-            distanceLeft = (high << 8) | low;
+            leftDist = (high << 8) | low;
         } finally {
             readCacheLockLeft.unlock();
         }
 
-         // Right Sensor
+        // Right Sensor
         readCacheLockRight.lock();
         try {
             int high = readCacheRight[4] & 0xFF;
             int low = readCacheRight[5] & 0xFF;
-            distanceRight = (high << 8) | low;
+            rightDist = (high << 8) | low;
         } finally {
             readCacheLockRight.unlock();
         }
 
 
-        double heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+        imuRobotHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+        ultrasonicAngle = Math.atan2(rightDist - leftDist, distBetween);//inches
+        predictedFieldAngle = getNormalizedAngle(Math.toRadians(270) - ultrasonicAngle);
+
+    }
+
+    public double getNormalizedAngle(double val){//normalize to 0 -> 2PI
+        double remainder = val % (2 * Math.PI);
+        if(remainder < 0){
+            remainder += 2 * Math.PI;
+        }
+        return remainder;
+    }
+    public double getDist1(){
+        return leftDist;
+    }
+
+    public double getDist2(){
+        return rightDist;
+    }
 
 
-        telemetry.addData("Left Distance (mm)", distanceLeft);
-        telemetry.addData("Right Distance (mm)", distanceRight);
-        telemetry.addData("Heading (°)", heading);
-        telemetry.update();
+    public double getRobotHeadingRad(){
+        return predictedFieldAngle;
+    }
 
-
-        sensorLeft.setI2cPortActionFlag();
-        sensorLeft.writeI2cCacheToController();
-        sensorRight.setI2cPortActionFlag();
-        sensorRight.writeI2cCacheToController();
+    //
+    public double getRobotHeadingDeg(){
+        return predictedFieldAngle * 180 / Math.PI;
+    }
+    public double getIMUHeadingDeg(){
+        return imuRobotHeading;
     }
 }
