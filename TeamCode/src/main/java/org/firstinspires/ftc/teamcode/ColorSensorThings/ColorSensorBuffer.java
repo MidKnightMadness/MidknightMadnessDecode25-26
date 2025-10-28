@@ -1,12 +1,11 @@
-package org.firstinspires.ftc.teamcode.spindexer;
+package org.firstinspires.ftc.teamcode.ColorSensorThings;
 
 import java.util.ArrayList;
 
 public class ColorSensorBuffer {
-    ArrayList<Double> list;
-    double num = 0;
-
-    double sum = 0;
+    public ArrayList<Double> list;
+    public double num = 0;
+    public double sum = 0;
     public ColorSensorBuffer(){
         list = new ArrayList<>();
     }
