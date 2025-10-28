@@ -1,9 +1,10 @@
-package org.firstinspires.ftc.teamcode.spindexer;
+package org.firstinspires.ftc.teamcode.ColorSensorThings;
 
 public class ColorNormalizer {
-    double red;
-    double green;
-    double blue;
+    public double red;
+    public double green;
+    public double blue;
+    //contruster
     public ColorNormalizer(double r, double g, double b){
         red = r;
         green = g;
@@ -15,9 +16,12 @@ public class ColorNormalizer {
         blue = 0;
     }
 
+    //getting magnitude
     public double magnitude(){
         return Math.sqrt((red*red) + (green*green) + (blue*blue));
     }
+
+    //getting normalized values
     public double normalizeRed() {
         return red / magnitude();
     }
