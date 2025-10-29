@@ -4,9 +4,9 @@ public class ColorNormalizer {
     public double red;
     public double green;
     public double blue;
-    //contruster
-    public ColorNormalizer(double r, double g, double b){
-        red = r;
+    //constructer
+    public ColorNormalizer(double red, double g, double b){
+        this.red = red;
         green = g;
         blue = b;
     }
