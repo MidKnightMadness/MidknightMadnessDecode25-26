@@ -2,8 +2,9 @@ package org.firstinspires.ftc.teamcode.localization.kalmanFilter;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
-import com.pedropathing.ftc.PoseConverter;
-import com.pedropathing.geometry.PedroCoordinates;
+import com.bylazar.field.Style;
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.localization.Localizer;
 import com.pedropathing.math.MathFunctions;
@@ -14,21 +15,23 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.teamcode.util.DashboardDrawing;
+import org.firstinspires.ftc.teamcode.util.PanelsDrawing;
 import org.firstinspires.ftc.teamcode.util.Timer;
-
-import java.util.concurrent.TimeUnit;
 
 @Config
 @Configurable
 public class KalmanPinpointAprilLocalizer implements Localizer {
     KalmanPinpointAprilConstants constants;
+    Telemetry telemetry;
     private Pose startPose;
     private Pose currentMergedPose = new Pose();
-    private Pose aprilTagPose;
-    private Pose pinpointPose;
+    private Pose aprilTagPose = new Pose();
+    private Pose pinpointPose = new Pose();
     private Pose previousMergedPose = new Pose();
     HardwareMap hardwareMap;
     IMU imu;
@@ -43,15 +46,16 @@ public class KalmanPinpointAprilLocalizer implements Localizer {
     public static double leftThresholdDeg = 100;
     public static double rightThresholdDeg = 80;
     Timer timer;
-
-    public KalmanPinpointAprilLocalizer(HardwareMap hardwareMap, KalmanPinpointAprilConstants lConstants){
-        this(hardwareMap, lConstants, new Pose());
+    public KalmanPinpointAprilLocalizer(HardwareMap hardwareMap, KalmanPinpointAprilConstants lConstants, Telemetry telemetry){
+        this(hardwareMap, lConstants, new Pose(), telemetry);
     }
 
-    public KalmanPinpointAprilLocalizer(HardwareMap hardwareMap, KalmanPinpointAprilConstants lConstants, Pose startPose) {
+    public KalmanPinpointAprilLocalizer(HardwareMap hardwareMap, KalmanPinpointAprilConstants lConstants, Pose startPose, Telemetry telemetry) {
+
         this.startPose = startPose;
         this.constants = lConstants;
         this.hardwareMap = hardwareMap;
+        this.telemetry = telemetry;
 
         //initalize imu
         imu = hardwareMap.get(IMU.class, lConstants.IMU_NAME);
@@ -106,12 +110,12 @@ public class KalmanPinpointAprilLocalizer implements Localizer {
             limelight.start();
         }
         if(limelight.isRunning()) {
-            if ((pinpoint.getHeading(AngleUnit.RADIANS) > Math.toRadians(leftThresholdDeg))){
+            if ((currentMergedPose.getHeading()> Math.toRadians(leftThresholdDeg))){
                 limelight.pipelineSwitch(constants.leftPipelineNum);
-            } else if(pinpoint.getHeading(AngleUnit.RADIANS) < Math.toRadians(rightThresholdDeg)){
+            } else if(currentMergedPose.getHeading() < Math.toRadians(rightThresholdDeg)){
                 limelight.pipelineSwitch(constants.rightPipelineNum);
             }
-            //otherwis don't swap
+            //otherwise don't swap
         }
 
         updatePinpointPose();
@@ -120,15 +124,34 @@ public class KalmanPinpointAprilLocalizer implements Localizer {
         updateVelocityPose();
         updateTotalYaw();
 
+        telemetry.addData("Start Pose: ", startPose != null ? startPose : 0);
+        telemetry.addData("Pinpoint Pose: ", pinpointPose != null ? pinpointPose : 0);
+        telemetry.addData("AprilTag Pose: ", aprilTagPose != null ? aprilTagPose : 0);
+        telemetry.addData("Kalman Pose: ", currentMergedPose != null ? currentMergedPose : 0);
+        telemetry.addData("Motif Detecting", motifDetecting);
+        telemetry.addData("April Tag Detected", aprilTagDetected);
+
+        drawPosesDashboard();
+        telemetry.update();
         previousHeading = currentMergedPose.getHeading();
         previousMergedPose = currentMergedPose;
 
     }
 
+    private void drawIndividualPose(Pose pose, String color){
+        DashboardDrawing.drawRobot(new Pose(pose.getX(), pose.getY(), pose.getHeading()), color);
+    }
 
+    private void drawPosesDashboard() {
+        drawIndividualPose(pinpointPose, "#FF0000");
+        drawIndividualPose(aprilTagPose, "#FFFF00");
+        drawIndividualPose(currentMergedPose, "#000000");
+        DashboardDrawing.sendPacket();
+    }
 
     public Pose updatePinpointPose(){
-        pinpointPose = new Pose(2 * startPose.getX() - pinpoint.getPosY(DistanceUnit.INCH), pinpoint.getPosX(DistanceUnit.INCH), normalizeAngleRad(pinpoint.getHeading(AngleUnit.RADIANS)));
+        pinpoint.update();
+        pinpointPose = new Pose(72- pinpoint.getPosY(DistanceUnit.INCH), pinpoint.getPosX(DistanceUnit.INCH) + startPose.getY(), normalizeAngleRad(pinpoint.getHeading(AngleUnit.RADIANS) + Math.PI /2));
         return pinpointPose;
     }
     public Pose updateAprilTagPose(){
@@ -136,7 +159,7 @@ public class KalmanPinpointAprilLocalizer implements Localizer {
 
         if (result != null && result.isValid()) {
             aprilTagDetected = true;
-            aprilTagPose = convertMetersToInch(new Pose(result.getBotpose().getPosition().y, result.getBotpose().getPosition().x, normalizeAngleRad(result.getBotpose().getOrientation().getYaw(AngleUnit.RADIANS))));
+            aprilTagPose = new Pose(72 + convertMetersToInch(result.getBotpose().getPosition().y), 72 - convertMetersToInch(result.getBotpose().getPosition().x), normalizeAngleRad(result.getBotpose().getOrientation().getYaw(AngleUnit.RADIANS) - Math.PI / 2));
         }
         else{
             aprilTagDetected = false;
@@ -144,8 +167,12 @@ public class KalmanPinpointAprilLocalizer implements Localizer {
         return aprilTagPose;
     }
 
-    public double normalizeAngleRad(double val){//(-PI - PI) -> (0 - 2PI)
-        return (val + Math.PI/2 + 2 * Math.PI) % (2* Math.PI);
+    public double normalizeAngleRad(double val){//keep within 0 - 2PI
+        double angle = val % (2 * Math.PI);
+        if(angle < 0){
+            angle += Math.PI * 2;
+        }
+        return angle;
     }
 
 
@@ -153,13 +180,13 @@ public class KalmanPinpointAprilLocalizer implements Localizer {
         if(aprilTagPose != null) {
             double fusedX = kalmanFilter.update(pinpointPose.getX(), aprilTagPose.getX(), aprilTagDetected);
             double fusedY = kalmanFilter.update(pinpointPose.getY(), aprilTagPose.getY(), aprilTagDetected);
-            double fusedTheta = kalmanFilter.updateAngle(pinpointPose.getHeading(), (aprilTagPose.getHeading() + Math.PI * 2) % (Math.PI *2), aprilTagDetected);
-            currentMergedPose = new Pose(fusedX, fusedY, fusedTheta);
+            double fusedTheta = kalmanFilter.updateAngle(pinpointPose.getHeading(), aprilTagPose.getHeading(), aprilTagDetected);
+            currentMergedPose = new Pose(fusedX, fusedY, normalizeAngleRad(fusedTheta));
         }
         else{
             double fusedX = kalmanFilter.update(pinpointPose.getX(), 0, aprilTagDetected);
             double fusedY = kalmanFilter.update(pinpointPose.getY(), 0, aprilTagDetected);
-            double fusedTheta = kalmanFilter.updateAngle(pinpointPose.getHeading(), 0, aprilTagDetected);
+                double fusedTheta = kalmanFilter.updateAngle(pinpointPose.getHeading(), 0, aprilTagDetected);
             currentMergedPose = new Pose(fusedX, fusedY, fusedTheta);
         }
         return currentMergedPose;
@@ -226,22 +253,8 @@ public class KalmanPinpointAprilLocalizer implements Localizer {
 
     }
 
-    double wrapAngleRad(double value){
-        while(value <= - Math.PI){
-            value += 2 * Math.PI;
-        }
-        while(value >=  Math.PI){
-            value -=  2 * Math.PI;
-        }
-        return value;
-    }
-
-
-    private Pose convertMetersToInch(Pose pose){
-        double x = pose.getX() * 100 / 2.54;
-        double y = pose.getY() * 100 / 2.54;
-        return new Pose(x, y, pose.getHeading());
-
+    private double convertMetersToInch(double val){
+        return val * 100 / 2.54;
     }
 
     @Override

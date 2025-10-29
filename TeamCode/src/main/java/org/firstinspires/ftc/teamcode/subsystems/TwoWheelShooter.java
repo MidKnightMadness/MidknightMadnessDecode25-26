@@ -27,12 +27,15 @@ public class TwoWheelShooter extends SubsystemBase {
     // fill in later
     public static double[] distArr = {};
     public static double[] bottomVel = {}; // Ticks per second when 1:1 gear ratio
-    public static double[] topVel = {};
 
+    public static double[] topVel = {};
     public static double gearRatio = 3;
     public final MotorEx low;
     public final MotorEx high;
     private RunMode runMode;
+    public static double minDistanceThreshold = 10;//INCH
+    public static Pose leftShootPose = new Pose(0, 144, Math.toRadians(90));
+    public static Pose rightShootPose = new Pose(144, 144, Math.toRadians(90));
     public static Map<Double, Double> grToMultiplier = Map.of(
             3., 2.89,
             4., 3.61,
@@ -81,7 +84,10 @@ public class TwoWheelShooter extends SubsystemBase {
         high.setFeedforwardCoefficients(kS, kV, kA);
     }
 
-    public void setFlywheelsPower(double dist) { //assuming facing the shooting area
+    public boolean setFlywheelsPower(double dist) {//assuming facing the shooting area
+        if(dist < minDistanceThreshold ){//not possible to make it in the goal
+            return false;
+        }
         double topVel = distToBottomVel.get(dist) * grToMultiplier.getOrDefault(gearRatio, 3.0);
         double bottomVel = distToTopVel.get(dist) * grToMultiplier.getOrDefault(gearRatio, 3.0);
         switch (runMode) {
@@ -94,11 +100,17 @@ public class TwoWheelShooter extends SubsystemBase {
                 high.set(topVel / high.ACHIEVABLE_MAX_TICKS_PER_SECOND);
                 break;
         }
+        return true;
     }
 
-//    public void shoot(Pose robotPose, ShootSide side){
-//
-//    }
+    public void setFlywheelPower(Pose robotPose, ShootSide side){
+        setFlywheelsPower(getDistance(robotPose, side));
+    }
+    public double getDistance(Pose robotPose, ShootSide side){
+        double xDist = Math.abs(robotPose.getX() - ((side == ShootSide.LEFT) ? leftShootPose.getX() : rightShootPose.getX()));
+        double yDist = Math.abs(robotPose.getY() - ((side == ShootSide.LEFT) ? leftShootPose.getY() : rightShootPose.getY()));
+        return Math.hypot(xDist, yDist);
+    }
 
     public void stopFlywheels() {
         low.motor.setPower(0);

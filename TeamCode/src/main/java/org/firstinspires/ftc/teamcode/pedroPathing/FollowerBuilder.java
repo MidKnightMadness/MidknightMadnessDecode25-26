@@ -22,6 +22,7 @@ import com.pedropathing.localization.Localizer;
 import com.pedropathing.paths.PathConstraints;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.localization.kalmanFilter.KalmanPinpointAprilConstants;
 import org.firstinspires.ftc.teamcode.localization.kalmanFilter.KalmanPinpointAprilLocalizer;
 
@@ -71,8 +72,8 @@ public class FollowerBuilder {
     public FollowerBuilder twoWheelLocalizer(TwoWheelConstants lConstants) {
         return setLocalizer(new TwoWheelLocalizer(hardwareMap, lConstants));
     }
-    public FollowerBuilder mergedKalmanLocalizer(KalmanPinpointAprilConstants mConstants, Pose startPose){
-        return setLocalizer(new KalmanPinpointAprilLocalizer(hardwareMap, mConstants, startPose));
+    public FollowerBuilder mergedKalmanLocalizer(KalmanPinpointAprilConstants mConstants, Pose startPose, Telemetry telemetry){
+        return setLocalizer(new KalmanPinpointAprilLocalizer(hardwareMap, mConstants, startPose, telemetry));
     }
 
 

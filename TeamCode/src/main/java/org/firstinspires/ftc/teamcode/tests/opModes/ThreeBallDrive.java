@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 @Configurable
 @Autonomous
-public class BackSixBallAutoDriveTest extends CommandOpMode {
+public class ThreeBallDrive extends CommandOpMode {
     TelemetryManager telemetryM;
     GraphManager graphM;
     Follower follower;
