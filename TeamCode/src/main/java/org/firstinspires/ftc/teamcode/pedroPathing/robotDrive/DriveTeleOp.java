@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.pedroPathing.robotDrive;
 
+import android.provider.Settings;
+
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.graph.GraphManager;
 import com.bylazar.graph.PanelsGraph;
@@ -26,6 +28,7 @@ public class DriveTeleOp extends OpMode {
     @Override
     public void init() {
         PanelsDrawing.init();
+        telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         follower = Constants.createKalmanPinpointAprilFollower(hardwareMap, startPose, telemetry);
         follower.setStartingPose(startPose);
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();

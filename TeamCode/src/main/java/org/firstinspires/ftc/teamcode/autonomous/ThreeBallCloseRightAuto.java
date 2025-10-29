@@ -22,24 +22,24 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
 @Config
 @Configurable
 @Autonomous(name = "Close Left")
-public class ThreeBallCloseLeftAuto extends BaseAuto {
+public class ThreeBallCloseRightAuto extends BaseAuto {
     public static double motifDetectionTimeMs = 5000;
     int startPipeline = 1;
-    public static Pose startPose = new Pose(56, 135, Math.toRadians(90));
-    public static Pose motifDetectionPose = new Pose(56, 112, Math.toRadians(80));
-    public static Pose startToShootControlPose = new Pose(37, 107);
-    public static Pose shootPose = new Pose(58, 58, Math.toRadians(130));
-    public static Pose leavePose = new Pose(58, 66, Math.toRadians(90));
+    public static Pose startPose = new Pose(88, 135, Math.toRadians(90));
+    public static Pose motifDetectionPose = new Pose(88, 112, Math.toRadians(100));
+    public static Pose startToShootControlPose = new Pose(107, 107);
+    public static Pose shootPose = new Pose(86, 58, Math.toRadians(50));
+    public static Pose leavePose = new Pose(86, 66, Math.toRadians(90));
     Path toMotifDetectionPath;
     Path toShootingPath;
     Path leaveBasePath;
     MotifEnums.Motif motifPattern;
     MotifReadCommand motifCommand;
 
-    ShootSide shootSide = ShootSide.LEFT;
+    ShootSide shootSide = ShootSide.RIGHT;
     Pose currentPose;
-    double speed = 0;
-    double acc = 0;
+    double speed;
+    double acc;
 
     @Override
     protected Pose getStartPose(){
@@ -94,10 +94,8 @@ public class ThreeBallCloseLeftAuto extends BaseAuto {
         addToTelemGraph("Pose(X)", currentPose.getX());
         addToTelemGraph("Pose(Y)", currentPose.getY());
         addToTelemGraph("Pose(Heading)", currentPose.getHeading());
-        addToTelemGraph("Speed(in/s)", speed);
-        addToTelemGraph("Acc(in/s^2)", acc);
-        telemetryManager.update();;
-        graphManager.update();;
+        addToTelemGraph("Speed(in/s)", (speed != 0 ? speed : 0));
+        addToTelemGraph("Acc(in/s^2)", (acc != 0 ? acc : 0));
     }
 
 
