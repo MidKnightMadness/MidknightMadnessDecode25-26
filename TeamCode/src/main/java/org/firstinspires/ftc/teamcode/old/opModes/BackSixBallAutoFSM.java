@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.OutdatedPrograms;
+package org.firstinspires.ftc.teamcode.old.opModes;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.graph.GraphManager;
@@ -15,8 +15,6 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.teamcode.util.PanelsDrawing;
 import org.firstinspires.ftc.teamcode.util.Timer;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-
-import java.util.concurrent.TimeUnit;
 
 @Deprecated
 @Configurable

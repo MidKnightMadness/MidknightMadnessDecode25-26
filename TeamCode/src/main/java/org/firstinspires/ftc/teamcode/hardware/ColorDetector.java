@@ -5,16 +5,15 @@ import org.firstinspires.ftc.teamcode.util.Threshold;
 import java.util.Map;
 
 public abstract class ColorDetector<T extends Enum<T>> {
-
-    protected Map<T, Threshold[]> thresholds; // 3 thresholds per color
-    protected T defaultColor;
+    protected Map<T, Threshold[]> thresholds;
+    protected T defaultValue;
 
     public ColorDetector(Map<T, Threshold[]> thresholds, T defaultColor) {
         this.thresholds = thresholds;
-        this.defaultColor = defaultColor;
+        this.defaultValue = defaultColor;
     }
 
-    public abstract float[] readRawColor(); // implementer provides sensor reading
+    public abstract float[] readRawColor();
 
     public T readColor() {
         float[] color = readRawColor();
@@ -29,6 +28,6 @@ public abstract class ColorDetector<T extends Enum<T>> {
             }
             if (inThreshold) return entry.getKey();
         }
-        return defaultColor;
+        return defaultValue;
     }
 }

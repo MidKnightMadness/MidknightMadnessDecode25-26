@@ -15,12 +15,12 @@ public class BallDetector extends ColorDetector<BallColor> {
         public BallDetector(HardwareMap hardwareMap, String deviceName) {
                 super(
                         Map.of(
-                                BallColor.GREEN, new Threshold[]{
-                                        new Threshold(90f, 150f),   // H
-                                        new Threshold(0.5f, 1f),    // S
-                                        new Threshold(0.5f, 1f)     // V
+                                BallColor.GREEN, new Threshold[] {
+                                        new Threshold(90f, 150f),
+                                        new Threshold(0.5f, 1f),
+                                        new Threshold(0.5f, 1f)
                                 },
-                                BallColor.PURPLE, new Threshold[]{
+                                BallColor.PURPLE, new Threshold[] {
                                         new Threshold(250f, 290f),
                                         new Threshold(0.5f, 1f),
                                         new Threshold(0.5f, 1f)
