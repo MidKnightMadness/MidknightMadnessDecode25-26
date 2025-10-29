@@ -5,9 +5,7 @@ import com.bylazar.graph.GraphManager;
 import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
-import com.pedropathing.follower.Follower;
 import com.qualcomm.hardware.lynx.LynxModule;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
@@ -16,9 +14,9 @@ import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.button.Button;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
-import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 
 import org.firstinspires.ftc.teamcode.commands.SpindexerGotoSpot;
+import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.util.Angle;
 import org.firstinspires.ftc.teamcode.util.Timer;
@@ -26,7 +24,7 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 @Configurable
 @TeleOp(group="Subsystems")
 public class SpindexerGotoTest extends CommandOpMode {
-    public static CRServoEx.RunMode runMode = CRServoEx.RunMode.OptimizedPositionalControl;
+    public static CRServoEx2.RunMode runMode = CRServoEx2.RunMode.OptimizedPositionalControl;
     public static Angle customAngle = Angle.fromDegrees(60);
 
     Button spot0Button, spot1Button, spot2Button, customAngleButton;
@@ -55,7 +53,7 @@ public class SpindexerGotoTest extends CommandOpMode {
         spot1Button = gp1.getGamepadButton(GamepadKeys.Button.B);
         spot2Button = gp1.getGamepadButton(GamepadKeys.Button.X);
 
-        spot0Button.whenPressed(new SequentialCommandGroup(
+        spot0Button.whileHeld(new SequentialCommandGroup(
                 new InstantCommand(() -> targetSpot = 0),
                 new SpindexerGotoSpot(spindexer, 0, runMode)
         ));
@@ -63,7 +61,7 @@ public class SpindexerGotoTest extends CommandOpMode {
                 new InstantCommand(() -> targetSpot = 1),
                 new SpindexerGotoSpot(spindexer, 1, runMode)
         ));
-        spot2Button.whenPressed(new SequentialCommandGroup(
+        spot2Button.whileHeld(new SequentialCommandGroup(
                 new InstantCommand(() -> targetSpot = 2),
                 new SpindexerGotoSpot(spindexer, 2, runMode)
         ));
@@ -87,17 +85,17 @@ public class SpindexerGotoTest extends CommandOpMode {
     }
 
     public void updateTelemetry() {
-//        telemetryM.addData("Measured Angle", spindexer.getCurrentAngle());
-//        telemetryM.addData("Target Spot", targetSpot);
-//        telemetryM.addData("Ball Colors", spindexer.getBallColors());
-//        addDataTelemetryGraph("Loop time (ms)", timer.getDeltaTime(TimeUnit.MILLISECONDS));
-//        telemetryM.update(telemetry);
-//        graphM.update();
-
-        telemetry.addData("Measured Angle", spindexer.getCurrentAngle());
-        telemetry.addData("Target Spot", targetSpot);
-        telemetry.addData("Ball Colors", spindexer.getBallColors());
-        telemetry.addData("Loop time (ms)", timer.getDeltaTime());
-        telemetry.update();
+        addDataTelemetryGraph("Error", spindexer.getTurner().error);
+        addDataTelemetryGraph("Power", spindexer.getTurner().power);
+        telemetryM.addData("Positive power count", spindexer.getTurner().positivePowerCount);
+        telemetryM.addData("Power change count", spindexer.getTurner().powerChangeCount);
+        telemetryM.addData("Set call count", spindexer.getTurner().setCount);
+        telemetryM.addData("Revolutions", spindexer.getEncoder().getRevolutions());
+        addDataTelemetryGraph("Raw Angle", spindexer.getEncoder().getAngle());
+        telemetryM.addData("Target Spot", targetSpot);
+        telemetryM.addData("Ball Colors", spindexer.getBallColors());
+        telemetryM.addData("Loop time (ms)", timer.getDeltaTime());
+        telemetryM.update(telemetry);
+        graphM.update();
     }
 }

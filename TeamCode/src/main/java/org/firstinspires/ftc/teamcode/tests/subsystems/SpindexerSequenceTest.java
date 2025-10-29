@@ -15,6 +15,7 @@ import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 
 import org.firstinspires.ftc.teamcode.commands.SpindexerGotoSpot;
+import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.util.PanelsDrawing;
 import org.firstinspires.ftc.teamcode.util.Timer;
@@ -24,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 @Configurable
 @TeleOp(group="Subsystems")
 public class SpindexerSequenceTest extends OpMode {
-    public static CRServoEx.RunMode runMode = CRServoEx.RunMode.OptimizedPositionalControl;
+    public static CRServoEx2.RunMode runMode = CRServoEx2.RunMode.OptimizedPositionalControl;
     public static int[] sequence = new int[] { 0, 1, 2 };
 
     Button sequenceButton;
@@ -69,6 +70,7 @@ public class SpindexerSequenceTest extends OpMode {
     }
 
     public void updateTelemetry() {
+        telemetryM.addData("Raw encoder ticks", spindexer.getEncoder());
         telemetryM.addData("Measured Angle", spindexer.getCurrentAngle());
         telemetryM.addData("Target Spot", targetSpot);
         telemetryM.addData("Ball Colors", spindexer.getBallColors());

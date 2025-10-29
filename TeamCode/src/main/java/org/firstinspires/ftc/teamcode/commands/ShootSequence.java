@@ -5,6 +5,7 @@ import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 
+import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.motif.MotifEnums;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
@@ -17,7 +18,7 @@ public class ShootSequence extends SequentialCommandGroup {
             Spindexer spindexer,
             TwoWheelShooter shooter,
             MotifEnums.Motif motif,
-            CRServoEx.RunMode runMode,
+            CRServoEx2.RunMode runMode,
             double dist
     ) {
         int[] sequence = spindexer.getOptimalSequence(motif);

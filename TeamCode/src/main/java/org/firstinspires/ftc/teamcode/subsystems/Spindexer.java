@@ -2,13 +2,15 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
-import com.seattlesolvers.solverslib.hardware.AbsoluteAnalogEncoder;
 import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
+import org.firstinspires.ftc.teamcode.hardware.IncrementalEncoder;
 import org.firstinspires.ftc.teamcode.motif.MotifEnums;
-import org.firstinspires.ftc.teamcode.sensors.BallDetector;
+import org.firstinspires.ftc.teamcode.hardware.BallDetector;
 import org.firstinspires.ftc.teamcode.util.Angle;
 import org.firstinspires.ftc.teamcode.util.BallColor;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
@@ -56,12 +58,12 @@ public class Spindexer extends SubsystemBase {
     public static Angle detectRange = Angle.fromDegrees(40); // How far off from the center of the spot that you detect. You don't want to trust measurements that are too off from the center
     public static Angle inColorSensorAngle = Angle.fromDegrees(180);
     public static Angle outColorSensorAngle = Angle.fromDegrees(0);
-    public static Angle finishedThreshold = Angle.fromDegrees(20); // Threshold at which it's finished turning to a spot
+    public static Angle finishedThreshold = Angle.fromDegrees(5); // Threshold at which it's finished turning to a spot
 
     private static final int NUM_SPOTS = 3;
 
     boolean useColorSensors;
-    CRServoEx turner;
+    CRServoEx2<IncrementalEncoder> turner;
     BallSensor[] ballSensors;
     Angle currentAngle;
     BallColor[] ballColors;
@@ -71,16 +73,13 @@ public class Spindexer extends SubsystemBase {
     }
 
     public Spindexer(HardwareMap hardwareMap, boolean useColorSensors) {
-        AbsoluteAnalogEncoder turnerEncoder = new AbsoluteAnalogEncoder(
-                hardwareMap,
-                ConfigNames.turnerEncoder,
-                1, // TODO: I don't know what ts does so fix it later
-                AngleUnit.DEGREES
+        IncrementalEncoder turnerEncoder = new IncrementalEncoder(
+                hardwareMap, "turnerEncoder", 8192, AngleUnit.DEGREES
         );
-        turner = new CRServoEx(
+        turner = new CRServoEx2<>(
                 hardwareMap, ConfigNames.turner,
-                turnerEncoder, CRServoEx.RunMode.RawPower
-        );
+                turnerEncoder, CRServoEx2.RunMode.RawPower
+        ).setPIDF(new PIDFCoefficients(0.02, 0, 0, 0));
         this.useColorSensors = useColorSensors;
         if (useColorSensors) {
             ballSensors = new BallSensor[] {
@@ -100,19 +99,21 @@ public class Spindexer extends SubsystemBase {
     @Override
     public void periodic() {
         currentAngle = Angle.fromDegrees(
-                turner.getAbsoluteEncoder().getCurrentPosition() - spotZeroReading.toDegrees()
+                turner.getEncoder().getAngle() - spotZeroReading.toDegrees()
         );
         if (useColorSensors) updateBallColors();
     }
 
     public void init() {
-        spotZeroReading = Angle.fromDegrees(
-                turner.getAbsoluteEncoder().getCurrentPosition()
-        );
+        turner.setEncoder(turner.getEncoder().zero());
     }
 
-    public CRServoEx getTurner() {
+    public CRServoEx2<IncrementalEncoder> getTurner() {
         return turner;
+    }
+
+    public IncrementalEncoder getEncoder() {
+        return turner.getEncoder();
     }
 
     public Angle getCurrentAngle() {
@@ -253,7 +254,7 @@ public class Spindexer extends SubsystemBase {
 
     // Sign of power is direction of spin
     public void spin(double power) {
-        turner.setRunMode(CRServoEx.RunMode.RawPower);
+        turner.setRunMode(CRServoEx2.RunMode.RawPower);
         turner.set(power);
     }
 
@@ -273,16 +274,16 @@ public class Spindexer extends SubsystemBase {
         ballColors[spot] = BallColor.NONE;
     }
 
-    public void goToAngle(Angle angle, CRServoEx.RunMode runMode) {
+    public void goToAngle(Angle angle, CRServoEx2.RunMode runMode) {
         turner.setRunMode(runMode);
-        if (runMode == CRServoEx.RunMode.OptimizedPositionalControl) {
+        if (runMode == CRServoEx2.RunMode.OptimizedPositionalControl) {
             turner.set(-angle.toDegrees());
         } else {
             turner.set(currentAngle.sub(angle).sign() * shootRawPower); // Careful signs work out
         }
     }
 
-    public void goToSpot(int spot, CRServoEx.RunMode runMode) {
+    public void goToSpot(int spot, CRServoEx2.RunMode runMode) {
         goToAngle(getAbsoluteAngle(spot), runMode);
     }
 }

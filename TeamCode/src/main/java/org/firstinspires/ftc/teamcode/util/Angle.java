@@ -5,8 +5,8 @@ import androidx.annotation.NonNull;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 public class Angle {
-    private final double value;
-    private final AngleUnit unit;
+    private double value;
+    private AngleUnit unit;
 
     public Angle(double value, AngleUnit unit) {
         this.value = value;
@@ -41,7 +41,13 @@ public class Angle {
     }
 
     public double to(AngleUnit angleUnit) {
-        return (unit == AngleUnit.DEGREES) ? this.toDegrees() : this.toRadians();
+        return (angleUnit == AngleUnit.DEGREES) ? this.toDegrees() : this.toRadians();
+    }
+
+    public Angle changeUnit(AngleUnit angleUnit) {
+        value = this.to(angleUnit);
+        unit = angleUnit;
+        return this;
     }
 
     public Angle wrap() {

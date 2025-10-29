@@ -5,6 +5,7 @@ import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 
+import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.motif.MotifEnums;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 
@@ -15,7 +16,7 @@ public class SpindexerSequence extends SequentialCommandGroup {
     public SpindexerSequence(
             Spindexer spindexer,
             MotifEnums.Motif motif,
-            CRServoEx.RunMode runMode
+            CRServoEx2.RunMode runMode
     ) {
         int[] sequence = spindexer.getOptimalSequence(motif);
         for (int i = 0; i < sequence.length; i++) {

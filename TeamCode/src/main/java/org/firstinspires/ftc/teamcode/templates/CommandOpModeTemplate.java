@@ -6,32 +6,26 @@ import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
-import com.seattlesolvers.solverslib.command.button.Button;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
-import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
-import org.firstinspires.ftc.teamcode.util.Angle;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
 import java.util.concurrent.TimeUnit;
 
+@Disabled
 @Configurable
 @TeleOp(group="Subsystems")
 public class CommandOpModeTemplate extends CommandOpMode {
-    public static CRServoEx.RunMode runMode = CRServoEx.RunMode.OptimizedPositionalControl;
-    public static Angle customAngle = Angle.fromDegrees(60);
-
-    Button spot0Button, spot1Button, spot2Button, customAngleButton;
     Spindexer spindexer;
     GamepadEx gp1;
     TelemetryManager telemetryM;
     GraphManager graphM;
     Timer timer;
-    int targetSpot = 0;
 
     @Override
     public void initialize() {
