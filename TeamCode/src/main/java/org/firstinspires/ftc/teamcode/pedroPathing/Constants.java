@@ -59,7 +59,7 @@ public class Constants {
             .setXOffset(138.874)
             .setYOffset(33)
             .setDistUnit(DistanceUnit.MM)
-            .setStartPipeline(2)
+            .setStartPipeline(1)
             .setEncoderXDir(GoBildaPinpointDriver.EncoderDirection.FORWARD)
             .setEncoderYDir(GoBildaPinpointDriver.EncoderDirection.FORWARD);
 
