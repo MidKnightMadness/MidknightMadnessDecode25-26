@@ -11,13 +11,14 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.util.DashboardDrawing;
 import org.firstinspires.ftc.teamcode.util.PanelsDrawing;
 
 @Configurable
 @TeleOp(name = "DriveTeleOp")
 public class DriveTeleOp extends OpMode {
     private Follower follower;
-    public static Pose startPose = new Pose(72, 203.2 /25.4, Math.toRadians(90));
+    public static Pose startPose = new Pose(72, 8, Math.toRadians(90));
 
     TelemetryManager telemetryM;
     GraphManager graphM;
@@ -25,7 +26,7 @@ public class DriveTeleOp extends OpMode {
     @Override
     public void init() {
         PanelsDrawing.init();
-        follower = Constants.createKalmanPinpointAprilFollower(hardwareMap, startPose);
+        follower = Constants.createKalmanPinpointAprilFollower(hardwareMap, startPose, telemetry);
         follower.setStartingPose(startPose);
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         graphM = PanelsGraph.INSTANCE.getManager();
@@ -43,7 +44,7 @@ public class DriveTeleOp extends OpMode {
     public void loop() {
         follower.update();
 
-        follower.setTeleOpDrive(-gamepad1.left_stick_x * currSpeed, -gamepad1.left_stick_y * currSpeed, -gamepad1.right_stick_x * currSpeed, true);
+        follower.setTeleOpDrive(-gamepad1.left_stick_y * currSpeed, -gamepad1.left_stick_x * currSpeed, -gamepad1.right_stick_x * currSpeed, true);
 
 
         if(gamepad1.yWasPressed()){
@@ -54,16 +55,17 @@ public class DriveTeleOp extends OpMode {
         }
 
 
-        telemetry.addData("Robot Pos", follower.getPose());
-        telemetry.addData("Speed", currSpeed);
-        updatePanelsTelemetry();
-
+//        telemetry.addData("Robot PosX:", follower.getPose());
+//        telemetry.addData("Speed", currSpeed);
+//        updatePanelsTelemetry();
+        PanelsDrawing.drawRobot(follower.getPose());
+        PanelsDrawing.sendPacket();
     }
 
     public void updatePanelsTelemetry() {
         // Field
         PanelsDrawing.drawRobot(follower.getPose());
-        PanelsDrawing.drawPoseHistory(follower.getPoseHistory());
+//        PanelsDrawing.drawPoseHistory(follower.getPoseHistory());
         PanelsDrawing.sendPacket();
 //
 //        // Telemetry

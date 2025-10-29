@@ -35,30 +35,20 @@ public class KalmanFilter {
 
 
     public double updateAngle(double pinpointTheta, double aprilTagTheta, boolean tagDetected){//input as radians
-        double angularKt = tagDetected  ? Kt : 0;
-        double dTheta = wrapAngleRad(aprilTagTheta - pinpointTheta);
-        double correctAngle = tagDetected ? dTheta * angularKt + pinpointTheta : pinpointTheta;
-        return wrapAngleRad(correctAngle);
+        if(!tagDetected){
+            return wrapAngleRad(pinpointTheta);
+        }
+        pinpointTheta = wrapAngleRad(pinpointTheta); aprilTagTheta = wrapAngleRad(aprilTagTheta);
+        double dTheta = pinpointTheta - aprilTagTheta;
+        double smallestDifference = ((dTheta + Math.PI) % (2 * Math.PI)) - Math.PI;
+        return wrapAngleRad(pinpointTheta +  Kt * smallestDifference);
     }
 
     double wrapAngleRad(double value){
-        while(value <= - Math.PI){
-            value += 2 * Math.PI;
-        }
-        while(value >=  Math.PI){
-            value -=  2 * Math.PI;
-        }
+        value = value % (2*Math.PI);
+        if(value < 0) value += 2*Math.PI;
         return value;
     }
 
-    double warpAngleDeg(double value){
-        while (value <= -180) {
-            value += 360;
-        }
-        while(value >= 180){
-            value -= 360;
-        }
-        return value;
-    }
 
 }

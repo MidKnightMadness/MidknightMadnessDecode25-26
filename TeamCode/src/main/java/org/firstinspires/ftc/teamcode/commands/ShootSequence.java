@@ -33,6 +33,7 @@ public class ShootSequence extends CommandBase {
             ShootSide side
     ) {
         int[] sequence = spindexer.getOptimalSequence(motif);
+
         new SequentialCommandGroup(
             new ParallelCommandGroup(
                 new InstantCommand(() -> shooter.setFlywheelPower(robotPose, side)),
@@ -60,6 +61,6 @@ public class ShootSequence extends CommandBase {
                 new InstantCommand(shooter::stopFlywheels)
         );
 
-        addRequirements(spindexer, shooter);
+        addRequirements(spindexer, shooter, ramp);
     }
 }

@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
@@ -11,7 +12,7 @@ import org.firstinspires.ftc.teamcode.util.ConfigNames;
 
 @Config
 @Configurable
-public class Ramp {
+public class Ramp extends SubsystemBase {
 
     ServoEx rampServo;
     public static double lowPos = 0;

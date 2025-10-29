@@ -8,7 +8,6 @@ import com.seattlesolvers.solverslib.pedroCommand.TurnToCommand;
 
 import org.firstinspires.ftc.teamcode.util.ExtraFns;
 
-// Idk if this is even necessary
 public class FacePose extends SequentialCommandGroup {
 
     public FacePose(Follower follower, Pose pose) {

@@ -13,6 +13,7 @@ import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.localization.kalmanFilter.KalmanPinpointAprilConstants;
 
@@ -83,9 +84,9 @@ public class Constants {
                 .build();
     }
 
-    public static Follower createKalmanPinpointAprilFollower(HardwareMap hardwareMap, Pose startPose){//global startPose
+    public static Follower createKalmanPinpointAprilFollower(HardwareMap hardwareMap, Pose startPose, Telemetry telemetry){//global startPose
         return new FollowerBuilder(followerConstants, hardwareMap)
-                .mergedKalmanLocalizer(mergedLocalizerConstants, startPose)
+                .mergedKalmanLocalizer(mergedLocalizerConstants, startPose, telemetry)
                 .mecanumDrivetrain(driveConstants)
                 .pathConstraints(pathConstraints)
                 .build();
