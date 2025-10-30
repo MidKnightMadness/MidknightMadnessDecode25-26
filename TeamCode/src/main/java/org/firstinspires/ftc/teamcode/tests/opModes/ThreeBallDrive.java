@@ -16,10 +16,11 @@ import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 import org.firstinspires.ftc.teamcode.util.ExtraFns;
 import org.firstinspires.ftc.teamcode.util.PanelsDrawing;
 import org.firstinspires.ftc.teamcode.util.Timer;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 
 import java.util.concurrent.TimeUnit;
 
+@Deprecated
 @Configurable
 @Autonomous
 public class ThreeBallDrive extends CommandOpMode {
@@ -42,7 +43,7 @@ public class ThreeBallDrive extends CommandOpMode {
     public void initialize() {
         super.reset();
 
-        follower = Constants.createPinpointFollower(hardwareMap);
+        follower = ConstantsOldBot.createPinpointFollower(hardwareMap);
         follower.setStartingPose(startPose);
         buildPaths();
 
@@ -81,6 +82,7 @@ public class ThreeBallDrive extends CommandOpMode {
         PanelsDrawing.drawPoseHistory(follower.getPoseHistory());
         PanelsDrawing.sendPacket();
 
+        timer.getTime();
         // Telemetry
         addDataTelemetryGraph("Loop time (ms)", timer.getDeltaTime(TimeUnit.MILLISECONDS));
         telemetryM.addData("Pose X (in)", currentPose.getX());

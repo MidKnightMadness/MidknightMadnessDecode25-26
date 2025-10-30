@@ -1,58 +1,21 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
-import android.os.Environment;
-
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.field.Style;
-import com.bylazar.graph.GraphManager;
-import com.bylazar.telemetry.PanelsTelemetry;
-import com.bylazar.telemetry.TelemetryManager;
-import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.Path;
-import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
-import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.util.RobotLog;
 import com.seattlesolvers.solverslib.command.Command;
-import com.seattlesolvers.solverslib.command.CommandOpMode;
-import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
-import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.teamcode.commands.FacePose;
 import org.firstinspires.ftc.teamcode.commands.MotifReadCommand;
-import org.firstinspires.ftc.teamcode.commands.ShootSequence;
 import org.firstinspires.ftc.teamcode.motif.MotifEnums;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.subsystems.Ramp;
-import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
-import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
-import org.firstinspires.ftc.teamcode.util.ConfigNames;
-import org.firstinspires.ftc.teamcode.util.DashboardDrawing;
-import org.firstinspires.ftc.teamcode.util.PanelsDrawing;
+import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.util.ShootSide;
-import org.firstinspires.ftc.teamcode.util.Timer;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import kotlinx.coroutines.selects.SelectUnbiasedKt;
 
 @Config
 @Configurable
@@ -62,11 +25,11 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
     int startPipeline = 1;
 
     public static Pose startPose = new Pose(56, 8, Math.toRadians(90));
-    public static Pose startToShootControlPose = new Pose(62, 15);
-    public static Pose shootPose = new Pose(67, 15, Math.toRadians(112));
+//    public static Pose startToShootControlPose = new Pose(54, 19);
+    public static Pose shootPose = new Pose(60, 17, Math.toRadians(112));
     public static Pose leavePose = new Pose(58, 38, Math.toRadians(112));
-    Path toShootingPath;
-    Path leaveBasePath;
+    PathChain toShootingPath;
+    PathChain leaveBasePath;
     MotifEnums.Motif motifPattern;
     MotifReadCommand motifCommand;
 
@@ -76,6 +39,7 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
     double speed;
     double acc;
 
+    public static long waitTime = 5000;
     @Override
     protected Pose getStartPose(){
         return startPose;
@@ -83,14 +47,20 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
 
     @Override
     protected void setupVision(){
-        limelight.start();
         limelight.pipelineSwitch(startPipeline);
+        limelight.start();
     }
 
     @Override
     protected void buildPaths(){
-        toShootingPath = new Path(new BezierCurve(startPose, startToShootControlPose, shootPose));
-        leaveBasePath = new Path(new BezierLine(shootPose, leavePose));
+        toShootingPath = follower.pathBuilder()
+                .addPath(new BezierLine(startPose, shootPose))
+                .setLinearHeadingInterpolation(startPose.getHeading(), shootPose.getHeading())
+                .build();
+        leaveBasePath = follower.pathBuilder()
+                .addPath(new BezierLine(shootPose, leavePose))
+                .setLinearHeadingInterpolation(shootPose.getHeading(), leavePose.getHeading())
+                .build();
     }
 
 
@@ -98,37 +68,48 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
     protected boolean isVisionComplete(){
         motifPattern = motifCommand.getDetected();
         if(motifPattern != MotifEnums.Motif.NONE){
+            ConstantsOldBot.motifIsBusy = false;
             return true;
         }
+        ConstantsOldBot.motifIsBusy = true;
         return false;
     }
+
     @Override
     protected Command preMotifSequence(){
         motifCommand = new MotifReadCommand(limelight, motifDetectionTimeMs);
         return new SequentialCommandGroup(
                 motifCommand,
-                new FollowPathCommand(follower, toShootingPath).setGlobalMaxPower(0.5),
-                new WaitCommand( 2000)
+                new FollowPathCommand(follower, toShootingPath).setGlobalMaxPower(0.6),
+                new WaitCommand( waitTime)
         );
 
     }
     @Override
     protected Command postMotifSequence(){
         return new SequentialCommandGroup(
+                new FacePose(follower, leftTargetPose),
 //                new ShootSequence(spindexer, shooter, ramp, motifPattern, CRServoEx.RunMode.OptimizedPositionalControl, startPose, shootSide),
-                new WaitCommand(1000),
+                new WaitCommand(waitTime),
                 new FollowPathCommand(follower, leaveBasePath, false)
         );
 
     }
 
     protected void updateTelemetry(){
+        follower.update();
+        currentPose = follower.getPose();
+        timer.getTime();
         addStringToTelem("Motif Pattern", String.valueOf(motifPattern));
+        addToTelemGraph("Update Rate", 1/timer.getDeltaTime());
         addToTelemGraph("Pose(X)", currentPose.getX());
         addToTelemGraph("Pose(Y)", currentPose.getY());
         addToTelemGraph("Pose(Heading)", currentPose.getHeading());
         addToTelemGraph("Speed(in/s)", (speed != 0 ? speed : 0));
         addToTelemGraph("Acc(in/s^2)", (acc != 0 ? acc : 0));
+        telemetry.update();
+        graphManager.update();;
+        telemetryManager.update();;
     }
 
 

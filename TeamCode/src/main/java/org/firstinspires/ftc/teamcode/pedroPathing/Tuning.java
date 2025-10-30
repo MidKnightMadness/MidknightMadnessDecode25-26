@@ -77,10 +77,10 @@ public class Tuning extends SelectableOpMode {
     @Override
     public void onSelect() {
         if (follower == null) {
-            follower = Constants.createPinpointFollower(hardwareMap);
+            follower = ConstantsOldBot.createPinpointFollower(hardwareMap);
             PanelsConfigurables.INSTANCE.refreshClass(this);
         } else {
-            follower = Constants.createPinpointFollower(hardwareMap);
+            follower = ConstantsOldBot.createPinpointFollower(hardwareMap);
         }
 
         follower.setStartingPose(new Pose());

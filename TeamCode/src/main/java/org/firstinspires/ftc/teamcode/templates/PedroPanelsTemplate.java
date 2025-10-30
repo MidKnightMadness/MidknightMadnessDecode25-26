@@ -15,7 +15,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.util.PanelsDrawing;
 import org.firstinspires.ftc.teamcode.util.Timer;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 
 @Disabled
 @Configurable
@@ -41,7 +41,7 @@ public class PedroPanelsTemplate extends OpMode {
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         graphM = PanelsGraph.INSTANCE.getManager();
 
-        follower = Constants.createPinpointFollower(hardwareMap);
+        follower = ConstantsOldBot.createPinpointFollower(hardwareMap);
         follower.setStartingPose(startPose);
         path = follower.pathBuilder()
                 .addPath(new BezierLine(startPose, endPose))

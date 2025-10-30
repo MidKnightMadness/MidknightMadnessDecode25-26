@@ -1,32 +1,21 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
-import com.acmerobotics.dashboard.config.Config;
-import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.graph.GraphManager;
 import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.Path;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
-import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 
-import org.firstinspires.ftc.teamcode.motif.MotifEnums;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.subsystems.Ramp;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
-import org.firstinspires.ftc.teamcode.util.ShootSide;
 import org.firstinspires.ftc.teamcode.util.Timer;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.util.Map;
 
 
 public class BaseAuto extends CommandOpMode {
@@ -41,6 +30,8 @@ public class BaseAuto extends CommandOpMode {
     TelemetryManager telemetryManager;
     GraphManager graphManager;
     boolean postMotifFinished = false;
+    public static Pose leftTargetPose = new Pose(0, 144, 0);
+    public static Pose rightTargetPose = new Pose(144, 144, 0);
 
     @Override
     public void initialize() {
@@ -49,13 +40,12 @@ public class BaseAuto extends CommandOpMode {
         timer.restart();
 
         limelight = hardwareMap.get(Limelight3A.class, ConfigNames.limelight);
-        spindexer = new Spindexer(hardwareMap);
-        ramp = new Ramp(hardwareMap);
-        shooter = new TwoWheelShooter(hardwareMap, TwoWheelShooter.RunMode.VelocityControl);
+//        spindexer = new Spindexer(hardwareMap);
+//        ramp = new Ramp(hardwareMap);
+//        shooter = new TwoWheelShooter(hardwareMap, TwoWheelShooter.RunMode.VelocityControl);
 
         startPose = getStartPose();
-        follower = Constants.createKalmanPinpointAprilFollower(hardwareMap, startPose, telemetry);
-        follower.setStartingPose(startPose);
+        follower = ConstantsOldBot.createKalmanPinpointAprilFollower(hardwareMap, startPose, telemetry);
 
         telemetryManager = PanelsTelemetry.INSTANCE.getTelemetry();
         graphManager = PanelsGraph.INSTANCE.getManager();
@@ -68,7 +58,7 @@ public class BaseAuto extends CommandOpMode {
     @Override
     public void run(){
         super.run();
-        if(isVisionComplete() && !postMotifFinished){
+        if(!postMotifFinished && isVisionComplete()){
             schedule(postMotifSequence());
             postMotifFinished = true;
         }
@@ -92,6 +82,7 @@ public class BaseAuto extends CommandOpMode {
     }
 
     protected void buildPaths() {
+
     }
     protected void updateTelemetry(){
     }

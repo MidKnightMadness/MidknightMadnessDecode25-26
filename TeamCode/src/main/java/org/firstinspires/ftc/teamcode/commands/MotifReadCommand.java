@@ -44,9 +44,10 @@ public class MotifReadCommand extends CommandBase {
     public MotifReadCommand(Limelight3A limelight, double timeMs){
         this.limelight = limelight;
         this.maxTimeMs = timeMs;
-        limelight.start();
         limelight.pipelineSwitch(motifPipeline);
+        limelight.start();
         timer = new Timer();
+
 
         file = createFile(fileName, directoryName);
 
