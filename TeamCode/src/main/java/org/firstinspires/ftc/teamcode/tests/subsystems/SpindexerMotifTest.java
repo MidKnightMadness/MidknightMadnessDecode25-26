@@ -15,14 +15,12 @@ import com.seattlesolvers.solverslib.command.button.Button;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
-import org.firstinspires.ftc.teamcode.commands.SpindexerGotoSpot;
 import org.firstinspires.ftc.teamcode.commands.SpindexerMotifSequence;
-import org.firstinspires.ftc.teamcode.commands.SpindexerRawSequence;
 import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.motif.MotifEnums;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.util.Angle;
-import org.firstinspires.ftc.teamcode.util.BallColor;
+import org.firstinspires.ftc.teamcode.colors.BallColor;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
 @Configurable

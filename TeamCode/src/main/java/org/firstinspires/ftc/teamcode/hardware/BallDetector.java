@@ -5,8 +5,8 @@ import android.graphics.Color;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.util.BallColor;
-import org.firstinspires.ftc.teamcode.util.Threshold;
+import org.firstinspires.ftc.teamcode.colors.BallColor;
+import org.firstinspires.ftc.teamcode.colors.Threshold;
 import java.util.Map;
 
 public class BallDetector extends ColorDetector<BallColor> {

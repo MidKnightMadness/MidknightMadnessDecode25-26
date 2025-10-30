@@ -1,6 +1,9 @@
-package org.firstinspires.ftc.teamcode.util;
+package org.firstinspires.ftc.teamcode.colors;
 
 import androidx.annotation.NonNull;
+
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
 
 import java.util.Arrays;
 
@@ -30,6 +33,25 @@ public class Color {
 
     public static Color fromRgb(ColorSpace target, double... color) {
         return new Color(target, target.fromRgb(color));
+    }
+
+    public static boolean isWithin(Threshold[] thresholds, double[] color) {
+        assert thresholds.length == color.length:
+                "Thresholds length must be equal to color space length of " +
+                        color.length + " got: " + thresholds.length;
+
+        boolean isWithin = true;
+        for (int i = 0; i < color.length; i++) {
+            if (!thresholds[i].contains(color[i])) {
+                isWithin = false;
+                break;
+            }
+        }
+        return isWithin;
+    }
+
+    public boolean isWithin(Threshold[] thresholds) {
+        return Color.isWithin(thresholds, values);
     }
 
     @NonNull
