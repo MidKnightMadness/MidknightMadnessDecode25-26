@@ -1,46 +1,47 @@
 
+
 package org.firstinspires.ftc.teamcode.autonomous;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
-import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.Path;
+import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
-import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
+import org.firstinspires.ftc.teamcode.commands.FacePose;
 import org.firstinspires.ftc.teamcode.commands.MotifReadCommand;
-import org.firstinspires.ftc.teamcode.commands.ShootSequence;
 import org.firstinspires.ftc.teamcode.motif.MotifEnums;
+import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.util.ShootSide;
 
 @Config
 @Configurable
-@Autonomous(name = "Close Left")
+@Autonomous(name = "Close Right")
 public class ThreeBallCloseLeftAuto extends BaseAuto {
     public static double motifDetectionTimeMs = 5000;
     int startPipeline = 1;
-    public static Pose startPose = new Pose(56, 135, Math.toRadians(90));
-    public static Pose motifDetectionPose = new Pose(56, 112, Math.toRadians(80));
-    public static Pose startToShootControlPose = new Pose(37, 107);
-    public static Pose shootPose = new Pose(58, 58, Math.toRadians(130));
-    public static Pose leavePose = new Pose(58, 66, Math.toRadians(90));
-    Path toMotifDetectionPath;
-    Path toShootingPath;
-    Path leaveBasePath;
+    public static Pose startPose = new Pose(144-88, 135, Math.toRadians(90));
+    public static Pose motifDetectionPose = new Pose(144- 88, 112, Math.toRadians(65));
+    public static Pose shootPose = new Pose(144 -86, 58, Math.toRadians(130));
+    public static Pose leavePose = new Pose(144- 86, 66, Math.toRadians(90));
+    PathChain toMotifPath;
+    PathChain toShootingPath;
+    PathChain leaveBasePath;
     MotifEnums.Motif motifPattern;
     MotifReadCommand motifCommand;
 
     ShootSide shootSide = ShootSide.LEFT;
     Pose currentPose;
-    double speed = 0;
-    double acc = 0;
 
+    double speed;
+    double acc;
+
+    public static long waitTime = 5000;
     @Override
     protected Pose getStartPose(){
         return startPose;
@@ -48,15 +49,25 @@ public class ThreeBallCloseLeftAuto extends BaseAuto {
 
     @Override
     protected void setupVision(){
-        limelight.start();
+
         limelight.pipelineSwitch(startPipeline);
+        limelight.start();
     }
 
     @Override
     protected void buildPaths(){
-        toMotifDetectionPath = new Path(new BezierLine(startPose, motifDetectionPose));
-        toShootingPath = new Path(new BezierCurve(motifDetectionPose, startToShootControlPose, shootPose));
-        leaveBasePath = new Path(new BezierLine(shootPose, leavePose));
+        toMotifPath = follower.pathBuilder()
+                .addPath(new BezierLine(startPose, motifDetectionPose))
+                .setLinearHeadingInterpolation(startPose.getHeading(), motifDetectionPose.getHeading())
+                .build();
+        toShootingPath = follower.pathBuilder()
+                .addPath(new BezierLine(motifDetectionPose, shootPose))
+                .setLinearHeadingInterpolation(motifDetectionPose.getHeading(), shootPose.getHeading())
+                .build();
+        leaveBasePath = follower.pathBuilder()
+                .addPath(new BezierLine(shootPose, leavePose))
+                .setLinearHeadingInterpolation(shootPose.getHeading(), leavePose.getHeading())
+                .build();
     }
 
 
@@ -64,40 +75,53 @@ public class ThreeBallCloseLeftAuto extends BaseAuto {
     protected boolean isVisionComplete(){
         motifPattern = motifCommand.getDetected();
         if(motifPattern != MotifEnums.Motif.NONE){
+            ConstantsOldBot.motifIsBusy = false;
             return true;
         }
+        ConstantsOldBot.motifIsBusy = true;
         return false;
     }
+
     @Override
     protected Command preMotifSequence(){
         motifCommand = new MotifReadCommand(limelight, motifDetectionTimeMs);
         return new SequentialCommandGroup(
-                new FollowPathCommand(follower, toMotifDetectionPath).setGlobalMaxPower(0.5),
+                new FollowPathCommand(follower, toMotifPath).setGlobalMaxPower(0.5),
                 motifCommand,
-                new FollowPathCommand(follower, toShootingPath).setGlobalMaxPower(0.5),
-                new WaitCommand( 2000)
+                new WaitCommand(waitTime),
+                new FollowPathCommand(follower, toShootingPath),
+                new WaitCommand(waitTime)
         );
 
     }
     @Override
     protected Command postMotifSequence(){
+        limelight.stop();//temporarily turn it off to hand to localizer
         return new SequentialCommandGroup(
+                new FacePose(follower, leftTargetPose),
+                new WaitCommand(waitTime),
 //                new ShootSequence(spindexer, shooter, ramp, motifPattern, CRServoEx.RunMode.OptimizedPositionalControl, startPose, shootSide),
-                new WaitCommand(1000),
+                new WaitCommand(waitTime),
                 new FollowPathCommand(follower, leaveBasePath, false)
         );
 
     }
 
     protected void updateTelemetry(){
+        follower.update();
+        currentPose = follower.getPose();
+        timer.getTime();
+        addBooleanToTelem("Motif Busy", ConstantsOldBot.motifIsBusy);
         addStringToTelem("Motif Pattern", String.valueOf(motifPattern));
+        addToTelemGraph("Update Rate", 1/timer.getDeltaTime());
         addToTelemGraph("Pose(X)", currentPose.getX());
         addToTelemGraph("Pose(Y)", currentPose.getY());
         addToTelemGraph("Pose(Heading)", currentPose.getHeading());
-        addToTelemGraph("Speed(in/s)", speed);
-        addToTelemGraph("Acc(in/s^2)", acc);
-        telemetryManager.update();;
+        addToTelemGraph("Speed(in/s)", (speed != 0 ? speed : 0));
+        addToTelemGraph("Acc(in/s^2)", (acc != 0 ? acc : 0));
+        telemetry.update();
         graphManager.update();;
+        telemetryManager.update();;
     }
 
 
@@ -110,6 +134,15 @@ public class ThreeBallCloseLeftAuto extends BaseAuto {
         telemetryManager.addData(s, o);
         graphManager.addData(s, o);
     }
+    public void addBooleanToTelem(String s, boolean o){
+        telemetry.addData(s, o);
+        telemetryManager.addData(s, o);
+    }
+
+
 
 }
+
+
+
 

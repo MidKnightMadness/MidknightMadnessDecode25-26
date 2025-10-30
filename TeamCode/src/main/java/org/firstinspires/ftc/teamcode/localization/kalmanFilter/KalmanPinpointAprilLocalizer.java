@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.localization.kalmanFilter;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.field.Style;
 //import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
@@ -20,8 +19,8 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.util.DashboardDrawing;
-import org.firstinspires.ftc.teamcode.util.PanelsDrawing;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
 @Config
@@ -106,13 +105,16 @@ public class KalmanPinpointAprilLocalizer implements Localizer {
 //        return new Pose(x, y, heading);
 //    }
 
+    boolean busy = ConstantsOldBot.motifIsBusy;
+
     @Override
     public void update() {
+        busy = ConstantsOldBot.motifIsBusy;
         if(!limelight.isRunning()){//if the limelight is not currently running a pipeline, we start running it
             limelight.start();
         }
-        if(limelight.isRunning()) {
-            if ((currentMergedPose.getHeading()> Math.toRadians(leftThresholdDeg)) || (currentMergedPose.getX() < 60 && currentMergedPose.getHeading() > Math.toRadians(90))){
+        if(limelight.isRunning() && !busy) {
+            if ((currentMergedPose.getHeading() > Math.toRadians(leftThresholdDeg)) || (currentMergedPose.getX() < 60 && currentMergedPose.getHeading() > Math.toRadians(90))){
                 limelight.pipelineSwitch(constants.leftPipelineNum);
             } else if(currentMergedPose.getHeading() < Math.toRadians(rightThresholdDeg)|| (currentMergedPose.getX() > 60 && currentMergedPose.getHeading() < Math.toRadians(90))){
                 limelight.pipelineSwitch(constants.rightPipelineNum);
@@ -152,7 +154,7 @@ public class KalmanPinpointAprilLocalizer implements Localizer {
 
     public Pose updatePinpointPose(){
         pinpoint.update();
-        pinpointPose = new Pose(72- pinpoint.getPosY(DistanceUnit.INCH), pinpoint.getPosX(DistanceUnit.INCH) + startPose.getY(), normalizeAngleRad(pinpoint.getHeading(AngleUnit.RADIANS) + Math.PI /2));
+        pinpointPose = new Pose(startPose.getX() - pinpoint.getPosY(DistanceUnit.INCH), pinpoint.getPosX(DistanceUnit.INCH) + startPose.getY(), normalizeAngleRad(pinpoint.getHeading(AngleUnit.RADIANS) + Math.PI /2));
         return pinpointPose;
     }
     public Pose updateAprilTagPose(){

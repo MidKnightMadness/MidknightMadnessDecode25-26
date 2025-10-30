@@ -16,9 +16,12 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.localization.kalmanFilter.KalmanPinpointAprilConstants;
+import org.firstinspires.ftc.teamcode.util.ConfigNames;
 
 @Configurable
-public class Constants {
+public class ConstantsOldBot {
+    public static boolean motifIsBusy = true;
+    //TODO: tune follower constants
     public static FollowerConstants followerConstants = new FollowerConstants()
             .forwardZeroPowerAcceleration(-52)
             .lateralZeroPowerAcceleration(-87.8)
@@ -35,29 +38,29 @@ public class Constants {
             .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(0.02, 0, 0.003, 0.6, 0.03))
             .centripetalScaling(0.0005)
             .mass(11.80);
-
+    //TODO: tune path constraints
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1.1, 1);
 
     public static PinpointConstants pinpointLocalizerConstants = new PinpointConstants()
             .forwardPodY(-5.875)
             .strafePodX(1.50)
             .distanceUnit(DistanceUnit.INCH)
-            .hardwareMapName("Pinpoint")
+            .hardwareMapName(ConfigNames.pinpoint)
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
             .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
             .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD);
     public static KalmanPinpointAprilConstants mergedLocalizerConstants = new KalmanPinpointAprilConstants()
-            .setIMUName("imu")
-            .setLimelightName("limelight")
+            .setIMUName(ConfigNames.imu)
+            .setLimelightName(ConfigNames.limelight)
             .setLeftPipelineNum(0)
             .setRightPipelineNum(2)
             .setStartPipeline(2)
-            .setPinpointHardwareConfig("Pinpoint")
+            .setPinpointHardwareConfig(ConfigNames.pinpoint)
             .setQ(0.01)
             .setR(2)
             .setMotifTrue(true)
-            .setXOffset(138.874)
-            .setYOffset(33)
+            .setXOffset(138.874)//TODO:TUNE
+            .setYOffset(33)//TODO: TUNE
             .setDistUnit(DistanceUnit.MM)
             .setStartPipeline(1)
             .setEncoderXDir(GoBildaPinpointDriver.EncoderDirection.FORWARD)
@@ -65,12 +68,12 @@ public class Constants {
 
     public static MecanumConstants driveConstants = new MecanumConstants()
             .maxPower(1)
-            .xVelocity(78)
+            .xVelocity(78)//TODO: x + y velocities
             .yVelocity(54.5)
-            .rightFrontMotorName("FR")
-            .rightRearMotorName("BR")
-            .leftRearMotorName("BL")
-            .leftFrontMotorName("FL")
+            .rightFrontMotorName(ConfigNames.FR)
+            .rightRearMotorName(ConfigNames.BR)
+            .leftRearMotorName(ConfigNames.BL)
+            .leftFrontMotorName(ConfigNames.FL)
             .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
             .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
             .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)

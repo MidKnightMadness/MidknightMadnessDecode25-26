@@ -13,7 +13,6 @@ import org.firstinspires.ftc.teamcode.util.ConfigNames;
 @Config
 @Configurable
 public class Ramp extends SubsystemBase {
-
     ServoEx rampServo;
     public static double lowPos = 0;
     public static double restPos = 0.5;
@@ -45,7 +44,5 @@ public class Ramp extends SubsystemBase {
     public double getPos(){
         return rampServo.get();
     }
-
-
 
 }

@@ -60,7 +60,10 @@ public class ShootSequence extends CommandBase {
         }
         new SequentialCommandGroup(
                 new WaitCommand(finalWaitMs),
-                new InstantCommand(shooter::stopFlywheels)
+                new ParallelCommandGroup(
+                    new InstantCommand(shooter::stopFlywheels),
+                    new InstantCommand(ramp:: setRestPos))
+
         );
 
         addRequirements(spindexer, shooter, ramp);

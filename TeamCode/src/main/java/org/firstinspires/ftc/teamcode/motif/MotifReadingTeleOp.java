@@ -25,6 +25,8 @@ public class MotifReadingTeleOp extends OpMode {
     @Override
     public void init() {
         file = new File(Environment.getExternalStorageDirectory(),  fileName);
+
+
         if(file.exists()){
             id = ReadWriteFile.readFile(file);
         }

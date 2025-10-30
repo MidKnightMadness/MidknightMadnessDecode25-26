@@ -20,16 +20,14 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
-import org.firstinspires.ftc.teamcode.localization.aprilTag.AprilTagLocalization;
+import org.firstinspires.ftc.teamcode.old.opModes.AprilTagLocalization;
 import org.firstinspires.ftc.teamcode.localization.kalmanFilter.KalmanFilter;
-import org.firstinspires.ftc.teamcode.localization.pinpoint.PinpointLocalization;
+import org.firstinspires.ftc.teamcode.old.opModes.PinpointLocalization;
 import org.firstinspires.ftc.teamcode.util.ButtonToggle;
 import org.firstinspires.ftc.teamcode.util.DashboardDrawing;
 import org.firstinspires.ftc.teamcode.util.PanelsDrawing;
 import org.firstinspires.ftc.teamcode.util.PoseBuffer;
 import org.firstinspires.ftc.teamcode.util.Timer;
-
-import java.util.concurrent.TimeUnit;
 
 @TeleOp(group = "Localization", name = "LocalizationComparison")
 @Configurable
