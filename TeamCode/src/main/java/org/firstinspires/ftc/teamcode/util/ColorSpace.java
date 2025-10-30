@@ -38,11 +38,12 @@ public enum ColorSpace {
 
     /**
      * Function to convert a color array with a color conversion type.
+     *
+     * @param type  Color conversion type (get constant from Imgproc)
      * @param color Color array
-     * @param type Color conversion type (get constant from Imgproc)
      * @return Converted color array
      */
-    public static double[] cvtColor(double[] color, int type) {
+    public static double[] cvtColor(int type, double... color) {
         int cvType = CvType.makeType(CvType.CV_8U, color.length);
         Mat src = new Mat(1, 1, cvType);
         src.put(0, 0, color);
@@ -83,13 +84,13 @@ public enum ColorSpace {
      * @param color A color in RGBA
      * @return Converted color in this color space
      */
-    public double[] fromRgba(double[] color) {
+    public double[] fromRgba(double... color) {
         checkLengthMismatch(ColorSpace.RGBA, color);
         if (this == ColorSpace.RGBA) return color;
         if (fromRgbConstant < 0) {
             throw new IllegalArgumentException("Unsupported conversion from RGBA to " + this);
         }
-        return cvtColor(color, fromRgbConstant);
+        return cvtColor(fromRgbConstant, color);
     }
 
     /**
@@ -97,14 +98,14 @@ public enum ColorSpace {
      * @param color A color in RGB(A)
      * @return Converted color in this color space
      */
-    public double[] fromRgb(double[] color) {
+    public double[] fromRgb(double... color) {
         checkRgbLengthMismatch(color);
         if ((this == ColorSpace.RGBA && length == color.length) ||
                 this == ColorSpace.RGB) return color;
         if (fromRgbConstant < 0) {
             throw new IllegalArgumentException("Unsupported conversion from RGB to " + this);
         }
-        return cvtColor(color, fromRgbConstant);
+        return cvtColor(fromRgbConstant, color);
     }
 
     /**
@@ -112,13 +113,13 @@ public enum ColorSpace {
      * @param color A color in this color space
      * @return Converted color in RGB
      */
-    public double[] toRgb(double[] color) {
+    public double[] toRgb(double... color) {
         checkLengthMismatch(this, color);
         if (this == ColorSpace.RGB) return color;
         if (toRgbConstant < 0) {
             throw new IllegalArgumentException("Unsupported conversion from RGB to " + this);
         }
-        return cvtColor(color, toRgbConstant);
+        return cvtColor(toRgbConstant, color);
     }
 
     /**
@@ -127,7 +128,7 @@ public enum ColorSpace {
      * @param color Color array in this color space
      * @return Color array in target color space
      */
-    public double[] to(ColorSpace colorSpace, double[] color) {
+    public double[] to(ColorSpace colorSpace, double... color) {
         checkLengthMismatch(this, color);
         if (this == colorSpace) return color;
         return colorSpace.fromRgb(toRgb(color));
@@ -139,7 +140,7 @@ public enum ColorSpace {
      * @param color Color array in source color space
      * @return Color array in this color space
      */
-    public double[] from(ColorSpace colorSpace, double[] color) {
+    public double[] from(ColorSpace colorSpace, double... color) {
         checkLengthMismatch(colorSpace, color);
         if (this == colorSpace) return color;
         return fromRgb(colorSpace.toRgb(color));

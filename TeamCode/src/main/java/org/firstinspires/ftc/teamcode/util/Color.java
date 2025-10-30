@@ -17,18 +17,19 @@ public class Color {
     public double[] getValues() { return values; }
 
     public Color to(ColorSpace target) {
-        if (target == space) return this;
         return new Color(target, space.to(target, values));
     }
 
     public Color toRgb() {
-        if (space == ColorSpace.RGB) return this;
         return new Color(ColorSpace.RGB, space.toRgb(values));
     }
 
-    public Color fromRgb() {
-        if (space == ColorSpace.RGB) return this;
-        return new Color(space, ColorSpace.RGB.to(space, values));
+    public static Color from(ColorSpace source, ColorSpace target, double... color) {
+        return new Color(target, target.from(source));
+    }
+
+    public static Color fromRgb(ColorSpace target, double... color) {
+        return new Color(target, target.fromRgb(color));
     }
 
     @NonNull

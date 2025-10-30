@@ -27,7 +27,6 @@ public class CRServoEx2<E extends Encoder> extends CRServo {
     public double error = 0;
     public double power = 0;
     public double positivePowerCount = 0;
-    public double powerChangeCount = 0;
     public double setCount = 0;
     /**
      * The mode in which the CR servo should behave.

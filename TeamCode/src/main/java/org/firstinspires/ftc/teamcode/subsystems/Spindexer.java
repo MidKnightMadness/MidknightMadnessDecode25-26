@@ -70,6 +70,7 @@ public class Spindexer extends SubsystemBase {
     BallSensor[] ballSensors;
     Angle currentAngle;
     BallColor[] ballColors;
+    public int[] sequence;
 
     public Spindexer(HardwareMap hardwareMap) {
         this(hardwareMap, true);
@@ -108,6 +109,7 @@ public class Spindexer extends SubsystemBase {
     }
 
     public Spindexer init() {
+        currentAngle = Angle.fromDegrees(0);
         turner.setEncoder(turner.getEncoder().zero());
         return this;
     }
@@ -126,6 +128,12 @@ public class Spindexer extends SubsystemBase {
 
     public BallColor[] getBallColors() {
         return ballColors;
+    }
+
+    public Spindexer setBallColors(BallColor[] ballColors) {
+        assert ballColors.length == NUM_SPOTS : "ballColors must be length " + NUM_SPOTS;
+        this.ballColors = ballColors;
+        return this;
     }
 
     public void updateBallColors() {
@@ -149,9 +157,9 @@ public class Spindexer extends SubsystemBase {
         }
     }
 
-    private int computeMomentum(int[] seq, int i, int nextSpot) {
-        if (i == 0) return getRelativeAngle(nextSpot).sign();
-        int diff = (nextSpot - seq[i-1] + NUM_SPOTS) % NUM_SPOTS;
+    private int computeMomentum(int[] seq, int i) {
+        if (i == 0) return getRelativeAngle(seq[i]).sign();
+        int diff = (seq[i] - seq[i-1] + NUM_SPOTS) % NUM_SPOTS;
         if (diff == 0) return 0;
         return (diff <= NUM_SPOTS / 2) ? 1 : -1;
     }
@@ -172,7 +180,8 @@ public class Spindexer extends SubsystemBase {
                 spot = getNextSpot(seq, i, momentum);
             }
             seq[i] = spot;
-            momentum = computeMomentum(seq, i, spot);
+//            throw new IllegalStateException("Spot: " + spot + " i: " + i + " Seq: " + seq[0]);
+            momentum = computeMomentum(seq, i);
         }
         return seq;
     }
@@ -197,7 +206,7 @@ public class Spindexer extends SubsystemBase {
         for (int i = 0; i < totalCount; i++) {
             int spot = getNextSpot(seq, i, momentum);
             seq[i] = spot;
-            momentum = computeMomentum(seq, i, spot);
+            momentum = computeMomentum(seq, i);
         }
 
         return seq;
@@ -219,6 +228,7 @@ public class Spindexer extends SubsystemBase {
         } else {
             sequence = sequenceDefault(greenCount + purpleCount);
         }
+        this.sequence = sequence;
         return sequence;
     }
 
