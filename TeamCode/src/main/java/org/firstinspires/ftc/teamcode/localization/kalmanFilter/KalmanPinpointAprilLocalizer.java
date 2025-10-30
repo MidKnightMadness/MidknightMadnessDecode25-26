@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.localization.kalmanFilter;
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.field.Style;
+//import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.geometry.Pose;
@@ -27,12 +28,13 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 @Configurable
 public class KalmanPinpointAprilLocalizer implements Localizer {
     KalmanPinpointAprilConstants constants;
-    Telemetry telemetry;
     private Pose startPose;
     private Pose currentMergedPose = new Pose();
     private Pose aprilTagPose = new Pose();
     private Pose pinpointPose = new Pose();
     private Pose previousMergedPose = new Pose();
+    TelemetryManager telemetryManager;
+    Telemetry telemetry;
     HardwareMap hardwareMap;
     IMU imu;
     GoBildaPinpointDriver pinpoint;
@@ -51,7 +53,7 @@ public class KalmanPinpointAprilLocalizer implements Localizer {
     }
 
     public KalmanPinpointAprilLocalizer(HardwareMap hardwareMap, KalmanPinpointAprilConstants lConstants, Pose startPose, Telemetry telemetry) {
-
+        telemetryManager = PanelsTelemetry.INSTANCE.getTelemetry();
         this.startPose = startPose;
         this.constants = lConstants;
         this.hardwareMap = hardwareMap;
@@ -110,9 +112,9 @@ public class KalmanPinpointAprilLocalizer implements Localizer {
             limelight.start();
         }
         if(limelight.isRunning()) {
-            if ((currentMergedPose.getHeading()> Math.toRadians(leftThresholdDeg))){
+            if ((currentMergedPose.getHeading()> Math.toRadians(leftThresholdDeg)) || (currentMergedPose.getX() < 60 && currentMergedPose.getHeading() > Math.toRadians(90))){
                 limelight.pipelineSwitch(constants.leftPipelineNum);
-            } else if(currentMergedPose.getHeading() < Math.toRadians(rightThresholdDeg)){
+            } else if(currentMergedPose.getHeading() < Math.toRadians(rightThresholdDeg)|| (currentMergedPose.getX() > 60 && currentMergedPose.getHeading() < Math.toRadians(90))){
                 limelight.pipelineSwitch(constants.rightPipelineNum);
             }
             //otherwise don't swap
@@ -132,7 +134,6 @@ public class KalmanPinpointAprilLocalizer implements Localizer {
         telemetry.addData("April Tag Detected", aprilTagDetected);
 
         drawPosesDashboard();
-        telemetry.update();
         previousHeading = currentMergedPose.getHeading();
         previousMergedPose = currentMergedPose;
 
