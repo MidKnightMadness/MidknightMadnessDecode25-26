@@ -26,6 +26,7 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 public class SpindexerGotoTest extends CommandOpMode {
     public static CRServoEx2.RunMode runMode = CRServoEx2.RunMode.OptimizedPositionalControl;
     public static Angle customAngle = Angle.fromDegrees(60);
+    public static double finishedTimeThreshold = 1000;
 
     Button spot0Button, spot1Button, spot2Button, customAngleButton;
     Spindexer spindexer;
@@ -53,17 +54,17 @@ public class SpindexerGotoTest extends CommandOpMode {
         spot1Button = gp1.getGamepadButton(GamepadKeys.Button.B);
         spot2Button = gp1.getGamepadButton(GamepadKeys.Button.X);
 
-        spot0Button.whileHeld(new SequentialCommandGroup(
+        spot0Button.whenPressed(new SequentialCommandGroup(
                 new InstantCommand(() -> targetSpot = 0),
-                new SpindexerGotoSpot(spindexer, 0, runMode)
+                new SpindexerGotoSpot(spindexer, 0, runMode, finishedTimeThreshold)
         ));
         spot1Button.whenPressed(new SequentialCommandGroup(
                 new InstantCommand(() -> targetSpot = 1),
-                new SpindexerGotoSpot(spindexer, 1, runMode)
+                new SpindexerGotoSpot(spindexer, 1, runMode, finishedTimeThreshold)
         ));
-        spot2Button.whileHeld(new SequentialCommandGroup(
+        spot2Button.whenPressed(new SequentialCommandGroup(
                 new InstantCommand(() -> targetSpot = 2),
-                new SpindexerGotoSpot(spindexer, 2, runMode)
+                new SpindexerGotoSpot(spindexer, 2, runMode, finishedTimeThreshold)
         ));
         gp1.getGamepadButton(GamepadKeys.Button.Y).whenPressed( // Just to check if gamepad works
                 new InstantCommand(() -> targetSpot = -1)
@@ -85,11 +86,12 @@ public class SpindexerGotoTest extends CommandOpMode {
     }
 
     public void updateTelemetry() {
-        addDataTelemetryGraph("Error", spindexer.getTurner().error);
+//        addDataTelemetryGraph("Error", spindexer.getTurner().error);
         addDataTelemetryGraph("Power", spindexer.getTurner().power);
-        telemetryM.addData("Positive power count", spindexer.getTurner().positivePowerCount);
-        telemetryM.addData("Power change count", spindexer.getTurner().powerChangeCount);
-        telemetryM.addData("Set call count", spindexer.getTurner().setCount);
+        telemetryM.addData("Test", spindexer.test);
+//        telemetryM.addData("Positive power count", spindexer.getTurner().positivePowerCount);
+//        telemetryM.addData("Power change count", spindexer.getTurner().powerChangeCount);
+//        telemetryM.addData("Set call count", spindexer.getTurner().setCount);
         telemetryM.addData("Revolutions", spindexer.getEncoder().getRevolutions());
         addDataTelemetryGraph("Raw Angle", spindexer.getEncoder().getAngle());
         telemetryM.addData("Target Spot", targetSpot);

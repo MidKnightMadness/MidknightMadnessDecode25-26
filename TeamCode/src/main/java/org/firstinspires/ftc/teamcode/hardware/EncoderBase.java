@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
-public abstract class EncoderBase implements Encoder {
+public abstract class EncoderBase<T extends EncoderBase<T>> implements Encoder {
     protected double offset = 0.0;
     protected RotationDirection direction = RotationDirection.FORWARD;
     protected AngleUnit angleUnit;
@@ -13,15 +13,17 @@ public abstract class EncoderBase implements Encoder {
     }
 
     @Override
-    public EncoderBase setDirection(RotationDirection direction) {
+    @SuppressWarnings("unchecked")
+    public T setDirection(RotationDirection direction) {
         this.direction = direction;
-        return this;
+        return (T) this;
     }
 
     @Override
-    public EncoderBase setReversed(boolean reversed) {
+    @SuppressWarnings("unchecked")
+    public T setReversed(boolean reversed) {
         direction = reversed ? RotationDirection.REVERSE : RotationDirection.FORWARD;
-        return this;
+        return (T) this;
     }
 
     @Override

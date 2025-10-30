@@ -66,12 +66,12 @@ public class Angle {
 
     // Arithmetic operations
     public Angle add(Angle other) {
-        double sum = this.toRadians() + other.toRadians();
+        double sum = this.to(unit) + other.to(unit);
         return new Angle(sum, unit).wrap();
     }
 
     public Angle sub(Angle other) {
-        double diff = this.toRadians() - other.toRadians();
+        double diff = this.to(unit) - other.to(unit);
         return new Angle(diff, unit).wrap();
     }
 

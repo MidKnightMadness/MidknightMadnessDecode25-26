@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.PwmControl;
@@ -8,6 +9,8 @@ import com.seattlesolvers.solverslib.controller.PIDFController;
 import com.seattlesolvers.solverslib.hardware.motors.CRServo;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.util.MathUtils;
+
+import org.firstinspires.ftc.teamcode.R;
 
 /**
  * An extended wrapper class for CRServos with more features
@@ -64,6 +67,15 @@ public class CRServoEx2<E extends Encoder> extends CRServo {
         super(hwMap, id);
         this.encoder = null;
         this.runmode = RunMode.RawPower;
+    }
+
+    public CRServoEx2<E> setReversed(boolean reversed) {
+        if (reversed) {
+            this.getServo().setDirection(DcMotorSimple.Direction.REVERSE);
+        } else {
+            this.getServo().setDirection(DcMotorSimple.Direction.FORWARD);
+        }
+        return this;
     }
 
     /**

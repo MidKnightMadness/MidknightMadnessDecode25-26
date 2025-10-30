@@ -52,6 +52,7 @@ public class Spindexer extends SubsystemBase {
 
     public static double intakeSpinPower = 0.3;
     public static double shootRawPower = 1;
+    public static PIDFCoefficients turnerCoefficients = new PIDFCoefficients(0.005, 0, 0, 0);
 
     // 0 is defined as the position of the shooter
     public Angle spotZeroReading = Angle.fromDegrees(0); // Raw encoder reading when spot 0 is aligned with shooter
@@ -61,6 +62,8 @@ public class Spindexer extends SubsystemBase {
     public static Angle finishedThreshold = Angle.fromDegrees(5); // Threshold at which it's finished turning to a spot
 
     private static final int NUM_SPOTS = 3;
+
+    public Angle test = new Angle(0, AngleUnit.DEGREES);
 
     boolean useColorSensors;
     CRServoEx2<IncrementalEncoder> turner;
@@ -79,7 +82,7 @@ public class Spindexer extends SubsystemBase {
         turner = new CRServoEx2<>(
                 hardwareMap, ConfigNames.turner,
                 turnerEncoder, CRServoEx2.RunMode.RawPower
-        ).setPIDF(new PIDFCoefficients(0.02, 0, 0, 0));
+        ).setPIDF(turnerCoefficients).setReversed(true);
         this.useColorSensors = useColorSensors;
         if (useColorSensors) {
             ballSensors = new BallSensor[] {
@@ -104,8 +107,9 @@ public class Spindexer extends SubsystemBase {
         if (useColorSensors) updateBallColors();
     }
 
-    public void init() {
+    public Spindexer init() {
         turner.setEncoder(turner.getEncoder().zero());
+        return this;
     }
 
     public CRServoEx2<IncrementalEncoder> getTurner() {
@@ -279,7 +283,9 @@ public class Spindexer extends SubsystemBase {
         if (runMode == CRServoEx2.RunMode.OptimizedPositionalControl) {
             turner.set(-angle.toDegrees());
         } else {
-            turner.set(currentAngle.sub(angle).sign() * shootRawPower); // Careful signs work out
+//            throw new IllegalStateException("" + currentAngle.sub(angle).sign());
+            test = currentAngle.add(angle);
+            turner.set(-currentAngle.add(angle).sign() * shootRawPower); // Careful signs work out
         }
     }
 

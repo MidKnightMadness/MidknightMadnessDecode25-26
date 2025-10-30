@@ -31,6 +31,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.commands.ShootSequence;
+import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.motif.MotifEnums;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.commands.MotifReadCommand;
@@ -145,7 +146,7 @@ public class ThreeBallCloseRightAuto extends CommandOpMode {
 
     public SequentialCommandGroup createSequencePostMotif(){
         return new SequentialCommandGroup(
-                new ShootSequence(spindexer, shooter, ramp, motifPattern, CRServoEx.RunMode.OptimizedPositionalControl, startPose, shootSide),
+                new ShootSequence(spindexer, shooter, ramp, motifPattern, CRServoEx2.RunMode.OptimizedPositionalControl, startPose, shootSide, 0),
                 new WaitCommand(1000),
                 new FollowPathCommand(follower, leaveBasePath, false)
         );

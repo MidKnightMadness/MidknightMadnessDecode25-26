@@ -10,6 +10,7 @@ import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 
+import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.motif.MotifEnums;
 import org.firstinspires.ftc.teamcode.subsystems.Ramp;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
@@ -28,9 +29,10 @@ public class ShootSequence extends CommandBase {
             TwoWheelShooter shooter,
             Ramp ramp,
             MotifEnums.Motif motif,
-            CRServoEx.RunMode runMode,
+            CRServoEx2.RunMode runMode,
             Pose robotPose,
-            ShootSide side
+            ShootSide side,
+            double finishedTimeThreshold
     ) {
         int[] sequence = spindexer.getOptimalSequence(motif);
 
@@ -49,7 +51,7 @@ public class ShootSequence extends CommandBase {
                 );
             int spot = sequence[i];
             new SequentialCommandGroup(
-                new SpindexerGotoSpot(spindexer, spot, runMode),
+                new SpindexerGotoSpot(spindexer, spot, runMode, finishedTimeThreshold),
                 new ParallelCommandGroup(
                     new InstantCommand(ramp::setLowerPos),
                     new InstantCommand(() -> spindexer.removeBall(spot))

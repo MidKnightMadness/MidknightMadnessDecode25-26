@@ -9,21 +9,21 @@ import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.motif.MotifEnums;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 
-public class SpindexerSequence extends SequentialCommandGroup {
+public class SpindexerRawSequence extends SequentialCommandGroup {
     public static long waitMs = 200;
     public static long finalWaitMs = 500;
 
-    public SpindexerSequence(
+    public SpindexerRawSequence(
             Spindexer spindexer,
-            MotifEnums.Motif motif,
-            CRServoEx2.RunMode runMode
+            int[] sequence,
+            CRServoEx2.RunMode runMode,
+            double finishedTimeThreshold
     ) {
-        int[] sequence = spindexer.getOptimalSequence(motif);
         for (int i = 0; i < sequence.length; i++) {
             if (i > 0) addCommands(new WaitCommand(waitMs));
             int spot = sequence[i];
             addCommands(
-                    new SpindexerGotoSpot(spindexer, spot, runMode),
+                    new SpindexerGotoSpot(spindexer, spot, runMode, finishedTimeThreshold),
                     new InstantCommand(() -> spindexer.removeBall(spot))
             );
         }

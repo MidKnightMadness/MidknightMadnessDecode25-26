@@ -7,7 +7,7 @@ import com.seattlesolvers.solverslib.util.MathUtils;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
-public class IncrementalEncoder extends EncoderBase {
+public class IncrementalEncoder extends EncoderBase<IncrementalEncoder> {
     private final DcMotor encoder;
     private final double cpr;
 

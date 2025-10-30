@@ -15,18 +15,17 @@ import org.firstinspires.ftc.teamcode.util.Angle;
 @Config
 @Configurable
 public class ShootColor extends SequentialCommandGroup {
-
-
     public ShootColor(
             Spindexer spindexer,
             TwoWheelShooter shooter,
             CRServoEx2.RunMode runMode,
-            double dist
+            double dist,
+            double finishedTimeThreshold
     ) {
         int spot = spindexer.getNearestSpotIndex(Angle.fromDegrees(0));
         addCommands(
                 new InstantCommand(() -> shooter.setFlywheelsPower(dist)),
-                new SpindexerGotoSpot(spindexer, spot, runMode),
+                new SpindexerGotoSpot(spindexer, spot, runMode, finishedTimeThreshold),
                 new InstantCommand(shooter::stopFlywheels)
         );
 
