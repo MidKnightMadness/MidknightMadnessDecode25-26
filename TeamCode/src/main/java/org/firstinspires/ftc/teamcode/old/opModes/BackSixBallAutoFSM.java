@@ -12,9 +12,10 @@ import com.pedropathing.paths.Path;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
+import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.util.PanelsDrawing;
 import org.firstinspires.ftc.teamcode.util.Timer;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 
 @Deprecated
 @Configurable
@@ -59,7 +60,7 @@ public class BackSixBallAutoFSM extends OpMode {
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         graphM = PanelsGraph.INSTANCE.getManager();
 
-        follower = Constants.createPinpointFollower(hardwareMap);
+        follower = ConstantsOldBot.createPinpointFollower(hardwareMap);
         follower.setStartingPose(startPose);
         pathState = PathState.shootLoaded;
         shootingState = 0;

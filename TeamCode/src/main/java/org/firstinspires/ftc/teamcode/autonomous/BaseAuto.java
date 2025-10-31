@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
+import com.acmerobotics.dashboard.config.Config;
+import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.graph.GraphManager;
 import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -9,7 +11,9 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
+import com.seattlesolvers.solverslib.command.CommandScheduler;
 
+import org.firstinspires.ftc.teamcode.commands.PoseWriteCommand;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.subsystems.Ramp;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
@@ -17,7 +21,8 @@ import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
-
+@Config
+@Configurable
 public class BaseAuto extends CommandOpMode {
     Follower follower;
     Timer timer;
@@ -33,6 +38,10 @@ public class BaseAuto extends CommandOpMode {
     public static Pose leftTargetPose = new Pose(0, 144, 0);
     public static Pose rightTargetPose = new Pose(144, 144, 0);
 
+    public static double maxTimeMs = 29500;
+    public static double maxWritePoseTimeMs = 400;
+
+    boolean stopEnd = false;
     @Override
     public void initialize() {
         super.reset();
@@ -64,8 +73,16 @@ public class BaseAuto extends CommandOpMode {
         }
 
         updateTelemetry();
+        end();
     }
 
+    public void end(){
+        if(timer.getTime() >= maxTimeMs & !stopEnd){
+            CommandScheduler.getInstance().cancelAll();
+            schedule(new PoseWriteCommand(follower.getPose(), maxWritePoseTimeMs));
+            stopEnd = true;
+        }
+    }
     protected Command postMotifSequence() {
         return null;
     }

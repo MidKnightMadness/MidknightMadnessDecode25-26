@@ -2,16 +2,12 @@ package org.firstinspires.ftc.teamcode.commands;
 
 import android.os.Environment;
 
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.RobotLog;
-import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandBase;
-import com.seattlesolvers.solverslib.command.Subsystem;
-import com.seattlesolvers.solverslib.command.SubsystemBase;
-import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 
 import org.firstinspires.ftc.teamcode.motif.MotifEnums;
 import org.firstinspires.ftc.teamcode.util.Timer;
@@ -20,35 +16,22 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-public class MotifReadCommand extends CommandBase {
-    Limelight3A limelight;
+public class PoseWriteCommand extends CommandBase {
     double maxTimeMs;
-    public static int motifPipeline = 1;
-    MotifEnums.Motif motifPattern = MotifEnums.Motif.NONE;
-    Map<Integer, MotifEnums.Motif> idMap = Map.of(
-            21, MotifEnums.Motif.GPP,
-            22, MotifEnums.Motif.PGP,
-            23, MotifEnums.Motif.PPG
-    );
-    String fileName = "motif_value.txt";
-    String directoryName = "Vision";
+    String fileName = "robot_pose.txt";
+    String directoryName = "competition";
     FileWriter fileWriter;
     File file;
     boolean finishedWriting = false;
     Timer timer;
-    public MotifReadCommand(Limelight3A limelight, double timeMs){
-        this.limelight = limelight;
-        this.maxTimeMs = timeMs;
-        limelight.pipelineSwitch(motifPipeline);
-        limelight.start();
+    Pose pose;
+    public PoseWriteCommand(Pose pose, double timeMs){
         timer = new Timer();
-
-
+        this.pose = pose;
+        this.maxTimeMs = timeMs;
         file = createFile(fileName, directoryName);
 
         try {
@@ -61,36 +44,25 @@ public class MotifReadCommand extends CommandBase {
     @Override
     public void execute() {
         double currentTime = timer.getTime();
-        if(currentTime < maxTimeMs){
-            LLResult result = limelight.getLatestResult();
-            if (result != null && result.isValid()) {
-                List<LLResultTypes.FiducialResult> list = result.getFiducialResults();
-                LLResultTypes.FiducialResult f = list.get(0);
-                int aprilTagID = f.getFiducialId();
-                motifPattern = idMap.getOrDefault(aprilTagID, MotifEnums.Motif.NONE);
-
-                if(motifPattern != MotifEnums.Motif.NONE) {
-                    writeToFile(fileWriter, String.valueOf(aprilTagID));
-                    closeFileWriter(fileWriter);
-                    finishedWriting = true;
-                }
-            }
+        if(currentTime < maxTimeMs && !finishedWriting){
+            String line = String.format("%.4f,%.4f,%.4f", pose.getX(), pose.getY(), pose.getHeading());
+            writeToFile(fileWriter, line);
+            finishedWriting = true;
+            closeFileWriter(fileWriter);
         }
     }
 
 
-    public MotifEnums.Motif getDetected(){
-        return motifPattern;
-    }
 
     @Override
     public boolean isFinished() {
-        return (finishedWriting || timer.getTime() > maxTimeMs);
+        return (timer.getTime() > maxTimeMs);
     }
 
 
 
     private static File createFile(String fileName, String dirName){
+
         File dir = new File(Environment.getExternalStorageDirectory(), dirName);
         if(!dir.exists()){
             dir.mkdirs();

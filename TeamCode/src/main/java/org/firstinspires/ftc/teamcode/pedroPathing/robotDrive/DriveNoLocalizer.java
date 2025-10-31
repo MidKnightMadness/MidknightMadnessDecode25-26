@@ -38,7 +38,7 @@ public class DriveNoLocalizer extends OpMode {
     }
     @Override
     public void loop() {
-        wheelControl.drive_relative(-gamepad1.left_stick_y * currSpeed, -gamepad1.left_stick_x * currSpeed, -gamepad1.right_stick_x * currSpeed, 0.8);
+        wheelControl.drive_relative(-gamepad1.left_stick_y * currSpeed, gamepad1.left_stick_x * currSpeed, -gamepad1.right_stick_x * currSpeed, 0.8);
 //        follower.setTeleOpDrive(-gamepad1.left_stick_y * currSpeed, -gamepad1.left_stick_x * currSpeed, -gamepad1.right_stick_x * currSpeed, true);
 //
 //

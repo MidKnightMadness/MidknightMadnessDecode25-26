@@ -13,27 +13,26 @@ import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
-import org.firstinspires.ftc.teamcode.commands.FacePose;
-import org.firstinspires.ftc.teamcode.commands.MotifReadCommand;
+import org.firstinspires.ftc.teamcode.commands.MotifWriteCommand;
 import org.firstinspires.ftc.teamcode.motif.MotifEnums;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.util.ShootSide;
 
 @Config
 @Configurable
-@Autonomous(name = "Close Right")
+@Autonomous(name = "Close Left")
 public class ThreeBallCloseLeftAuto extends BaseAuto {
     public static double motifDetectionTimeMs = 5000;
     int startPipeline = 1;
     public static Pose startPose = new Pose(144-88, 135, Math.toRadians(90));
-    public static Pose motifDetectionPose = new Pose(144- 88, 112, Math.toRadians(65));
-    public static Pose shootPose = new Pose(144 -86, 58, Math.toRadians(130));
-    public static Pose leavePose = new Pose(144- 86, 66, Math.toRadians(90));
+    public static Pose motifDetectionPose = new Pose(144-88, 112, Math.toRadians(65));
+    public static Pose shootPose = new Pose(144-85, 85, Math.toRadians(140));
+    public static Pose leavePose = new Pose(144- 86, 65, Math.toRadians(90));
     PathChain toMotifPath;
     PathChain toShootingPath;
     PathChain leaveBasePath;
     MotifEnums.Motif motifPattern;
-    MotifReadCommand motifCommand;
+    MotifWriteCommand motifCommand;
 
     ShootSide shootSide = ShootSide.LEFT;
     Pose currentPose;
@@ -41,7 +40,9 @@ public class ThreeBallCloseLeftAuto extends BaseAuto {
     double speed;
     double acc;
 
-    public static long waitTime = 5000;
+    public static long waitTime = 3000;
+    public static double pathDistThresholdMin = 3;
+    public static double headingError = Math.toRadians(7);
     @Override
     protected Pose getStartPose(){
         return startPose;
@@ -59,14 +60,23 @@ public class ThreeBallCloseLeftAuto extends BaseAuto {
         toMotifPath = follower.pathBuilder()
                 .addPath(new BezierLine(startPose, motifDetectionPose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), motifDetectionPose.getHeading())
+                .setHeadingConstraint(headingError)
+                .setTimeoutConstraint(3000)
+                .setTranslationalConstraint(pathDistThresholdMin)
                 .build();
         toShootingPath = follower.pathBuilder()
                 .addPath(new BezierLine(motifDetectionPose, shootPose))
                 .setLinearHeadingInterpolation(motifDetectionPose.getHeading(), shootPose.getHeading())
+                .setHeadingConstraint(headingError)
+                .setTimeoutConstraint(3000)
+                .setTranslationalConstraint(pathDistThresholdMin)
                 .build();
         leaveBasePath = follower.pathBuilder()
                 .addPath(new BezierLine(shootPose, leavePose))
                 .setLinearHeadingInterpolation(shootPose.getHeading(), leavePose.getHeading())
+                .setHeadingConstraint(headingError)
+                .setTimeoutConstraint(3000)
+                .setTranslationalConstraint(pathDistThresholdMin)
                 .build();
     }
 
@@ -84,13 +94,10 @@ public class ThreeBallCloseLeftAuto extends BaseAuto {
 
     @Override
     protected Command preMotifSequence(){
-        motifCommand = new MotifReadCommand(limelight, motifDetectionTimeMs);
+        motifCommand = new MotifWriteCommand(limelight, motifDetectionTimeMs);
         return new SequentialCommandGroup(
                 new FollowPathCommand(follower, toMotifPath).setGlobalMaxPower(0.5),
-                motifCommand,
-                new WaitCommand(waitTime),
-                new FollowPathCommand(follower, toShootingPath),
-                new WaitCommand(waitTime)
+                motifCommand
         );
 
     }
@@ -98,7 +105,9 @@ public class ThreeBallCloseLeftAuto extends BaseAuto {
     protected Command postMotifSequence(){
         limelight.stop();//temporarily turn it off to hand to localizer
         return new SequentialCommandGroup(
-                new FacePose(follower, leftTargetPose),
+                new WaitCommand(waitTime),
+                new FollowPathCommand(follower, toShootingPath),
+//                new FacePose(follower, rightTargetPose),
                 new WaitCommand(waitTime),
 //                new ShootSequence(spindexer, shooter, ramp, motifPattern, CRServoEx.RunMode.OptimizedPositionalControl, startPose, shootSide),
                 new WaitCommand(waitTime),
@@ -110,9 +119,11 @@ public class ThreeBallCloseLeftAuto extends BaseAuto {
     protected void updateTelemetry(){
         follower.update();
         currentPose = follower.getPose();
-        timer.getTime();
+        speed = follower.getVelocity().getMagnitude();
+        acc = follower.getAcceleration().getMagnitude();
         addBooleanToTelem("Motif Busy", ConstantsOldBot.motifIsBusy);
         addStringToTelem("Motif Pattern", String.valueOf(motifPattern));
+        addToTelemGraph("Current Time", timer.getTime());
         addToTelemGraph("Update Rate", 1/timer.getDeltaTime());
         addToTelemGraph("Pose(X)", currentPose.getX());
         addToTelemGraph("Pose(Y)", currentPose.getY());

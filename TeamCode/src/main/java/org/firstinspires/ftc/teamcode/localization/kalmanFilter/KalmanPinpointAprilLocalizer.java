@@ -227,7 +227,7 @@ public class KalmanPinpointAprilLocalizer implements Localizer {
     }
     private Pose updateVelocityPose() {
         double deltaTime = timer.getDeltaTime();
-        currentVelocity = new Pose((currentMergedPose.getX() - previousMergedPose.getX()) / deltaTime, (currentMergedPose.getY() - previousMergedPose.getY()) / deltaTime, (currentMergedPose.getHeading() - previousMergedPose.getHeading()) / deltaTime);
+        currentVelocity = new Pose((currentMergedPose.getX() - previousMergedPose.getX()) / deltaTime, (currentMergedPose.getY() - previousMergedPose.getY()) / deltaTime, normalizeAngleRad(currentMergedPose.getHeading() - previousMergedPose.getHeading()) / deltaTime);
         return currentVelocity;
     }
 
