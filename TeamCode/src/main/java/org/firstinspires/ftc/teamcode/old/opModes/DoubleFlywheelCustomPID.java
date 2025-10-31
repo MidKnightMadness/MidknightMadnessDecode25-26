@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.old.opModes;
 
 import static java.lang.Math.clamp;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.graph.GraphManager;
 import com.bylazar.telemetry.TelemetryManager;
@@ -19,8 +20,7 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 
 
 @Configurable
-@Disabled
-@Deprecated
+@Config
 @TeleOp(name = "2FlywheelPID", group = "Experiments")
 public class DoubleFlywheelCustomPID extends OpMode {
     DcMotorEx left;

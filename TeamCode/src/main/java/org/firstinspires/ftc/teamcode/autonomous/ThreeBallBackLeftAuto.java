@@ -11,8 +11,9 @@ import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
+
 import org.firstinspires.ftc.teamcode.commands.FacePose;
-import org.firstinspires.ftc.teamcode.commands.MotifReadCommand;
+import org.firstinspires.ftc.teamcode.commands.MotifWriteCommand;
 import org.firstinspires.ftc.teamcode.motif.MotifEnums;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.util.ShootSide;
@@ -31,7 +32,7 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
     PathChain toShootingPath;
     PathChain leaveBasePath;
     MotifEnums.Motif motifPattern;
-    MotifReadCommand motifCommand;
+    MotifWriteCommand motifCommand;
 
     ShootSide shootSide = ShootSide.LEFT;
     Pose currentPose;
@@ -40,6 +41,8 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
     double acc;
 
     public static long waitTime = 5000;
+    public static double pathDistThresholdMin = 3;
+    public static double headingErrorMax = 5;
     @Override
     protected Pose getStartPose(){
         return startPose;
@@ -56,10 +59,16 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
         toShootingPath = follower.pathBuilder()
                 .addPath(new BezierLine(startPose, shootPose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), shootPose.getHeading())
+                .setHeadingConstraint(headingErrorMax)
+                .setTimeoutConstraint(3000)
+                .setTranslationalConstraint(pathDistThresholdMin)
                 .build();
         leaveBasePath = follower.pathBuilder()
                 .addPath(new BezierLine(shootPose, leavePose))
                 .setLinearHeadingInterpolation(shootPose.getHeading(), leavePose.getHeading())
+                .setHeadingConstraint(headingErrorMax)
+                .setTimeoutConstraint(3000)
+                .setTranslationalConstraint(pathDistThresholdMin)
                 .build();
     }
 
@@ -77,17 +86,17 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
 
     @Override
     protected Command preMotifSequence(){
-        motifCommand = new MotifReadCommand(limelight, motifDetectionTimeMs);
+        motifCommand = new MotifWriteCommand(limelight, motifDetectionTimeMs);
         return new SequentialCommandGroup(
-                motifCommand,
-                new FollowPathCommand(follower, toShootingPath).setGlobalMaxPower(0.6),
-                new WaitCommand( waitTime)
+                motifCommand
         );
 
     }
     @Override
     protected Command postMotifSequence(){
         return new SequentialCommandGroup(
+                new FollowPathCommand(follower, toShootingPath).setGlobalMaxPower(0.6),
+                new WaitCommand( waitTime),
                 new FacePose(follower, leftTargetPose),
 //                new ShootSequence(spindexer, shooter, ramp, motifPattern, CRServoEx.RunMode.OptimizedPositionalControl, startPose, shootSide),
                 new WaitCommand(waitTime),

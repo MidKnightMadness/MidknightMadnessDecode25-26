@@ -12,8 +12,9 @@ import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
+
 import org.firstinspires.ftc.teamcode.commands.FacePose;
-import org.firstinspires.ftc.teamcode.commands.MotifReadCommand;
+import org.firstinspires.ftc.teamcode.commands.MotifWriteCommand;
 import org.firstinspires.ftc.teamcode.motif.MotifEnums;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.util.ShootSide;
@@ -32,7 +33,7 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
          PathChain toShootingPath;
          PathChain leaveBasePath;
          MotifEnums.Motif motifPattern;
-         MotifReadCommand motifCommand;
+         MotifWriteCommand motifCommand;
 
          ShootSide shootSide = ShootSide.RIGHT;
          Pose currentPose;
@@ -41,6 +42,8 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
          double acc;
 
          public static long waitTime = 5000;
+         public static double pathDistThresholdMax = 3;
+         public static double headingErrorMax = 5;
          @Override
          protected Pose getStartPose(){
              return startPose;
@@ -57,10 +60,16 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
              toShootingPath = follower.pathBuilder()
                      .addPath(new BezierLine(startPose, shootPose))
                      .setLinearHeadingInterpolation(startPose.getHeading(), shootPose.getHeading())
+                     .setHeadingConstraint(headingErrorMax)
+                     .setTimeoutConstraint(3000)
+                     .setTranslationalConstraint(pathDistThresholdMax)
                      .build();
              leaveBasePath = follower.pathBuilder()
                      .addPath(new BezierLine(shootPose, leavePose))
                      .setLinearHeadingInterpolation(shootPose.getHeading(), leavePose.getHeading())
+                     .setHeadingConstraint(headingErrorMax)
+                     .setTimeoutConstraint(3000)
+                     .setTranslationalConstraint(pathDistThresholdMax)
                      .build();
          }
 
@@ -78,17 +87,17 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
 
          @Override
          protected Command preMotifSequence(){
-             motifCommand = new MotifReadCommand(limelight, motifDetectionTimeMs);
+             motifCommand = new MotifWriteCommand(limelight, motifDetectionTimeMs);
              return new SequentialCommandGroup(
-                     motifCommand,
-                     new FollowPathCommand(follower, toShootingPath).setGlobalMaxPower(0.6),
-                     new WaitCommand( waitTime)
+                     motifCommand
              );
 
          }
          @Override
          protected Command postMotifSequence(){
              return new SequentialCommandGroup(
+                     new FollowPathCommand(follower, toShootingPath).setGlobalMaxPower(0.6),
+                     new WaitCommand(waitTime),
                      new FacePose(follower, rightTargetPose),
                      new WaitCommand(waitTime),
 //                new ShootSequence(spindexer, shooter, ramp, motifPattern, CRServoEx.RunMode.OptimizedPositionalControl, startPose, shootSide),
