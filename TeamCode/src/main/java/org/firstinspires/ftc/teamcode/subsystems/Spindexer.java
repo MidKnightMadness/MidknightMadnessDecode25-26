@@ -4,7 +4,6 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
-import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
@@ -12,7 +11,7 @@ import org.firstinspires.ftc.teamcode.hardware.IncrementalEncoder;
 import org.firstinspires.ftc.teamcode.motif.MotifEnums;
 import org.firstinspires.ftc.teamcode.hardware.BallDetector;
 import org.firstinspires.ftc.teamcode.util.Angle;
-import org.firstinspires.ftc.teamcode.util.BallColor;
+import org.firstinspires.ftc.teamcode.colors.BallColor;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.teamcode.util.ExtraFns;
 
@@ -108,9 +107,14 @@ public class Spindexer extends SubsystemBase {
         if (useColorSensors) updateBallColors();
     }
 
-    public Spindexer init() {
-        currentAngle = Angle.fromDegrees(0);
-        turner.setEncoder(turner.getEncoder().zero());
+    public Spindexer initAngle() {
+        return initAngle(Angle.fromDegrees(0));
+    }
+
+    // angle is relative to spot 0, so take negative
+    public Spindexer initAngle(Angle angle) {
+        currentAngle = angle.neg();
+        turner.getEncoder().setAngle(-angle.toDegrees());
         return this;
     }
 
@@ -180,7 +184,6 @@ public class Spindexer extends SubsystemBase {
                 spot = getNextSpot(seq, i, momentum);
             }
             seq[i] = spot;
-//            throw new IllegalStateException("Spot: " + spot + " i: " + i + " Seq: " + seq[0]);
             momentum = computeMomentum(seq, i);
         }
         return seq;
@@ -273,6 +276,10 @@ public class Spindexer extends SubsystemBase {
     }
 
     public boolean isAtAngle(Angle angle) {
+        return isAtAngle(angle, finishedThreshold);
+    }
+
+    public boolean isAtAngle(Angle angle, Angle finishedThreshold) {
         return currentAngle.add(angle).abs().toDegrees()
                 < finishedThreshold.abs().toDegrees();
     }
@@ -293,7 +300,6 @@ public class Spindexer extends SubsystemBase {
         if (runMode == CRServoEx2.RunMode.OptimizedPositionalControl) {
             turner.set(-angle.toDegrees());
         } else {
-//            throw new IllegalStateException("" + currentAngle.sub(angle).sign());
             test = currentAngle.add(angle);
             turner.set(-currentAngle.add(angle).sign() * shootRawPower); // Careful signs work out
         }

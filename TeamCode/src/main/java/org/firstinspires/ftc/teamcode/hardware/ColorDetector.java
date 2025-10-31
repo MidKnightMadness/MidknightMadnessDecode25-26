@@ -1,10 +1,10 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
-import org.firstinspires.ftc.teamcode.util.Threshold;
+import org.firstinspires.ftc.teamcode.colors.Threshold;
 
 import java.util.Map;
 
-public abstract class ColorDetector<T extends Enum<T>> {
+public abstract class ColorDetector<T> {
     protected Map<T, Threshold[]> thresholds;
     protected T defaultValue;
 
