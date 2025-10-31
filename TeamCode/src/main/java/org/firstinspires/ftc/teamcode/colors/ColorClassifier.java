@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.colors;
 
-import com.pedropathing.paths.PathBuilder;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -15,9 +13,9 @@ public class ColorClassifier<T> {
         this.defaultValue = defaultValue;
     }
 
-    public T getValue(double... color) {
+    public T classify(double... color) {
         for (Map.Entry<T, Threshold[]> entry : thresholds.entrySet()) {
-            if (Color.isWithin(entry.getValue(), color)) return entry.getKey();
+            if (Threshold.isWithin(entry.getValue(), color)) return entry.getKey();
         }
         return defaultValue;
     }

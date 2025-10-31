@@ -40,18 +40,13 @@ public class SpindexerShootContinuous extends SequentialCommandGroup {
                 new InstantCommand(() -> spindexer.initAngle(Angle.fromDegrees(60))),
                 new SpindexerGotoAngle(
                         spindexer,
-                        Angle.fromDegrees(
-                                180 - 120 * motif.getGreenPosition()
-                        ),
+                        Angle.fromDegrees(180 - 120 * motif.getGreenPosition()),
                         CRServoEx2.RunMode.OptimizedPositionalControl
                 )
         );
     }
 
-    public SpindexerShootContinuous(
-            Spindexer spindexer,
-            MotifEnums.Motif motif
-    ) {
+    public SpindexerShootContinuous(Spindexer spindexer, MotifEnums.Motif motif) {
         this(spindexer, null, null, motif, null, false);
     }
 
@@ -59,20 +54,12 @@ public class SpindexerShootContinuous extends SequentialCommandGroup {
     public void initialize() {
         if (useShooter) {
             addCommands(
-                new InstantCommand(() ->
-                        shooter.setFlywheelsPower(follower.getPose(), shootSide)
-                ),
+                new InstantCommand(() -> shooter.setFlywheelsPower(follower.getPose(), shootSide)),
                 new WaitCommand(2000)
             );
         }
-
-        addCommands(
-                new SpindexerSpinAngle(spindexer, Angle.fromDegrees(-480), 1)
-        );
-
-        if (useShooter) {
-            new InstantCommand(shooter::stopFlywheels);
-        }
+        addCommands(new SpindexerSpinAngle(spindexer, Angle.fromDegrees(-480), 1));
+        if (useShooter) new InstantCommand(shooter::stopFlywheels);
 
         super.initialize();
     }

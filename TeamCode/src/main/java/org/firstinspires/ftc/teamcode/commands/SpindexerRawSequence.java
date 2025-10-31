@@ -27,8 +27,5 @@ public class SpindexerRawSequence extends SequentialCommandGroup {
                     new InstantCommand(() -> spindexer.removeBall(spot))
             );
         }
-        addCommands(new WaitCommand(finalWaitMs));
-
-        addRequirements(spindexer);
-    }
+        addCommands(new WaitCommand(finalWaitMs));}
 }

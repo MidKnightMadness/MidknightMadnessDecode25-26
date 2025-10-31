@@ -28,7 +28,5 @@ public class ShootColor extends SequentialCommandGroup {
                 new SpindexerGotoSpot(spindexer, spot, runMode, finishedTimeThreshold),
                 new InstantCommand(shooter::stopFlywheels)
         );
-
-        addRequirements(spindexer, shooter);
     }
 }

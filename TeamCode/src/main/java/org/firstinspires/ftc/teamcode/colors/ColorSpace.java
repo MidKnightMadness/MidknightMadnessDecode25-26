@@ -81,12 +81,16 @@ public enum ColorSpace {
 
     /**
      * Converts from RGBA to this color space
+     * Returns input for RGBA to RGBA
      * @param color A color in RGBA
      * @return Converted color in this color space
      */
     public double[] fromRgba(double... color) {
         checkLengthMismatch(ColorSpace.RGBA, color);
         if (this == ColorSpace.RGBA) return color;
+        if (this == ColorSpace.RGB) {
+            return new double[] { color[0], color[1], color[2] };
+        }
         if (fromRgbConstant < 0) {
             throw new IllegalArgumentException("Unsupported conversion from RGBA to " + this);
         }
@@ -94,14 +98,24 @@ public enum ColorSpace {
     }
 
     /**
-     * Converts from RGB(A) to this color space. Note that RGB to RGBA is impossible.
+     * Converts from RGB(A) to this color space.
+     * RGB to RGBA is impossible, but supports RGBA to RGB conversion
+     * Returns input for RGBA to RGBA or RGB to RGB
      * @param color A color in RGB(A)
      * @return Converted color in this color space
      */
     public double[] fromRgb(double... color) {
         checkRgbLengthMismatch(color);
+
+        // From RGBA to RGB
+        if (this == ColorSpace.RGB && color.length == ColorSpace.RGBA.getLength()) {
+            return new double[] { color[0], color[1], color[2] };
+        }
+
+        // From RGBA to RGBA or RGB to RGB
         if ((this == ColorSpace.RGBA && length == color.length) ||
                 this == ColorSpace.RGB) return color;
+
         if (fromRgbConstant < 0) {
             throw new IllegalArgumentException("Unsupported conversion from RGB to " + this);
         }
@@ -124,25 +138,26 @@ public enum ColorSpace {
 
     /**
      * Converts from this color space to another target color space
-     * @param colorSpace Target color space
+     * Returns input if target and source are the same
+     * @param target Target color space
      * @param color Color array in this color space
      * @return Color array in target color space
      */
-    public double[] to(ColorSpace colorSpace, double... color) {
+    public double[] to(ColorSpace target, double... color) {
         checkLengthMismatch(this, color);
-        if (this == colorSpace) return color;
-        return colorSpace.fromRgb(toRgb(color));
+        if (this == target) return color;
+        return target.fromRgb(toRgb(color));
     }
 
     /**
      * Converts from source color space to this color space
-     * @param colorSpace Source color space
+     * @param source Source color space
      * @param color Color array in source color space
      * @return Color array in this color space
      */
-    public double[] from(ColorSpace colorSpace, double... color) {
-        checkLengthMismatch(colorSpace, color);
-        if (this == colorSpace) return color;
-        return fromRgb(colorSpace.toRgb(color));
+    public double[] from(ColorSpace source, double... color) {
+        checkLengthMismatch(source, color);
+        if (this == source) return color;
+        return fromRgb(source.toRgb(color));
     }
 }

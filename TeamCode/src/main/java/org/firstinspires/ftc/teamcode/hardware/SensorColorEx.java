@@ -4,7 +4,6 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.hardware.SensorColor;
 
-import org.firstinspires.ftc.teamcode.colors.Color;
 import org.firstinspires.ftc.teamcode.colors.ColorClassifier;
 import org.firstinspires.ftc.teamcode.colors.ColorSpace;
 
@@ -63,7 +62,7 @@ public class SensorColorEx extends SensorColor {
         );
     }
 
-    public <T> T getValue(ColorClassifier<T> classifier) {
-        return classifier.getValue(getColor());
+    public <T> T classify(ColorClassifier<T> classifier) {
+        return classifier.classify(getColor());
     }
 }

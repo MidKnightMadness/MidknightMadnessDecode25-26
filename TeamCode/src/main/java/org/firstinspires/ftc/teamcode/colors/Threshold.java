@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.colors;
 
+import com.seattlesolvers.solverslib.command.CommandGroupBase;
+
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
@@ -87,27 +89,6 @@ public class Threshold {
         return high - low;
     }
 
-    public static void mask(Threshold[] thresholds, Mat src, Mat dst) {
-        double[] firstPixel = src.get(0, 0);
-        assert thresholds.length == firstPixel.length:
-                "Thresholds length must be equal to src color space length of " +
-                        firstPixel.length + " got: " + thresholds.length;
-
-        for (int r = 0; r < src.rows(); r++) {
-            for (int c = 0; c < src.cols(); c++) {
-                double[] pixel = src.get(r, c);
-                boolean inRange = true;
-                for (int k = 0; k < thresholds.length; k++) {
-                    if (!thresholds[k].contains(pixel[k])) {
-                        inRange = false;
-                        break;
-                    }
-                }
-                dst.put(r, c, inRange ? 255 : 0);
-            }
-        }
-    }
-
     private static void maskNativeImpl(
             int depth, double[] lows, double[] highs,
             Threshold[] thresholds, Mat src, Mat dst
@@ -146,9 +127,29 @@ public class Threshold {
     }
 
     public static void maskNative(Threshold[] thresholds, Mat src, Mat dst) {
+        double[] firstPixel = src.get(0, 0);
+        assert thresholds.length == firstPixel.length:
+                "Thresholds length must be equal to src color space length of " +
+                        firstPixel.length + " got: " + thresholds.length;
+
         maskNativeImpl(
                 0, new double[thresholds.length],
                 new double[thresholds.length], thresholds, src, dst
         );
+    }
+
+    public static boolean isWithin(Threshold[] thresholds, double[] color) {
+        assert thresholds.length == color.length:
+                "Thresholds length must be equal to color space length of " +
+                        color.length + " got: " + thresholds.length;
+
+        boolean isWithin = true;
+        for (int i = 0; i < color.length; i++) {
+            if (!thresholds[i].contains(color[i])) {
+                isWithin = false;
+                break;
+            }
+        }
+        return isWithin;
     }
 }

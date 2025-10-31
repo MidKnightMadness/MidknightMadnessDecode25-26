@@ -35,8 +35,6 @@ public class SpindexerMotifSequence extends SequentialCommandGroup {
                 spindexer, sequence,
                 runMode, finishedTimeThreshold)
         );;
-
-        addRequirements(spindexer);
         super.initialize();
     }
 }
