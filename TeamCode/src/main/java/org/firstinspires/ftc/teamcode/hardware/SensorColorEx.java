@@ -61,8 +61,4 @@ public class SensorColorEx extends SensorColor {
                 colorSensor.alpha()
         );
     }
-
-    public <T> T classify(ColorClassifier<T> classifier) {
-        return classifier.classify(getColor());
-    }
 }

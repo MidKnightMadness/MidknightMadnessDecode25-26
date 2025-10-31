@@ -24,7 +24,7 @@ public class ColorClassifier<T> {
         return thresholds.keySet();
     }
 
-    public void addThreshold(T value, Threshold[] threshold) {
+    public void addThreshold(T value, Threshold... threshold) {
         thresholds.put(value, threshold);
     }
 
@@ -32,11 +32,18 @@ public class ColorClassifier<T> {
         thresholds.remove(value);
     }
 
+    public Builder<T> toBuilder() {
+        Builder<T> builder = new Builder<>();
+        builder.thresholds.putAll(this.thresholds);
+        builder.defaultValue = this.defaultValue;
+        return builder;
+    }
+
     public static class Builder<T> {
         private final Map<T, Threshold[]> thresholds = new HashMap<>();
         private T defaultValue;
 
-        public Builder<T> add(T label, Threshold[] threshold) {
+        public Builder<T> add(T label, Threshold... threshold) {
             thresholds.put(label, threshold);
             return this;
         }

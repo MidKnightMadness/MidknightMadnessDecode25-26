@@ -8,8 +8,11 @@ import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.colors.ColorClassifier;
+import org.firstinspires.ftc.teamcode.colors.Threshold;
 import org.firstinspires.ftc.teamcode.hardware.BallDetector;
 import org.firstinspires.ftc.teamcode.colors.BallColor;
+import org.firstinspires.ftc.teamcode.hardware.SensorColorEx;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.teamcode.util.PanelsDrawing;
 import org.firstinspires.ftc.teamcode.util.Timer;
@@ -24,14 +27,29 @@ public class BallDetectorTest extends OpMode {
     TelemetryManager telemetryM;
     GraphManager graphM;
     Timer timer;
+    ColorClassifier<BallColor> classifier;
 
     @Override
     public void init() {
+        classifier = classifier.toBuilder()
+                .add(BallColor.GREEN,
+                        Threshold.any(),
+                        Threshold.of(100, 200),
+                        Threshold.any()
+                )
+                .add(BallColor.PURPLE,
+                        Threshold.any(),
+                        Threshold.of(100, 200),
+                        Threshold.any()
+                )
+                .setDefault(BallColor.NONE)
+                .build();
         PanelsDrawing.init();
         timer = new Timer();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         graphM = PanelsGraph.INSTANCE.getManager();
         ballDetector = new BallDetector(hardwareMap, ConfigNames.inColorSensor);
+        SensorColorEx sensor = new SensorColorEx(hardwareMap, "hello");
     }
 
     @Override
