@@ -50,7 +50,7 @@ public class SpindexerMotifTest extends CommandOpMode {
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         graphM = PanelsGraph.INSTANCE.getManager();
         spindexer = new Spindexer(hardwareMap, false)
-                .init()
+                .initAngle()
                 .setBallColors(ballColors);
         gp1 = new GamepadEx(gamepad1);
 

@@ -129,16 +129,24 @@ public class IncrementalEncoder extends EncoderBase<IncrementalEncoder> {
         return real;
     }
 
+    public int angleToTicks(double angle) {
+        return (int) (angle * cpr / MathUtils.returnMaxForAngleUnit(angleUnit));
+    }
+
+    public double getAngleUnnormalized() {
+        return getRevolutions() * MathUtils.returnMaxForAngleUnit(angleUnit);
+    }
+
     @Override
-    public IncrementalEncoder zero() {
-        offset = getPosition();
+    public IncrementalEncoder setAngle(double angle) {
+        offset = getPosition() - angleToTicks(angle);
         return this;
     }
 
     @Override
     public double getAngle() {
         return MathUtils.normalizeAngle(
-                getRevolutions() * MathUtils.returnMaxForAngleUnit(angleUnit),
+                getAngleUnnormalized(),
                 true,
                 angleUnit
         );

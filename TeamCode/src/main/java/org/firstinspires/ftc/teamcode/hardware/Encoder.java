@@ -51,6 +51,12 @@ public interface Encoder extends HardwareDevice {
     Encoder zero();
 
     /**
+     * Resets the encoder to a particular angle
+     * @return The object itself for chaining purposes
+     */
+    Encoder setAngle(double angle);
+
+    /**
      * Resets the offset for any future values returned
      */
     void resetOffset();

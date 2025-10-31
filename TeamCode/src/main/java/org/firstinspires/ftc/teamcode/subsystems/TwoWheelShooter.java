@@ -105,7 +105,7 @@ public class TwoWheelShooter extends SubsystemBase {
         return true;
     }
 
-    public void setFlywheelPower(Pose robotPose, ShootSide side){
+    public boolean setFlywheelsPower(Pose robotPose, ShootSide side){
         setFlywheelsPower(getDistance(robotPose, side));
     }
     public double getDistance(Pose robotPose, ShootSide side){

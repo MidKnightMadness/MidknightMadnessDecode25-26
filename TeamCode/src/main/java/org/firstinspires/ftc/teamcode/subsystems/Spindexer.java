@@ -107,9 +107,14 @@ public class Spindexer extends SubsystemBase {
         if (useColorSensors) updateBallColors();
     }
 
-    public Spindexer init() {
-        currentAngle = Angle.fromDegrees(0);
-        turner.setEncoder(turner.getEncoder().zero());
+    public Spindexer initAngle() {
+        return initAngle(Angle.fromDegrees(0));
+    }
+
+    // angle is relative to spot 0, so take negative
+    public Spindexer initAngle(Angle angle) {
+        currentAngle = angle.neg();
+        turner.getEncoder().setAngle(-angle.toDegrees());
         return this;
     }
 
@@ -271,6 +276,10 @@ public class Spindexer extends SubsystemBase {
     }
 
     public boolean isAtAngle(Angle angle) {
+        return isAtAngle(angle, finishedThreshold);
+    }
+
+    public boolean isAtAngle(Angle angle, Angle finishedThreshold) {
         return currentAngle.add(angle).abs().toDegrees()
                 < finishedThreshold.abs().toDegrees();
     }

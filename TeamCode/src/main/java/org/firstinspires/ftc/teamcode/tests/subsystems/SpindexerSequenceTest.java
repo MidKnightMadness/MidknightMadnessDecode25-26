@@ -15,7 +15,6 @@ import com.seattlesolvers.solverslib.command.button.Button;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
-import org.firstinspires.ftc.teamcode.commands.SpindexerGotoSpot;
 import org.firstinspires.ftc.teamcode.commands.SpindexerRawSequence;
 import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
@@ -48,7 +47,7 @@ public class SpindexerSequenceTest extends CommandOpMode {
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         graphM = PanelsGraph.INSTANCE.getManager();
         spindexer = new Spindexer(hardwareMap, false);
-        spindexer.init(); // would put this later but oh well
+        spindexer.initAngle(); // would put this later but oh well
         gp1 = new GamepadEx(gamepad1);
 
         gp1.getGamepadButton(GamepadKeys.Button.A).whenPressed(new SequentialCommandGroup(

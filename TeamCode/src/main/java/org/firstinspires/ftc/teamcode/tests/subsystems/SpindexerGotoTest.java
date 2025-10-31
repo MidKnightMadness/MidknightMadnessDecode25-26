@@ -47,7 +47,7 @@ public class SpindexerGotoTest extends CommandOpMode {
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         graphM = PanelsGraph.INSTANCE.getManager();
         spindexer = new Spindexer(hardwareMap, false);
-        spindexer.init(); // would put this later but oh well
+        spindexer.initAngle(); // would put this later but oh well
         gp1 = new GamepadEx(gamepad1);
 
         spot0Button = gp1.getGamepadButton(GamepadKeys.Button.A);
