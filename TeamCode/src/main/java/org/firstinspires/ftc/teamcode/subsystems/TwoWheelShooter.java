@@ -59,8 +59,8 @@ public class TwoWheelShooter extends SubsystemBase {
             distToHighVel.add(distArr[i], topVel[i]);
         }
 
-        distToLowVel.createLUT();
-        distToHighVel.createLUT();
+//        distToLowVel.createLUT();
+//        distToHighVel.createLUT();
         low.motor.setDirection(lowMotorDirForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);
         high.motor.setDirection(highMotorDirForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);
 

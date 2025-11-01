@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.util.Angle;
 
 public class ShootHardcode extends SequentialCommandGroup {
     // Expects this initial spot position:
-    // Shooter
+    //     Shooter
     //   P(0) G(120)
     //     P(240)
     Spindexer spindexer;
@@ -37,9 +37,11 @@ public class ShootHardcode extends SequentialCommandGroup {
         }
         addCommands(
                 new InstantCommand(() -> shooter.setFlywheelsPower(isClose)),
-                new SpindexerRawSequence(spindexer, sequence, CRServoEx2.RunMode.RawPower, 0),
+                new SpindexerRawSequence(spindexer, sequence, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
                 new WaitCommand(500),
                 new InstantCommand(shooter::stopFlywheels)
         );
+
+        addRequirements(spindexer, shooter);
     }
 }
