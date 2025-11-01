@@ -15,6 +15,7 @@ import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 import org.firstinspires.ftc.teamcode.commands.FacePose;
 import org.firstinspires.ftc.teamcode.commands.MotifWriteCommand;
 import org.firstinspires.ftc.teamcode.motif.MotifEnums;
+import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.util.ShootSide;
 
@@ -77,10 +78,10 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
     protected boolean isVisionComplete(){
         motifPattern = motifCommand.getDetected();
         if(motifPattern != MotifEnums.Motif.NONE){
-            ConstantsOldBot.motifIsBusy = false;
+            ConstantsBot.motifIsBusy = false;
             return true;
         }
-        ConstantsOldBot.motifIsBusy = true;
+        ConstantsBot.motifIsBusy = true;
         return false;
     }
 

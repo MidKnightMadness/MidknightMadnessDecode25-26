@@ -11,6 +11,7 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 import org.firstinspires.ftc.teamcode.util.PanelsDrawing;
 import org.firstinspires.ftc.teamcode.util.Timer;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
@@ -56,7 +57,7 @@ public class AccelTest extends OpMode {
     public void init() {
         PanelsDrawing.init();
         timer = new Timer();
-        follower = ConstantsOldBot.createPinpointFollower(hardwareMap);
+        follower = ConstantsBot.createPinpointFollower(hardwareMap);
         follower.setStartingPose(startPose);
         wheelControl = new WheelControl(hardwareMap);
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();

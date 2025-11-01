@@ -15,6 +15,7 @@ import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 import org.firstinspires.ftc.teamcode.commands.MotifWriteCommand;
 import org.firstinspires.ftc.teamcode.motif.MotifEnums;
+import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.util.ShootSide;
 
@@ -89,10 +90,10 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
          protected boolean isVisionComplete(){
              motifPattern = motifCommand.getDetected();
              if(motifPattern != MotifEnums.Motif.NONE){
-                 ConstantsOldBot.motifIsBusy = false;
+                 ConstantsBot.motifIsBusy = false;
                  return true;
              }
-             ConstantsOldBot.motifIsBusy = true;
+             ConstantsBot.motifIsBusy = true;
              return false;
          }
 
@@ -124,7 +125,7 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
              follower.update();
              currentPose = follower.getPose();
              timer.getTime();
-             addBooleanToTelem("Motif Busy", ConstantsOldBot.motifIsBusy);
+             addBooleanToTelem("Motif Busy", ConstantsBot.motifIsBusy);
              addStringToTelem("Motif Pattern", String.valueOf(motifPattern));
              addToTelemGraph("Current Time", timer.getTime());
              addToTelemGraph("Update Rate", 1/timer.getDeltaTime());

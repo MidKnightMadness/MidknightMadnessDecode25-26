@@ -114,7 +114,7 @@ public class MainTeleOp extends CommandOpMode {
                 hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
         );
 
-        ConstantsOldBot.motifIsBusy = false;
+        ConstantsBot.motifIsBusy = false;
         timer = new Timer();
 //        telemetryManager = PanelsTelemetry.INSTANCE.getTelemetry();
 //        graphManager = PanelsGraph.INSTANCE.getManager();
@@ -132,7 +132,7 @@ public class MainTeleOp extends CommandOpMode {
 
         startPose = roboPose != null ? roboPose : startPose;
 
-        follower = ConstantsOldBot.createKalmanPinpointAprilFollower(hardwareMap, startPose, telemetry);
+        follower = ConstantsBot.createKalmanPinpointAprilFollower(hardwareMap, startPose, telemetry);
         flywheelFarToggle = new ButtonToggle();
         flywheelCloseToggle = new ButtonToggle();
         changeSpeed = new ButtonToggle();

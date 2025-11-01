@@ -10,6 +10,7 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.util.PanelsDrawing;
 
@@ -24,10 +25,10 @@ public class DriveTeleOp extends OpMode {
 
     @Override
     public void init() {
-        ConstantsOldBot.motifIsBusy = false;
+        ConstantsBot.motifIsBusy = false;
         PanelsDrawing.init();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
-        follower = ConstantsOldBot.createKalmanPinpointAprilFollower(hardwareMap, startPose, telemetry);
+        follower = ConstantsBot.createKalmanPinpointAprilFollower(hardwareMap, startPose, telemetry);
         follower.setStartingPose(startPose);
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         graphM = PanelsGraph.INSTANCE.getManager();

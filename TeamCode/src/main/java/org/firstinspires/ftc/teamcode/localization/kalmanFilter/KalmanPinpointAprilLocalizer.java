@@ -19,6 +19,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.util.DashboardDrawing;
 import org.firstinspires.ftc.teamcode.util.Timer;
@@ -106,7 +107,7 @@ public class KalmanPinpointAprilLocalizer implements Localizer {
 //        return new Pose(x, y, heading);
 //    }
 
-    boolean busy = ConstantsOldBot.motifIsBusy;
+    boolean busy = ConstantsBot.motifIsBusy;
 
     @Override
     public void update() {
