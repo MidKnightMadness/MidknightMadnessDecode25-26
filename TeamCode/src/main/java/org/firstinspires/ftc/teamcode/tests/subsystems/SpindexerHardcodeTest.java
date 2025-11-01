@@ -8,10 +8,11 @@ import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
+import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
-import org.firstinspires.ftc.teamcode.commands.CommandOpMode;
 import org.firstinspires.ftc.teamcode.commands.ShootHardcode;
 import org.firstinspires.ftc.teamcode.motif.MotifEnums;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
@@ -20,7 +21,6 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 
 import java.util.concurrent.TimeUnit;
 
-@Disabled
 @Configurable
 @TeleOp()
 public class SpindexerHardcodeTest extends CommandOpMode {
@@ -38,15 +38,19 @@ public class SpindexerHardcodeTest extends CommandOpMode {
                 hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
         );
 
+        spindexer = new Spindexer(hardwareMap, false);
+        shooter = new TwoWheelShooter(hardwareMap, TwoWheelShooter.RunMode.RawPower);
+
         timer = new Timer();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         graphM = PanelsGraph.INSTANCE.getManager();
         gp1 = new GamepadEx(gamepad1);
-    }
 
-    @Override
-    public void first() {
-        schedule(new ShootHardcode(spindexer, shooter, MotifEnums.Motif.GPP, true));
+        gp1.getGamepadButton(GamepadKeys.Button.A).whenPressed(
+            new ShootHardcode(spindexer, shooter, MotifEnums.Motif.GPP, true)
+        );
+
+        register(spindexer, shooter);
     }
 
     @Override
@@ -63,6 +67,8 @@ public class SpindexerHardcodeTest extends CommandOpMode {
 
     public void updateTelemetry() {
         addDataTelemetryGraph("Loop time (ms)", timer.getDeltaTime(TimeUnit.MILLISECONDS));
+        telemetryM.addData("Encoder postioin", spindexer.getEncoder().getAngle());
+        telemetryM.addData("Spindexer position", spindexer.getCurrentAngle());
         telemetryM.update(telemetry);
         graphM.update();
     }

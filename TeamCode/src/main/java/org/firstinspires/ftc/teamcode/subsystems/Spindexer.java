@@ -52,7 +52,7 @@ public class Spindexer extends SubsystemBase {
 
     public static double intakeSpinPower = 0.3;
     public static double shootRawPower = 1;
-    public static PIDFCoefficients turnerCoefficients = new PIDFCoefficients(0.005, 0, 0, 0);
+    public static PIDFCoefficients turnerCoefficients = new PIDFCoefficients(0.01, 0, 0, 0);
 
     // 0 is defined as the position of the shooter
     public static Angle detectRange = Angle.fromDegrees(40); // How far off from the center of the spot that you detect. You don't want to trust measurements that are too off from the center
