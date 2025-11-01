@@ -48,7 +48,7 @@ public class SpindexerSpinAngleTest extends CommandOpMode {
         gp1 = new GamepadEx(gamepad1);
 
         gp1.getGamepadButton(GamepadKeys.Button.A).whenPressed(
-                new SpindexerSpinAngle(spindexer, Angle.fromDegrees(360), 1)
+                new SpindexerSpinAngle(spindexer, Angle.fromDegrees(120), 0.5)
         );
 
         register(spindexer);
@@ -71,6 +71,7 @@ public class SpindexerSpinAngleTest extends CommandOpMode {
     public void updateTelemetry() {
         addDataTelemetryGraph("Loop time (ms)", timer.getDeltaTime(TimeUnit.MILLISECONDS));
         addDataTelemetryGraph("Raw Angle", spindexer.getEncoder().getAngleUnnormalized());
+        telemetryM.addData("Runmode", spindexer.getTurner().getRunmode());
         telemetryM.update(telemetry);
         graphM.update();
     }
