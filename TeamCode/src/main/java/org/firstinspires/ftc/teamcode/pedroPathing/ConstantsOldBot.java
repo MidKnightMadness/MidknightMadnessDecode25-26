@@ -21,7 +21,6 @@ import org.firstinspires.ftc.teamcode.util.ConfigNames;
 @Configurable
 public class ConstantsOldBot {
     public static boolean motifIsBusy = true;
-    //TODO: tune follower constants
     public static FollowerConstants followerConstants = new FollowerConstants()
             .forwardZeroPowerAcceleration(-52)
             .lateralZeroPowerAcceleration(-87.8)
@@ -38,7 +37,6 @@ public class ConstantsOldBot {
             .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(0.02, 0, 0.003, 0.6, 0.03))
             .centripetalScaling(0.0005)
             .mass(11.80);
-    //TODO: tune path constraints
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1.1, 1);
 
     public static PinpointConstants pinpointLocalizerConstants = new PinpointConstants()
@@ -59,8 +57,8 @@ public class ConstantsOldBot {
             .setQ(0.01)
             .setR(2)
             .setMotifTrue(true)
-            .setXOffset(138.874)//TODO:TUNE
-            .setYOffset(33)//TODO: TUNE
+            .setXOffset(138.874)
+            .setYOffset(33)
             .setDistUnit(DistanceUnit.MM)
             .setStartPipeline(1)
             .setEncoderXDir(GoBildaPinpointDriver.EncoderDirection.FORWARD)
@@ -68,7 +66,7 @@ public class ConstantsOldBot {
 
     public static MecanumConstants driveConstants = new MecanumConstants()
             .maxPower(1)
-            .xVelocity(78)//TODO: x + y velocities
+            .xVelocity(78)
             .yVelocity(54.5)
             .rightFrontMotorName(ConfigNames.FR)
             .rightRearMotorName(ConfigNames.BR)

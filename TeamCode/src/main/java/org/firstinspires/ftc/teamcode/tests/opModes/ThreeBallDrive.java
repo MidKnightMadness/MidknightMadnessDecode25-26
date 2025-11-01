@@ -13,6 +13,7 @@ import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
+import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 import org.firstinspires.ftc.teamcode.util.ExtraFns;
 import org.firstinspires.ftc.teamcode.util.PanelsDrawing;
 import org.firstinspires.ftc.teamcode.util.Timer;
@@ -43,7 +44,7 @@ public class ThreeBallDrive extends CommandOpMode {
     public void initialize() {
         super.reset();
 
-        follower = ConstantsOldBot.createPinpointFollower(hardwareMap);
+        follower = ConstantsBot.createPinpointFollower(hardwareMap);
         follower.setStartingPose(startPose);
         buildPaths();
 

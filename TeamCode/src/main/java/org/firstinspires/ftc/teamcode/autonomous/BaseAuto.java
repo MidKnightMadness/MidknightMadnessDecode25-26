@@ -14,11 +14,13 @@ import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 
 import org.firstinspires.ftc.teamcode.commands.PoseWriteCommand;
+import org.firstinspires.ftc.teamcode.commands.SideWriteCommand;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.subsystems.Ramp;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
+import org.firstinspires.ftc.teamcode.util.ShootSide;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
 @Config
@@ -39,9 +41,11 @@ public class BaseAuto extends CommandOpMode {
     public static Pose rightTargetPose = new Pose(144, 144, 0);
 
     public static double maxTimeMs = 29500;
-    public static double maxWritePoseTimeMs = 400;
+    public static double maxWritePoseTimeMs = 200;
+    public static double maxSideWriteTimeMs = 200;
 
     boolean stopEnd = false;
+    ShootSide side;
     @Override
     public void initialize() {
         super.reset();
@@ -63,6 +67,9 @@ public class BaseAuto extends CommandOpMode {
         schedule(preMotifSequence());
     }
 
+    protected ShootSide getSide(){
+        return null;
+    }
 
     @Override
     public void run(){
@@ -80,6 +87,7 @@ public class BaseAuto extends CommandOpMode {
         if(timer.getTime() >= maxTimeMs & !stopEnd){
             CommandScheduler.getInstance().cancelAll();
             schedule(new PoseWriteCommand(follower.getPose(), maxWritePoseTimeMs));
+            schedule(new SideWriteCommand(getSide(), maxSideWriteTimeMs));
             stopEnd = true;
         }
     }

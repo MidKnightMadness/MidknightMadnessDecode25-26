@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.pedroPathing;
 
+import static org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot.mergedLocalizerConstants;
+
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.control.FilteredPIDFCoefficients;
 import com.pedropathing.control.PIDFCoefficients;
@@ -49,22 +51,23 @@ public class ConstantsBot {
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
             .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
             .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD);
-    public static KalmanPinpointAprilConstants mergedLocalizerConstants = new KalmanPinpointAprilConstants()
-            .setIMUName(ConfigNames.imu)
-            .setLimelightName(ConfigNames.limelight)
-            .setLeftPipelineNum(0)
-            .setRightPipelineNum(2)
-            .setStartPipeline(2)
-            .setPinpointHardwareConfig(ConfigNames.pinpoint)
-            .setQ(0.01)
-            .setR(2)
-            .setMotifTrue(true)
-            .setXOffset(138.874)
-            .setYOffset(33)
-            .setDistUnit(DistanceUnit.MM)
-            .setStartPipeline(1)
-            .setEncoderXDir(GoBildaPinpointDriver.EncoderDirection.FORWARD)
-            .setEncoderYDir(GoBildaPinpointDriver.EncoderDirection.FORWARD);
+
+//    public static KalmanPinpointAprilConstants mergedLocalizerConstants = new KalmanPinpointAprilConstants()
+//            .setIMUName(ConfigNames.imu)
+//            .setLimelightName(ConfigNames.limelight)
+//            .setLeftPipelineNum(0)
+//            .setRightPipelineNum(2)
+//            .setStartPipeline(2)
+//            .setPinpointHardwareConfig(ConfigNames.pinpoint)
+//            .setQ(0.01)
+//            .setR(2)
+//            .setMotifTrue(true)
+//            .setXOffset(138.874)
+//            .setYOffset(33)
+//            .setDistUnit(DistanceUnit.MM)
+//            .setStartPipeline(1)
+//            .setEncoderXDir(GoBildaPinpointDriver.EncoderDirection.FORWARD)
+//            .setEncoderYDir(GoBildaPinpointDriver.EncoderDirection.FORWARD);
 
     public static MecanumConstants driveConstants = new MecanumConstants()
             .maxPower(1)
@@ -74,10 +77,10 @@ public class ConstantsBot {
             .rightRearMotorName(ConfigNames.BR)
             .leftRearMotorName(ConfigNames.BL)
             .leftFrontMotorName(ConfigNames.FL)
-            .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
-            .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
-            .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD);
+            .leftFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
+            .leftRearMotorDirection(DcMotorSimple.Direction.FORWARD)
+            .rightFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
+            .rightRearMotorDirection(DcMotorSimple.Direction.REVERSE);
 
     public static Follower createNoLocalizerFollower(HardwareMap hardwareMap){
         return new FollowerBuilder(followerConstants, hardwareMap)

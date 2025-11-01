@@ -60,7 +60,7 @@ public class BackSixBallAutoFSM extends OpMode {
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         graphM = PanelsGraph.INSTANCE.getManager();
 
-        follower = ConstantsOldBot.createPinpointFollower(hardwareMap);
+        follower = ConstantsBot.createPinpointFollower(hardwareMap);
         follower.setStartingPose(startPose);
         pathState = PathState.shootLoaded;
         shootingState = 0;

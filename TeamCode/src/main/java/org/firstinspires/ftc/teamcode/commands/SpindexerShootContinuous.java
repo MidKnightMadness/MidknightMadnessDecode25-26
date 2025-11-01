@@ -37,17 +37,22 @@ public class SpindexerShootContinuous extends SequentialCommandGroup {
         this.shootSide = shootSide;
         this.useShooter = useShooter;
         addCommands(
-                new InstantCommand(() -> spindexer.initAngle(Angle.fromDegrees(60))),
-                new SpindexerGotoAngle(
-                        spindexer,
-                        Angle.fromDegrees(180 - 120 * motif.getGreenPosition()),
-                        CRServoEx2.RunMode.OptimizedPositionalControl
-                )
+                new InstantCommand(() -> spindexer.initAngle(Angle.fromDegrees(60)))
+//                new SpindexerGotoAngle(
+//                        spindexer,
+////                        Angle.fromDegrees(180 - 120 * motif.getGreenPosition()),
+//                        Angle.fromDegrees(180 - 120),
+//                        CRServoEx2.RunMode.OptimizedPositionalControl
+//                )
         );
     }
 
     public SpindexerShootContinuous(Spindexer spindexer, MotifEnums.Motif motif) {
         this(spindexer, null, null, motif, null, false);
+    }
+
+    public SpindexerShootContinuous(Spindexer spindexer){
+        this(spindexer, null, null, null, null, false);
     }
 
     @Override

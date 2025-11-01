@@ -15,6 +15,7 @@ import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 import org.firstinspires.ftc.teamcode.commands.FacePose;
 import org.firstinspires.ftc.teamcode.commands.MotifWriteCommand;
 import org.firstinspires.ftc.teamcode.motif.MotifEnums;
+import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.util.ShootSide;
 
@@ -42,7 +43,7 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
 
     public static long waitTime = 5000;
     public static double pathDistThresholdMin = 3;
-    public static double headingErrorMax = 5;
+    public static double headingErrorMax = 0.3;
     @Override
     protected Pose getStartPose(){
         return startPose;
@@ -77,13 +78,17 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
     protected boolean isVisionComplete(){
         motifPattern = motifCommand.getDetected();
         if(motifPattern != MotifEnums.Motif.NONE){
-            ConstantsOldBot.motifIsBusy = false;
+            ConstantsBot.motifIsBusy = false;
             return true;
         }
-        ConstantsOldBot.motifIsBusy = true;
+        ConstantsBot.motifIsBusy = true;
         return false;
     }
 
+    @Override
+    protected ShootSide getSide(){
+        return shootSide;
+    }
     @Override
     protected Command preMotifSequence(){
         motifCommand = new MotifWriteCommand(limelight, motifDetectionTimeMs);
@@ -95,12 +100,12 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
     @Override
     protected Command postMotifSequence(){
         return new SequentialCommandGroup(
-                new FollowPathCommand(follower, toShootingPath).setGlobalMaxPower(0.6),
-                new WaitCommand( waitTime),
-                new FacePose(follower, leftTargetPose),
+                new FollowPathCommand(follower, toShootingPath, true).setGlobalMaxPower(0.6),
+//                new WaitCommand( waitTime),
+//                new FacePose(follower, leftTargetPose),
 //                new ShootSequence(spindexer, shooter, ramp, motifPattern, CRServoEx.RunMode.OptimizedPositionalControl, startPose, shootSide),
                 new WaitCommand(waitTime),
-                new FollowPathCommand(follower, leaveBasePath, false)
+                new FollowPathCommand(follower, leaveBasePath, true)
         );
 
     }

@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.util.RobotLog;
 import com.seattlesolvers.solverslib.command.CommandBase;
 
 import org.firstinspires.ftc.teamcode.motif.MotifEnums;
+import org.firstinspires.ftc.teamcode.util.ShootSide;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
 
@@ -19,40 +20,29 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-public class PoseWriteCommand extends CommandBase {
+public class SideWriteCommand extends CommandBase {
     double maxTimeMs;
-    String xFileName = "robot_x.txt";
-    String yFileName = "robot_y.txt";
-    String headingFileName = "robot_heading.txt";
+    String sideFileName = "side.txt";
     String directoryName = "competition";
-    FileWriter xFileWriter;
-    FileWriter yFileWriter;
-    FileWriter headingFileWriter;
-    File xFile;
-    File yFile;
-    File headingFile;
+    FileWriter sideFileWriter;
+    File sideFile;
     boolean finishedWriting = false;
     Timer timer;
-    Pose pose;
-    public PoseWriteCommand(Pose pose, double timeMs){
+    ShootSide side;
+    String outputString;
+    public SideWriteCommand(ShootSide shootSide, double timeMs){
         timer = new Timer();
-        this.pose = pose;
+        this.side = shootSide;
         this.maxTimeMs = timeMs;
-        xFile = createFile(xFileName, directoryName);
-        yFile = createFile(yFileName, directoryName);
-        headingFile = createFile(headingFileName, directoryName);
-        try {
-            xFileWriter = new FileWriter(xFile);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        sideFile = createFile(sideFileName, directoryName);
+        if(shootSide == ShootSide.LEFT){
+            outputString = "Left";
+        }
+        else{
+            outputString = "Right";
         }
         try {
-            yFileWriter = new FileWriter(yFile);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        try {
-            headingFileWriter = new FileWriter(headingFile);
+            sideFileWriter = new FileWriter(sideFile);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -63,17 +53,8 @@ public class PoseWriteCommand extends CommandBase {
     public void execute() {
         double currentTime = timer.getTime();
         if(currentTime < maxTimeMs && !finishedWriting){
-            String xLine = String.format("%.4f", pose.getX());
-            String yLine = String.format("%.4f", pose.getY());
-            String headingLine = String.format("%.4f", pose.getHeading());
-            writeToFile(xFileWriter, xLine);
-            closeFileWriter(xFileWriter);
-
-            writeToFile(yFileWriter, yLine);
-            closeFileWriter(yFileWriter);
-
-            writeToFile(headingFileWriter, headingLine);
-            closeFileWriter(headingFileWriter);
+            writeToFile(sideFileWriter, outputString);
+            closeFileWriter(sideFileWriter);
         }
     }
 

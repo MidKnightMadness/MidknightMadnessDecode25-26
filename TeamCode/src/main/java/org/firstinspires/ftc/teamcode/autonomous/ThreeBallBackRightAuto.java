@@ -16,6 +16,7 @@ import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 import org.firstinspires.ftc.teamcode.commands.FacePose;
 import org.firstinspires.ftc.teamcode.commands.MotifWriteCommand;
 import org.firstinspires.ftc.teamcode.motif.MotifEnums;
+import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.util.ShootSide;
 
@@ -43,7 +44,7 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
 
          public static long waitTime = 5000;
          public static double pathDistThresholdMax = 3;
-         public static double headingErrorMax = 5;
+         public static double headingErrorMax = 0.3;
          @Override
          protected Pose getStartPose(){
              return startPose;
@@ -78,10 +79,10 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
          protected boolean isVisionComplete(){
              motifPattern = motifCommand.getDetected();
              if(motifPattern != MotifEnums.Motif.NONE){
-                 ConstantsOldBot.motifIsBusy = false;
+                 ConstantsBot.motifIsBusy = false;
                  return true;
              }
-             ConstantsOldBot.motifIsBusy = true;
+             ConstantsBot.motifIsBusy = true;
              return false;
          }
 
@@ -96,13 +97,13 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
          @Override
          protected Command postMotifSequence(){
              return new SequentialCommandGroup(
-                     new FollowPathCommand(follower, toShootingPath).setGlobalMaxPower(0.6),
+                     new FollowPathCommand(follower, toShootingPath, true).setGlobalMaxPower(0.6),
                      new WaitCommand(waitTime),
-                     new FacePose(follower, rightTargetPose),
-                     new WaitCommand(waitTime),
+//                     new FacePose(follower, rightTargetPose),
+//                     new WaitCommand(waitTime),
 //                new ShootSequence(spindexer, shooter, ramp, motifPattern, CRServoEx.RunMode.OptimizedPositionalControl, startPose, shootSide),
                      new WaitCommand(waitTime),
-                     new FollowPathCommand(follower, leaveBasePath, false)
+                     new FollowPathCommand(follower, leaveBasePath, true)
              );
 
          }
@@ -124,6 +125,10 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
          }
 
 
+     @Override
+     protected ShootSide getSide(){
+         return shootSide;
+     }
 
          public void addStringToTelem(String s, String o){
              telemetry.addLine(s + o);

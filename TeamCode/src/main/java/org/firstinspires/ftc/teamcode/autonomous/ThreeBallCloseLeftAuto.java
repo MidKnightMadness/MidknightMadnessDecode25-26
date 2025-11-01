@@ -15,6 +15,7 @@ import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 import org.firstinspires.ftc.teamcode.commands.MotifWriteCommand;
 import org.firstinspires.ftc.teamcode.motif.MotifEnums;
+import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.util.ShootSide;
 
@@ -24,10 +25,10 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
 public class ThreeBallCloseLeftAuto extends BaseAuto {
     public static double motifDetectionTimeMs = 5000;
     int startPipeline = 1;
-    public static Pose startPose = new Pose(144-88, 135, Math.toRadians(90));
-    public static Pose motifDetectionPose = new Pose(144-88, 112, Math.toRadians(65));
-    public static Pose shootPose = new Pose(144-85, 85, Math.toRadians(140));
-    public static Pose leavePose = new Pose(144- 86, 65, Math.toRadians(90));
+    public static Pose startPose = new Pose(56, 135, Math.toRadians(90));
+    public static Pose motifDetectionPose = new Pose(56, 112, Math.toRadians(65));
+    public static Pose shootPose = new Pose(59, 85, Math.toRadians(140));
+    public static Pose leavePose = new Pose(58, 65, Math.toRadians(90));
     PathChain toMotifPath;
     PathChain toShootingPath;
     PathChain leaveBasePath;
@@ -42,7 +43,7 @@ public class ThreeBallCloseLeftAuto extends BaseAuto {
 
     public static long waitTime = 3000;
     public static double pathDistThresholdMin = 3;
-    public static double headingError = Math.toRadians(7);
+    public static double headingError = 0.3;
     @Override
     protected Pose getStartPose(){
         return startPose;
@@ -85,10 +86,10 @@ public class ThreeBallCloseLeftAuto extends BaseAuto {
     protected boolean isVisionComplete(){
         motifPattern = motifCommand.getDetected();
         if(motifPattern != MotifEnums.Motif.NONE){
-            ConstantsOldBot.motifIsBusy = false;
+            ConstantsBot.motifIsBusy = false;
             return true;
         }
-        ConstantsOldBot.motifIsBusy = true;
+        ConstantsBot.motifIsBusy = true;
         return false;
     }
 
@@ -96,22 +97,26 @@ public class ThreeBallCloseLeftAuto extends BaseAuto {
     protected Command preMotifSequence(){
         motifCommand = new MotifWriteCommand(limelight, motifDetectionTimeMs);
         return new SequentialCommandGroup(
-                new FollowPathCommand(follower, toMotifPath).setGlobalMaxPower(0.5),
+                new FollowPathCommand(follower, toMotifPath, true).setGlobalMaxPower(0.5),
                 motifCommand
         );
 
+    }
+    @Override
+    protected ShootSide getSide(){
+        return shootSide;
     }
     @Override
     protected Command postMotifSequence(){
         limelight.stop();//temporarily turn it off to hand to localizer
         return new SequentialCommandGroup(
                 new WaitCommand(waitTime),
-                new FollowPathCommand(follower, toShootingPath),
+                new FollowPathCommand(follower, toShootingPath, true),
 //                new FacePose(follower, rightTargetPose),
                 new WaitCommand(waitTime),
 //                new ShootSequence(spindexer, shooter, ramp, motifPattern, CRServoEx.RunMode.OptimizedPositionalControl, startPose, shootSide),
                 new WaitCommand(waitTime),
-                new FollowPathCommand(follower, leaveBasePath, false)
+                new FollowPathCommand(follower, leaveBasePath, true)
         );
 
     }
@@ -121,7 +126,7 @@ public class ThreeBallCloseLeftAuto extends BaseAuto {
         currentPose = follower.getPose();
         speed = follower.getVelocity().getMagnitude();
         acc = follower.getAcceleration().getMagnitude();
-        addBooleanToTelem("Motif Busy", ConstantsOldBot.motifIsBusy);
+        addBooleanToTelem("Motif Busy", ConstantsBot.motifIsBusy);
         addStringToTelem("Motif Pattern", String.valueOf(motifPattern));
         addToTelemGraph("Current Time", timer.getTime());
         addToTelemGraph("Update Rate", 1/timer.getDeltaTime());
