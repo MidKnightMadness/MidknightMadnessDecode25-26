@@ -30,6 +30,6 @@ dependencies {
     implementation "org.solverslib:pedroPathing:0.3.3"
 
     // Uncomment for sloth (might break stuff)
-    //implementation("dev.frozenmilk.sinister:Sloth:0.2.4")
+    implementation("dev.frozenmilk.sinister:Sloth:0.2.4")
 }
 

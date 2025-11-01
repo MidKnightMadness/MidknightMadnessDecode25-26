@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.util.Angle;
 public class SpindexerSpinAngle extends CommandBase {
     public static double stopThreshold = 20;
 
-    private double initialAngle, targetAngle;
+    private double targetAngle;
     private final double power;
     private final Angle angle;
     private final Spindexer spindexer;
@@ -24,7 +24,6 @@ public class SpindexerSpinAngle extends CommandBase {
 
     @Override
     public void initialize() {
-        initialAngle = spindexer.getEncoder().getAngleUnnormalized();
         targetAngle = spindexer.getEncoder().getAngleUnnormalized() + angle.toDegrees();
         spindexer.spin(angle.sign() * power);
     }
@@ -32,6 +31,11 @@ public class SpindexerSpinAngle extends CommandBase {
     @Override
     public boolean isFinished() {
         double currentAngle = spindexer.getEncoder().getAngleUnnormalized();
-        return Math.abs(targetAngle - currentAngle) < stopThreshold ;
+        return Math.abs(targetAngle - currentAngle) < stopThreshold;
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        spindexer.getTurner().stop();
     }
 }

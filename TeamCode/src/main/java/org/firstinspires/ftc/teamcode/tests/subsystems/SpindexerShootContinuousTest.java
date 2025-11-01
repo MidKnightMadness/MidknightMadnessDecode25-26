@@ -22,7 +22,6 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 
 import java.util.concurrent.TimeUnit;
 
-@Disabled
 @Configurable
 @TeleOp()
 public class SpindexerShootContinuousTest extends CommandOpMode {

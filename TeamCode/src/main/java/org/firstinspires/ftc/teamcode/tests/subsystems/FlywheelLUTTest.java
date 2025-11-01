@@ -102,7 +102,7 @@ public class FlywheelLUTTest extends CommandOpMode {
         low.motor.setDirection(lowMotorDirForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);
         high.motor.setDirection(highMotorDirForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);
 
-        spindexer = new Spindexer(hardwareMap);
+//        spindexer = new Spindexer(hardwareMap);
         ramp = new Ramp(hardwareMap);
 
         follower = ConstantsBot.createKalmanPinpointAprilFollower(hardwareMap, startPose, telemetry);
@@ -118,12 +118,18 @@ public class FlywheelLUTTest extends CommandOpMode {
         swapShootSides = new ButtonToggle();
         gamepad1Ex = new GamepadEx(gamepad1);
         shootButton = new GamepadButton(gamepad1Ex, GamepadKeys.Button.RIGHT_BUMPER);
+
+        shootButton.whenPressed(new InstantCommand(() ->{
+            SequentialCommandGroup group = (ShootSequence(spindexer, ramp, motifOrder, CRServoEx2.RunMode.OptimizedPositionalControl, 5000));
+            group.schedule();
+        }));
     }
 
 
     @Override
     public void run(){
         super.run();
+        gamepad1Ex.readButtons();
         follower.update();
         timer.getTime();
         follower.setTeleOpDrive(-gamepad1.left_stick_y * currSpeed, -gamepad1.left_stick_x * currSpeed, -gamepad1.right_stick_x * currSpeed, true);
@@ -132,16 +138,13 @@ public class FlywheelLUTTest extends CommandOpMode {
             shootSide = shootSide == ShootSide.LEFT ? ShootSide.RIGHT : ShootSide.LEFT;
         }
 
-        shootButton.whenPressed(new InstantCommand(() ->{
-             SequentialCommandGroup group = (ShootSequence(spindexer, ramp, motifOrder, CRServoEx2.RunMode.OptimizedPositionalControl, 5000));
-             group.schedule();
-        }));
-
         lowVel += gamepad1.right_stick_y * gamepadVelIncrements * timer.getDeltaTime();
         topVel += gamepad1.left_stick_y * gamepadVelIncrements * timer.getDeltaTime();
 
-        currDist = getDistance(follower.getPose(), shootSide);
-        setFlywheelsPower();
+        // currDist = getDistance(follower.getPose(), shootSide);
+        // setFlywheelsPower();
+        low.set(lowVel);
+        high.set(topVel);
         updateTelem();
     }
     public SequentialCommandGroup ShootSequence(Spindexer spindexer, Ramp ramp, MotifEnums.Motif motif, CRServoEx2.RunMode runMode, double finishedTimeThreshold) {
@@ -198,8 +201,6 @@ public class FlywheelLUTTest extends CommandOpMode {
         telemetryManager.addData(s, o);
         graphManager.addData(s, o);
     }
-
-
 
     public boolean setFlywheelsPower() {//assuming facing the shooting area
         double correctedTopVel = topVel / grToMultiplier.getOrDefault(gearRatio, 3.0);

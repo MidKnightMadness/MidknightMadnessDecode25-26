@@ -137,7 +137,7 @@ public class MainTeleOp extends CommandOpMode {
             flywheelSet = !flywheelSet;
         }
         if(flywheelSet){
-            schedule(new InstantCommand(() -> shooter.setFlywheelPower(follower.getPose(), side)));
+            schedule(new InstantCommand(() -> shooter.setFlywheelsPower(follower.getPose(), side)));
         }
         else{
             schedule(new InstantCommand(() -> shooter.stopFlywheels()));

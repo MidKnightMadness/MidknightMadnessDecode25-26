@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.hardware.IncrementalEncoder;
@@ -71,14 +72,23 @@ public class Spindexer extends SubsystemBase {
     BallColor[] ballColors;
     public int[] sequence;
 
+    public boolean useTelemetry;
+    public Telemetry telemetry;
+
     public Spindexer(HardwareMap hardwareMap) {
-        this(hardwareMap, true);
+        this(hardwareMap, null, false, true);
     }
 
     public Spindexer(HardwareMap hardwareMap, boolean useColorSensors) {
+        this(hardwareMap, null, false, useColorSensors);
+    }
+
+    public Spindexer(HardwareMap hardwareMap, Telemetry telemetry, boolean useTelemetry, boolean useColorSensors) {
+        this.useTelemetry = useTelemetry;
+        this.telemetry = telemetry;
         IncrementalEncoder turnerEncoder = new IncrementalEncoder(
-                hardwareMap, "turnerEncoder", 8192, AngleUnit.DEGREES
-        );
+                hardwareMap, ConfigNames.turnerEncoder, 8192, AngleUnit.DEGREES
+        ).setReversed(true);
         turner = new CRServoEx2<>(
                 hardwareMap, ConfigNames.turner,
                 turnerEncoder, CRServoEx2.RunMode.RawPower

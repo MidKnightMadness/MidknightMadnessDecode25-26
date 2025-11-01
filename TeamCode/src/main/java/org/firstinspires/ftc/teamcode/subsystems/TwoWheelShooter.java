@@ -23,14 +23,14 @@ public class TwoWheelShooter extends SubsystemBase {
         VelocityControl
     }
 
-    InterpLUT distToBottomVel;
-    InterpLUT distToTopVel;
+    InterpLUT distToLowVel;
+    InterpLUT distToHighVel;
 
     // fill in later
     public static double[] distArr = {};
     public static double[] bottomVel = {}; // Ticks per second when 1:1 gear ratio
-
     public static double[] topVel = {};
+
     public static double gearRatio = 3;
     public final MotorEx low;
     public final MotorEx high;
@@ -52,14 +52,15 @@ public class TwoWheelShooter extends SubsystemBase {
         high = new MotorEx(hardwareMap, ConfigNames.highFlywheelMotor);
         setRunMode(runMode);
 
-        distToBottomVel = new InterpLUT();
-        distToTopVel = new InterpLUT();
+        distToLowVel = new InterpLUT();
+        distToHighVel = new InterpLUT();
         for (int i = 0; i < distArr.length; i++) {
-            distToBottomVel.add(distArr[i], bottomVel[i]);
-            distToTopVel.add(distArr[i], topVel[i]);
+            distToLowVel.add(distArr[i], bottomVel[i]);
+            distToHighVel.add(distArr[i], topVel[i]);
         }
 
-        distToBottomVel.createLUT();
+        distToLowVel.createLUT();
+        distToHighVel.createLUT();
         low.motor.setDirection(lowMotorDirForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);
         high.motor.setDirection(highMotorDirForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);
 
@@ -90,8 +91,8 @@ public class TwoWheelShooter extends SubsystemBase {
         if(dist < minDistanceThreshold ){//not possible to make it in the goal
             return false;
         }
-        double topVel = distToBottomVel.get(dist) * grToMultiplier.getOrDefault(gearRatio, 3.0);
-        double bottomVel = distToTopVel.get(dist) * grToMultiplier.getOrDefault(gearRatio, 3.0);
+        double topVel = distToLowVel.get(dist) * grToMultiplier.getOrDefault(gearRatio, 3.0);
+        double bottomVel = distToHighVel.get(dist) * grToMultiplier.getOrDefault(gearRatio, 3.0);
         switch (runMode) {
             case VelocityControl:
                 low.set(bottomVel); high.set(topVel);
@@ -103,6 +104,11 @@ public class TwoWheelShooter extends SubsystemBase {
                 break;
         }
         return true;
+    }
+
+    public void setCustomPower(double lowPower, double highPower) {
+        low.set(lowPower);
+        high.set(highPower);
     }
 
     public boolean setFlywheelsPower(Pose robotPose, ShootSide side){
