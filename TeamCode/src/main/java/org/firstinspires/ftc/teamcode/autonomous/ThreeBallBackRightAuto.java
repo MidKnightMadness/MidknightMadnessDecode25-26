@@ -43,7 +43,7 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
 
          public static long waitTime = 5000;
          public static double pathDistThresholdMax = 3;
-         public static double headingErrorMax = 5;
+         public static double headingErrorMax = 0.3;
          @Override
          protected Pose getStartPose(){
              return startPose;
@@ -98,8 +98,8 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
              return new SequentialCommandGroup(
                      new FollowPathCommand(follower, toShootingPath).setGlobalMaxPower(0.6),
                      new WaitCommand(waitTime),
-                     new FacePose(follower, rightTargetPose),
-                     new WaitCommand(waitTime),
+//                     new FacePose(follower, rightTargetPose),
+//                     new WaitCommand(waitTime),
 //                new ShootSequence(spindexer, shooter, ramp, motifPattern, CRServoEx.RunMode.OptimizedPositionalControl, startPose, shootSide),
                      new WaitCommand(waitTime),
                      new FollowPathCommand(follower, leaveBasePath, false)

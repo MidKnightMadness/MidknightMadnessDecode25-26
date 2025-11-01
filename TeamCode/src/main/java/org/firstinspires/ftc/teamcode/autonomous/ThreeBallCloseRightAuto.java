@@ -42,7 +42,7 @@ public class ThreeBallCloseRightAuto extends BaseAuto {
 
     public static long waitTime = 3000;
     public static double pathDistThresholdMin = 3;
-    public static double headingError = 7;
+    public static double headingError = 0.3;
     @Override
     protected Pose getStartPose(){
         return startPose;
@@ -106,12 +106,12 @@ public class ThreeBallCloseRightAuto extends BaseAuto {
         limelight.stop();//temporarily turn it off to hand to localizer
         return new SequentialCommandGroup(
                 new WaitCommand(waitTime),
-                new FollowPathCommand(follower, toShootingPath),
+                new FollowPathCommand(follower, toShootingPath, true),
 //                new FacePose(follower, rightTargetPose),
                 new WaitCommand(waitTime),
 //                new ShootSequence(spindexer, shooter, ramp, motifPattern, CRServoEx.RunMode.OptimizedPositionalControl, startPose, shootSide),
                 new WaitCommand(waitTime),
-                new FollowPathCommand(follower, leaveBasePath, false)
+                new FollowPathCommand(follower, leaveBasePath, true)
         );
 
     }

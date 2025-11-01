@@ -21,10 +21,16 @@ import java.util.Map;
 
 public class PoseWriteCommand extends CommandBase {
     double maxTimeMs;
-    String fileName = "robot_pose.txt";
+    String xFileName = "robot_x.txt";
+    String yFileName = "robot_y.txt";
+    String headingFileName = "robot_heading.txt";
     String directoryName = "competition";
-    FileWriter fileWriter;
-    File file;
+    FileWriter xFileWriter;
+    FileWriter yFileWriter;
+    FileWriter headingFileWriter;
+    File xFile;
+    File yFile;
+    File headingFile;
     boolean finishedWriting = false;
     Timer timer;
     Pose pose;
@@ -32,23 +38,42 @@ public class PoseWriteCommand extends CommandBase {
         timer = new Timer();
         this.pose = pose;
         this.maxTimeMs = timeMs;
-        file = createFile(fileName, directoryName);
-
+        xFile = createFile(xFileName, directoryName);
+        yFile = createFile(yFileName, directoryName);
+        headingFile = createFile(headingFileName, directoryName);
         try {
-            fileWriter = new FileWriter(file);
+            xFileWriter = new FileWriter(xFile);
         } catch (IOException e) {
-            RobotLog.ee("Log", "Error instantiating file writer of file: " + e.getMessage());
+            throw new RuntimeException(e);
         }
+        try {
+            yFileWriter = new FileWriter(yFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            headingFileWriter = new FileWriter(headingFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     @Override
     public void execute() {
         double currentTime = timer.getTime();
         if(currentTime < maxTimeMs && !finishedWriting){
-            String line = String.format("%.4f,%.4f,%.4f", pose.getX(), pose.getY(), pose.getHeading());
-            writeToFile(fileWriter, line);
-            finishedWriting = true;
-            closeFileWriter(fileWriter);
+            String xLine = String.format("%.4f", pose.getX());
+            String yLine = String.format("%.4f", pose.getY());
+            String headingLine = String.format("%.4f", pose.getHeading());
+            writeToFile(xFileWriter, xLine);
+            closeFileWriter(xFileWriter);
+
+            writeToFile(yFileWriter, yLine);
+            closeFileWriter(yFileWriter);
+
+            writeToFile(headingFileWriter, headingLine);
+            closeFileWriter(headingFileWriter);
         }
     }
 
@@ -62,7 +87,6 @@ public class PoseWriteCommand extends CommandBase {
 
 
     private static File createFile(String fileName, String dirName){
-
         File dir = new File(Environment.getExternalStorageDirectory(), dirName);
         if(!dir.exists()){
             dir.mkdirs();

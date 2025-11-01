@@ -23,6 +23,7 @@ import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.motif.MotifEnums;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
+import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.subsystems.Ramp;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
@@ -33,17 +34,16 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 
 import java.io.File;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 @Config
 @Configurable
 @TeleOp(name = "Main TeleOp")
 public class MainTeleOp extends CommandOpMode {
-    Telemetry telemetry;
-    TelemetryManager telemetryManager;
-    GraphManager graphManager;
-    Limelight3A limelight3A;
+//    TelemetryManager telemetryManager;
+//    GraphManager graphManager;
     Follower follower;
-    public static Pose startPose = new Pose(8, 8, Math.toRadians(90));
+    public Pose startPose = new Pose(8, 8, Math.toRadians(90));
     Timer timer;
 
     Spindexer spindexer;
@@ -52,12 +52,14 @@ public class MainTeleOp extends CommandOpMode {
 
     MotifEnums.Motif pattern = MotifEnums.Motif.NONE;
     Map<String, MotifEnums.Motif> idMap = Map.of(
-            "[21]", MotifEnums.Motif.GPP,
-            "[22]", MotifEnums.Motif.PGP,
-            "[23]", MotifEnums.Motif.PPG
+            "21", MotifEnums.Motif.GPP,
+            "22", MotifEnums.Motif.PGP,
+            "23", MotifEnums.Motif.PPG
     );
     String motifFileName = "competition/motif_value.txt";
-    String botPoseFileName = "competition/robot_pose.txt";
+    String botXFileName = "competition/robot_x.txt";
+    String botYFileName = "competition/robot_y.txt";
+    String botHeadingFileName = "competition/robot_heading.txt";
     File motifFile;
     String id;
 
@@ -75,23 +77,33 @@ public class MainTeleOp extends CommandOpMode {
 
     @Override
     public void initialize() {
+        ConstantsOldBot.motifIsBusy = false;
         timer = new Timer();
-        telemetryManager = PanelsTelemetry.INSTANCE.getTelemetry();
-        graphManager = PanelsGraph.INSTANCE.getManager();
-        limelight3A = hardwareMap.get(Limelight3A.class, ConfigNames.limelight);
-        spindexer = new Spindexer(hardwareMap);
-        ramp = new Ramp(hardwareMap);
-        shooter = new TwoWheelShooter(hardwareMap, TwoWheelShooter.RunMode.VelocityControl);
+//        telemetryManager = PanelsTelemetry.INSTANCE.getTelemetry();
+//        graphManager = PanelsGraph.INSTANCE.getManager();
+//        spindexer = new Spindexer(hardwareMap);
+//        ramp = new Ramp(hardwareMap);
+//        shooter = new TwoWheelShooter(hardwareMap, TwoWheelShooter.RunMode.VelocityControl);
 
         pattern = readMotifFromFile(motifFileName);
-        startPose = readPoseFromFile(botPoseFileName);
-        pattern = idMap.getOrDefault(id, MotifEnums.Motif.NONE);
-        follower = ConstantsBot.createKalmanPinpointAprilFollower(hardwareMap, startPose, telemetry);
+        double robotX = readDoubleFromPose(botXFileName);
+        double robotY = readDoubleFromPose(botYFileName);
+        double robotHeading = readDoubleFromPose(botHeadingFileName);
+
+
+        Pose roboPose = new Pose(robotX, robotY, robotHeading);
+
+        startPose = roboPose != null ? roboPose : startPose;
+
+        follower = ConstantsOldBot.createKalmanPinpointAprilFollower(hardwareMap, startPose, telemetry);
         flywheelToggle = new ButtonToggle();
         changeSpeed = new ButtonToggle();
         rampPos = new ButtonToggle();
-        shooter.setPid(pShooter, iShooter, dShooter);
+//        shooter.setPid(pShooter, iShooter, dShooter);
+
+        follower.startTeleopDrive();
     }
+
 
 
     public MotifEnums.Motif readMotifFromFile(String fileName){
@@ -102,56 +114,72 @@ public class MainTeleOp extends CommandOpMode {
         else{
             telemetry.addData("File does not exist", file.getAbsolutePath());
         }
-        return null;
+        return MotifEnums.Motif.NONE;
     }
+    public double readDoubleFromPose(String fileName){
+        File file = new File(Environment.getExternalStorageDirectory(), fileName);
+        if(file.exists()) {
+            return Double.parseDouble(ReadWriteFile.readFile(file));
+        }
+        else{
+            return 0;
+        }
 
-    public Pose readPoseFromFile(String fileName){
-        File file = new File(Environment.getExternalStorageDirectory(),  fileName);
-        if(file.exists() == false){
-            return null;
-        }
-        String values = ReadWriteFile.readFile(file).trim();
-        String[] indivParts = values.split(",");
-        try{
-           double x = Double.parseDouble(indivParts[0]);
-           double y = Double.parseDouble(indivParts[1]);
-           double heading = Double.parseDouble(indivParts[2]);
-            return new Pose(x, y, heading);
-        }
-        catch(NumberFormatException n){
-            return null;
-        }
+
     }
 
     @Override
     public void run(){
         super.run();
-        follower.update();
         follower.setTeleOpDrive(-gamepad1.left_stick_y * currSpeed, -gamepad1.left_stick_x * currSpeed, -gamepad1.right_stick_x * currSpeed, true);
-
-        if(follower.getPose().getX() > 72){
+        follower.update();
+        if(follower.getPose().getHeading() > 0){
             side = ShootSide.RIGHT;
         }
 
-        if(flywheelToggle.update(gamepad1.right_bumper)){//right bumper -> turn off flywheel
-            flywheelSet = !flywheelSet;
-        }
-        if(flywheelSet){
-            schedule(new InstantCommand(() -> shooter.setFlywheelPower(follower.getPose(), side)));
-        }
-        else{
-            schedule(new InstantCommand(() -> shooter.stopFlywheels()));
-        }
+//        if(flywheelToggle.update(gamepad1.right_bumper)){//right bumper -> turn off flywheel
+//            flywheelSet = !flywheelSet;
+//        }
+//        if(flywheelSet){
+//            schedule(new InstantCommand(() -> shooter.setFlywheelsPower(follower.getPose(), side)));
+//        }
+//        else{
+//            schedule(new InstantCommand(() -> shooter.stopFlywheels()));
+//        }
 
         if (changeSpeed.update(gamepad1.b)) {
             currSpeed = currSpeed == maxSpeed ? midSpeed : maxSpeed;
         }
+
+        updateTelem();
+
 
 
 
 
 
     }
+
+    private void updateTelem() {
+        addStringToTelem("Motif Pattern", pattern.toString());
+        addStringToTelem("Start Pose", startPose.getPose().toString());
+        addStringToTelem("Current Pose", follower.getPose().toString());
+        addToTelemGraph("Current Speed", currSpeed);
+        addStringToTelem("Shoot Side", side.toString());
+        addStringToTelem("Pattern", pattern.toString());
+        telemetry.update();
+//        graphManager.update();;
+//        telemetryManager.update();;
+    }
+    public void addStringToTelem(String s, String o){
+        telemetry.addLine(s + o);
+    }
+    public void addToTelemGraph(String s, Number o){
+        telemetry.addData(s, o);
+//        telemetryManager.addData(s, o);
+//        graphManager.addData(s, o);
+    }
+
 
 
 }

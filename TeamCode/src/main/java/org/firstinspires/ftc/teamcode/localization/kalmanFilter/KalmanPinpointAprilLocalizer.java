@@ -70,6 +70,7 @@ public class KalmanPinpointAprilLocalizer implements Localizer {
         previousMergedPose = startPose;
         currentMergedPose = startPose;
 
+
     }
 
     private void initializeKalman(){

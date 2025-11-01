@@ -42,7 +42,7 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
 
     public static long waitTime = 5000;
     public static double pathDistThresholdMin = 3;
-    public static double headingErrorMax = 5;
+    public static double headingErrorMax = 0.3;
     @Override
     protected Pose getStartPose(){
         return startPose;
@@ -96,8 +96,8 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
     protected Command postMotifSequence(){
         return new SequentialCommandGroup(
                 new FollowPathCommand(follower, toShootingPath).setGlobalMaxPower(0.6),
-                new WaitCommand( waitTime),
-                new FacePose(follower, leftTargetPose),
+//                new WaitCommand( waitTime),
+//                new FacePose(follower, leftTargetPose),
 //                new ShootSequence(spindexer, shooter, ramp, motifPattern, CRServoEx.RunMode.OptimizedPositionalControl, startPose, shootSide),
                 new WaitCommand(waitTime),
                 new FollowPathCommand(follower, leaveBasePath, false)

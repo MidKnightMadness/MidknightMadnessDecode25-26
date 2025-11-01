@@ -16,6 +16,7 @@ import com.bylazar.telemetry.PanelsTelemetry;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.util.ButtonToggle;
+import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
 
@@ -63,8 +64,8 @@ public class DoubleFlywheelCustomPID extends OpMode {
     @Override
     public void init() {
         toggle = new ButtonToggle();
-        left = hardwareMap.get(DcMotorEx.class, "left");
-        right = hardwareMap.get(DcMotorEx.class, "right");
+        left = hardwareMap.get(DcMotorEx.class, ConfigNames.lowFlywheelMotor);
+        right = hardwareMap.get(DcMotorEx.class, ConfigNames.highFlywheelMotor);
 
         left.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         right.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
