@@ -36,33 +36,32 @@ public class ShootSequence extends CommandBase {
         int[] sequence = spindexer.getOptimalSequence(motif);
 
         new SequentialCommandGroup(
-            new ParallelCommandGroup(
+//            new ParallelCommandGroup(
                 new InstantCommand(() -> shooter.setFlywheelsPower(robotPose, side)),
-                new InstantCommand(ramp::setRestPos)
-            ),
+//                new InstantCommand(ramp::setRestPos)
+//            ),
             new WaitCommand(powerFlywheelWaitMs)
         );
         for (int i = 0; i < sequence.length; i++) {
             if (i > 0)
-                new ParallelCommandGroup(
-                    new InstantCommand(ramp::setRestPos),
-                    new WaitCommand(swapWaitMs)
-                );
+//                new ParallelCommandGroup(
+//                    new InstantCommand(ramp::setRestPos),
+                    new WaitCommand(swapWaitMs);
+//                );
             int spot = sequence[i];
             new SequentialCommandGroup(
                 new SpindexerGotoSpot(spindexer, spot, runMode, finishedTimeThreshold),
-                new ParallelCommandGroup(
-                    new InstantCommand(ramp::setLowerPos),
+//                new ParallelCommandGroup(
+//                    new InstantCommand(ramp::setLowerPos),
                     new InstantCommand(() -> spindexer.removeBall(spot))
-                )
+//                )
             );
         }
         new SequentialCommandGroup(
                 new WaitCommand(finalWaitMs),
-                new ParallelCommandGroup(
-                    new InstantCommand(shooter::stopFlywheels),
-                    new InstantCommand(ramp:: setRestPos))
-
+//                new ParallelCommandGroup(
+                    new InstantCommand(shooter::stopFlywheels)
+//                    new InstantCommand(ramp:: setRestPos))
         );
 
         addRequirements(spindexer, shooter, ramp);

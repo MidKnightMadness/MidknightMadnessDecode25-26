@@ -96,13 +96,13 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
          @Override
          protected Command postMotifSequence(){
              return new SequentialCommandGroup(
-                     new FollowPathCommand(follower, toShootingPath).setGlobalMaxPower(0.6),
+                     new FollowPathCommand(follower, toShootingPath, true).setGlobalMaxPower(0.6),
                      new WaitCommand(waitTime),
 //                     new FacePose(follower, rightTargetPose),
 //                     new WaitCommand(waitTime),
 //                new ShootSequence(spindexer, shooter, ramp, motifPattern, CRServoEx.RunMode.OptimizedPositionalControl, startPose, shootSide),
                      new WaitCommand(waitTime),
-                     new FollowPathCommand(follower, leaveBasePath, false)
+                     new FollowPathCommand(follower, leaveBasePath, true)
              );
 
          }
@@ -124,6 +124,10 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
          }
 
 
+     @Override
+     protected ShootSide getSide(){
+         return shootSide;
+     }
 
          public void addStringToTelem(String s, String o){
              telemetry.addLine(s + o);

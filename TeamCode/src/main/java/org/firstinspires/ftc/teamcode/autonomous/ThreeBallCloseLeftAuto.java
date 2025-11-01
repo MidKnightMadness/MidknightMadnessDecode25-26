@@ -24,10 +24,10 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
 public class ThreeBallCloseLeftAuto extends BaseAuto {
     public static double motifDetectionTimeMs = 5000;
     int startPipeline = 1;
-    public static Pose startPose = new Pose(144-88, 135, Math.toRadians(90));
-    public static Pose motifDetectionPose = new Pose(144-88, 112, Math.toRadians(65));
-    public static Pose shootPose = new Pose(144-85, 85, Math.toRadians(140));
-    public static Pose leavePose = new Pose(144- 86, 65, Math.toRadians(90));
+    public static Pose startPose = new Pose(56, 135, Math.toRadians(90));
+    public static Pose motifDetectionPose = new Pose(56, 112, Math.toRadians(65));
+    public static Pose shootPose = new Pose(59, 85, Math.toRadians(140));
+    public static Pose leavePose = new Pose(58, 65, Math.toRadians(90));
     PathChain toMotifPath;
     PathChain toShootingPath;
     PathChain leaveBasePath;
@@ -96,22 +96,26 @@ public class ThreeBallCloseLeftAuto extends BaseAuto {
     protected Command preMotifSequence(){
         motifCommand = new MotifWriteCommand(limelight, motifDetectionTimeMs);
         return new SequentialCommandGroup(
-                new FollowPathCommand(follower, toMotifPath).setGlobalMaxPower(0.5),
+                new FollowPathCommand(follower, toMotifPath, true).setGlobalMaxPower(0.5),
                 motifCommand
         );
 
+    }
+    @Override
+    protected ShootSide getSide(){
+        return shootSide;
     }
     @Override
     protected Command postMotifSequence(){
         limelight.stop();//temporarily turn it off to hand to localizer
         return new SequentialCommandGroup(
                 new WaitCommand(waitTime),
-                new FollowPathCommand(follower, toShootingPath),
+                new FollowPathCommand(follower, toShootingPath, true),
 //                new FacePose(follower, rightTargetPose),
                 new WaitCommand(waitTime),
 //                new ShootSequence(spindexer, shooter, ramp, motifPattern, CRServoEx.RunMode.OptimizedPositionalControl, startPose, shootSide),
                 new WaitCommand(waitTime),
-                new FollowPathCommand(follower, leaveBasePath, false)
+                new FollowPathCommand(follower, leaveBasePath, true)
         );
 
     }

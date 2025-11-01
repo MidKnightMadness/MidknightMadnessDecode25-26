@@ -85,6 +85,10 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
     }
 
     @Override
+    protected ShootSide getSide(){
+        return shootSide;
+    }
+    @Override
     protected Command preMotifSequence(){
         motifCommand = new MotifWriteCommand(limelight, motifDetectionTimeMs);
         return new SequentialCommandGroup(
@@ -95,12 +99,12 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
     @Override
     protected Command postMotifSequence(){
         return new SequentialCommandGroup(
-                new FollowPathCommand(follower, toShootingPath).setGlobalMaxPower(0.6),
+                new FollowPathCommand(follower, toShootingPath, true).setGlobalMaxPower(0.6),
 //                new WaitCommand( waitTime),
 //                new FacePose(follower, leftTargetPose),
 //                new ShootSequence(spindexer, shooter, ramp, motifPattern, CRServoEx.RunMode.OptimizedPositionalControl, startPose, shootSide),
                 new WaitCommand(waitTime),
-                new FollowPathCommand(follower, leaveBasePath, false)
+                new FollowPathCommand(follower, leaveBasePath, true)
         );
 
     }
