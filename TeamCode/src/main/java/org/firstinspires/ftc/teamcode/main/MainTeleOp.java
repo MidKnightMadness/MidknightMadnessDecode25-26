@@ -16,6 +16,8 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ReadWriteFile;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
@@ -107,6 +109,7 @@ public class MainTeleOp extends CommandOpMode {
     double currturnerSpeed = 0.15;
     double maxTurnerSpeed = 0.15;
     boolean spindexterSpinning = false;
+    DcMotorSimple.Direction spindexterDir = DcMotorSimple.Direction.FORWARD;
 
     @Override
     public void initialize() {
@@ -255,6 +258,15 @@ public class MainTeleOp extends CommandOpMode {
             shooter.stopFlywheels();
         }
 
+        if(gamepad2.bWasPressed()){
+            if(spindexerServo.getDirection() == DcMotorSimple.Direction.FORWARD){
+                spindexerServo.setDirection(DcMotorSimple.Direction.REVERSE);
+            }
+            else{
+                spindexerServo.setDirection(DcMotorSimple.Direction.FORWARD);
+            }
+
+        }
         if(spinSpindexter.update(gamepad2.left_trigger > 0.5)) {
             if (currturnerSpeed == maxTurnerSpeed) {
                 spindexerServo.setPower(currturnerSpeed);
