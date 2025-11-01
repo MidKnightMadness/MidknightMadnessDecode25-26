@@ -12,9 +12,11 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
+import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 
 import org.firstinspires.ftc.teamcode.commands.PoseWriteCommand;
 import org.firstinspires.ftc.teamcode.commands.SideWriteCommand;
+import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
@@ -52,19 +54,23 @@ public abstract class BaseAuto extends CommandOpMode {
         timer = new Timer();
         timer.restart();
 
-        // Should go in individual autos
-//        limelight = hardwareMap.get(Limelight3A.class, ConfigNames.limelight);
-//        spindexer = new Spindexer(hardwareMap);
-//        shooter = new TwoWheelShooter(hardwareMap, TwoWheelShooter.RunMode.VelocityControl);
+        initializeMechanisms();
+
 
         startPose = getStartPose();
-        follower = ConstantsOldBot.createPinpointFollower(hardwareMap);
+        follower = ConstantsBot.createPinpointFollower(hardwareMap);
 
         telemetryManager = PanelsTelemetry.INSTANCE.getTelemetry();
         graphManager = PanelsGraph.INSTANCE.getManager();
         buildPaths();
         setupVision();
         schedule(preMotifSequence());
+    }
+
+    protected void initializeMechanisms() {
+//        limelight = hardwareMap.get(Limelight3A.class, ConfigNames.limelight);
+        spindexer = new Spindexer(hardwareMap);
+        shooter = new TwoWheelShooter(hardwareMap, TwoWheelShooter.RunMode.VelocityControl);
     }
 
     protected ShootSide getSide(){
@@ -78,16 +84,19 @@ public abstract class BaseAuto extends CommandOpMode {
             schedule(postMotifSequence());
             prevVisionComplete = true;
         }
-        if (timer.getTime() >= maxTimeMs) requestOpModeStop();
+//        if (timer.getTime() >= maxTimeMs) requestOpModeStop();
         updateTelemetry();
-        end();
+        writeValues();
     }
 
-    @Override
-    public void end() {
-        CommandScheduler.getInstance().cancelAll();
-        schedule(new PoseWriteCommand(follower.getPose(), maxWritePoseTimeMs));
-        schedule(new SideWriteCommand(getSide(), maxSideWriteTimeMs));
+    public void writeValues() {
+        if(timer.getTime() >= maxTimeMs & !stopEnd) {
+            CommandScheduler.getInstance().cancelAll();
+            schedule(new ParallelCommandGroup(
+                    new PoseWriteCommand(follower.getPose(), maxWritePoseTimeMs),
+                    new SideWriteCommand(getSide(), maxSideWriteTimeMs)));
+            stopEnd = true;
+        }
     }
 
     protected Command postMotifSequence() {

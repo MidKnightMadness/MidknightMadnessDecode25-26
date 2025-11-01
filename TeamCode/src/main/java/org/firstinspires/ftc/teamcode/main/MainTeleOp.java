@@ -30,6 +30,7 @@ import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.commands.ShootSequence;
 import org.firstinspires.ftc.teamcode.commands.SpindexerShootContinuous;
 import org.firstinspires.ftc.teamcode.motif.MotifEnums;
@@ -39,11 +40,12 @@ import org.firstinspires.ftc.teamcode.subsystems.Ramp;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
 import org.firstinspires.ftc.teamcode.tests.subsystems.SpindexerShootContinuousTest;
+import org.firstinspires.ftc.teamcode.util.Angle;
 import org.firstinspires.ftc.teamcode.util.ButtonToggle;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.teamcode.util.ShootSide;
 import org.firstinspires.ftc.teamcode.util.Timer;
-
+import org.firstinspires.ftc.teamcode.commands.SpindexerSpinAngle;
 import java.io.File;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -89,6 +91,8 @@ public class MainTeleOp extends CommandOpMode {
     public static double pShooter = 0.01;
     public static double iShooter = 0;
     public static double dShooter = 0;
+    public static Angle twoBallAngle = new Angle(70, AngleUnit.DEGREES);
+    public static Angle lastBallAngle = new Angle(120, AngleUnit.DEGREES);
     ShootSide side;
     public static double[] closeShootPowers = new double[]{
             0.8, 0.6
@@ -108,9 +112,10 @@ public class MainTeleOp extends CommandOpMode {
     CRServo spindexerServo;
     double currturnerSpeed = 0.15;
     double maxTurnerSpeed = 0.15;
-    boolean spindexterSpinning = false;
+    boolean automaticSpindexer = false;
     DcMotorSimple.Direction spindexterDir = DcMotorSimple.Direction.FORWARD;
 
+    SpindexerSpinAngle spindexerCommand;
     @Override
     public void initialize() {
         CommandScheduler.getInstance().setBulkReading(
@@ -123,7 +128,7 @@ public class MainTeleOp extends CommandOpMode {
 //        graphManager = PanelsGraph.INSTANCE.getManager();
 //        spindexer = new Spindexer(hardwareMap);
 //        ramp = new Ramp(hardwareMap);
-//        shooter = new TwoWheelShooter(hardwareMap, TwoWheelShooter.RunMode.VelocityControl);
+        shooter = new TwoWheelShooter(hardwareMap, TwoWheelShooter.RunMode.VelocityControl);
 
 //        pattern = readMotifFromFile(motifFileName);
         double robotX = readDoubleFromPose(botXFileName);
@@ -246,6 +251,21 @@ public class MainTeleOp extends CommandOpMode {
 //            schedule(new FollowPathCommand(follower, pathChain));
 //        }
 
+        if(gamepad1.leftBumperWasPressed()){
+            automaticSpindexer = true;
+            spindexerCommand = new SpindexerSpinAngle(spindexer, twoBallAngle, 0.12);
+            schedule(spindexerCommand);
+        }
+        else if(gamepad1.left_trigger > 0.5){
+            automaticSpindexer = true;
+            spindexerCommand = new SpindexerSpinAngle(spindexer, twoBallAngle, 0.12);
+            schedule(spindexerCommand);
+        }
+        if(spindexerCommand.isFinished()){
+            automaticSpindexer = false;
+        }
+
+
     }
     private void runGamepad2Commands(){
 
@@ -259,24 +279,20 @@ public class MainTeleOp extends CommandOpMode {
             shooter.stopFlywheels();
         }
 
-        if(gamepad2.bWasPressed()){
+        if(gamepad2.bWasPressed() && !automaticSpindexer){
             if(spindexerServo.getDirection() == DcMotorSimple.Direction.FORWARD){
                 spindexerServo.setDirection(DcMotorSimple.Direction.REVERSE);
             }
             else{
                 spindexerServo.setDirection(DcMotorSimple.Direction.FORWARD);
             }
+        }
 
+        if(spinSpindexter.update(gamepad2.left_trigger > 0.5) && !automaticSpindexer) {
+            currturnerSpeed = (currturnerSpeed == 0) ? maxTurnerSpeed : 0;
+            spindexerServo.setPower(currturnerSpeed);
         }
-        if(spinSpindexter.update(gamepad2.left_trigger > 0.5)) {
-            if (currturnerSpeed == maxTurnerSpeed) {
-                spindexerServo.setPower(currturnerSpeed);
-                currturnerSpeed = 0;
-            } else {
-                spindexerServo.setPower(0);
-                currturnerSpeed = maxTurnerSpeed;
-            }
-        }
+
     }
 
     private void updateTelem() {

@@ -17,6 +17,8 @@ import org.firstinspires.ftc.teamcode.commands.MotifWriteCommand;
 import org.firstinspires.ftc.teamcode.motif.MotifEnums;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
+import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
+import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
 import org.firstinspires.ftc.teamcode.util.ShootSide;
 
      @Config
@@ -106,6 +108,13 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
              );
 
          }
+         @Override
+         protected void initializeMechanisms() {
+//        limelight = hardwareMap.get(Limelight3A.class, ConfigNames.limelight);
+             spindexer = new Spindexer(hardwareMap);
+             shooter = new TwoWheelShooter(hardwareMap, TwoWheelShooter.RunMode.VelocityControl);
+         }
+
          @Override
          protected Command postMotifSequence(){
 //             limelight.stop();//temporarily turn it off to hand to localizer
