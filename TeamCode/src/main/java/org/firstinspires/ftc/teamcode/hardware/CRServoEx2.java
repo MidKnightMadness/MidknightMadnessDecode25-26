@@ -87,6 +87,13 @@ public class CRServoEx2<E extends Encoder> extends CRServo {
     }
 
     /**
+     * @return The runmode of this servo
+     */
+    public RunMode getRunmode() {
+        return this.runmode;
+    }
+
+    /**
      * Sets the PIDF coefficients of the CR Servo for the PositionalControl runmodes
      * @param coefficients the coefficients for the PIDF controller
      * @return this object for chaining purposes
