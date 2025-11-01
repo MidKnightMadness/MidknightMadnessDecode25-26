@@ -5,7 +5,7 @@ import com.bylazar.configurables.annotations.Configurable;
 
 @Config
 @Configurable
-public class ConfigNames extends LynxConfig {
+public class ConfigNames {
     public static String inColorSensor = "inColorSensor";
     public static String outColorSensor = "outColorSensor";
     public static String turner = "turner";
@@ -22,6 +22,4 @@ public class ConfigNames extends LynxConfig {
     public static String rampServo = "rampServo";
     public static String intakeColor = "intakeColor";
     public static String outakeColor = "outakeColor";
-
-
 }

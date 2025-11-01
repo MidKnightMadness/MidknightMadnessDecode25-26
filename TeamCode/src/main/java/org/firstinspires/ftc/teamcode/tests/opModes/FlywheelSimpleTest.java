@@ -17,7 +17,10 @@ public class FlywheelSimpleTest extends OpMode {
     DcMotorEx high;
     TelemetryManager telemetryM;
 
-    public static double lowPower = 0.9;
+    // Far: low 1, high 1
+    // Close: low 0.67, high 1
+
+    public static double lowPower = 1;
     public static double highPower = 1;
 
     @Override
@@ -32,7 +35,7 @@ public class FlywheelSimpleTest extends OpMode {
     public void loop() {
         low.setPower(lowPower);
         high.setPower(highPower);
-        servo.setPower(0.2);
+        servo.setPower(-0.15);
 
         telemetryM.addData("low velocity", low.getVelocity());
         telemetryM.addData("high velocity", high.getVelocity());

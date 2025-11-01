@@ -24,7 +24,7 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
      @Configurable
      @Autonomous(name = "Back Right")
      public class ThreeBallBackRightAuto extends BaseAuto {
-         public static double motifDetectionTimeMs = 5000;
+//         public static double motifDetectionTimeMs = 5000;
          int startPipeline = 1;
 
          public static Pose startPose = new Pose(88, 8, Math.toRadians(90));
@@ -33,8 +33,8 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
          public static Pose leavePose = new Pose(86, 38, Math.toRadians(68));
          PathChain toShootingPath;
          PathChain leaveBasePath;
-         MotifEnums.Motif motifPattern;
-         MotifWriteCommand motifCommand;
+//         MotifEnums.Motif motifPattern;
+//         MotifWriteCommand motifCommand;
 
          ShootSide shootSide = ShootSide.RIGHT;
          Pose currentPose;
@@ -45,16 +45,17 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
          public static long waitTime = 5000;
          public static double pathDistThresholdMax = 3;
          public static double headingErrorMax = 0.3;
+
          @Override
          protected Pose getStartPose(){
              return startPose;
          }
 
-         @Override
-         protected void setupVision(){
-             limelight.pipelineSwitch(startPipeline);
-             limelight.start();
-         }
+//         @Override
+//         protected void setupVision(){
+//             limelight.pipelineSwitch(startPipeline);
+//             limelight.start();
+//         }
 
          @Override
          protected void buildPaths(){
@@ -75,25 +76,25 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
          }
 
 
-         @Override
-         protected boolean isVisionComplete(){
-             motifPattern = motifCommand.getDetected();
-             if(motifPattern != MotifEnums.Motif.NONE){
-                 ConstantsBot.motifIsBusy = false;
-                 return true;
-             }
-             ConstantsBot.motifIsBusy = true;
-             return false;
-         }
+//         @Override
+//         protected boolean isVisionComplete(){
+//             motifPattern = motifCommand.getDetected();
+//             if(motifPattern != MotifEnums.Motif.NONE){
+//                 ConstantsBot.motifIsBusy = false;
+//                 return true;
+//             }
+//             ConstantsBot.motifIsBusy = true;
+//             return false;
+//         }
 
-         @Override
-         protected Command preMotifSequence(){
-             motifCommand = new MotifWriteCommand(limelight, motifDetectionTimeMs);
-             return new SequentialCommandGroup(
-                     motifCommand
-             );
-
-         }
+//         @Override
+//         protected Command preMotifSequence(){
+//             motifCommand = new MotifWriteCommand(limelight, motifDetectionTimeMs);
+//             return new SequentialCommandGroup(
+//                     motifCommand
+//             );
+//
+//         }
          @Override
          protected Command postMotifSequence(){
              return new SequentialCommandGroup(
@@ -112,7 +113,7 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
              follower.update();
              currentPose = follower.getPose();
              timer.getTime();
-             addStringToTelem("Motif Pattern", String.valueOf(motifPattern));
+//             addStringToTelem("Motif Pattern", String.valueOf(motifPattern));
              addToTelemGraph("Update Rate", 1/timer.getDeltaTime());
              addToTelemGraph("Pose(X)", currentPose.getX());
              addToTelemGraph("Pose(Y)", currentPose.getY());

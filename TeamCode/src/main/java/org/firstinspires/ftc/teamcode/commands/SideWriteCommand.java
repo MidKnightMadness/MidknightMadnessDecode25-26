@@ -30,6 +30,7 @@ public class SideWriteCommand extends CommandBase {
     Timer timer;
     ShootSide side;
     String outputString;
+
     public SideWriteCommand(ShootSide shootSide, double timeMs){
         timer = new Timer();
         this.side = shootSide;

@@ -24,8 +24,8 @@ import org.firstinspires.ftc.teamcode.util.ConfigNames;
 public class ConstantsBot {
     public static boolean motifIsBusy = true;
     public static FollowerConstants followerConstants = new FollowerConstants()
-            .forwardZeroPowerAcceleration(-52)
-            .lateralZeroPowerAcceleration(-87.8)
+            .forwardZeroPowerAcceleration(57)//TUNED
+            .lateralZeroPowerAcceleration(52)//TUNED
             // Translational PIDF
             .translationalPIDFSwitch(4)
             .translationalPIDFCoefficients(new PIDFCoefficients(0.1, 0, 0.01, 0.03))
@@ -44,8 +44,8 @@ public class ConstantsBot {
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 0.6, 1);
 
     public static PinpointConstants pinpointLocalizerConstants = new PinpointConstants()
-            .forwardPodY(-173.7/25.4)
-            .strafePodX(-115/25.4)
+            .forwardPodY(115/25.4)
+            .strafePodX(173.7/25.4)
             .distanceUnit(DistanceUnit.INCH)
             .hardwareMapName(ConfigNames.pinpoint)
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
@@ -77,10 +77,10 @@ public class ConstantsBot {
             .rightRearMotorName(ConfigNames.BR)
             .leftRearMotorName(ConfigNames.BL)
             .leftFrontMotorName(ConfigNames.FL)
-            .leftFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .leftRearMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .rightFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
-            .rightRearMotorDirection(DcMotorSimple.Direction.REVERSE);
+            .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
+            .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
+            .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
+            .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD);
 
     public static Follower createNoLocalizerFollower(HardwareMap hardwareMap){
         return new FollowerBuilder(followerConstants, hardwareMap)

@@ -106,6 +106,11 @@ public class TwoWheelShooter extends SubsystemBase {
         return true;
     }
 
+    public void setFlywheelsPower(boolean isClose) {
+        if (isClose) setCustomPower(0.66, 1);
+        else setCustomPower(1, 1);
+    }
+
     public void setCustomPower(double lowPower, double highPower) {
         low.set(lowPower);
         high.set(highPower);

@@ -52,8 +52,8 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
          @Override
          protected void setupVision(){
 
-             limelight.pipelineSwitch(startPipeline);
-             limelight.start();
+//             limelight.pipelineSwitch(startPipeline);
+//             limelight.start();
          }
 
          @Override
@@ -86,20 +86,20 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
          }
 
 
-         @Override
-         protected boolean isVisionComplete(){
-             motifPattern = motifCommand.getDetected();
-             if(motifPattern != MotifEnums.Motif.NONE){
-                 ConstantsBot.motifIsBusy = false;
-                 return true;
-             }
-             ConstantsBot.motifIsBusy = true;
-             return false;
-         }
+//         @Override
+//         protected boolean isVisionComplete(){
+//             motifPattern = motifCommand.getDetected();
+//             if(motifPattern != MotifEnums.Motif.NONE){
+//                 ConstantsBot.motifIsBusy = false;
+//                 return true;
+//             }
+//             ConstantsBot.motifIsBusy = true;
+//             return false;
+//         }
 
          @Override
          protected Command preMotifSequence(){
-             motifCommand = new MotifWriteCommand(limelight, motifDetectionTimeMs);
+//             motifCommand = new MotifWriteCommand(limelight, motifDetectionTimeMs);
              return new SequentialCommandGroup(
                      new FollowPathCommand(follower, toMotifPath).setGlobalMaxPower(0.5),
                      motifCommand
@@ -108,7 +108,7 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
          }
          @Override
          protected Command postMotifSequence(){
-             limelight.stop();//temporarily turn it off to hand to localizer
+//             limelight.stop();//temporarily turn it off to hand to localizer
              return new SequentialCommandGroup(
                      new WaitCommand(waitTime),
                      new FollowPathCommand(follower, toShootingPath, true),

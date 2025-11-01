@@ -28,7 +28,7 @@ public class DriveTeleOp extends OpMode {
         ConstantsBot.motifIsBusy = false;
         PanelsDrawing.init();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
-        follower = ConstantsBot.createKalmanPinpointAprilFollower(hardwareMap, startPose, telemetry);
+        follower = ConstantsBot.createPinpointFollower(hardwareMap);
         follower.setStartingPose(startPose);
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         graphM = PanelsGraph.INSTANCE.getManager();

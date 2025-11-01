@@ -32,8 +32,8 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
     public static Pose leavePose = new Pose(58, 38, Math.toRadians(112));
     PathChain toShootingPath;
     PathChain leaveBasePath;
-    MotifEnums.Motif motifPattern;
-    MotifWriteCommand motifCommand;
+//    MotifEnums.Motif motifPattern;
+//    MotifWriteCommand motifCommand;
 
     ShootSide shootSide = ShootSide.LEFT;
     Pose currentPose;
@@ -44,6 +44,7 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
     public static long waitTime = 5000;
     public static double pathDistThresholdMin = 3;
     public static double headingErrorMax = 0.3;
+
     @Override
     protected Pose getStartPose(){
         return startPose;
@@ -51,8 +52,8 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
 
     @Override
     protected void setupVision(){
-        limelight.pipelineSwitch(startPipeline);
-        limelight.start();
+//        limelight.pipelineSwitch(startPipeline);
+//        limelight.start();
     }
 
     @Override
@@ -64,6 +65,7 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
                 .setTimeoutConstraint(3000)
                 .setTranslationalConstraint(pathDistThresholdMin)
                 .build();
+
         leaveBasePath = follower.pathBuilder()
                 .addPath(new BezierLine(shootPose, leavePose))
                 .setLinearHeadingInterpolation(shootPose.getHeading(), leavePose.getHeading())
@@ -73,30 +75,30 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
                 .build();
     }
 
-
-    @Override
-    protected boolean isVisionComplete(){
-        motifPattern = motifCommand.getDetected();
-        if(motifPattern != MotifEnums.Motif.NONE){
-            ConstantsBot.motifIsBusy = false;
-            return true;
-        }
-        ConstantsBot.motifIsBusy = true;
-        return false;
-    }
+//
+//    @Override
+//    protected boolean isVisionComplete(){
+//        motifPattern = motifCommand.getDetected();
+//        if(motifPattern != MotifEnums.Motif.NONE){
+//            ConstantsBot.motifIsBusy = false;
+//            return true;
+//        }
+//        ConstantsBot.motifIsBusy = true;
+//        return false;
+//    }
 
     @Override
     protected ShootSide getSide(){
         return shootSide;
     }
-    @Override
-    protected Command preMotifSequence(){
-        motifCommand = new MotifWriteCommand(limelight, motifDetectionTimeMs);
-        return new SequentialCommandGroup(
-                motifCommand
-        );
+//    @Override
+//    protected Command preMotifSequence(){
+//        motifCommand = new MotifWriteCommand(limelight, motifDetectionTimeMs);
+//        return new SequentialCommandGroup(
+//                motifCommand
+//        );
 
-    }
+//    }
     @Override
     protected Command postMotifSequence(){
         return new SequentialCommandGroup(
@@ -114,7 +116,7 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
         follower.update();
         currentPose = follower.getPose();
         timer.getTime();
-        addStringToTelem("Motif Pattern", String.valueOf(motifPattern));
+//        addStringToTelem("Motif Pattern", String.valueOf(motifPattern));
         addToTelemGraph("Update Rate", 1/timer.getDeltaTime());
         addToTelemGraph("Pose(X)", currentPose.getX());
         addToTelemGraph("Pose(Y)", currentPose.getY());

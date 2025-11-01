@@ -125,17 +125,18 @@ public class MainTeleOp extends CommandOpMode {
 //        ramp = new Ramp(hardwareMap);
 //        shooter = new TwoWheelShooter(hardwareMap, TwoWheelShooter.RunMode.VelocityControl);
 
-        pattern = readMotifFromFile(motifFileName);
+//        pattern = readMotifFromFile(motifFileName);
         double robotX = readDoubleFromPose(botXFileName);
         double robotY = readDoubleFromPose(botYFileName);
         double robotHeading = readDoubleFromPose(botHeadingFileName);
-        shootSide = readShootSideFromFile(sideFileName);
+//        shootSide = readShootSideFromFile(sideFileName);
 
         Pose roboPose = new Pose(robotX, robotY, robotHeading);
 
         startPose = roboPose != null ? roboPose : startPose;
 
-        follower = ConstantsBot.createKalmanPinpointAprilFollower(hardwareMap, startPose, telemetry);
+        follower = ConstantsBot.createPinpointFollower(hardwareMap);
+        follower.setStartingPose(startPose);
         flywheelFarToggle = new ButtonToggle();
         flywheelCloseToggle = new ButtonToggle();
         changeSpeed = new ButtonToggle();
@@ -216,34 +217,34 @@ public class MainTeleOp extends CommandOpMode {
             currSpeed = currSpeed == maxSpeed ? midSpeed : maxSpeed;
         }
 
-        if(gamepad1.aWasPressed()){
-            automaticDriving = true;
-            Pose toPose;
-            if(side == ShootSide.LEFT){
-                toPose = toCloseLeftShoot;
-            }
-            else{
-                toPose = toCloseRightShoot;
-            }
-            PathChain pathChain = getPathChain(follower.getPose(), toPose);
+//        if(gamepad1.aWasPressed()){
+//            automaticDriving = true;
+//            Pose toPose;
+//            if(side == ShootSide.LEFT){
+//                toPose = toCloseLeftShoot;
+//            }
+//            else{
+//                toPose = toCloseRightShoot;
+//            }
+//            PathChain pathChain = getPathChain(follower.getPose(), toPose);
+//
+//            schedule(new FollowPathCommand(follower, pathChain));
+//        }
 
-            schedule(new FollowPathCommand(follower, pathChain));
-        }
-
-
-        if(gamepad1.xWasPressed()){
-            automaticDriving = true;
-            Pose toPose;
-            if(side == ShootSide.LEFT){
-                toPose = toFarLeftShoot;
-            }
-            else{
-                toPose = toFarRightShoot;
-            }
-            PathChain pathChain = getPathChain(follower.getPose(), toPose);
-
-            schedule(new FollowPathCommand(follower, pathChain));
-        }
+//
+//        if(gamepad1.xWasPressed()){
+//            automaticDriving = true;
+//            Pose toPose;
+//            if(side == ShootSide.LEFT){
+//                toPose = toFarLeftShoot;
+//            }
+//            else{
+//                toPose = toFarRightShoot;
+//            }
+//            PathChain pathChain = getPathChain(follower.getPose(), toPose);
+//
+//            schedule(new FollowPathCommand(follower, pathChain));
+//        }
 
     }
     private void runGamepad2Commands(){
@@ -279,12 +280,12 @@ public class MainTeleOp extends CommandOpMode {
     }
 
     private void updateTelem() {
-        addStringToTelem("Motif Pattern", pattern.toString());
+//        addStringToTelem("Motif Pattern", pattern.toString());
         addStringToTelem("Start Pose", startPose.getPose().toString());
         addStringToTelem("Current Pose", follower.getPose().toString());
         addToTelemGraph("Current Speed", currSpeed);
-        addStringToTelem("Shoot Side", side.toString());
-        addStringToTelem("Pattern", pattern.toString());
+//        addStringToTelem("Shoot Side", side.toString());
+//        addStringToTelem("Pattern", pattern.toString());
         telemetry.update();
 //        graphManager.update();;
 //        telemetryManager.update();;

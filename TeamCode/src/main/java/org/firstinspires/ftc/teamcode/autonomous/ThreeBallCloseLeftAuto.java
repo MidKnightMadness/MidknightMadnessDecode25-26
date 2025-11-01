@@ -11,9 +11,11 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
+import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 import org.firstinspires.ftc.teamcode.commands.MotifWriteCommand;
+import org.firstinspires.ftc.teamcode.commands.ShootSequence;
 import org.firstinspires.ftc.teamcode.motif.MotifEnums;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
@@ -32,8 +34,8 @@ public class ThreeBallCloseLeftAuto extends BaseAuto {
     PathChain toMotifPath;
     PathChain toShootingPath;
     PathChain leaveBasePath;
-    MotifEnums.Motif motifPattern;
-    MotifWriteCommand motifCommand;
+//    MotifEnums.Motif motifPattern;
+//    MotifWriteCommand motifCommand;
 
     ShootSide shootSide = ShootSide.LEFT;
     Pose currentPose;
@@ -44,17 +46,18 @@ public class ThreeBallCloseLeftAuto extends BaseAuto {
     public static long waitTime = 3000;
     public static double pathDistThresholdMin = 3;
     public static double headingError = 0.3;
+
     @Override
     protected Pose getStartPose(){
         return startPose;
     }
 
-    @Override
-    protected void setupVision(){
-
-        limelight.pipelineSwitch(startPipeline);
-        limelight.start();
-    }
+//    @Override
+//    protected void setupVision(){
+//
+//        limelight.pipelineSwitch(startPipeline);
+//        limelight.start();
+//    }
 
     @Override
     protected void buildPaths(){
@@ -82,35 +85,35 @@ public class ThreeBallCloseLeftAuto extends BaseAuto {
     }
 
 
-    @Override
-    protected boolean isVisionComplete(){
-        motifPattern = motifCommand.getDetected();
-        if(motifPattern != MotifEnums.Motif.NONE){
-            ConstantsBot.motifIsBusy = false;
-            return true;
-        }
-        ConstantsBot.motifIsBusy = true;
-        return false;
-    }
+//    @Override
+//    protected boolean isVisionComplete(){
+//        motifPattern = motifCommand.getDetected();
+//        if(motifPattern != MotifEnums.Motif.NONE){
+//            ConstantsBot.motifIsBusy = false;
+//            return true;
+//        }
+//        ConstantsBot.motifIsBusy = true;
+//        return false;
+//    }
 
-    @Override
-    protected Command preMotifSequence(){
-        motifCommand = new MotifWriteCommand(limelight, motifDetectionTimeMs);
-        return new SequentialCommandGroup(
-                new FollowPathCommand(follower, toMotifPath, true).setGlobalMaxPower(0.5),
-                motifCommand
-        );
-
-    }
+//    @Override
+//    protected Command preMotifSequence(){
+//        motifCommand = new MotifWriteCommand(limelight, motifDetectionTimeMs);
+//        return new SequentialCommandGroup(
+//                new FollowPathCommand(follower, toMotifPath, true).setGlobalMaxPower(0.5),
+//                motifCommand
+//        );
+//
+//    }
     @Override
     protected ShootSide getSide(){
         return shootSide;
     }
     @Override
     protected Command postMotifSequence(){
-        limelight.stop();//temporarily turn it off to hand to localizer
+//        limelight.stop();//temporarily turn it off to hand to localizer
         return new SequentialCommandGroup(
-                new WaitCommand(waitTime),
+//                new WaitCommand(waitTime),
                 new FollowPathCommand(follower, toShootingPath, true),
 //                new FacePose(follower, rightTargetPose),
                 new WaitCommand(waitTime),
@@ -126,8 +129,8 @@ public class ThreeBallCloseLeftAuto extends BaseAuto {
         currentPose = follower.getPose();
         speed = follower.getVelocity().getMagnitude();
         acc = follower.getAcceleration().getMagnitude();
-        addBooleanToTelem("Motif Busy", ConstantsBot.motifIsBusy);
-        addStringToTelem("Motif Pattern", String.valueOf(motifPattern));
+//        addBooleanToTelem("Motif Busy", ConstantsBot.motifIsBusy);
+//        addStringToTelem("Motif Pattern", String.valueOf(motifPattern));
         addToTelemGraph("Current Time", timer.getTime());
         addToTelemGraph("Update Rate", 1/timer.getDeltaTime());
         addToTelemGraph("Pose(X)", currentPose.getX());

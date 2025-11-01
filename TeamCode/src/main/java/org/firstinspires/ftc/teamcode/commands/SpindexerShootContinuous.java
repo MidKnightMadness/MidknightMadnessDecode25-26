@@ -60,7 +60,7 @@ public class SpindexerShootContinuous extends SequentialCommandGroup {
         if (useShooter) {
             addCommands(
                 new InstantCommand(() -> shooter.setFlywheelsPower(follower.getPose(), shootSide)),
-                new WaitCommand(2000)
+                new WaitCommand(1000)
             );
         }
         addCommands(new SpindexerSpinAngle(spindexer, Angle.fromDegrees(-480), 1));

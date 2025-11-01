@@ -55,7 +55,6 @@ public class Spindexer extends SubsystemBase {
     public static PIDFCoefficients turnerCoefficients = new PIDFCoefficients(0.005, 0, 0, 0);
 
     // 0 is defined as the position of the shooter
-    public Angle spotZeroReading = Angle.fromDegrees(0); // Raw encoder reading when spot 0 is aligned with shooter
     public static Angle detectRange = Angle.fromDegrees(40); // How far off from the center of the spot that you detect. You don't want to trust measurements that are too off from the center
     public static Angle inColorSensorAngle = Angle.fromDegrees(180);
     public static Angle outColorSensorAngle = Angle.fromDegrees(0);
@@ -72,20 +71,11 @@ public class Spindexer extends SubsystemBase {
     BallColor[] ballColors;
     public int[] sequence;
 
-    public boolean useTelemetry;
-    public Telemetry telemetry;
-
     public Spindexer(HardwareMap hardwareMap) {
-        this(hardwareMap, null, false, true);
+        this(hardwareMap, true);
     }
 
     public Spindexer(HardwareMap hardwareMap, boolean useColorSensors) {
-        this(hardwareMap, null, false, useColorSensors);
-    }
-
-    public Spindexer(HardwareMap hardwareMap, Telemetry telemetry, boolean useTelemetry, boolean useColorSensors) {
-        this.useTelemetry = useTelemetry;
-        this.telemetry = telemetry;
         IncrementalEncoder turnerEncoder = new IncrementalEncoder(
                 hardwareMap, ConfigNames.turnerEncoder, 8192, AngleUnit.DEGREES
         ).setReversed(true);
@@ -111,9 +101,7 @@ public class Spindexer extends SubsystemBase {
 
     @Override
     public void periodic() {
-        currentAngle = Angle.fromDegrees(
-                turner.getEncoder().getAngle() - spotZeroReading.toDegrees()
-        );
+        currentAngle = Angle.fromDegrees(turner.getEncoder().getAngle());
         if (useColorSensors) updateBallColors();
     }
 
