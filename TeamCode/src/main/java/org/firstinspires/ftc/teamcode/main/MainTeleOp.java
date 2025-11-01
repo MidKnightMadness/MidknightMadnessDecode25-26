@@ -39,6 +39,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.subsystems.Ramp;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
+import org.firstinspires.ftc.teamcode.tests.subsystems.SpindexerHardcodeTest;
 import org.firstinspires.ftc.teamcode.tests.subsystems.SpindexerShootContinuousTest;
 import org.firstinspires.ftc.teamcode.util.Angle;
 import org.firstinspires.ftc.teamcode.util.ButtonToggle;
@@ -46,6 +47,7 @@ import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.teamcode.util.ShootSide;
 import org.firstinspires.ftc.teamcode.util.Timer;
 import org.firstinspires.ftc.teamcode.commands.SpindexerSpinAngle;
+import org.firstinspires.ftc.teamcode.commands.ShootHardcode;
 import java.io.File;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -91,8 +93,8 @@ public class MainTeleOp extends CommandOpMode {
     public static double pShooter = 0.01;
     public static double iShooter = 0;
     public static double dShooter = 0;
-    public static Angle twoBallAngle = new Angle(70, AngleUnit.DEGREES);
-    public static Angle lastBallAngle = new Angle(120, AngleUnit.DEGREES);
+//    public static Angle twoBallAngle = new Angle(70, AngleUnit.DEGREES);
+    public static Angle lastBallAngle = new Angle(110, AngleUnit.DEGREES);
     ShootSide side;
     public static double[] closeShootPowers = new double[]{
             0.8, 0.6
@@ -115,7 +117,8 @@ public class MainTeleOp extends CommandOpMode {
     boolean automaticSpindexer = false;
     DcMotorSimple.Direction spindexterDir = DcMotorSimple.Direction.FORWARD;
 
-    SpindexerSpinAngle spindexerCommand;
+    SpindexerSpinAngle spindexerAngleCommand;
+    ShootHardcode spindexerHardcode;
     @Override
     public void initialize() {
         CommandScheduler.getInstance().setBulkReading(
@@ -126,11 +129,11 @@ public class MainTeleOp extends CommandOpMode {
         timer = new Timer();
 //        telemetryManager = PanelsTelemetry.INSTANCE.getTelemetry();
 //        graphManager = PanelsGraph.INSTANCE.getManager();
-//        spindexer = new Spindexer(hardwareMap);
+        spindexer = new Spindexer(hardwareMap);
 //        ramp = new Ramp(hardwareMap);
         shooter = new TwoWheelShooter(hardwareMap, TwoWheelShooter.RunMode.VelocityControl);
 
-//        pattern = readMotifFromFile(motifFileName);
+        pattern = readMotifFromFile(motifFileName);
         double robotX = readDoubleFromPose(botXFileName);
         double robotY = readDoubleFromPose(botYFileName);
         double robotHeading = readDoubleFromPose(botHeadingFileName);
@@ -151,6 +154,8 @@ public class MainTeleOp extends CommandOpMode {
 
         spindexerServo = hardwareMap.get(CRServo.class, ConfigNames.turner);
         follower.startTeleopDrive();
+        spindexerAngleCommand = new SpindexerSpinAngle(spindexer, lastBallAngle, 0.12);
+        spindexerHardcode = new ShootHardcode(spindexer, shooter, pattern, true);
     }
 
 
@@ -251,18 +256,32 @@ public class MainTeleOp extends CommandOpMode {
 //            schedule(new FollowPathCommand(follower, pathChain));
 //        }
 
-        if(gamepad1.leftBumperWasPressed()){
+//        if(gamepad1.leftBumperWasPressed()){
+//            automaticSpindexer = true;
+//            spindexerCommand = new SpindexerSpinAngle(spindexer, twoBallAngle, 0.12);
+//            schedule(spindexerCommand);
+//        }
+        if(gamepad1.left_trigger > 0.5){
             automaticSpindexer = true;
-            spindexerCommand = new SpindexerSpinAngle(spindexer, twoBallAngle, 0.12);
-            schedule(spindexerCommand);
+            schedule(spindexerAngleCommand);
         }
-        else if(gamepad1.left_trigger > 0.5){
-            automaticSpindexer = true;
-            spindexerCommand = new SpindexerSpinAngle(spindexer, twoBallAngle, 0.12);
-            schedule(spindexerCommand);
-        }
-        if(spindexerCommand.isFinished()){
+        if(automaticSpindexer && spindexerAngleCommand.isFinished() &&  spindexerHardcode.isFinished()){
             automaticSpindexer = false;
+        }
+
+        if(gamepad1.bWasPressed()){
+            if(pattern == MotifEnums.Motif.NONE){
+                pattern = MotifEnums.Motif.PGP;
+            }
+            if(pattern == MotifEnums.Motif.PGP){
+                pattern = MotifEnums.Motif.PPG;
+            }
+            if(pattern == MotifEnums.Motif.PPG){
+                pattern = MotifEnums.Motif.GPP;
+            }
+            if(pattern == MotifEnums.Motif.GPP){
+                pattern = MotifEnums.Motif.NONE;
+            }
         }
 
 
@@ -293,15 +312,19 @@ public class MainTeleOp extends CommandOpMode {
             spindexerServo.setPower(currturnerSpeed);
         }
 
+        if(gamepad1.left_bumper){
+            automaticSpindexer = true;
+            schedule(spindexerHardcode);
+        }
     }
 
     private void updateTelem() {
-//        addStringToTelem("Motif Pattern", pattern.toString());
+        addStringToTelem("Motif Pattern", pattern.toString());
         addStringToTelem("Start Pose", startPose.getPose().toString());
         addStringToTelem("Current Pose", follower.getPose().toString());
         addToTelemGraph("Current Speed", currSpeed);
 //        addStringToTelem("Shoot Side", side.toString());
-//        addStringToTelem("Pattern", pattern.toString());
+        addStringToTelem("Pattern", pattern.toString());
         telemetry.update();
 //        graphManager.update();;
 //        telemetryManager.update();;

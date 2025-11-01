@@ -14,6 +14,7 @@ import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 import org.firstinspires.ftc.teamcode.commands.FacePose;
 import org.firstinspires.ftc.teamcode.commands.MotifWriteCommand;
+import org.firstinspires.ftc.teamcode.commands.ShootHardcode;
 import org.firstinspires.ftc.teamcode.motif.MotifEnums;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
@@ -113,6 +114,8 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
                 new FollowPathCommand(follower, toShootingPath, true).setGlobalMaxPower(0.6),
 //                new WaitCommand( waitTime),
 //                new FacePose(follower, leftTargetPose),
+//                new ShootHardcode(spindexer, shooter, motifPattern, false)
+
 //                new ShootSequence(spindexer, shooter, ramp, motifPattern, CRServoEx.RunMode.OptimizedPositionalControl, startPose, shootSide),
                 new WaitCommand(waitTime),
                 new FollowPathCommand(follower, leaveBasePath, true)

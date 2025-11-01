@@ -27,9 +27,9 @@ dependencies {
     implementation "com.bylazar:fullpanels:1.0.6"
     implementation 'com.bylazar:limelightproxy:1.0.2'
     implementation "org.solverslib:core:0.3.3" // core
-    implementation "org.solverslib:pedroPathing:0.3.3"
+    implementation "org.solverslib:pedroPathing:0.3.3" //
 
     // Uncomment for sloth (might break stuff)
-    implementation("dev.frozenmilk.sinister:Sloth:0.2.4")
+//    implementation("dev.frozenmilk.sinister:Sloth:0.2.4")
 }
 

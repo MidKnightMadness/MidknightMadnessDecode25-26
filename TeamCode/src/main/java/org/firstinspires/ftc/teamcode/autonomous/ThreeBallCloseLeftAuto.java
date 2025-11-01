@@ -126,7 +126,7 @@ public class ThreeBallCloseLeftAuto extends BaseAuto {
                 new FollowPathCommand(follower, toShootingPath, true),
 //                new FacePose(follower, rightTargetPose),
                 new WaitCommand(waitTime),
-//                new ShootSequence(spindexer, shooter, ramp, motifPattern, CRServoEx.RunMode.OptimizedPositionalControl, startPose, shootSide),
+//                new ShootHardcode(spindexer, shooter, motifPattern, true)
                 new WaitCommand(waitTime),
                 new FollowPathCommand(follower, leaveBasePath, true)
         );

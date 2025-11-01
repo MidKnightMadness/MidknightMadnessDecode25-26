@@ -35,16 +35,17 @@ public class SpindexerSpinAngle extends CommandBase {
     @Override
     public boolean isFinished() {
         double currentAngle = spindexer.getEncoder().getAngleUnnormalized();
-        boolean there = Math.abs(targetAngle - currentAngle) < stopThreshold;
-        if (there) {
-            if (!wasFinished) finishedTimer.restart();
-            if (finishedTimer.getTime() < finishedTimeThreshold) {
-                spindexer.goToAngle(Angle.fromDegrees(targetAngle), CRServoEx2.RunMode.OptimizedPositionalControl);
-                return true;
-            }
-        }
-        wasFinished = there;
-        return there;
+//        boolean there = Math.abs(targetAngle - currentAngle) < stopThreshold;
+//        if (there) {
+//            if (!wasFinished) finishedTimer.restart();
+//            if (finishedTimer.getTime() < finishedTimeThreshold) {
+//                spindexer.goToAngle(Angle.fromDegrees(targetAngle), CRServoEx2.RunMode.OptimizedPositionalControl);
+//                return true;
+//            }
+//        }
+//        wasFinished = there;
+//        return there;
+        return Math.abs(targetAngle - currentAngle) < stopThreshold;
     }
 
     @Override
