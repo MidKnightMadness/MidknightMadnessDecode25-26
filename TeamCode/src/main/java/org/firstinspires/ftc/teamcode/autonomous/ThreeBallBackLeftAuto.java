@@ -5,6 +5,7 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
@@ -20,6 +21,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
+import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.teamcode.util.ShootSide;
 
 @Config
@@ -35,8 +37,8 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
     public static Pose leavePose = new Pose(58, 38, Math.toRadians(112));
     PathChain toShootingPath;
     PathChain leaveBasePath;
-//    MotifEnums.Motif motifPattern;
-//    MotifWriteCommand motifCommand;
+    MotifEnums.Motif motifPattern;
+    MotifWriteCommand motifCommand;
 
     ShootSide shootSide = ShootSide.LEFT;
     Pose currentPose;
@@ -55,12 +57,12 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
 
     @Override
     protected void setupVision(){
-//        limelight.pipelineSwitch(startPipeline);
-//        limelight.start();
+        limelight.pipelineSwitch(startPipeline);
+        limelight.start();
     }
     @Override
     protected void initializeMechanisms() {
-//        limelight = hardwareMap.get(Limelight3A.class, ConfigNames.limelight);
+        limelight = hardwareMap.get(Limelight3A.class, ConfigNames.limelight);
         spindexer = new Spindexer(hardwareMap);
         shooter = new TwoWheelShooter(hardwareMap, TwoWheelShooter.RunMode.VelocityControl);
     }
@@ -84,17 +86,17 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
                 .build();
     }
 
-//
-//    @Override
-//    protected boolean isVisionComplete(){
-//        motifPattern = motifCommand.getDetected();
-//        if(motifPattern != MotifEnums.Motif.NONE){
-//            ConstantsBot.motifIsBusy = false;
-//            return true;
-//        }
-//        ConstantsBot.motifIsBusy = true;
-//        return false;
-//    }
+
+    @Override
+    protected boolean isVisionComplete(){
+        motifPattern = motifCommand.getDetected();
+        if(motifPattern != MotifEnums.Motif.NONE){
+            ConstantsBot.motifIsBusy = false;
+            return true;
+        }
+        ConstantsBot.motifIsBusy = true;
+        return false;
+    }
 
     @Override
     protected ShootSide getSide(){

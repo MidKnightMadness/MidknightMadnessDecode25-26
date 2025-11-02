@@ -7,6 +7,7 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
@@ -14,11 +15,13 @@ import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 import org.firstinspires.ftc.teamcode.commands.MotifWriteCommand;
+import org.firstinspires.ftc.teamcode.commands.ShootHardcode;
 import org.firstinspires.ftc.teamcode.motif.MotifEnums;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
+import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.teamcode.util.ShootSide;
 
      @Config
@@ -27,10 +30,10 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
      public class ThreeBallCloseRightAuto extends BaseAuto {
          public static double motifDetectionTimeMs = 5000;
          int startPipeline = 1;
-         public static Pose startPose = new Pose(88, 135, Math.toRadians(90));
-         public static Pose motifDetectionPose = new Pose(88, 112, Math.toRadians(115));
-         public static Pose shootPose = new Pose(85, 85, Math.toRadians(40));
-         public static Pose leavePose = new Pose(86, 65, Math.toRadians(90));
+         public static Pose startPose = new Pose(122, 120, Math.toRadians(-135));
+         public static Pose motifDetectionPose = new Pose(87, 95, Math.toRadians(115+180));
+         public static Pose shootPose = new Pose(85, 85, Math.toRadians(40+180+4));
+         public static Pose leavePose = new Pose(110, 65, Math.toRadians(90));
          PathChain toMotifPath;
          PathChain toShootingPath;
          PathChain leaveBasePath;
@@ -40,6 +43,7 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
          ShootSide shootSide = ShootSide.LEFT;
          Pose currentPose;
 
+         Command firstPath;
          double speed;
          double acc;
 
@@ -54,8 +58,8 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
          @Override
          protected void setupVision(){
 
-//             limelight.pipelineSwitch(startPipeline);
-//             limelight.start();
+             limelight.pipelineSwitch(startPipeline);
+             limelight.start();
          }
 
          @Override
@@ -88,43 +92,40 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
          }
 
 
-//         @Override
-//         protected boolean isVisionComplete(){
-//             motifPattern = motifCommand.getDetected();
-//             if(motifPattern != MotifEnums.Motif.NONE){
-//                 ConstantsBot.motifIsBusy = false;
-//                 return true;
-//             }
-//             ConstantsBot.motifIsBusy = true;
-//             return false;
-//         }
+         @Override
+         protected boolean isVisionComplete(){
+             motifPattern = motifCommand.getDetected();
+             if(motifCommand.isFinished()){
+                 return true;
+             }
+             return false;
+         }
 
          @Override
          protected Command preMotifSequence(){
-//             motifCommand = new MotifWriteCommand(limelight, motifDetectionTimeMs);
+             motifCommand = new MotifWriteCommand(limelight, motifDetectionTimeMs);
+             firstPath = new FollowPathCommand(follower, toMotifPath).setGlobalMaxPower(0.5);
              return new SequentialCommandGroup(
-                     new FollowPathCommand(follower, toMotifPath).setGlobalMaxPower(0.5),
+                     firstPath,
                      motifCommand
              );
 
          }
          @Override
          protected void initializeMechanisms() {
-//        limelight = hardwareMap.get(Limelight3A.class, ConfigNames.limelight);
+             limelight = hardwareMap.get(Limelight3A.class, ConfigNames.limelight);
              spindexer = new Spindexer(hardwareMap);
              shooter = new TwoWheelShooter(hardwareMap, TwoWheelShooter.RunMode.VelocityControl);
          }
 
          @Override
          protected Command postMotifSequence(){
-//             limelight.stop();//temporarily turn it off to hand to localizer
+             limelight.stop();//temporarily turn it off to hand to localizer
              return new SequentialCommandGroup(
                      new WaitCommand(waitTime),
                      new FollowPathCommand(follower, toShootingPath, true),
 //                new FacePose(follower, rightTargetPose),
-                     new WaitCommand(waitTime),
-//                     new ShootHardcode(spindexer, shooter, motifPattern, true)
-                     new WaitCommand(waitTime),
+                     new ShootHardcode(spindexer, shooter, motifPattern, true),
                      new FollowPathCommand(follower, leaveBasePath, true)
              );
 
@@ -134,7 +135,9 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
              follower.update();
              currentPose = follower.getPose();
              timer.getTime();
+             addBooleanToTelem("First path is busy", firstPath.isFinished());
              addBooleanToTelem("Motif Busy", ConstantsBot.motifIsBusy);
+             addStringToTelem("Motif timer", String.valueOf(motifCommand.timer.getTime()));
              addStringToTelem("Motif Pattern", String.valueOf(motifPattern));
              addToTelemGraph("Current Time", timer.getTime());
              addToTelemGraph("Update Rate", 1/timer.getDeltaTime());

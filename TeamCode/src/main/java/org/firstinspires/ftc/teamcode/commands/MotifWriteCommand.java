@@ -33,7 +33,8 @@ public class MotifWriteCommand extends CommandBase {
     FileWriter fileWriter;
     File file;
     boolean finishedWriting = false;
-    Timer timer;
+    public Timer timer;
+
     public MotifWriteCommand(Limelight3A limelight, double timeMs){
         this.limelight = limelight;
         this.maxTimeMs = timeMs;
@@ -52,22 +53,27 @@ public class MotifWriteCommand extends CommandBase {
     }
 
     @Override
+    public void initialize() {
+        timer.restart();
+    }
+
+    @Override
     public void execute() {
         double currentTime = timer.getTime();
-        if(motifPattern == MotifEnums.Motif.NONE && currentTime < maxTimeMs){
-            LLResult result = limelight.getLatestResult();
-            if (result != null && result.isValid()) {
-                List<LLResultTypes.FiducialResult> list = result.getFiducialResults();
-                LLResultTypes.FiducialResult f = list.get(0);
-                int aprilTagID = f.getFiducialId();
+        LLResult result = limelight.getLatestResult();
+        if (result != null) {
+            List<LLResultTypes.FiducialResult> list = result.getFiducialResults();
+            for (LLResultTypes.FiducialResult item : list) {
+                int aprilTagID = item.getFiducialId();
                 motifPattern = idMap.getOrDefault(aprilTagID, MotifEnums.Motif.NONE);
-
-                if(motifPattern != MotifEnums.Motif.NONE) {
-                    writeToFile(fileWriter, String.valueOf(aprilTagID));
-                    closeFileWriter(fileWriter);
-                    finishedWriting = true;
-                }
+                if (motifPattern != MotifEnums.Motif.NONE) break;
             }
+
+//            if(motifPattern != MotifEnums.Motif.NONE) {
+//                writeToFile(fileWriter, String.valueOf(aprilTagID));
+//                closeFileWriter(fileWriter);
+//                finishedWriting = true;
+//            }
         }
     }
 
@@ -78,7 +84,7 @@ public class MotifWriteCommand extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return (timer.getTime() > maxTimeMs);
+        return (timer.getTime() > maxTimeMs) || motifPattern != MotifEnums.Motif.NONE;
     }
 
 

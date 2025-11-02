@@ -77,14 +77,6 @@ public class ConstantsOldBot {
             .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
             .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD);
 
-    public static Follower createPinpointFollower(HardwareMap hardwareMap) {
-        return new FollowerBuilder(followerConstants, hardwareMap)
-                .pinpointLocalizer(pinpointLocalizerConstants)
-                .mecanumDrivetrain(driveConstants)
-                .pathConstraints(pathConstraints)
-                .build();
-    }
-
     public static Follower createKalmanPinpointAprilFollower(HardwareMap hardwareMap, Pose startPose, Telemetry telemetry){//global startPose
         return new FollowerBuilder(followerConstants, hardwareMap)
                 .mergedKalmanLocalizer(mergedLocalizerConstants, startPose, telemetry)
@@ -93,6 +85,14 @@ public class ConstantsOldBot {
                 .build();
 
 
+    }
+
+    public static Follower createPinpointFollower(HardwareMap hardwareMap) {
+        return new FollowerBuilder(followerConstants, hardwareMap)
+                .pinpointLocalizer(pinpointLocalizerConstants)
+                .mecanumDrivetrain(driveConstants)
+                .pathConstraints(pathConstraints)
+                .build();
     }
 }
 

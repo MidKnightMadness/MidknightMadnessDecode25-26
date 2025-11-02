@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.pedroPathing;
 
-import static org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot.mergedLocalizerConstants;
-
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.control.FilteredPIDFCoefficients;
 import com.pedropathing.control.PIDFCoefficients;
@@ -24,8 +22,8 @@ import org.firstinspires.ftc.teamcode.util.ConfigNames;
 public class ConstantsBot {
     public static boolean motifIsBusy = true;
     public static FollowerConstants followerConstants = new FollowerConstants()
-            .forwardZeroPowerAcceleration(57)//TUNED
-            .lateralZeroPowerAcceleration(52)//TUNED
+            .forwardZeroPowerAcceleration(-57)//TUNED
+            .lateralZeroPowerAcceleration(-52)//TUNED
             // Translational PIDF
             .translationalPIDFSwitch(4)
             .translationalPIDFCoefficients(new PIDFCoefficients(0.1, 0, 0.01, 0.03))
@@ -50,24 +48,24 @@ public class ConstantsBot {
             .hardwareMapName(ConfigNames.pinpoint)
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
             .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
-            .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD);
+            .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
-//    public static KalmanPinpointAprilConstants mergedLocalizerConstants = new KalmanPinpointAprilConstants()
-//            .setIMUName(ConfigNames.imu)
-//            .setLimelightName(ConfigNames.limelight)
-//            .setLeftPipelineNum(0)
-//            .setRightPipelineNum(2)
-//            .setStartPipeline(2)
-//            .setPinpointHardwareConfig(ConfigNames.pinpoint)
-//            .setQ(0.01)
-//            .setR(2)
-//            .setMotifTrue(true)
-//            .setXOffset(138.874)
-//            .setYOffset(33)
-//            .setDistUnit(DistanceUnit.MM)
-//            .setStartPipeline(1)
-//            .setEncoderXDir(GoBildaPinpointDriver.EncoderDirection.FORWARD)
-//            .setEncoderYDir(GoBildaPinpointDriver.EncoderDirection.FORWARD);
+    public static KalmanPinpointAprilConstants mergedLocalizerConstants = new KalmanPinpointAprilConstants()
+            .setIMUName(ConfigNames.imu)
+            .setLimelightName(ConfigNames.limelight)
+            .setLeftPipelineNum(0)
+            .setRightPipelineNum(2)
+            .setStartPipeline(2)
+            .setPinpointHardwareConfig(ConfigNames.pinpoint)
+            .setQ(0.01)
+            .setR(2)
+            .setMotifTrue(true)
+            .setXOffset(138.874)
+            .setYOffset(33)
+            .setDistUnit(DistanceUnit.MM)
+            .setStartPipeline(1)
+            .setEncoderXDir(GoBildaPinpointDriver.EncoderDirection.FORWARD)
+            .setEncoderYDir(GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
     public static MecanumConstants driveConstants = new MecanumConstants()
             .maxPower(1)

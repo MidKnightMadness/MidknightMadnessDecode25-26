@@ -59,6 +59,7 @@ public abstract class BaseAuto extends CommandOpMode {
 
         startPose = getStartPose();
         follower = ConstantsBot.createPinpointFollower(hardwareMap);
+        follower.setStartingPose(startPose);
 
         telemetryManager = PanelsTelemetry.INSTANCE.getTelemetry();
         graphManager = PanelsGraph.INSTANCE.getManager();

@@ -45,7 +45,7 @@ public class TwoWheelShooter extends SubsystemBase {
     ); // Unused for now
 
     public static boolean lowMotorDirForward = true;
-    public static boolean highMotorDirForward = false;
+    public static boolean highMotorDirForward = true;
 
     public TwoWheelShooter(HardwareMap hardwareMap, RunMode runMode) {
         low = new MotorEx(hardwareMap, ConfigNames.lowFlywheelMotor);
@@ -107,7 +107,7 @@ public class TwoWheelShooter extends SubsystemBase {
     }
 
     public void setFlywheelsPower(boolean isClose) {
-        if (isClose) setCustomPower(0.66, 1);
+        if (isClose) setCustomPower(0.73, 1);
         else setCustomPower(1, 1);
     }
 

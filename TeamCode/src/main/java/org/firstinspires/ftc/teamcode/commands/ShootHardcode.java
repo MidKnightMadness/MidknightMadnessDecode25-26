@@ -28,17 +28,26 @@ public class ShootHardcode extends SequentialCommandGroup {
     ) {
         spindexer.initAngle(Angle.fromDegrees(60));
         int[] sequence;
+        int momentum;
         if (motif == MotifEnums.Motif.GPP || motif == MotifEnums.Motif.NONE) {
             sequence = new int[] { 1, 2, 0 };
+            momentum = 1;
         } else if (motif == MotifEnums.Motif.PGP) {
             sequence = new int[] { 0, 1, 2 };
+            momentum = 1;
         } else {
             sequence = new int[] { 0, 2, 1 };
+            momentum = -1;
         }
         addCommands(
-                new InstantCommand(() -> shooter.setFlywheelsPower(isClose)),
+                new InstantCommand(() -> {
+                    shooter.low.motor.setPower(0.74);
+                    shooter.high.motor.setPower(1);
+                }),
                 new SpindexerRawSequence(spindexer, sequence, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
-                new WaitCommand(500),
+                new InstantCommand(() -> spindexer.spin(momentum)),
+                new WaitCommand(250),
+                new InstantCommand(() -> spindexer.getTurner().stop()),
                 new InstantCommand(shooter::stopFlywheels)
         );
 

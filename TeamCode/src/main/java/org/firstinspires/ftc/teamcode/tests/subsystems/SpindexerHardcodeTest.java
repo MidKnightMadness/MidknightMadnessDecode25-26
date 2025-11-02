@@ -47,7 +47,7 @@ public class SpindexerHardcodeTest extends CommandOpMode {
         gp1 = new GamepadEx(gamepad1);
 
         gp1.getGamepadButton(GamepadKeys.Button.A).whenPressed(
-            new ShootHardcode(spindexer, shooter, MotifEnums.Motif.GPP, true)
+            new ShootHardcode(spindexer, shooter, MotifEnums.Motif.PPG, true)
         );
 
         register(spindexer, shooter);

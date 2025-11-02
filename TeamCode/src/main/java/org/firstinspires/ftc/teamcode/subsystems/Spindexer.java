@@ -52,13 +52,13 @@ public class Spindexer extends SubsystemBase {
 
     public static double intakeSpinPower = 0.3;
     public static double shootRawPower = 1;
-    public static PIDFCoefficients turnerCoefficients = new PIDFCoefficients(0.0075, 0, 0, 0);
+    public static PIDFCoefficients turnerCoefficients = new PIDFCoefficients(0.007, 0, 0, 0);
 
     // 0 is defined as the position of the shooter
     public static Angle detectRange = Angle.fromDegrees(40); // How far off from the center of the spot that you detect. You don't want to trust measurements that are too off from the center
     public static Angle inColorSensorAngle = Angle.fromDegrees(180);
     public static Angle outColorSensorAngle = Angle.fromDegrees(0);
-    public static Angle finishedThreshold = Angle.fromDegrees(5); // Threshold at which it's finished turning to a spot
+    public static Angle finishedThreshold = Angle.fromDegrees(10); // Threshold at which it's finished turning to a spot
 
     private static final int NUM_SPOTS = 3;
 
@@ -72,7 +72,7 @@ public class Spindexer extends SubsystemBase {
     public int[] sequence;
 
     public Spindexer(HardwareMap hardwareMap) {
-        this(hardwareMap, true);
+        this(hardwareMap, false);
     }
 
     public Spindexer(HardwareMap hardwareMap, boolean useColorSensors) {
