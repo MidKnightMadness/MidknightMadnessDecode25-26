@@ -38,8 +38,8 @@ public class MotifWriteCommand extends CommandBase {
     public MotifWriteCommand(Limelight3A limelight, double timeMs){
         this.limelight = limelight;
         this.maxTimeMs = timeMs;
-        limelight.pipelineSwitch(motifPipeline);
-        limelight.start();
+//        limelight.pipelineSwitch(motifPipeline);
+//        limelight.start();
         timer = new Timer();
 
 
