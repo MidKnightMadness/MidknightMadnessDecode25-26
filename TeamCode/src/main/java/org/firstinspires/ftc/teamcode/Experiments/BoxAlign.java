@@ -1,15 +1,15 @@
+
 package org.firstinspires.ftc.teamcode.Experiments;
 
+
 import com.qualcomm.hardware.rev.RevColorSensorV3;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.ColorSensorThings.ColorNormalizer;
 
 
-@TeleOp
-public class BoxAlign extends OpMode {
+public class BoxAlign {
     ColorSensor colorSensorLeft;
     ColorSensor colorSensorRight;
     ColorNormalizer norm;
@@ -22,25 +22,36 @@ public class BoxAlign extends OpMode {
     double rnr, rng, rnb;
 
     //put actual values here after testing using the tape
-    double lineLowerLimitRed = 0;
-    double lineLowerLimitGreen = 0;
-    double lineLowerLimitBlue = 0;
-    double lineUpperLimitRed = 0;
-    double lineUpperLimitGreen = 0;
-    double lineUpperLimitBlue = 0;
+
+    //red line values
+    double redLineLowerLimitRed = 0;
+    double redLineLowerLimitGreen = 0;
+    double redLineLowerLimitBlue = 0;
+    double redLineUpperLimitRed = 0;
+    double redLineUpperLimitGreen = 0;
+    double redLineUpperLimitBlue = 0;
+
+    //blue line values
+    double blueLineLowerLimitRed = 0;
+    double blueLineLowerLimitGreen = 0;
+    double blueLineLowerLimitBlue = 0;
+    double blueLineUpperLimitRed = 0;
+    double blueLineUpperLimitGreen = 0;
+    double blueLineUpperLimitBlue = 0;
     boolean inLimit;
     boolean leftLimit;
     boolean rightLimit;
-    @Override
-    public void init() {
-        //make all the objects
+
+    char color;
+    public BoxAlign(HardwareMap hardwareMap, char color) {
         colorSensorLeft = hardwareMap.get(RevColorSensorV3.class, "colorSensorLeft");
-        colorSensorRight = hardwareMap.get(RevColorSensorV3.class, "colorSensorLeft");
+        colorSensorRight = hardwareMap.get(RevColorSensorV3.class, "colorSensorRight");
         drive = new WheelControlTemporaryMaybe(hardwareMap);
+        this.color = color;
     }
 
-    @Override
-    public void loop() {
+
+    public void align() {
         //get the values
         lr = colorSensorLeft.red();
         lg = colorSensorLeft.green();
@@ -57,50 +68,50 @@ public class BoxAlign extends OpMode {
         rng = ColorNormalizer.normalizeGreen(rr, rg, rb);
         rnb = ColorNormalizer.normalizeBlue(rr, rg, rb);
 
-        //boolean stuff here because i don't want to put all of it in the if statement
-        if (lnr>lineLowerLimitRed && lnr<lineUpperLimitRed && lng>lineLowerLimitGreen && lng<lineUpperLimitGreen && lnb>lineLowerLimitBlue && lnb<lineUpperLimitBlue && rnr>lineLowerLimitRed && rnr<lineUpperLimitRed && rng>lineLowerLimitGreen && rng<lineUpperLimitGreen && rnb>lineLowerLimitBlue && rnb<lineUpperLimitBlue){
-            inLimit = true;
+        if (color == 'r') {
+            //boolean stuff here because i don't want to put all of it in the if statement
+            if (lnr > redLineLowerLimitRed && lnr < redLineUpperLimitRed && lng > redLineLowerLimitGreen && lng < redLineUpperLimitGreen && lnb > redLineLowerLimitBlue && lnb < redLineUpperLimitBlue && rnr > redLineLowerLimitRed && rnr < redLineUpperLimitRed && rng > redLineLowerLimitGreen && rng < redLineUpperLimitGreen && rnb > redLineLowerLimitBlue && rnb < redLineUpperLimitBlue) {
+                inLimit = true;
+            }
+            else{
+                inLimit = false;
+            }
+            leftLimit = lnr > redLineLowerLimitRed && lnr < redLineUpperLimitRed && lng > redLineLowerLimitGreen && lng < redLineUpperLimitGreen && lnb > redLineLowerLimitBlue && lnb < redLineUpperLimitBlue;
+            rightLimit = rnr > redLineLowerLimitRed && rnr < redLineUpperLimitRed && rng > redLineLowerLimitGreen && rng < redLineUpperLimitGreen && rnb > redLineLowerLimitBlue && rnb < redLineUpperLimitBlue;
         }
-        leftLimit = lnr > lineLowerLimitRed && lnr < lineUpperLimitRed && lng > lineLowerLimitGreen && lng < lineUpperLimitGreen && lnb > lineLowerLimitBlue && lnb < lineUpperLimitBlue;
-        rightLimit = rnr > lineLowerLimitRed && rnr < lineUpperLimitRed && rng > lineLowerLimitGreen && rng < lineUpperLimitGreen && rnb > lineLowerLimitBlue && rnb < lineUpperLimitBlue;
+        if (color == 'b') {
+            // boolean stuff here because i don't want to put all of it in the if statement
+            if (lnr > blueLineLowerLimitRed && lnr < blueLineUpperLimitRed &&
+                    lng > blueLineLowerLimitGreen && lng < blueLineUpperLimitGreen &&
+                    lnb > blueLineLowerLimitBlue && lnb < blueLineUpperLimitBlue &&
+                    rnr > blueLineLowerLimitRed && rnr < blueLineUpperLimitRed &&
+                    rng > blueLineLowerLimitGreen && rng < blueLineUpperLimitGreen &&
+                    rnb > blueLineLowerLimitBlue && rnb < blueLineUpperLimitBlue) {
+                inLimit = true;
+            }
+            else{
+                inLimit = false;
+            }
+
+            leftLimit = lnr > blueLineLowerLimitRed && lnr < blueLineUpperLimitRed &&
+                    lng > blueLineLowerLimitGreen && lng < blueLineUpperLimitGreen &&
+                    lnb > blueLineLowerLimitBlue && lnb < blueLineUpperLimitBlue;
+
+            rightLimit = rnr > blueLineLowerLimitRed && rnr < blueLineUpperLimitRed &&
+                    rng > blueLineLowerLimitGreen && rng < blueLineUpperLimitGreen &&
+                    rnb > blueLineLowerLimitBlue && rnb < blueLineUpperLimitBlue;
+        }
+
         if (!inLimit) {
             drive.stop();
+        } else if (!leftLimit && !rightLimit) {
+            drive.drive_relative(0.2, 0, 0, 1); // small forward
+        } else if (!leftLimit && rightLimit) {
+            drive.drive_relative(0, 0, -0.1, 1); // small turn left
+        } else if (leftLimit && !rightLimit) {
+            drive.drive_relative(0, 0, 0.1, 1); // small turn right
+        } else {
+            drive.stop();
         }
-        else if (!leftLimit && !rightLimit){
-            drive.drive_relative(0.5, 0, 0, 1);
-        }
-        else if (!leftLimit && rightLimit){
-            drive.drive_relative(0, 0, -0.5, 1);
-        }
-        else if (leftLimit && !rightLimit){
-            drive.drive_relative(0, 0, 0.5, 1);
-        }
-
-
-        //
-        //if colorsensorleft && colorsensor right senses:
-        //  stop
-        //elif colorsensorleft senses:
-        //  while colorsensorleft senses:
-        //      turn left
-        //elif colorsensorright senses:
-        //  while colorsensorright senses:
-        //      turn right
-        //else:
-        //  go forwards
-
     }
 }
-/*
-Goal: align to a box(red or blue(need to know which side we are on))
-requirements:
-- how big bot is
-- 2 color sensors parallel
-
-psueocode:
-repeat this:
-    go forward while doing colorsensor checks
-    if one colorsensor activates, turn a bit in the direction that the color sensor is
-    unloop if both colorsensor activates
-go forward however much you need to get into the box
- */
