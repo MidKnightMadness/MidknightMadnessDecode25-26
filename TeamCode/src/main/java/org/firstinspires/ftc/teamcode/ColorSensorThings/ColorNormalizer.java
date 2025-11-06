@@ -33,4 +33,23 @@ public class ColorNormalizer {
     public double normalizeBlue() {
         return blue / magnitude();
     }
+
+
+
+    //making static ones because idk
+    public static double magnitude(double red, double green, double blue){
+        return Math.sqrt((red*red) + (green*green) + (blue*blue));
+    }
+
+    public static double normalizeRed(double red, double green, double blue) {
+        return red / ColorNormalizer.magnitude(red, green, blue);
+    }
+
+    public static double normalizeGreen(double red, double green, double blue) {
+        return green / magnitude(red, green, blue);
+    }
+
+    public static double normalizeBlue(double red, double green, double blue) {
+        return blue / magnitude(red, green, blue);
+    }
 }
