@@ -7,7 +7,7 @@ public class ColorSensorBuffer {
     public double num = 0;
     public double sum = 0;
     public ColorSensorBuffer(){
-         list = new ArrayList<>();
+        list = new ArrayList<>();
     }
 
     public void addList(double addNum){
