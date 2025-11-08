@@ -1,14 +1,18 @@
-package org.firstinspires.ftc.teamcode.motif;
+package org.firstinspires.ftc.teamcode.old.opModes;
 
 import android.os.Environment;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ReadWriteFile;
 
+import org.firstinspires.ftc.teamcode.motif.MotifEnums;
+
 import java.io.File;
 import java.util.Map;
 
+@Disabled
 @TeleOp(group = "Motif", name = "Read")
 public class MotifReadingTeleOp extends OpMode {
     String fileName = "Vision/motif_value.txt";

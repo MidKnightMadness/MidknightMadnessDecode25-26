@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.motorTesting.WheelControl;
 import org.firstinspires.ftc.teamcode.util.PanelsDrawing;
 
 @Configurable
-@TeleOp(name = "DriveNoFollower")
+@TeleOp(name = "DriveNoFollower", group = "Drive")
 public class DriveNoLocalizer extends OpMode {
     WheelControl wheelControl;
     TelemetryManager telemetryM;

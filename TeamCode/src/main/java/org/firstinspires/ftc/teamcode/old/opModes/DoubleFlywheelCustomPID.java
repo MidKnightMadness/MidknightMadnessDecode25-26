@@ -23,6 +23,7 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 @Configurable
 @Config
 @TeleOp(name = "2FlywheelPID", group = "Experiments")
+@Disabled
 public class DoubleFlywheelCustomPID extends OpMode {
     DcMotorEx left;
     DcMotorEx right;

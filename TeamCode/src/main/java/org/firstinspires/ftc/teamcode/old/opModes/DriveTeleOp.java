@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.pedroPathing.robotDrive;
+package org.firstinspires.ftc.teamcode.old.opModes;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.graph.GraphManager;
@@ -7,15 +7,16 @@ import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
-import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.util.PanelsDrawing;
 
 @Configurable
 @TeleOp(name = "DriveTeleOp")
+@Disabled
 public class DriveTeleOp extends OpMode {
     private Follower follower;
     public static Pose startPose = new Pose(72, 8, Math.toRadians(90));

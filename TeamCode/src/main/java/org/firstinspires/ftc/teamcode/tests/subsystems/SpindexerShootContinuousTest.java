@@ -23,7 +23,7 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 import java.util.concurrent.TimeUnit;
 
 @Configurable
-@TeleOp()
+@TeleOp(name = "SpindexerShootContinuousTest", group = "Spindexer")
 public class SpindexerShootContinuousTest extends CommandOpMode {
     Spindexer spindexer;
     GamepadEx gp1;

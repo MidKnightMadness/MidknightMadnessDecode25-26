@@ -22,7 +22,7 @@ import org.firstinspires.ftc.teamcode.util.Angle;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
 @Configurable
-@TeleOp(group="Subsystems")
+@TeleOp(name = "SpindexerSequenceTest", group = "Spindexer")
 public class SpindexerSequenceTest extends CommandOpMode {
     public static CRServoEx2.RunMode runMode = CRServoEx2.RunMode.OptimizedPositionalControl;
     public static Angle customAngle = Angle.fromDegrees(60);

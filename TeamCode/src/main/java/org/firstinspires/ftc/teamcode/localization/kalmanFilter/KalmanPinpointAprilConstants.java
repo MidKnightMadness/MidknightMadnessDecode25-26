@@ -7,8 +7,7 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-@Config
-@Configurable
+
 public class KalmanPinpointAprilConstants {
     public double Q = 0.01;
     public double R = 2;
@@ -29,6 +28,9 @@ public class KalmanPinpointAprilConstants {
     public DistanceUnit distUnit = DistanceUnit.INCH;
     public String IMU_NAME = "imu";
     RevHubOrientationOnRobot imuOrientation;
+
+    public double leftThresholdDeg = 100;
+    public double rightThresholdDeg = 80;
     public KalmanPinpointAprilConstants setQ(double Q){
         this.Q = Q;
         return this;
@@ -99,4 +101,12 @@ public class KalmanPinpointAprilConstants {
         return this;
     }
 
+    public KalmanPinpointAprilConstants setLeftThresholdDeg(double val){
+        this.leftThresholdDeg = val;
+        return this;
+    }
+    public KalmanPinpointAprilConstants setRightThresholdDeg(double val){
+        this.rightThresholdDeg = val;
+        return this;
+    }
 }

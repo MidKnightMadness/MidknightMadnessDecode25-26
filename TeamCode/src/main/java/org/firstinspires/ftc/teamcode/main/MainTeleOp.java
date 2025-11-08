@@ -60,7 +60,7 @@ import java.util.StringTokenizer;
 
 @Config
 @Configurable
-@TeleOp(name = "Main TeleOp")
+@TeleOp(name = "Main TeleOp", group = "Competition")
 public class MainTeleOp extends CommandOpMode {
 //    TelemetryManager telemetryManager;
 //    GraphManager graphManager;
@@ -209,9 +209,6 @@ public class MainTeleOp extends CommandOpMode {
         runGamepad2Commands();
 
         follower.update();
-//        if(follower.getPose().getHeading() > 0){
-//            side = ShootSide.RIGHT;
-//        }
 
         updateTelem();
 
@@ -228,17 +225,6 @@ public class MainTeleOp extends CommandOpMode {
                 .build();
         return pathChain;
     }
-//    private void autoAlignToShootSide(Follower follower, ShootSide side){
-//        prevFacePose.cancel();
-//        Pose targetShoot = leftTarget;
-//        if(side == ShootSide.RIGHT) {
-//            targetShoot = rightTarget;
-//        }
-//
-//        currentFacePose = new FacePose(follower, targetShoot);
-//        schedule(currentFacePose);
-//        currentFacePose = prevFacePose;
-//    }
 
     private void autoSwapShootSide(Follower follower){
         double heading = follower.getPose().getHeading();
@@ -386,12 +372,6 @@ public class MainTeleOp extends CommandOpMode {
             schedule(spindexerAngleCommand);
         }
 
-//        if(gamepad2.b) {
-//            double x;
-//            if (follower.getPose().getX() > 72) x = 132;
-//            else x = 12;
-//            schedule(new FacePose(follower, new Pose(132, 132)));
-//        }
 
         if(!automaticSpindexer){
             spindexerServo.setPower(gamepad2.left_stick_y * currturnerSpeed);

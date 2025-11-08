@@ -22,7 +22,7 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 import java.util.concurrent.TimeUnit;
 
 @Configurable
-@TeleOp()
+@TeleOp(name = "SpindexerHardcodetest", group = "Spindexer")
 public class SpindexerHardcodeTest extends CommandOpMode {
     GamepadEx gp1;
     TelemetryManager telemetryM;

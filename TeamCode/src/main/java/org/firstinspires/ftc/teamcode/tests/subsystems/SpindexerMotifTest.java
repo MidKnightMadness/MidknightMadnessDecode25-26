@@ -24,7 +24,7 @@ import org.firstinspires.ftc.teamcode.colors.BallColor;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
 @Configurable
-@TeleOp(group="Subsystems")
+@TeleOp(name="SpindexerMotifTest", group = "Spindexer")
 public class SpindexerMotifTest extends CommandOpMode {
     public static CRServoEx2.RunMode runMode = CRServoEx2.RunMode.OptimizedPositionalControl;
     public static BallColor[] ballColors = { BallColor.PURPLE, BallColor.PURPLE, BallColor.GREEN};

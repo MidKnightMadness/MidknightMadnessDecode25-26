@@ -24,7 +24,7 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 import java.util.concurrent.TimeUnit;
 
 @Configurable
-@TeleOp(group = "Subsystems")
+@TeleOp(name = "SpindexerSpinAngleTest", group = "Spindexer")
 public class SpindexerSpinAngleTest extends CommandOpMode {
     Spindexer spindexer;
     GamepadEx gp1;

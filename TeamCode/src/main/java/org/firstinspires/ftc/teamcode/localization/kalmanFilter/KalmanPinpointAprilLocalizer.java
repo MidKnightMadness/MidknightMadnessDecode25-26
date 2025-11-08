@@ -24,8 +24,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.util.DashboardDrawing;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
-@Config
-@Configurable
+
 public class KalmanPinpointAprilLocalizer implements Localizer {
     KalmanPinpointAprilConstants constants;
     private Pose startPose;
@@ -45,8 +44,9 @@ public class KalmanPinpointAprilLocalizer implements Localizer {
     private double previousHeading;
     private double totalHeading;
     private Pose currentVelocity;
-    public static double leftThresholdDeg = 100;
-    public static double rightThresholdDeg = 80;
+
+    public double rightThresholdDeg;
+    public double leftThresholdDeg;
     Timer timer;
     public KalmanPinpointAprilLocalizer(HardwareMap hardwareMap, KalmanPinpointAprilConstants lConstants, Telemetry telemetry){
         this(hardwareMap, lConstants, new Pose(), telemetry);
@@ -70,6 +70,8 @@ public class KalmanPinpointAprilLocalizer implements Localizer {
         previousHeading = startPose.getHeading();
         previousMergedPose = startPose;
         currentMergedPose = startPose;
+        this.leftThresholdDeg = constants.leftThresholdDeg;
+        this.rightThresholdDeg = constants.rightThresholdDeg;
 
 
     }

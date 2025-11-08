@@ -20,7 +20,7 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 import java.util.concurrent.TimeUnit;
 
 @Configurable
-@Autonomous
+@Autonomous(name = "LinearPath", group = "Tuning")
 public class LinearPath extends OpMode {
     TelemetryManager telemetryM;
     GraphManager graphM;

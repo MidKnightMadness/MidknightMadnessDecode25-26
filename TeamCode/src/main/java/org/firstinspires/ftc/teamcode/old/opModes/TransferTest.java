@@ -1,8 +1,9 @@
-package org.firstinspires.ftc.teamcode.pedroPathing.motorTesting;
+package org.firstinspires.ftc.teamcode.old.opModes;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -11,10 +12,10 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
 import java.util.SortedSet;
-import java.util.concurrent.TimeUnit;
 
 // Individual motor test
 // Also checks to see if configurable works
+@Disabled
 @Configurable
 @TeleOp(group="Motors")
 public class TransferTest extends OpMode {

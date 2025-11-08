@@ -1,10 +1,12 @@
 package org.firstinspires.ftc.teamcode.tests.opModes;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 
+@TeleOp(name = "Servo Setting", group = "General")
 public class ServoSetting extends OpMode {
     Servo rampServo;
     double setPos = 0.5;

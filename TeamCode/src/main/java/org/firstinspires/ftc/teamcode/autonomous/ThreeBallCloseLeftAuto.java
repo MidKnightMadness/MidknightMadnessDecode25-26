@@ -26,7 +26,7 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
 
 @Config
 @Configurable
-@Autonomous(name = "Close Left")
+@Autonomous(name = "Close Left", group = "Competition")
 public class ThreeBallCloseLeftAuto extends BaseAuto {
     public static double motifDetectionTimeMs = 5000;
     int startPipeline = 1;

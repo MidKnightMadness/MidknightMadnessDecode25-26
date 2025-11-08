@@ -40,7 +40,7 @@ import java.util.Map;
 
 @Config
 @Configurable
-@TeleOp(name = "FlywheelLUTTuning")
+@TeleOp(name = "FlywheelLUTTuning", group = "Flywheel")
 public class FlywheelLUTTest extends CommandOpMode {
     Follower follower;
     Pose startPose = new Pose(8, 8, Math.toRadians(90));
