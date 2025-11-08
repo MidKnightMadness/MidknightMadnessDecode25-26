@@ -1,6 +1,9 @@
 package org.firstinspires.ftc.teamcode.main;
 
+import static org.firstinspires.ftc.teamcode.util.ExtraFns.normAngle;
+
 import android.os.Environment;
+import android.sax.StartElementListener;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
@@ -46,6 +49,7 @@ import org.firstinspires.ftc.teamcode.tests.subsystems.SpindexerShootContinuousT
 import org.firstinspires.ftc.teamcode.util.Angle;
 import org.firstinspires.ftc.teamcode.util.ButtonToggle;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
+import org.firstinspires.ftc.teamcode.util.ExtraFns;
 import org.firstinspires.ftc.teamcode.util.ShootSide;
 import org.firstinspires.ftc.teamcode.util.Timer;
 import org.firstinspires.ftc.teamcode.commands.SpindexerSpinAngle;
@@ -61,7 +65,7 @@ public class MainTeleOp extends CommandOpMode {
 //    TelemetryManager telemetryManager;
 //    GraphManager graphManager;
     Follower follower;
-    public Pose startPose = new Pose(8, 8, Math.toRadians(90));
+    public Pose startPose = new Pose(72, 8, Math.toRadians(90));
     Timer timer;
 
     Spindexer spindexer;
@@ -89,15 +93,12 @@ public class MainTeleOp extends CommandOpMode {
     ButtonToggle flywheelFarToggle;
     ButtonToggle flywheelCloseToggle;
     ButtonToggle changeSpeed;
-    ButtonToggle spinSpindexter;
     ButtonToggle rampPos;
-    boolean flywheelSet = false;
     public static double pShooter = 0.01;
     public static double iShooter = 0;
-    public static double dShooter = 0;
+    public static double dShooter = 0.001;
 //    public static Angle twoBallAngle = new Angle(70, AngleUnit.DEGREES);
     public static Angle lastBallAngle = new Angle(105, AngleUnit.DEGREES);
-    ShootSide side;
     public static double[] closeShootPowers = new double[]{
             0.8, 0.6
     };
@@ -109,20 +110,31 @@ public class MainTeleOp extends CommandOpMode {
     Pose toCloseRightShoot = new Pose(72, 72, Math.toRadians(135));
     Pose toFarLeftShoot = new Pose(67, 11, Math.toRadians(110));
     Pose toFarRightShoot = new Pose(5, 11, Math.toRadians(70));
-    ShootSide shootSide;
-    boolean automaticDriving = false;
+    ShootSide shootSide = ShootSide.LEFT;
     public static double headingErrorMax = 0.3;
     public static double pathDistThresholdMax = 3;
     CRServo spindexerServo;
     double currturnerSpeed = 0.3;
     double maxTurnerSpeed = 0.3;
     boolean automaticSpindexer = false;
-//    DcMotorSimple.Direction spindexterDir = DcMotorSimple.Direction.FORWARD;
 
+    Pose leftTarget = new Pose(0, 144, Math.toRadians(45));
+    Pose rightTarget = new Pose(144, 144, Math.toRadians(-45));
     SpindexerSpinAngle spindexerAngleCommand;
-//    Direction spinDexerDir = Direction.FORWARD;
     ShootHardcode spindexerHardcode;
-    double dirSpindexer = 1;
+
+    boolean autoAlign = false;
+
+
+    public static double pAlignGain = 1.5;//gamepad gains
+    public static double iGain = 0;
+    public static double dAlignGain = 0.1;
+    public static double prevWeight = 0.2;//com filter
+    public static double currWeight = 0.8;
+    double prevHeadingError = 0;
+    double turnPower;
+    double headingError;
+
     @Override
     public void initialize() {
         CommandScheduler.getInstance().setBulkReading(
@@ -131,28 +143,23 @@ public class MainTeleOp extends CommandOpMode {
 
         ConstantsBot.motifIsBusy = false;
         timer = new Timer();
-//        telemetryManager = PanelsTelemetry.INSTANCE.getTelemetry();
-//        graphManager = PanelsGraph.INSTANCE.getManager();
         spindexer = new Spindexer(hardwareMap);
 //        ramp = new Ramp(hardwareMap);
         shooter = new TwoWheelShooter(hardwareMap, TwoWheelShooter.RunMode.RawPower);
 
-        pattern = MotifEnums.Motif.NONE;
-        double robotX = readDoubleFromPose(botXFileName);
-        double robotY = readDoubleFromPose(botYFileName);
-        double robotHeading = readDoubleFromPose(botHeadingFileName);
+        pattern = readMotifFromFile(motifFileName);
+//        double robotX = readDoubleFromPose(botXFileName);
+//        double robotY = readDoubleFromPose(botYFileName);
+//        double robotHeading = readDoubleFromPose(botHeadingFileName);
 //        shootSide = readShootSideFromFile(sideFileName);
 
-        Pose roboPose = new Pose(robotX, robotY, robotHeading);
+//        Pose roboPose = new Pose(robotX, robotY, robotHeading);
+//        startPose = roboPose != null ? roboPose : startPose;
 
-//        startPose = startPose;
 
-        follower = ConstantsBot.createPinpointFollower(hardwareMap);
-        follower.setStartingPose(startPose);
+        follower = ConstantsBot.createPinpointFollowerCustom(hardwareMap, startPose);
         flywheelFarToggle = new ButtonToggle();
         flywheelCloseToggle = new ButtonToggle();
-        changeSpeed = new ButtonToggle();
-        spinSpindexter = new ButtonToggle();
         rampPos = new ButtonToggle();
 //        shooter.setPid(pShooter, iShooter, dShooter);
 
@@ -174,6 +181,7 @@ public class MainTeleOp extends CommandOpMode {
         }
         return MotifEnums.Motif.NONE;
     }
+
     public double readDoubleFromPose(String fileName){
         File file = new File(Environment.getExternalStorageDirectory(), fileName);
         if(file.exists()) {
@@ -201,10 +209,9 @@ public class MainTeleOp extends CommandOpMode {
         runGamepad2Commands();
 
         follower.update();
-        if(follower.getPose().getHeading() > 0){
-            side = ShootSide.RIGHT;
-        }
-
+//        if(follower.getPose().getHeading() > 0){
+//            side = ShootSide.RIGHT;
+//        }
 
         updateTelem();
 
@@ -221,14 +228,87 @@ public class MainTeleOp extends CommandOpMode {
                 .build();
         return pathChain;
     }
-    private void runGamepad1Comands(){
+//    private void autoAlignToShootSide(Follower follower, ShootSide side){
+//        prevFacePose.cancel();
+//        Pose targetShoot = leftTarget;
+//        if(side == ShootSide.RIGHT) {
+//            targetShoot = rightTarget;
+//        }
+//
+//        currentFacePose = new FacePose(follower, targetShoot);
+//        schedule(currentFacePose);
+//        currentFacePose = prevFacePose;
+//    }
 
-        if(!automaticDriving){
-            follower.setTeleOpDrive(gamepad1.left_stick_y * currSpeed, gamepad1.left_stick_x * currSpeed, -gamepad1.right_stick_x * currSpeed, true);
+    private void autoSwapShootSide(Follower follower){
+        double heading = follower.getPose().getHeading();
+        //convert to -180 - 180
+        heading = (heading + 180 ) % 360 -180;
+        if(heading < 0){
+            shootSide = ShootSide.RIGHT;
+        }
+        else{
+            shootSide = ShootSide.LEFT;
+        }
+    }
+
+    private double normAnglePlusMinus2PI(double error){
+        while(error < -Math.PI *2){
+            error += Math.PI *2;
+        }
+        while(error > Math.PI * 2){
+            error -= Math.PI * 2;
+        }
+        return error;
+    }
+
+
+    private double calculateGamepadPID(double prevHeadingError, double headingError){//alignment(headingwise) to pose
+        double filteredHeadingError = currWeight * headingError + prevWeight * prevHeadingError;
+        double power = pAlignGain * filteredHeadingError + dAlignGain * (filteredHeadingError - prevHeadingError) * timer.getDeltaTime();
+
+        power = (power <= 1 &&  power>=-1) ? power : power > 1 ? 1 : -1;
+        return power;
+    }
+    public double getAngleError(Pose position, Pose target){
+        double deltaY = target.getY() - position.getY();
+        double deltaX = target.getX() - position.getX();
+        double heading = Math.atan2(deltaY, deltaX);
+        heading = normAngle(heading);
+        //heading is in absolute degrees
+        double error = heading - position.getHeading();
+        double errorSign = (error > 0 ) ? -1 : 1;
+        if(Math.abs(error) > Math.PI){
+            error = errorSign * (2 * Math.PI - Math.abs(position.getHeading() - heading));
         }
 
-        if (changeSpeed.update(gamepad1.right_bumper)) {
+        error = normAnglePlusMinus2PI(error);
+        return error;
+    }
+    private double convertRadToDegrees(double val){
+        return val * 180 / Math.PI;
+    }
+    private void runGamepad1Comands(){
+
+        turnPower = -gamepad1.right_stick_x * currSpeed;
+        //MODIFY so that the heading is facing the outake side, not the intake side
+        Pose outakeSide = new Pose(follower.getPose().getX(), follower.getPose().getY(), normAngle(follower.getHeading() + Math.PI));
+        headingError = getAngleError(outakeSide, ((shootSide == ShootSide.LEFT) ? leftTarget : rightTarget));
+        if(autoAlign) {
+            turnPower = calculateGamepadPID(prevHeadingError, headingError);
+        }
+        follower.setTeleOpDrive(gamepad1.left_stick_y * currSpeed, gamepad1.left_stick_x * currSpeed, turnPower, true);
+        prevHeadingError = headingError;
+
+
+
+        if (gamepad1.rightBumperWasPressed()) {
             currSpeed = currSpeed == maxSpeed ? midSpeed : maxSpeed;
+        }
+
+
+        if(gamepad1.leftBumperWasPressed()){
+            autoAlign = !autoAlign;
         }
 
 //        if(gamepad1.aWasPressed()){
@@ -280,9 +360,12 @@ public class MainTeleOp extends CommandOpMode {
             else if(pattern == MotifEnums.Motif.PPG){
                 pattern = MotifEnums.Motif.GPP;
             }
-            else if(pattern == MotifEnums.Motif.GPP){
+            else{
                 pattern = MotifEnums.Motif.NONE;
             }
+        }
+        if(gamepad1.xWasPressed()){
+            shootSide = shootSide == ShootSide.LEFT ? ShootSide.RIGHT : ShootSide.LEFT;
         }
 
 
@@ -314,15 +397,6 @@ public class MainTeleOp extends CommandOpMode {
             spindexerServo.setPower(gamepad2.left_stick_y * currturnerSpeed);
         }
 
-//        if(spinSpindexter.update(gamepad2.left_trigger > 0.5) && !automaticSpindexer) {
-//            currturnerSpeed = (currturnerSpeed == 0) ? maxTurnerSpeed : currturnerSpeed;
-//            spindexerServo.setPower(dirSpindexer * currturnerSpeed);
-//        }
-//        if(gamepad2.dpad_down){
-//            currturnerSpeed = 0;
-//            spindexerServo.setPower(dirSpindexer * currturnerSpeed);
-//        }
-
 //        if(gamepad1.left_bumper){
 //            automaticSpindexer = true;
 //            schedule(spindexerHardcode);
@@ -333,10 +407,14 @@ public class MainTeleOp extends CommandOpMode {
         telemetry.addLine("Automatic Spindexer" + automaticSpindexer);
         addStringToTelem("Motif Pattern", pattern.toString());
         addStringToTelem("Start Pose", startPose.getPose().toString());
+        telemetry.addData("Start Pose Heading(Rad)", startPose.getPose().getHeading());
         addStringToTelem("Current Pose", follower.getPose().toString());
         addToTelemGraph("Current Speed", currSpeed);
-//        addStringToTelem("Shoot Side", side.toString());
+        addStringToTelem("Shoot Side", shootSide.toString());
         addStringToTelem("Pattern", pattern.toString());
+        telemetry.addData("Heading Error", convertRadToDegrees(headingError));
+        telemetry.addData("Turn Power", turnPower);
+        telemetry.addData("Auto Align", autoAlign);
         telemetry.update();
 //        graphManager.update();;
 //        telemetryManager.update();;

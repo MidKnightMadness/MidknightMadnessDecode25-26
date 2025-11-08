@@ -32,6 +32,6 @@ public class TurnToCommand extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return Math.abs(follower.getPose().getHeading() - angle) < Math.toRadians(10);
+        return Math.abs(follower.getPose().getHeading() - angle) < Math.toRadians(3);
     }
 }

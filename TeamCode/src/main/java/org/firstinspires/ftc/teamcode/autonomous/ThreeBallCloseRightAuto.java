@@ -57,7 +57,6 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
 
          @Override
          protected void setupVision(){
-
              limelight.pipelineSwitch(startPipeline);
              limelight.start();
          }
@@ -96,6 +95,7 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
          protected boolean isVisionComplete(){
              motifPattern = motifCommand.getDetected();
              if(motifCommand.isFinished()){
+                 ConstantsBot.motifIsBusy = false;
                  return true;
              }
              return false;
@@ -125,7 +125,7 @@ import org.firstinspires.ftc.teamcode.util.ShootSide;
                      new WaitCommand(waitTime),
                      new FollowPathCommand(follower, toShootingPath, true),
 //                new FacePose(follower, rightTargetPose),
-                     new ShootHardcode(spindexer, shooter, motifPattern, true),
+//                     new ShootHardcode(spindexer, shooter, motifPattern, true),
                      new FollowPathCommand(follower, leaveBasePath, true)
              );
 

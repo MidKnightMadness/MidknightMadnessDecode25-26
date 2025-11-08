@@ -34,17 +34,27 @@ public class ConstantsBot {
             // Drive PIDF
             .drivePIDFSwitch(15)
             .useSecondaryDrivePIDF(true)
-            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.03, 0, 0.00003, 0.6, 0.03))
-            .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(0.02, 0, 0.00003, 0.6, 0.03))
+            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.03, 0, 0.0001, 0.6, 0.03))
+            .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(0.02, 0, 0.0001, 0.6, 0.03))
             .centripetalScaling(0.0005)
             .mass(11.80);
 
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 0.6, 1);
 
+    //competition
     public static PinpointConstants pinpointLocalizerConstants = new PinpointConstants()
             .forwardPodY(115/25.4)
             .strafePodX(173.7/25.4)
             .distanceUnit(DistanceUnit.INCH)
+            .hardwareMapName(ConfigNames.pinpoint)
+            .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
+            .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
+            .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED);
+
+    public static PinpointConstants customPinpointLocalizerConstants = new PinpointConstants()
+            .forwardPodY(-115)
+            .strafePodX(173.7)
+            .distanceUnit(DistanceUnit.MM)
             .hardwareMapName(ConfigNames.pinpoint)
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
             .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
@@ -93,6 +103,14 @@ public class ConstantsBot {
                 .pathConstraints(pathConstraints)
                 .build();
     }
+    public static Follower createPinpointFollowerCustom(HardwareMap hardwareMap, Pose startPose) {
+        return new FollowerBuilder(followerConstants, hardwareMap)
+                .pinpointLocalizerCustom(customPinpointLocalizerConstants, startPose)
+                .mecanumDrivetrain(driveConstants)
+                .pathConstraints(pathConstraints)
+                .build();
+    }
+
 
     public static Follower createKalmanPinpointAprilFollower(HardwareMap hardwareMap, Pose startPose, Telemetry telemetry){//global startPose
         return new FollowerBuilder(followerConstants, hardwareMap)

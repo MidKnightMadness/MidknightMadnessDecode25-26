@@ -22,6 +22,7 @@ public class FlywheelSimpleTest extends OpMode {
 
     public static double lowPower = 1;
     public static double highPower = 1;
+    public static double dir = 1;
 
     @Override
     public void init() {
@@ -35,7 +36,7 @@ public class FlywheelSimpleTest extends OpMode {
     public void loop() {
         low.setPower(lowPower);
         high.setPower(highPower);
-        servo.setPower(-0.15);
+        servo.setPower(dir * 0.15);
 
         telemetryM.addData("low velocity", low.getVelocity());
         telemetryM.addData("high velocity", high.getVelocity());

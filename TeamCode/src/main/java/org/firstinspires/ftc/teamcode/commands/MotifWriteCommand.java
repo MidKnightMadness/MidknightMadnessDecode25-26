@@ -38,8 +38,10 @@ public class MotifWriteCommand extends CommandBase {
     public MotifWriteCommand(Limelight3A limelight, double timeMs){
         this.limelight = limelight;
         this.maxTimeMs = timeMs;
-//        limelight.pipelineSwitch(motifPipeline);
-//        limelight.start();
+        if(!limelight.isRunning()) {
+            limelight.pipelineSwitch(motifPipeline);
+            limelight.start();
+        }
         timer = new Timer();
 
 
@@ -66,14 +68,13 @@ public class MotifWriteCommand extends CommandBase {
             for (LLResultTypes.FiducialResult item : list) {
                 int aprilTagID = item.getFiducialId();
                 motifPattern = idMap.getOrDefault(aprilTagID, MotifEnums.Motif.NONE);
-                if (motifPattern != MotifEnums.Motif.NONE) break;
+                if(motifPattern != MotifEnums.Motif.NONE) {
+                    writeToFile(fileWriter, String.valueOf(aprilTagID));
+                    closeFileWriter(fileWriter);
+                    finishedWriting = true;
+                }
             }
 
-//            if(motifPattern != MotifEnums.Motif.NONE) {
-//                writeToFile(fileWriter, String.valueOf(aprilTagID));
-//                closeFileWriter(fileWriter);
-//                finishedWriting = true;
-//            }
         }
     }
 
