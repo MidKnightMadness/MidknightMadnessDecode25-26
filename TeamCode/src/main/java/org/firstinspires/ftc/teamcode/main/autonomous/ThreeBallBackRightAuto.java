@@ -1,5 +1,5 @@
 
- package org.firstinspires.ftc.teamcode.autonomous;
+ package org.firstinspires.ftc.teamcode.main.autonomous;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
@@ -13,11 +13,6 @@ import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 
-import org.firstinspires.ftc.teamcode.commands.FacePose;
-import org.firstinspires.ftc.teamcode.commands.MotifWriteCommand;
-import org.firstinspires.ftc.teamcode.motif.MotifEnums;
-import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
-import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
 import org.firstinspires.ftc.teamcode.util.ShootSide;
