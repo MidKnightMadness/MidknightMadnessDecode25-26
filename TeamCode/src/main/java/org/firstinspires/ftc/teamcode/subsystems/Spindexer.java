@@ -5,11 +5,10 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.hardware.IncrementalEncoder;
-import org.firstinspires.ftc.teamcode.motif.MotifEnums;
+import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.hardware.BallDetector;
 import org.firstinspires.ftc.teamcode.util.Angle;
 import org.firstinspires.ftc.teamcode.colors.BallColor;

@@ -5,12 +5,11 @@ import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 
-import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
-import org.firstinspires.ftc.teamcode.motif.MotifEnums;
+import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
 import org.firstinspires.ftc.teamcode.util.Angle;
-import org.firstinspires.ftc.teamcode.util.ShootSide;
+import org.firstinspires.ftc.teamcode.game.ShootSide;
 
 public class SpindexerShootContinuous extends SequentialCommandGroup {
     private final boolean useShooter;

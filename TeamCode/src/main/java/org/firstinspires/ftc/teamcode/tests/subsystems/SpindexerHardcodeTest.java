@@ -6,7 +6,6 @@ import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.hardware.lynx.LynxModule;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
@@ -14,7 +13,7 @@ import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.teamcode.commands.ShootHardcode;
-import org.firstinspires.ftc.teamcode.motif.MotifEnums;
+import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
 import org.firstinspires.ftc.teamcode.util.Timer;

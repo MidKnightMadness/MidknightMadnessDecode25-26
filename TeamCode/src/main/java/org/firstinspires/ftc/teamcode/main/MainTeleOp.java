@@ -3,60 +3,35 @@ package org.firstinspires.ftc.teamcode.main;
 import static org.firstinspires.ftc.teamcode.util.ExtraFns.normAngle;
 
 import android.os.Environment;
-import android.sax.StartElementListener;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.graph.GraphManager;
-import com.bylazar.graph.PanelsGraph;
-import com.bylazar.telemetry.PanelsTelemetry;
-import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
-import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ReadWriteFile;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
-import com.seattlesolvers.solverslib.command.InstantCommand;
-import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
-import com.seattlesolvers.solverslib.command.button.Button;
-import com.seattlesolvers.solverslib.command.button.GamepadButton;
-import com.seattlesolvers.solverslib.gamepad.GamepadEx;
-import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
-import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
-import com.seattlesolvers.solverslib.util.Direction;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.commands.FacePose;
-import org.firstinspires.ftc.teamcode.commands.ShootSequence;
-import org.firstinspires.ftc.teamcode.commands.SpindexerShootContinuous;
-import org.firstinspires.ftc.teamcode.motif.MotifEnums;
+import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
-import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.subsystems.Ramp;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
-import org.firstinspires.ftc.teamcode.tests.subsystems.SpindexerHardcodeTest;
-import org.firstinspires.ftc.teamcode.tests.subsystems.SpindexerShootContinuousTest;
 import org.firstinspires.ftc.teamcode.util.Angle;
 import org.firstinspires.ftc.teamcode.util.ButtonToggle;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
-import org.firstinspires.ftc.teamcode.util.ExtraFns;
-import org.firstinspires.ftc.teamcode.util.ShootSide;
+import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.util.Timer;
 import org.firstinspires.ftc.teamcode.commands.SpindexerSpinAngle;
 import org.firstinspires.ftc.teamcode.commands.ShootHardcode;
 import java.io.File;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 @Config
 @Configurable

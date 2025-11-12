@@ -1,12 +1,9 @@
 package org.firstinspires.ftc.teamcode.commands;
 
-import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
-import com.seattlesolvers.solverslib.command.WaitCommand;
-import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 
 import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
-import org.firstinspires.ftc.teamcode.motif.MotifEnums;
+import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 
 public class SpindexerMotifSequence extends SequentialCommandGroup {

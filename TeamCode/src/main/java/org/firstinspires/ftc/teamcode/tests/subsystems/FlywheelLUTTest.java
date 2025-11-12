@@ -22,17 +22,15 @@ import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 
-import org.firstinspires.ftc.teamcode.commands.ShootSequence;
 import org.firstinspires.ftc.teamcode.commands.SpindexerGotoSpot;
 import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
-import org.firstinspires.ftc.teamcode.motif.MotifEnums;
+import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 import org.firstinspires.ftc.teamcode.subsystems.Ramp;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
-import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
 import org.firstinspires.ftc.teamcode.util.ButtonToggle;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
-import org.firstinspires.ftc.teamcode.util.ShootSide;
+import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
 import java.util.ArrayList;

@@ -8,7 +8,7 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.seattlesolvers.solverslib.command.CommandBase;
 
-import org.firstinspires.ftc.teamcode.motif.MotifEnums;
+import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
 

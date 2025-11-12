@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.motif;
+package org.firstinspires.ftc.teamcode.game;
 
 public class MotifEnums {
     public enum Motif {

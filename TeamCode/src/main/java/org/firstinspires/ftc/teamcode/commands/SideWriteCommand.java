@@ -2,23 +2,16 @@ package org.firstinspires.ftc.teamcode.commands;
 
 import android.os.Environment;
 
-import com.pedropathing.geometry.Pose;
-import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
-import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.seattlesolvers.solverslib.command.CommandBase;
 
-import org.firstinspires.ftc.teamcode.motif.MotifEnums;
-import org.firstinspires.ftc.teamcode.util.ShootSide;
+import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 
 public class SideWriteCommand extends CommandBase {
     double maxTimeMs;

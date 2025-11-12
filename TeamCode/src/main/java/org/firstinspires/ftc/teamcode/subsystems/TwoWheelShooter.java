@@ -11,7 +11,7 @@ import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 import com.seattlesolvers.solverslib.util.InterpLUT;
 
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
-import org.firstinspires.ftc.teamcode.util.ShootSide;
+import org.firstinspires.ftc.teamcode.game.ShootSide;
 
 import java.util.Map;
 

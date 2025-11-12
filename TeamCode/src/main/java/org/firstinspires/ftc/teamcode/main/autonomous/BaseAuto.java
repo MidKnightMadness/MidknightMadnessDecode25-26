@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.autonomous;
+package org.firstinspires.ftc.teamcode.main.autonomous;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
@@ -17,11 +17,9 @@ import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import org.firstinspires.ftc.teamcode.commands.PoseWriteCommand;
 import org.firstinspires.ftc.teamcode.commands.SideWriteCommand;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
-import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
-import org.firstinspires.ftc.teamcode.util.ConfigNames;
-import org.firstinspires.ftc.teamcode.util.ShootSide;
+import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
 @Config
