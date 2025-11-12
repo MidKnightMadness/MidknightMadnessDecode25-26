@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.colors.ColorClassifier;
 import org.firstinspires.ftc.teamcode.colors.Threshold;
 import org.firstinspires.ftc.teamcode.hardware.BallDetector;
-import org.firstinspires.ftc.teamcode.colors.BallColor;
+import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.hardware.SensorColorEx;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.teamcode.util.PanelsDrawing;

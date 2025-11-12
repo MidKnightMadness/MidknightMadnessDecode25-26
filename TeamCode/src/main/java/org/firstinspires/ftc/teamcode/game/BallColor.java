@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.colors;
+package org.firstinspires.ftc.teamcode.game;
 
 public enum BallColor {
     GREEN,
