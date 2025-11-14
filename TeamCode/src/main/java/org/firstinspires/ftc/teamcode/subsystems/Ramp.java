@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
@@ -12,6 +13,7 @@ import org.firstinspires.ftc.teamcode.util.ConfigNames;
 
 @Config
 @Configurable
+@Disabled
 public class Ramp extends SubsystemBase {
     ServoEx rampServo;
     public static double lowPos = 0;

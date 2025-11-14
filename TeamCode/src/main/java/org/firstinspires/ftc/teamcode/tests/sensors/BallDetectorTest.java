@@ -69,6 +69,7 @@ public class BallDetectorTest extends OpMode {
 
     public void updateTelemetry() {
         telemetryM.addData("HSV", ballDetector.readRawColor());
+        telemetryM.addData("RGB", ballDetector.readRawColor());
         telemetryM.addData("Detected color", ballDetector.readColor());
         addDataTelemetryGraph("Loop time (ms)", timer.getDeltaTime(TimeUnit.MILLISECONDS));
         telemetryM.update(telemetry);

@@ -7,11 +7,5 @@ public class MotifEnums {
         PPG,
         NONE;
 
-        public int getGreenPosition() {
-            if (this == Motif.GPP) return 0;
-            if (this == Motif.PGP) return 1;
-            if (this == Motif.PPG) return 2;
-            return -1;
-        }
     }
 }

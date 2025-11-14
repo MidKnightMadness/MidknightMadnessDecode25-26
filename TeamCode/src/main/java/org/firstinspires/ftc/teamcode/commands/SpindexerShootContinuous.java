@@ -37,12 +37,6 @@ public class SpindexerShootContinuous extends SequentialCommandGroup {
         this.useShooter = useShooter;
         addCommands(
                 new InstantCommand(() -> spindexer.initAngle(Angle.fromDegrees(60)))
-//                new SpindexerGotoAngle(
-//                        spindexer,
-////                        Angle.fromDegrees(180 - 120 * motif.getGreenPosition()),
-//                        Angle.fromDegrees(180 - 120),
-//                        CRServoEx2.RunMode.OptimizedPositionalControl
-//                )
         );
     }
 

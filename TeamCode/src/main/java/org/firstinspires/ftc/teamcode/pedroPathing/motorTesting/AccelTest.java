@@ -19,7 +19,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import java.util.ArrayList;
 
 @Configurable
-@TeleOp
+@TeleOp(name = "AccelTest", group = "Pathing")
 public class AccelTest extends OpMode {
     public static double accelSpeed = 1;
     public static double decelSpeed = -1;

@@ -29,7 +29,7 @@ import org.firstinspires.ftc.teamcode.util.PanelsDrawing;
 import org.firstinspires.ftc.teamcode.util.PoseBuffer;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
-@TeleOp(group = "Localization", name = "LocalizationComparison")
+@TeleOp(group = "Localization", name = "Drive")
 @Configurable
 @Config
 public class LocalizationComparison extends OpMode{

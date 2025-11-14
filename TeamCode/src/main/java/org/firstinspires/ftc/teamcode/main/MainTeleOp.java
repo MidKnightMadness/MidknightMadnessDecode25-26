@@ -3,26 +3,47 @@ package org.firstinspires.ftc.teamcode.main;
 import static org.firstinspires.ftc.teamcode.util.ExtraFns.normAngle;
 
 import android.os.Environment;
+import android.sax.StartElementListener;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.graph.GraphManager;
+import com.bylazar.graph.PanelsGraph;
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ReadWriteFile;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
+import com.seattlesolvers.solverslib.command.InstantCommand;
+import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
+import com.seattlesolvers.solverslib.command.button.Button;
+import com.seattlesolvers.solverslib.command.button.GamepadButton;
+import com.seattlesolvers.solverslib.gamepad.GamepadEx;
+import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
+import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
+import com.seattlesolvers.solverslib.util.Direction;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
+import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
+import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Ramp;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
+import org.firstinspires.ftc.teamcode.tests.subsystems.SpindexerHardcodeTest;
+import org.firstinspires.ftc.teamcode.tests.subsystems.SpindexerShootContinuousTest;
 import org.firstinspires.ftc.teamcode.util.Angle;
 import org.firstinspires.ftc.teamcode.util.ButtonToggle;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
@@ -32,6 +53,7 @@ import org.firstinspires.ftc.teamcode.commands.SpindexerSpinAngle;
 import org.firstinspires.ftc.teamcode.commands.ShootHardcode;
 import java.io.File;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 @Config
 @Configurable
@@ -46,6 +68,7 @@ public class MainTeleOp extends CommandOpMode {
     Spindexer spindexer;
     Ramp ramp;
     TwoWheelShooter shooter;
+    Intake intake;
 
 
     MotifEnums.Motif pattern = MotifEnums.Motif.NONE;
@@ -65,6 +88,9 @@ public class MainTeleOp extends CommandOpMode {
     double currSpeed = 0.8;
     double maxSpeed = 0.8;
     double midSpeed = 0.5;
+
+    double intakeSpeed = 1;
+
     ButtonToggle flywheelFarToggle;
     ButtonToggle flywheelCloseToggle;
     ButtonToggle changeSpeed;
@@ -99,6 +125,9 @@ public class MainTeleOp extends CommandOpMode {
     ShootHardcode spindexerHardcode;
 
     boolean autoAlign = false;
+    boolean automaticIntake = false;
+    double intakePower = 1;
+
 
 
     public static double pAlignGain = 1.5;//gamepad gains
@@ -109,6 +138,14 @@ public class MainTeleOp extends CommandOpMode {
     double prevHeadingError = 0;
     double turnPower;
     double headingError;
+    public static double pIntake = 0.01;
+    public static double iIntake = 0;
+    public static double dIntake = 0;
+    public static double kSIntake = 0;
+    public static double kVIntake = 0;
+    public static double kAIntake = 0;
+    Intake.RunMode intakeRunMode = Intake.RunMode.RawPower;
+
 
     @Override
     public void initialize() {
@@ -136,6 +173,12 @@ public class MainTeleOp extends CommandOpMode {
         flywheelFarToggle = new ButtonToggle();
         flywheelCloseToggle = new ButtonToggle();
         rampPos = new ButtonToggle();
+        intake = new Intake(hardwareMap, intakeRunMode);
+        if(intakeRunMode == Intake.RunMode.VelocityControl){
+            intake.setPid(pIntake, iIntake, dIntake);
+            intake.setFeedforward(kSIntake, kVIntake, kAIntake);
+        }
+
 //        shooter.setPid(pShooter, iShooter, dShooter);
 
         spindexerServo = hardwareMap.get(CRServo.class, ConfigNames.turner);
@@ -347,6 +390,8 @@ public class MainTeleOp extends CommandOpMode {
             schedule(spindexerAngleCommand);
         }
 
+        flywheelCommands();
+        intakeCommands();
 
         if(!automaticSpindexer){
             spindexerServo.setPower(gamepad2.left_stick_y * currturnerSpeed);
@@ -358,6 +403,24 @@ public class MainTeleOp extends CommandOpMode {
 //        }
     }
 
+    private void intakeCommands(){
+        if(!automaticIntake){
+            intakePower = gamepad2.right_stick_y * intakeSpeed;
+            intake.setDirectPower(intakePower);
+        }
+    }
+
+    private void flywheelCommands(){
+        if(flywheelFarToggle.update(gamepad2.right_bumper)){
+            shooter.setFlywheelsPower(false);
+        }
+        else if(flywheelCloseToggle.update(gamepad2.left_bumper)){
+            shooter.setFlywheelsPower(true);
+        }
+        if(gamepad2.right_trigger > 0.5){
+            shooter.stopFlywheels();
+        }
+    }
     private void updateTelem() {
         telemetry.addLine("Automatic Spindexer" + automaticSpindexer);
         addStringToTelem("Motif Pattern", pattern.toString());
@@ -370,6 +433,7 @@ public class MainTeleOp extends CommandOpMode {
         telemetry.addData("Heading Error", convertRadToDegrees(headingError));
         telemetry.addData("Turn Power", turnPower);
         telemetry.addData("Auto Align", autoAlign);
+        telemetry.addData("Intake power", intakePower);
         telemetry.update();
 //        graphManager.update();;
 //        telemetryManager.update();;

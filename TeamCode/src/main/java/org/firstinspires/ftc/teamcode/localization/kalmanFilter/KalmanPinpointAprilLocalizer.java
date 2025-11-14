@@ -11,6 +11,7 @@ import com.pedropathing.math.MathFunctions;
 import com.pedropathing.math.Vector;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -23,6 +24,9 @@ import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.util.DashboardDrawing;
 import org.firstinspires.ftc.teamcode.util.Timer;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class KalmanPinpointAprilLocalizer implements Localizer {
@@ -47,6 +51,7 @@ public class KalmanPinpointAprilLocalizer implements Localizer {
 
     public double rightThresholdDeg;
     public double leftThresholdDeg;
+//    public double xDegreesAprilTag;
     Timer timer;
     public KalmanPinpointAprilLocalizer(HardwareMap hardwareMap, KalmanPinpointAprilConstants lConstants, Telemetry telemetry){
         this(hardwareMap, lConstants, new Pose(), telemetry);
@@ -164,6 +169,7 @@ public class KalmanPinpointAprilLocalizer implements Localizer {
     public Pose updateAprilTagPose(){
         LLResult result = limelight.getLatestResult();
 
+//        xDegreesAprilTag = getXDegrees(result);
         if (result != null && result.isValid()) {
             aprilTagDetected = true;
             aprilTagPose = new Pose(72 + convertMetersToInch(result.getBotpose().getPosition().y), 72 - convertMetersToInch(result.getBotpose().getPosition().x), normalizeAngleRad(result.getBotpose().getOrientation().getYaw(AngleUnit.RADIANS) - Math.PI / 2));
@@ -174,6 +180,7 @@ public class KalmanPinpointAprilLocalizer implements Localizer {
         return aprilTagPose;
     }
 
+
     public double normalizeAngleRad(double val){//keep within 0 - 2PI
         double angle = val % (2 * Math.PI);
         if(angle < 0){
@@ -181,6 +188,9 @@ public class KalmanPinpointAprilLocalizer implements Localizer {
         }
         return angle;
     }
+//    public double getXDegrees(){
+//        return xDegreesAprilTag;
+//    }
 
 
     public Pose updateKalmanFilter(){

@@ -8,13 +8,14 @@ import com.bylazar.configurables.annotations.Configurable;
 public class ConfigNames {
     public static String inColorSensor = "inColorSensor";
     public static String outColorSensor = "outColorSensor";
-    public static String turner = "turner";
+    public static String turner = "FR";
     public static String turnerEncoder = "FR";
     public static String imu = "imu";
     public static String pinpoint = "pinpoint";
     public static String limelight = "limelight";
     public static String lowFlywheelMotor = "lowFlywheelMotor";
     public static String highFlywheelMotor = "highFlywheelMotor";
+    public static String intakeMotor = "intakeMotor";
     public static String FL = "FL";
     public static String FR = "FR";
     public static String BL = "BL";

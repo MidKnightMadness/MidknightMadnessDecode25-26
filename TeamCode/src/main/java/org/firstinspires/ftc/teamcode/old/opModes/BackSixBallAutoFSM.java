@@ -10,6 +10,7 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
@@ -18,6 +19,7 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 
 @Deprecated
+@Disabled
 @Configurable
 @Autonomous
 public class BackSixBallAutoFSM extends OpMode {

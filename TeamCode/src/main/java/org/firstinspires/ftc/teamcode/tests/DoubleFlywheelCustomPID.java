@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.old.opModes;
+package org.firstinspires.ftc.teamcode.tests;
 
 import static java.lang.Math.clamp;
 
@@ -6,7 +6,6 @@ import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.graph.GraphManager;
 import com.bylazar.telemetry.TelemetryManager;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -22,8 +21,7 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 
 @Configurable
 @Config
-@TeleOp(name = "2FlywheelPID", group = "Experiments")
-@Disabled
+@TeleOp(name = "2FlywheelPID", group = "Flywheel")
 public class DoubleFlywheelCustomPID extends OpMode {
     DcMotorEx left;
     DcMotorEx right;
@@ -37,6 +35,10 @@ public class DoubleFlywheelCustomPID extends OpMode {
     GraphManager graph;
     TelemetryManager panelsTelemetry;
 
+    public static double mode = 1;
+    //manual mode
+    public static double topPower = 1;
+    public static double bottomPower = 1;
 
     //motor constants
     final double ticksPerRevolution = 28;
@@ -64,9 +66,11 @@ public class DoubleFlywheelCustomPID extends OpMode {
 
     @Override
     public void init() {
+        telemetry.addLine("Change Mode to 1 for Manual Mode and 0 for Custom Flywheel");
         toggle = new ButtonToggle();
         left = hardwareMap.get(DcMotorEx.class, ConfigNames.lowFlywheelMotor);
         right = hardwareMap.get(DcMotorEx.class, ConfigNames.highFlywheelMotor);
+
 
         left.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         right.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -96,6 +100,7 @@ public class DoubleFlywheelCustomPID extends OpMode {
 
     @Override
     public void loop() {
+
         if (toggle.update(gamepad1.x)){
             resetEncoders();
         }
@@ -123,8 +128,15 @@ public class DoubleFlywheelCustomPID extends OpMode {
         double leftPower = (leftOutput <= 1 &&  leftOutput>=-1) ? leftOutput : leftOutput > 1 ? 1 : -1;
         double rightPower = (rightOutput <= 1 &&  rightOutput>=-1) ? rightOutput : rightOutput > 1 ? 1 : -1;
 
-        left.setPower(leftPower);
-        right.setPower(rightPower);
+
+        if(mode == 0) {
+            left.setPower(leftPower);
+            right.setPower(rightPower);
+        }
+        else{
+            left.setPower(topPower);
+            right.setPower(bottomPower);
+        }
 
         telemetry.addData("Update Rate", 1/ deltaTime);
         telemetry.addData("Target Left", targetLeftRpm);
