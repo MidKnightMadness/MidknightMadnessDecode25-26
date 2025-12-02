@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.util;
-
 import androidx.annotation.NonNull;
-
+import java.lang.Math;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 public class Angle {
@@ -80,7 +79,7 @@ public class Angle {
     }
 
     public Angle abs() {
-        return new Angle(Math.abs(value), unit);
+        return new Angle(java.lang.Math.abs(value), unit);
     }
 
     public Angle neg() {
