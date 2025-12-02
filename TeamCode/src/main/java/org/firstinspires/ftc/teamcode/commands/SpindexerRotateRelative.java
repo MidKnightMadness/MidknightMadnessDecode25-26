@@ -1,15 +1,17 @@
 package org.firstinspires.ftc.teamcode.commands;
 
+import com.acmerobotics.dashboard.config.Config;
+import com.bylazar.configurables.annotations.Configurable;
 import com.seattlesolvers.solverslib.command.CommandBase;
-import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 
-import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.util.Angle;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
-public class SpindexerSpinAngle extends CommandBase {
-    public static double stopThreshold = 20;
+@Config
+@Configurable
+public class SpindexerRotateRelative extends CommandBase {
+    public static double stopThreshold = 3;
 
     private double targetAngle;
     private final double power;
@@ -19,7 +21,7 @@ public class SpindexerSpinAngle extends CommandBase {
     Timer finishedTimer;
     double finishedTimeThreshold = 1000;
 
-    public SpindexerSpinAngle(Spindexer spindexer, Angle angle, double power) {
+    public SpindexerRotateRelative(Spindexer spindexer, Angle angle, double power) {
         this.angle = angle;
         this.spindexer = spindexer;
         this.power = power;

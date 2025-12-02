@@ -56,7 +56,7 @@ public class SpindexerShootContinuous extends SequentialCommandGroup {
                 new WaitCommand(1000)
             );
         }
-        addCommands(new SpindexerSpinAngle(spindexer, Angle.fromDegrees(-480), 1));
+        addCommands(new SpindexerRotateRelative(spindexer, Angle.fromDegrees(-480), 1));
         if (useShooter) new InstantCommand(shooter::stopFlywheels);
 
         super.initialize();

@@ -12,7 +12,7 @@ import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
-import org.firstinspires.ftc.teamcode.commands.SpindexerSpinAngle;
+import org.firstinspires.ftc.teamcode.commands.SpindexerRotateRelative;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.util.Angle;
 import org.firstinspires.ftc.teamcode.util.Timer;
@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 @Configurable
 @TeleOp(name = "SpindexerSpinAngleTest", group = "Spindexer")
-public class SpindexerSpinAngleTest extends CommandOpMode {
+public class SpindexerRotateRelativeTest extends CommandOpMode {
     Spindexer spindexer;
     GamepadEx gp1;
     TelemetryManager telemetryM;
@@ -29,6 +29,7 @@ public class SpindexerSpinAngleTest extends CommandOpMode {
     Timer timer;
     boolean first = true;
 
+    public static double targetAngle = 120;
     @Override
     public void initialize() {
         super.reset(); // Must put first
@@ -44,7 +45,7 @@ public class SpindexerSpinAngleTest extends CommandOpMode {
         gp1 = new GamepadEx(gamepad1);
 
         gp1.getGamepadButton(GamepadKeys.Button.A).whenPressed(
-                new SpindexerSpinAngle(spindexer, Angle.fromDegrees(120), 0.5)
+                new SpindexerRotateRelative(spindexer, Angle.fromDegrees(targetAngle), 0.5)
         );
 
         register(spindexer);

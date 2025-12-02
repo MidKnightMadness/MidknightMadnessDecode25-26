@@ -6,6 +6,11 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.colors.ColorBuffer;
+import org.firstinspires.ftc.teamcode.colors.ColorNormalizer;
+import org.firstinspires.ftc.teamcode.colors.ColorSensorBuffer;
+import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
+import org.firstinspires.ftc.teamcode.game.SpotType;
 import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.hardware.IncrementalEncoder;
 import org.firstinspires.ftc.teamcode.game.MotifEnums;
@@ -20,61 +25,40 @@ import java.util.Map;
 
 @Configurable
 public class Spindexer extends SubsystemBase {
-    public static class BallSensor {
-        BallDetector sensor;
-        Angle angle;
-        int previousSpot;
-        Map<BallColor, Double> votes;
 
-        BallSensor(BallDetector sensor, Angle angle) {
-            this.sensor = sensor;
-            this.angle = angle;
-            this.previousSpot = -1; // -1 for none
-            resetVotes();
-        }
-
-        BallColor aggregateVotes() {
-            return ExtraFns.argmax(votes);
-        }
-
-        void addVote(BallColor color, double weight) {
-            votes.merge(color, weight, Double::sum);
-        }
-
-        void resetVotes() {
-            votes = new HashMap<>();
-            votes.put(BallColor.GREEN, 0.0);
-            votes.put(BallColor.PURPLE, 0.0);
-            votes.put(BallColor.NONE, 0.0);
-        }
-    }
-
-    public static double intakeSpinPower = 0.3;
+    //Ball sensors(two) facing each other right in the intake before it goes into the spindexer
+    //public static double intakeSpinPower = 0.3;
     public static double shootRawPower = 1;
-    public static PIDFCoefficients turnerCoefficients = new PIDFCoefficients(0.007, 0, 0, 0);
+    public static PIDFCoefficients turnerCoefficients = new PIDFCoefficients(0.003, 0, 0, 0);
 
     // 0 is defined as the position of the shooter
     public static Angle detectRange = Angle.fromDegrees(40); // How far off from the center of the spot that you detect. You don't want to trust measurements that are too off from the center
-    public static Angle inColorSensorAngle = Angle.fromDegrees(180);
-    public static Angle outColorSensorAngle = Angle.fromDegrees(0);
-    public static Angle finishedThreshold = Angle.fromDegrees(10); // Threshold at which it's finished turning to a spot
-
+    public static Angle finishedThreshold = Angle.fromDegrees(2); // Threshold at which it's finished turning to a spot
+    public static Angle OUTAKE_OFFSET_ANGLE = Angle.fromDegrees(60);
+    //0 degrees is facing intake
+    //assuming layout at start is initialized as 0 from this position
+    //  X X
+    //   X
     private static final int NUM_SPOTS = 3;
-
-    public Angle test = new Angle(0, AngleUnit.DEGREES);
-
     boolean useColorSensors;
     CRServoEx2<IncrementalEncoder> turner;
-    BallSensor[] ballSensors;
+    BallDetector[] ballDetectors;
     Angle currentAngle;
     BallColor[] ballColors;
-    public int[] sequence;
+    public SpindexerSpot[] sequence;
+    ColorBuffer buffer;
 
     public Spindexer(HardwareMap hardwareMap) {
         this(hardwareMap, false);
     }
-
+    public void setMode(CRServoEx2.RunMode spindexerRunMode) {
+        turner.setRunMode(spindexerRunMode);
+    }
     public Spindexer(HardwareMap hardwareMap, boolean useColorSensors) {
+        this(hardwareMap, useColorSensors, null);
+    }
+
+    public Spindexer(HardwareMap hardwareMap, boolean useColorSensors, BallColor[] ballColors) {
         IncrementalEncoder turnerEncoder = new IncrementalEncoder(
                 hardwareMap, ConfigNames.turnerEncoder, 8192, AngleUnit.DEGREES
         ).setReversed(true);
@@ -84,18 +68,15 @@ public class Spindexer extends SubsystemBase {
         ).setPIDF(turnerCoefficients).setReversed(true);
         this.useColorSensors = useColorSensors;
         if (useColorSensors) {
-            ballSensors = new BallSensor[] {
-                    new BallSensor(
-                            new BallDetector(hardwareMap, ConfigNames.inColorSensor),
-                            inColorSensorAngle
-                    ),
-                    new BallSensor(
-                            new BallDetector(hardwareMap, ConfigNames.outColorSensor),
-                            outColorSensorAngle
-                    )
+            ballDetectors = new BallDetector[] {
+                    new BallDetector(hardwareMap, ConfigNames.intakeColorLeft),
+                    new BallDetector(hardwareMap, ConfigNames.intakeColorRight)
             };
         }
-        ballColors = new BallColor[] { BallColor.NONE, BallColor.NONE, BallColor.NONE };
+        if(ballColors!= null){
+            setBallColors(ballColors);
+            buffer = new ColorBuffer();
+        }
     }
 
     @Override
@@ -138,82 +119,68 @@ public class Spindexer extends SubsystemBase {
     }
 
     public void updateBallColors() {
-        for (BallSensor ballSensor: ballSensors) {
-            int spot = getNearestSpotIndex(ballSensor.angle);
-            double gap = getRelativeAngle(spot).absGap(ballSensor.angle).toDegrees();
-            double weight = Math.max(0, 1 - gap / detectRange.toDegrees());
-            if (gap > detectRange.toDegrees()) spot = -1;
-
-            int previousSpot = ballSensor.previousSpot;
-            ballSensor.previousSpot = spot;
-
-            if (spot == previousSpot) { // If in the middle of detecting
-                if (spot == -1) continue;
-                ballSensor.addVote(ballSensor.sensor.readColor(), weight);
-            } else { // If spot transition
-                if (previousSpot == -1) continue; // Only consider transitions from spots
-                ballColors[previousSpot] = ballSensor.aggregateVotes();
-                ballSensor.resetVotes();
-            }
+        SpindexerSpot spot = getNearestSpot(currentAngle, SpotType.INTAKE);
+        if(ballColors[spot.getIndex()] != BallColor.NONE){//already has a color
+            return;//assume ball stays in position
         }
+        if (spot.getSpotAngle(SpotType.INTAKE).absGap(currentAngle).toDegrees() > detectRange.toDegrees()){
+            //don't know with complete certainty which one the ball went into
+            ballColors[spot.getIndex()] = BallColor.NONE;
+            return;
+        }
+
+
+        for(BallDetector sensor: ballDetectors){
+            buffer.add(sensor.readColor());
+        }
+
+        ballColors[spot.getIndex()] = buffer.getColor();
+
+
     }
 
-    private int computeMomentum(int[] seq, int i) {
-        if (i == 0) return getRelativeAngle(seq[i]).sign();
-        int diff = (seq[i] - seq[i-1] + NUM_SPOTS) % NUM_SPOTS;
+    private int computeMomentum(SpindexerSpot[] seq, SpotType spotType, int i) {
+        if (i == 0) return getRelativeAngle(seq[i], spotType).sign();
+        int diff = (seq[i].getIndex() - seq[i-1].getIndex() + NUM_SPOTS) % NUM_SPOTS;
         if (diff == 0) return 0;
         return (diff <= NUM_SPOTS / 2) ? 1 : -1;
     }
 
-    private int[] sequenceForMotif(MotifEnums.Motif motif, int greenSpot) {
-        int greenOrder;
-        int[] seq = new int[NUM_SPOTS];
-        if (motif.equals(MotifEnums.Motif.GPP)) greenOrder = 0;
-        else if (motif.equals(MotifEnums.Motif.PGP)) greenOrder = 1;
-        else greenOrder = 2;
-
-        int momentum = 0;
-        for (int i = 0; i < NUM_SPOTS; i++) {
-            int spot;
-            if (i == greenOrder) {
-                spot = greenSpot;
-            } else {
-                spot = getNextSpot(seq, i, momentum);
-            }
-            seq[i] = spot;
-            momentum = computeMomentum(seq, i);
-        }
-        return seq;
-    }
-
-    private int getNextSpot(int[] seq, int i, int momentum) {
-        int spot;
+    private SpindexerSpot getNextOuttakeSpot(SpindexerSpot[] seq, int i, int momentum) {
+        SpindexerSpot spot;
         if (i == 0) {
-            spot = getNearestSpotIndex(Angle.fromDegrees(0));
-        } else {
-            spot = (seq[i - 1] + momentum) % NUM_SPOTS;
-            while (ballColors[spot] == BallColor.NONE) {
-                spot = (spot + 1) % NUM_SPOTS;
+            spot = getNearestSpot(currentAngle, SpotType.OUTTAKE);
+        }
+        else {
+            int nextIndex = (seq[i - 1].getIndex() + momentum + NUM_SPOTS) % NUM_SPOTS;
+            while (ballColors[nextIndex] == BallColor.NONE) {
+                nextIndex = (nextIndex + 1) % NUM_SPOTS;
             }
+            spot = SpindexerSpot.fromIndex(nextIndex);
         }
         return spot;
     }
 
-    private int[] sequenceDefault(int totalCount) {
-        int[] seq = new int[NUM_SPOTS];
+    private SpindexerSpot[] sequenceForMotif(MotifEnums.Motif motif, SpindexerSpot greenSpot) {//outtake
+        if(motif.equals(MotifEnums.Motif.NONE)) return null;
+        SpindexerSpot[] seq = new SpindexerSpot[NUM_SPOTS];
+
         int momentum = 0;
-
-        for (int i = 0; i < totalCount; i++) {
-            int spot = getNextSpot(seq, i, momentum);
+        for (int i = 0; i < NUM_SPOTS; i++) {
+            SpindexerSpot spot;
+            if (i == motif.getGreenPosInd()) {
+                spot = greenSpot;
+            } else {
+                spot = getNextOuttakeSpot(seq, i, momentum);
+            }
             seq[i] = spot;
-            momentum = computeMomentum(seq, i);
+            momentum = computeMomentum(seq, SpotType.OUTTAKE, i);
         }
-
         return seq;
     }
 
-    public int[] getOptimalSequence(MotifEnums.Motif motif) {
-        int[] sequence;
+    public SpindexerSpot[] getOptimalSequence(MotifEnums.Motif motif) {
+        SpindexerSpot[] sequence;
         int greenSpot = -1, greenCount = 0, purpleCount = 0;
         for (int i = 0; i < ballColors.length; i++) {
             if (ballColors[i] == BallColor.GREEN) {
@@ -224,46 +191,62 @@ public class Spindexer extends SubsystemBase {
         }
 
         if (!motif.equals(MotifEnums.Motif.NONE) && greenCount == 1 && purpleCount == 2) {
-            sequence = sequenceForMotif(motif, greenSpot);
+            sequence = sequenceForMotif(motif, SpindexerSpot.fromIndex(greenSpot));
         } else {
             sequence = sequenceDefault(greenCount + purpleCount);
         }
+
         this.sequence = sequence;
         return sequence;
     }
 
+
+
+    private SpindexerSpot[] sequenceDefault(int totalCount) {
+        SpindexerSpot[] seq = new SpindexerSpot[NUM_SPOTS];
+        int momentum = 0;
+
+        for (int i = 0; i < totalCount; i++) {
+            SpindexerSpot spot = getNextOuttakeSpot(seq, i, momentum);
+            seq[i] = spot;
+            momentum = computeMomentum(seq, SpotType.OUTTAKE, i);
+        }
+
+        return seq;
+    }
+
+
     // The current angle of a spot relative to the outtake
-    public Angle getRelativeAngle(int spot) {
-        return currentAngle.add(getAbsoluteAngle(spot));
+    public Angle getRelativeAngle(SpindexerSpot spot, SpotType spotType) {
+        return currentAngle.sub(getAbsoluteAngle(spot, spotType));
     }
 
-    // The absolute angle of a spot relative to spot 0
-    public Angle getAbsoluteAngle(int spot) {
-        assert spot < NUM_SPOTS : "Spot must be less than " + spot;
-        return Angle.fromDegrees(360f * spot / NUM_SPOTS);
+
+    public Angle getAbsoluteAngle(SpindexerSpot spot, SpotType spotType) {
+        return spot.getSpotAngle(spotType);
     }
 
-    private int findNearestSpotIndex(Angle query, BallColor matchColorOrNull) {
-        int nearestSpot = 0;
+    private SpindexerSpot findNearestSpot(Angle query, SpotType spotType, BallColor matchColorOrNull) {
+        SpindexerSpot bestSpot = null;
         double smallestGap = 180;
-        for (int spot = 0; spot < NUM_SPOTS; spot++) {
-            if (matchColorOrNull != null && ballColors[spot] != matchColorOrNull) continue;
-
-            double gap = query.absGap(getRelativeAngle(spot)).toDegrees();
+        for (SpindexerSpot spot : SpindexerSpot.values()) {
+//            if (matchColorOrNull != null && ballColors[] != matchColorOrNull) continue;
+            double gap = query.absGap(spot.getSpotAngle(spotType)).toDegrees();
             if (gap < smallestGap) {
                 smallestGap = gap;
-                nearestSpot = spot;
+                bestSpot = spot;
             }
         }
-        return nearestSpot;
+        return bestSpot;
     }
 
-    public int getNearestSpotIndex(Angle query) {
-        return findNearestSpotIndex(query, null);
+
+    public SpindexerSpot getNearestSpot(Angle query, SpotType spotType) {
+        return findNearestSpot(query, spotType, null);
     }
 
-    public int getNearestSpotIndex(Angle query, BallColor matchColor) {
-        return findNearestSpotIndex(query, matchColor);
+    public SpindexerSpot getNearestSpot(Angle query, SpotType spotType, BallColor matchColor) {
+        return findNearestSpot(query, spotType, matchColor);
     }
 
     // Sign of power is direction of spin
@@ -277,18 +260,16 @@ public class Spindexer extends SubsystemBase {
     }
 
     public boolean isAtAngle(Angle angle, Angle finishedThreshold) {
-        return currentAngle.add(angle).abs().toDegrees()
+        return currentAngle.sub(angle).abs().toDegrees()
                 < finishedThreshold.abs().toDegrees();
     }
 
-    public boolean isAtSpot(int spot) {
-        assert spot < NUM_SPOTS : "Spot must be less than " + spot;
-        return getRelativeAngle(spot).abs().toDegrees()
+    public boolean isAtSpot(SpindexerSpot spot, SpotType spotType) {
+        return getRelativeAngle(spot, spotType).abs().toDegrees()
                 < finishedThreshold.abs().toDegrees();
     }
 
     public void removeBall(int spot) {
-        assert spot < NUM_SPOTS : "Spot must be less than " + spot;
         ballColors[spot] = BallColor.NONE;
     }
 
@@ -297,12 +278,11 @@ public class Spindexer extends SubsystemBase {
         if (runMode == CRServoEx2.RunMode.OptimizedPositionalControl) {
             turner.set(-angle.toDegrees());
         } else {
-            test = currentAngle.add(angle);
             turner.set(-currentAngle.add(angle).sign() * shootRawPower); // Careful signs work out
         }
     }
 
-    public void goToSpot(int spot, CRServoEx2.RunMode runMode) {
-        goToAngle(getAbsoluteAngle(spot), runMode);
+    public void goToSpot(SpindexerSpot spot, SpotType spotType, CRServoEx2.RunMode runMode) {
+        goToAngle(spot.getSpotAngle(spotType), runMode);
     }
 }

@@ -6,9 +6,7 @@ import com.bylazar.configurables.annotations.Configurable;
 @Config
 @Configurable
 public class ConfigNames {
-    public static String inColorSensor = "inColorSensor";
-    public static String outColorSensor = "outColorSensor";
-    public static String turner = "FR";
+    public static String turner = "spindexerServo";
     public static String turnerEncoder = "FR";
     public static String imu = "imu";
     public static String pinpoint = "pinpoint";
@@ -21,6 +19,6 @@ public class ConfigNames {
     public static String BL = "BL";
     public static String BR = "BR";
     public static String rampServo = "rampServo";
-    public static String intakeColor = "intakeColor";
-    public static String outakeColor = "outakeColor";
+    public static String intakeColorLeft = "intakeLeftColor";
+    public static String intakeColorRight = "intakeRightColor";
 }
