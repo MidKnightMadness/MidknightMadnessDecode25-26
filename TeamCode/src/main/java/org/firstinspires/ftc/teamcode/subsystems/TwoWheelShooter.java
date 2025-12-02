@@ -23,13 +23,17 @@ public class TwoWheelShooter extends SubsystemBase {
         VelocityControl
     }
 
+    public enum ShootDist{
+        Close,
+        Far
+    }
     InterpLUT distToLowVel;
     InterpLUT distToHighVel;
 
     // fill in later
-    public static double[] distArr = {};
-    public static double[] bottomVel = {}; // Ticks per second when 1:1 gear ratio
-    public static double[] topVel = {};
+    public static double[] distArr = {88.6, 70.5, 58, 107};
+    public static double[] bottomVel = {1700, 1900, 2000, 2100}; // Ticks per second when 1:1 gear ratio
+    public static double[] topVel = {1950, 1950, 1850, 2150};
 
     public static double gearRatio = 3;
     public final MotorEx low;
@@ -46,6 +50,8 @@ public class TwoWheelShooter extends SubsystemBase {
 
     public static boolean lowMotorDirForward = true;
     public static boolean highMotorDirForward = true;
+    double predictedTopVel = 0;
+    double predictedBotVel = 0;
 
     public TwoWheelShooter(HardwareMap hardwareMap, RunMode runMode) {
         low = new MotorEx(hardwareMap, ConfigNames.lowFlywheelMotor);
@@ -59,8 +65,9 @@ public class TwoWheelShooter extends SubsystemBase {
             distToHighVel.add(distArr[i], topVel[i]);
         }
 
-//        distToLowVel.createLUT();
-//        distToHighVel.createLUT();
+        distToLowVel.createLUT();
+        distToHighVel.createLUT();
+
         low.motor.setDirection(lowMotorDirForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);
         high.motor.setDirection(highMotorDirForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);
 
@@ -88,26 +95,32 @@ public class TwoWheelShooter extends SubsystemBase {
     }
 
     public boolean setFlywheelsPower(double dist) {//assuming facing the shooting area
-        if(dist < minDistanceThreshold ){//not possible to make it in the goal
-            return false;
-        }
-        double topVel = distToLowVel.get(dist) * grToMultiplier.getOrDefault(gearRatio, 3.0);
-        double bottomVel = distToHighVel.get(dist) * grToMultiplier.getOrDefault(gearRatio, 3.0);
+//        if(dist < minDistanceThreshold ){//not possible to make it in the goal
+//            return false;
+//        }
+        predictedBotVel = distToLowVel.get(dist);
+        predictedTopVel = distToHighVel.get(dist);
         switch (runMode) {
             case VelocityControl:
-                low.set(bottomVel); high.set(topVel);
+                low.set(predictedBotVel); high.set(predictedTopVel);
                 break;
 
             case RawPower:
-                low.set(bottomVel / low.ACHIEVABLE_MAX_TICKS_PER_SECOND);
-                high.set(topVel / high.ACHIEVABLE_MAX_TICKS_PER_SECOND);
+                low.set(predictedBotVel / low.ACHIEVABLE_MAX_TICKS_PER_SECOND);
+                high.set(predictedTopVel / high.ACHIEVABLE_MAX_TICKS_PER_SECOND);
                 break;
         }
         return true;
     }
 
-    public void setFlywheelsPower(boolean isClose) {
-        if (isClose) setCustomPower(0.73, 1);
+    public double getPredictedTopVel(){
+        return predictedTopVel;
+    }
+    public double getPredictedBotVel(){
+        return predictedBotVel;
+    }
+    public void setFlywheelsPower(ShootDist dist) {
+        if (dist == ShootDist.Close) setCustomPower(0.73, 1);
         else setCustomPower(1, 1);
     }
 
