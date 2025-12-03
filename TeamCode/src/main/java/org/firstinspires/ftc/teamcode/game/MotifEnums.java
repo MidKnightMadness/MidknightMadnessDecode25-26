@@ -26,5 +26,7 @@ public class MotifEnums {
         public int getSecondPurpleInd(){
             return secondPurpleInd;
         }
+
+
     }
 }

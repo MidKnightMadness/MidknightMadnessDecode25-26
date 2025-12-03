@@ -58,7 +58,7 @@ public class FollowerBuilder {
     }
 
     public FollowerBuilder pinpointLocalizer(PinpointConstants lConstants) {
-        return setLocalizer(new PinpointLocalizer(hardwareMap, lConstants));
+        return setLocalizer(new com.pedropathing.ftc.localization.localizers.PinpointLocalizer(hardwareMap, lConstants));
     }
     public FollowerBuilder pinpointLocalizerCustom(PinpointConstants lConstants, Pose startPose) {
         return setLocalizer(new PinpointLocalizer(hardwareMap, lConstants, startPose));

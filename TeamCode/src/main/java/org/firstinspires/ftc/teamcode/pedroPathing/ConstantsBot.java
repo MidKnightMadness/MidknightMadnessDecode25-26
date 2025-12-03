@@ -23,27 +23,27 @@ public class ConstantsBot {
     public static boolean motifIsBusy = true;
     public static FollowerConstants followerConstants = new FollowerConstants()
             .forwardZeroPowerAcceleration(-57)//TUNED
-            .lateralZeroPowerAcceleration(-52)//TUNED
+            .lateralZeroPowerAcceleration(-85)//TUNED
             // Translational PIDF
             .translationalPIDFSwitch(4)
-            .translationalPIDFCoefficients(new PIDFCoefficients(0.1, 0, 0.01, 0.03))
-            .secondaryTranslationalPIDFCoefficients(new PIDFCoefficients(0.1, 0, 0.02, 0.03))
+            .translationalPIDFCoefficients(new PIDFCoefficients(0.2, 0, 0.001, 0))
+            .secondaryTranslationalPIDFCoefficients(new PIDFCoefficients(0.2, 0, 0.02, 0.03))
             // Heading PIDF
-            .headingPIDFCoefficients(new PIDFCoefficients(1.5, 0, 0.01, 0.02))
+            .headingPIDFCoefficients(new PIDFCoefficients(2, 0, 0.02, 0.02))
             .secondaryHeadingPIDFCoefficients(new PIDFCoefficients(1.5, 0, 0.01, 0.02))
             // Drive PIDF
             .drivePIDFSwitch(15)
             .useSecondaryDrivePIDF(true)
-            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.03, 0, 0.0001, 0.6, 0.03))
-            .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(0.02, 0, 0.0001, 0.6, 0.03))
+            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.015, 0, 0.002, 0.6, 0.02))
+            .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(0.015, 0, 0.002, 0.6, 0.02))
             .centripetalScaling(0.0005)
-            .mass(11.80);
+            .mass(15.5);
 
-    public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 0.6, 1);
+    public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 0.5, 1);
 
     //competition
     public static PinpointConstants pinpointLocalizerConstants = new PinpointConstants()
-            .forwardPodY(115/25.4)
+            .forwardPodY(-115/25.4)
             .strafePodX(173.7/25.4)
             .distanceUnit(DistanceUnit.INCH)
             .hardwareMapName(ConfigNames.pinpoint)
@@ -52,9 +52,9 @@ public class ConstantsBot {
             .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
     public static PinpointConstants customPinpointLocalizerConstants = new PinpointConstants()
-            .forwardPodY(-115)
-            .strafePodX(173.7)
-            .distanceUnit(DistanceUnit.MM)
+            .forwardPodY(-115/25.4)
+            .strafePodX(173.7/25.4)
+            .distanceUnit(DistanceUnit.INCH)
             .hardwareMapName(ConfigNames.pinpoint)
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
             .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
@@ -79,8 +79,8 @@ public class ConstantsBot {
 
     public static MecanumConstants driveConstants = new MecanumConstants()
             .maxPower(1)
-            .xVelocity(78)
-            .yVelocity(54.5)
+            .xVelocity(68.2)
+            .yVelocity(50.0)
             .rightFrontMotorName(ConfigNames.FR)
             .rightRearMotorName(ConfigNames.BR)
             .leftRearMotorName(ConfigNames.BL)
@@ -121,5 +121,7 @@ public class ConstantsBot {
 
 
     }
+
+
 }
 

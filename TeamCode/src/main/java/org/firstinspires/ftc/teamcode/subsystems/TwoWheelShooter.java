@@ -31,9 +31,9 @@ public class TwoWheelShooter extends SubsystemBase {
     InterpLUT distToHighVel;
 
     // fill in later
-    public static double[] distArr = {88.6, 70.5, 58, 107};
-    public static double[] bottomVel = {1700, 1900, 2000, 2100}; // Ticks per second when 1:1 gear ratio
-    public static double[] topVel = {1950, 1950, 1850, 2150};
+    public static double[] distArr = {58, 88.6, 70.5, 107};
+    public static double[] bottomVel = {2000, 1700, 1900, 2100}; // Ticks per second when 1:1 gear ratio
+    public static double[] topVel = {1850, 1950, 1950, 2150};
 
     public static double gearRatio = 3;
     public final MotorEx low;
@@ -64,9 +64,9 @@ public class TwoWheelShooter extends SubsystemBase {
             distToLowVel.add(distArr[i], bottomVel[i]);
             distToHighVel.add(distArr[i], topVel[i]);
         }
-
-        distToLowVel.createLUT();
-        distToHighVel.createLUT();
+//
+//        distToLowVel.createLUT();
+//        distToHighVel.createLUT();
 
         low.motor.setDirection(lowMotorDirForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);
         high.motor.setDirection(highMotorDirForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);

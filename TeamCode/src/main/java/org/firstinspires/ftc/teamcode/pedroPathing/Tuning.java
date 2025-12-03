@@ -83,7 +83,7 @@ public class Tuning extends SelectableOpMode {
             follower = ConstantsBot.createPinpointFollower(hardwareMap);
         }
 
-        follower.setStartingPose(new Pose());
+        follower.setStartingPose(new Pose(0, 0, 0));
 
         poseHistory = follower.getPoseHistory();
 

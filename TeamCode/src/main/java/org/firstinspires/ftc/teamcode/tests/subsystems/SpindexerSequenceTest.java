@@ -51,8 +51,8 @@ public class SpindexerSequenceTest extends CommandOpMode {
         gp1 = new GamepadEx(gamepad1);
 
         gp1.getGamepadButton(GamepadKeys.Button.A).whenPressed(new SequentialCommandGroup(
-                new InstantCommand(() -> targetSpot = 0),
-                new SpindexerRawSequence(spindexer, new int[] {2, 1, 0, 2, 1, 2, 0, 2}, runMode, finishedTimeThreshold)
+                new InstantCommand(() -> targetSpot = 0)
+//                new SpindexerRawSequence(spindexer, new int[] {2, 1, 0, 2, 1, 2, 0, 2}, runMode, finishedTimeThreshold)
         ));
 
         register(spindexer);
@@ -72,7 +72,7 @@ public class SpindexerSequenceTest extends CommandOpMode {
 
     public void updateTelemetry() {
         addDataTelemetryGraph("Power", spindexer.getTurner().power);
-        telemetryM.addData("Sub angle thing", spindexer.test);
+//        telemetryM.addData("Sub angle thing", spindexer.test);
         telemetryM.addData("Revolutions", spindexer.getEncoder().getRevolutions());
         addDataTelemetryGraph("Raw Angle", spindexer.getEncoder().getAngle());
         telemetryM.addData("Target Spot", targetSpot);

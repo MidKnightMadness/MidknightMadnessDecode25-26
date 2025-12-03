@@ -8,6 +8,8 @@ import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 
+import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
+import org.firstinspires.ftc.teamcode.game.SpotType;
 import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.old.opModes.Ramp;
@@ -32,7 +34,7 @@ public class ShootSequence extends CommandBase {
             ShootSide side,
             double finishedTimeThreshold
     ) {
-        int[] sequence = spindexer.getOptimalSequence(motif);
+        SpindexerSpot[] sequence = spindexer.getOptimalSequence(motif);
 
         new SequentialCommandGroup(
 //            new ParallelCommandGroup(
@@ -47,12 +49,12 @@ public class ShootSequence extends CommandBase {
 //                    new InstantCommand(ramp::setRestPos),
                     new WaitCommand(swapWaitMs);
 //                );
-            int spot = sequence[i];
+            SpindexerSpot spot = sequence[i];
             new SequentialCommandGroup(
-                new SpindexerGotoSpot(spindexer, spot, runMode, finishedTimeThreshold),
+                new SpindexerGotoSpot(spindexer, spot, SpotType.OUTTAKE, runMode, finishedTimeThreshold),
 //                new ParallelCommandGroup(
 //                    new InstantCommand(ramp::setLowerPos),
-                    new InstantCommand(() -> spindexer.removeBall(spot))
+                    new InstantCommand(() -> spindexer.removeBall(spot.getIndex()))
 //                )
             );
         }

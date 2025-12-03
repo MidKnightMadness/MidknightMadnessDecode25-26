@@ -4,6 +4,8 @@ import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 
+import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
+import org.firstinspires.ftc.teamcode.game.SpotType;
 import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
@@ -26,16 +28,16 @@ public class ShootHardcode extends SequentialCommandGroup {
             boolean isClose
     ) {
         spindexer.initAngle(Angle.fromDegrees(60));
-        int[] sequence;
+        SpindexerSpot[] sequence;
         int momentum;
         if (motif == MotifEnums.Motif.GPP || motif == MotifEnums.Motif.NONE) {
-            sequence = new int[] { 1, 2, 0 };
+            sequence = new SpindexerSpot[] {SpindexerSpot.fromIndex(1), SpindexerSpot.fromIndex(2), SpindexerSpot.fromIndex(0)};
             momentum = 1;
         } else if (motif == MotifEnums.Motif.PGP) {
-            sequence = new int[] { 0, 1, 2 };
+            sequence = new SpindexerSpot[] {SpindexerSpot.fromIndex(0), SpindexerSpot.fromIndex(1), SpindexerSpot.fromIndex(2)};
             momentum = 1;
         } else {
-            sequence = new int[] { 0, 2, 1 };
+            sequence = new SpindexerSpot[] {SpindexerSpot.fromIndex(0), SpindexerSpot.fromIndex(2), SpindexerSpot.fromIndex(1)};
             momentum = -1;
         }
         addCommands(
@@ -43,7 +45,7 @@ public class ShootHardcode extends SequentialCommandGroup {
                     shooter.low.motor.setPower(0.74);
                     shooter.high.motor.setPower(1);
                 }),
-                new SpindexerRawSequence(spindexer, sequence, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
+                new SpindexerRawSequence(spindexer, sequence, SpotType.OUTTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
                 new InstantCommand(() -> spindexer.spin(momentum)),
                 new WaitCommand(250),
                 new InstantCommand(() -> spindexer.getTurner().stop()),

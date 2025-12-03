@@ -7,6 +7,8 @@ import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 
+import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
+import org.firstinspires.ftc.teamcode.game.SpotType;
 import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
@@ -22,10 +24,10 @@ public class ShootColor extends SequentialCommandGroup {
             double dist,
             double finishedTimeThreshold
     ) {
-        int spot = spindexer.getNearestSpotIndex(Angle.fromDegrees(0));
+        SpindexerSpot spot = spindexer.getNearestSpot(Angle.fromDegrees(0), SpotType.OUTTAKE);
         addCommands(
                 new InstantCommand(() -> shooter.setFlywheelsPower(dist)),
-                new SpindexerGotoSpot(spindexer, spot, runMode, finishedTimeThreshold),
+                new SpindexerGotoSpot(spindexer, spot, SpotType.OUTTAKE, runMode, finishedTimeThreshold),
                 new InstantCommand(shooter::stopFlywheels)
         );
     }

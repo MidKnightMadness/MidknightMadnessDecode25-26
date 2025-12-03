@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.commands;
 
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 
+import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
+import org.firstinspires.ftc.teamcode.game.SpotType;
 import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
@@ -27,9 +29,9 @@ public class SpindexerMotifSequence extends SequentialCommandGroup {
     // Build everything at runtime
     @Override
     public void initialize() {
-        int[] sequence = spindexer.getOptimalSequence(motif);
+        SpindexerSpot[] sequence = spindexer.getOptimalSequence(motif);
         addCommands(new SpindexerRawSequence(
-                spindexer, sequence,
+                spindexer, sequence, SpotType.OUTTAKE,
                 runMode, finishedTimeThreshold)
         );;
         super.initialize();

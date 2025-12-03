@@ -71,7 +71,7 @@ public class MainTeleOp extends CommandOpMode {
     public static double[] pidBotGainsShooter = new double[]{0.0004, 0, 0.00001};
     public static double[] kBotGainsShooter = new double[]{0, 0.00005, 0};
     public static double[] pidTopGainsShooter = new double[]{0.0004, 0, 0.00001};
-    public static double[] kTopGainsShooter = new double[]{0, 0.00005, 0};
+    public static double[] kTopGainsShooter = new double[]{0.02, 0.00005, 0};
     public static double[] pidIntakeGains = new double[]{0.0004, 0.0, 0.00001};
     public static double[] kIntakeGains = new double[]{0, 0, 0};
     double topShooterPower = 0.8;

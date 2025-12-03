@@ -53,4 +53,5 @@ public enum SpindexerSpot {
         return intakeAngle;
     }
 
+
 }

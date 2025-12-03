@@ -16,19 +16,21 @@ import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.teamcode.commands.SpindexerGotoSpot;
+import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
 import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.util.Angle;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
 @Configurable
-@TeleOp(name = "SpindexerGotoTest", group = "Spindexer")
-public class SpindexerGotoTest extends CommandOpMode {
+@TeleOp(group="Subsystems")
+public class SpindexerGotoSpotTest extends CommandOpMode {
     public static CRServoEx2.RunMode runMode = CRServoEx2.RunMode.OptimizedPositionalControl;
     public static Angle customAngle = Angle.fromDegrees(60);
     public static double finishedTimeThreshold = 1000;
 
-    Button spot0Button, spot1Button, spot2Button, customAngleButton;
+    Button intakeSpot0Button, intakeSpot1Button, intakeSpot2Button;
+    Button outakeSpot0Button, outakeSpot1Button, outakeSpot2Button;
     Spindexer spindexer;
     GamepadEx gp1;
     TelemetryManager telemetryM;
@@ -50,25 +52,38 @@ public class SpindexerGotoTest extends CommandOpMode {
         spindexer.initAngle(); // would put this later but oh well
         gp1 = new GamepadEx(gamepad1);
 
-        spot0Button = gp1.getGamepadButton(GamepadKeys.Button.A);
-        spot1Button = gp1.getGamepadButton(GamepadKeys.Button.B);
-        spot2Button = gp1.getGamepadButton(GamepadKeys.Button.X);
+        intakeSpot0Button = gp1.getGamepadButton(GamepadKeys.Button.A);
+        intakeSpot1Button = gp1.getGamepadButton(GamepadKeys.Button.B);
+        intakeSpot2Button = gp1.getGamepadButton(GamepadKeys.Button.X);
+        outakeSpot0Button = gp1.getGamepadButton(GamepadKeys.Button.DPAD_LEFT);
+        outakeSpot1Button = gp1.getGamepadButton(GamepadKeys.Button.DPAD_UP);
+        outakeSpot2Button = gp1.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT);
 
-        spot0Button.whenPressed(new SequentialCommandGroup(
-                new InstantCommand(() -> targetSpot = 0),
-                new SpindexerGotoSpot(spindexer, 0, runMode, finishedTimeThreshold)
-        ));
-        spot1Button.whenPressed(new SequentialCommandGroup(
-                new InstantCommand(() -> targetSpot = 1),
-                new SpindexerGotoSpot(spindexer, 1, runMode, finishedTimeThreshold)
-        ));
-        spot2Button.whenPressed(new SequentialCommandGroup(
-                new InstantCommand(() -> targetSpot = 2),
-                new SpindexerGotoSpot(spindexer, 2, runMode, finishedTimeThreshold)
-        ));
-        gp1.getGamepadButton(GamepadKeys.Button.Y).whenPressed( // Just to check if gamepad works
-                new InstantCommand(() -> targetSpot = -1)
-        );
+//        intakeSpot0Button.whenPressed(new SequentialCommandGroup(
+//                new InstantCommand(() -> targetSpot = 0),
+//                new SpindexerGotoSpot(spindexer, SpindexerSpot.ZERO_INTAKE, runMode, finishedTimeThreshold)
+//        ));
+//        intakeSpot1Button.whenPressed(new SequentialCommandGroup(
+//                new InstantCommand(() -> targetSpot = 1),
+//                new SpindexerGotoSpot(spindexer, SpindexerSpot.ONE_INTAKE, runMode, finishedTimeThreshold)
+//        ));
+//        intakeSpot2Button.whenPressed(new SequentialCommandGroup(
+//                new InstantCommand(() -> targetSpot = 2),
+//                new SpindexerGotoSpot(spindexer, SpindexerSpot.TWO_INTAKE, runMode, finishedTimeThreshold)
+//        ));
+//        outakeSpot0Button.whenPressed(new SequentialCommandGroup(
+//                new InstantCommand(() -> targetSpot = 0),
+//                new SpindexerGotoSpot(spindexer, SpindexerSpot.ZERO_OUTTAKE, runMode, finishedTimeThreshold)
+//        ));
+//        outakeSpot1Button.whenPressed(new SequentialCommandGroup(
+//                new InstantCommand(() -> targetSpot = 1),
+//                new SpindexerGotoSpot(spindexer, SpindexerSpot.ONE_OUTTAKE, runMode, finishedTimeThreshold)
+//        ));
+//        outakeSpot2Button.whenPressed(new SequentialCommandGroup(
+//                new InstantCommand(() -> targetSpot = 2),
+//                new SpindexerGotoSpot(spindexer, SpindexerSpot.TWO_OUTTAKE, runMode, finishedTimeThreshold)
+//        ));
+
 
         register(spindexer);
     }
@@ -88,7 +103,7 @@ public class SpindexerGotoTest extends CommandOpMode {
     public void updateTelemetry() {
 //        addDataTelemetryGraph("Error", spindexer.getTurner().error);
         addDataTelemetryGraph("Power", spindexer.getTurner().power);
-        telemetryM.addData("Test", spindexer.test);
+//        telemetryM.addData("Test", spindexer.test);
 //        telemetryM.addData("Positive power count", spindexer.getTurner().positivePowerCount);
 //        telemetryM.addData("Power change count", spindexer.getTurner().powerChangeCount);
 //        telemetryM.addData("Set call count", spindexer.getTurner().setCount);
