@@ -28,8 +28,8 @@ public class LinearPath extends OpMode {
     Timer timer;
     PathChain path;
 
-    public static Pose startPose = new Pose(0, 72, Math.toRadians(0));
-    public static Pose endPose = new Pose(72, 72, Math.toRadians(0));
+    public static Pose startPose = new Pose(0, 0, Math.toRadians(90));
+    public static Pose endPose = new Pose(72, 72, Math.toRadians(90));
     Pose currentPose;
     double speed;
     double acceleration;
@@ -42,7 +42,7 @@ public class LinearPath extends OpMode {
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         graphM = PanelsGraph.INSTANCE.getManager();
 
-        follower = ConstantsBot.createPinpointFollower(hardwareMap);
+        follower = ConstantsBot.createPinpointFollowerCustom(hardwareMap, startPose);
         follower.setStartingPose(startPose);
         path = follower.pathBuilder()
                 .addPath(new BezierLine(startPose, endPose))

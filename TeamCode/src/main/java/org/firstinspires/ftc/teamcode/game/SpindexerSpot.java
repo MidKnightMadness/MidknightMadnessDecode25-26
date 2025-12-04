@@ -1,7 +1,12 @@
 package org.firstinspires.ftc.teamcode.game;
 
+import com.acmerobotics.dashboard.config.Config;
+import com.bylazar.configurables.annotations.Configurable;
+
 import org.firstinspires.ftc.teamcode.util.Angle;
 
+@Config
+@Configurable
 public enum SpindexerSpot {
     SPOT0(
         0,
@@ -35,6 +40,14 @@ public enum SpindexerSpot {
             }
         }
         return null;
+    }
+
+    public static SpindexerSpot[] convertFromindex(int[] index){
+        SpindexerSpot[] arr = new SpindexerSpot[index.length];
+        for(int i = 0; i < index.length; i++){
+            arr[i] = fromIndex(index[i]);
+        }
+        return arr;
     }
 
     public Angle getSpotAngle(SpotType type){

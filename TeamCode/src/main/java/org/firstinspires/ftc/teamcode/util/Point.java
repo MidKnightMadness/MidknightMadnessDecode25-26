@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.util;
 
+import java.lang.Math;
+
 public class Point {
     private double x;
     private double y;

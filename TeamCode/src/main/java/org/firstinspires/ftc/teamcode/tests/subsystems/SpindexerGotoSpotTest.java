@@ -17,6 +17,7 @@ import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.teamcode.commands.SpindexerGotoSpot;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
+import org.firstinspires.ftc.teamcode.game.SpotType;
 import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.util.Angle;
@@ -59,30 +60,30 @@ public class SpindexerGotoSpotTest extends CommandOpMode {
         outakeSpot1Button = gp1.getGamepadButton(GamepadKeys.Button.DPAD_UP);
         outakeSpot2Button = gp1.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT);
 
-//        intakeSpot0Button.whenPressed(new SequentialCommandGroup(
-//                new InstantCommand(() -> targetSpot = 0),
-//                new SpindexerGotoSpot(spindexer, SpindexerSpot.ZERO_INTAKE, runMode, finishedTimeThreshold)
-//        ));
-//        intakeSpot1Button.whenPressed(new SequentialCommandGroup(
-//                new InstantCommand(() -> targetSpot = 1),
-//                new SpindexerGotoSpot(spindexer, SpindexerSpot.ONE_INTAKE, runMode, finishedTimeThreshold)
-//        ));
-//        intakeSpot2Button.whenPressed(new SequentialCommandGroup(
-//                new InstantCommand(() -> targetSpot = 2),
-//                new SpindexerGotoSpot(spindexer, SpindexerSpot.TWO_INTAKE, runMode, finishedTimeThreshold)
-//        ));
-//        outakeSpot0Button.whenPressed(new SequentialCommandGroup(
-//                new InstantCommand(() -> targetSpot = 0),
-//                new SpindexerGotoSpot(spindexer, SpindexerSpot.ZERO_OUTTAKE, runMode, finishedTimeThreshold)
-//        ));
-//        outakeSpot1Button.whenPressed(new SequentialCommandGroup(
-//                new InstantCommand(() -> targetSpot = 1),
-//                new SpindexerGotoSpot(spindexer, SpindexerSpot.ONE_OUTTAKE, runMode, finishedTimeThreshold)
-//        ));
-//        outakeSpot2Button.whenPressed(new SequentialCommandGroup(
-//                new InstantCommand(() -> targetSpot = 2),
-//                new SpindexerGotoSpot(spindexer, SpindexerSpot.TWO_OUTTAKE, runMode, finishedTimeThreshold)
-//        ));
+        intakeSpot0Button.whenPressed(new SequentialCommandGroup(
+                new InstantCommand(() -> targetSpot = 0),
+                new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, runMode, finishedTimeThreshold)
+        ));
+        intakeSpot1Button.whenPressed(new SequentialCommandGroup(
+                new InstantCommand(() -> targetSpot = 1),
+                new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT1, SpotType.INTAKE, runMode, finishedTimeThreshold)
+        ));
+        intakeSpot2Button.whenPressed(new SequentialCommandGroup(
+                new InstantCommand(() -> targetSpot = 2),
+                new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT2, SpotType.INTAKE, runMode, finishedTimeThreshold)
+        ));
+        outakeSpot0Button.whenPressed(new SequentialCommandGroup(
+                new InstantCommand(() -> targetSpot = 0),
+                new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.OUTTAKE, runMode, finishedTimeThreshold)
+        ));
+        outakeSpot1Button.whenPressed(new SequentialCommandGroup(
+                new InstantCommand(() -> targetSpot = 1),
+                new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT1, SpotType.OUTTAKE, runMode, finishedTimeThreshold)
+        ));
+        outakeSpot2Button.whenPressed(new SequentialCommandGroup(
+                new InstantCommand(() -> targetSpot = 2),
+                new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT2, SpotType.OUTTAKE, runMode, finishedTimeThreshold)
+        ));
 
 
         register(spindexer);

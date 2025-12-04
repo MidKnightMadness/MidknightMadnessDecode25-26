@@ -53,6 +53,14 @@ public class TwoWheelShooter extends SubsystemBase {
     double predictedTopVel = 0;
     double predictedBotVel = 0;
 
+    public static double topRecoveryFactor = 1.15;//TUNE
+    public static double botRecoveryFactor = 1.05;//TUNE
+    double currTopFactor = 1;
+    double currBotFactor = 1;
+    public static double recoveryTime = 150;
+    double recoveryEndTime = 0;
+
+
     public TwoWheelShooter(HardwareMap hardwareMap, RunMode runMode) {
         low = new MotorEx(hardwareMap, ConfigNames.lowFlywheelMotor);
         high = new MotorEx(hardwareMap, ConfigNames.highFlywheelMotor);
@@ -95,11 +103,13 @@ public class TwoWheelShooter extends SubsystemBase {
     }
 
     public boolean setFlywheelsPower(double dist) {//assuming facing the shooting area
-//        if(dist < minDistanceThreshold ){//not possible to make it in the goal
-//            return false;
-//        }
-        predictedBotVel = distToLowVel.get(dist);
-        predictedTopVel = distToHighVel.get(dist);
+        if(System.currentTimeMillis() > recoveryTime){
+            currBotFactor = 0;
+            currTopFactor = 0;
+        }
+
+        predictedBotVel = distToLowVel.get(dist) * currBotFactor;
+        predictedTopVel = distToHighVel.get(dist) * currTopFactor;
         switch (runMode) {
             case VelocityControl:
                 low.set(predictedBotVel); high.set(predictedTopVel);
@@ -112,6 +122,13 @@ public class TwoWheelShooter extends SubsystemBase {
         }
         return true;
     }
+
+    public void triggerBallShot(){//every time ball is shot
+        currBotFactor = botRecoveryFactor;
+        currTopFactor = topRecoveryFactor;
+        recoveryEndTime = System.currentTimeMillis() + recoveryTime;
+    }
+
 
     public double getPredictedTopVel(){
         return predictedTopVel;

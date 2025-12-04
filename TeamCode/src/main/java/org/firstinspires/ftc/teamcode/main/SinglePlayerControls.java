@@ -149,7 +149,7 @@ public class SinglePlayerControls extends CommandOpMode {
 
         follower.startTeleopDrive();
         spindexerServo = spindexer.getTurner().getServo();
-        spindexerHardcode = new ShootHardcode(spindexer, shooter, pattern, true);
+//        spindexerHardcode = new ShootHardcode(spindexer, shooter, pattern, true);
     }
 
 

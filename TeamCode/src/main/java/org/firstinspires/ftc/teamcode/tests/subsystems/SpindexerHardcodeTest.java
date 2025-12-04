@@ -5,6 +5,8 @@ import com.bylazar.graph.GraphManager;
 import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
+import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
@@ -14,6 +16,8 @@ import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.teamcode.commands.ShootHardcode;
 import org.firstinspires.ftc.teamcode.game.MotifEnums;
+import org.firstinspires.ftc.teamcode.game.ShootSide;
+import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
 import org.firstinspires.ftc.teamcode.util.Timer;
@@ -29,7 +33,10 @@ public class SpindexerHardcodeTest extends CommandOpMode {
     Timer timer;
     Spindexer spindexer;
     TwoWheelShooter shooter;
+    Follower follower;
 
+    public static Pose currPose = new Pose(0, 0, Math.toRadians(90));
+    public static ShootSide shootSide = ShootSide.RIGHT;
     @Override
     public void initialize() {
         super.reset(); // Must put first
@@ -45,8 +52,10 @@ public class SpindexerHardcodeTest extends CommandOpMode {
         graphM = PanelsGraph.INSTANCE.getManager();
         gp1 = new GamepadEx(gamepad1);
 
+
+
         gp1.getGamepadButton(GamepadKeys.Button.A).whenPressed(
-            new ShootHardcode(spindexer, shooter, MotifEnums.Motif.PPG, true)
+            new ShootHardcode(spindexer, shooter, MotifEnums.Motif.PPG,  shooter.getDistance(currPose, shootSide))
         );
 
         register(spindexer, shooter);
@@ -65,6 +74,13 @@ public class SpindexerHardcodeTest extends CommandOpMode {
     }
 
     public void updateTelemetry() {
+
+        addDataTelemetryGraph("Top Target Vel", shooter.getPredictedTopVel());
+        addDataTelemetryGraph("Top Velocity", shooter.high.getVelocity());
+
+        addDataTelemetryGraph("Bot Target Vel", shooter.getPredictedBotVel());
+        addDataTelemetryGraph("Bot Velocity", shooter.low.getVelocity());
+
         addDataTelemetryGraph("Loop time (ms)", timer.getDeltaTime(TimeUnit.MILLISECONDS));
         telemetryM.addData("Encoder postioin", spindexer.getEncoder().getAngle());
         telemetryM.addData("Spindexer position", spindexer.getCurrentAngle());

@@ -23,6 +23,7 @@ public class SpindexerRawSequence extends SequentialCommandGroup {
         for (int i = 0; i < sequence.length; i++) {
             if (i > 0) addCommands(new WaitCommand(waitMs));
             SpindexerSpot spot = sequence[i];
+
             addCommands(
                     new SpindexerGotoSpot(spindexer, spot, spotType, runMode, finishedTimeThreshold),
                     new InstantCommand(() -> spindexer.removeBall(spot.getIndex()))

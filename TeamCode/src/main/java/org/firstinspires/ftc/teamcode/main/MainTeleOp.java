@@ -5,6 +5,10 @@ import static org.firstinspires.ftc.teamcode.util.ExtraFns.normAngle;
 import android.os.Environment;
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.graph.GraphManager;
+import com.bylazar.graph.PanelsGraph;
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
@@ -17,8 +21,13 @@ import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
+import org.firstinspires.ftc.teamcode.commands.ShootSeqCommand;
 import org.firstinspires.ftc.teamcode.commands.SpindexerGotoAngle;
+import org.firstinspires.ftc.teamcode.commands.SpindexerGotoSpot;
+import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.MotifEnums;
+import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
+import org.firstinspires.ftc.teamcode.game.SpotType;
 import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
@@ -67,7 +76,10 @@ public class MainTeleOp extends CommandOpMode {
     double intakePower = 1;
     double maxIntakePower = 1;
     double intakeTargetVel = 3;
+    TelemetryManager telemetryM;
+    GraphManager graphM;
 
+    public static double autoIntakePower = 1;
     public static double[] pidBotGainsShooter = new double[]{0.0004, 0, 0.00001};
     public static double[] kBotGainsShooter = new double[]{0, 0.00005, 0};
     public static double[] pidTopGainsShooter = new double[]{0.0004, 0, 0.00001};
@@ -95,6 +107,7 @@ public class MainTeleOp extends CommandOpMode {
     boolean autoAlign = false;
     boolean autoSpindexer = false;
     boolean autoDriveToShoot = false;
+    boolean autoIntake = false;
 
 
     public static TwoWheelShooter.RunMode shooterRunMode = TwoWheelShooter.RunMode.RawPower;
@@ -117,12 +130,17 @@ public class MainTeleOp extends CommandOpMode {
 
     public static double targetTopVel = 1000;
     public static double targetBotVel = 1000;
-    public static double topVelocityOffset = 200;
+    public static double topVelocityOffset = 500;
+    ShootSeqCommand seqCommand;
+    SpindexerGotoSpot goToSpotCommand;
+
     @Override
     public void initialize() {
         CommandScheduler.getInstance().setBulkReading(
                 hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
         );
+        telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
+        graphM = PanelsGraph.INSTANCE.getManager();
 
         ConstantsBot.motifIsBusy = false;
         timer = new Timer();
@@ -157,7 +175,8 @@ public class MainTeleOp extends CommandOpMode {
 
         follower.startTeleopDrive();
         spindexerServo = spindexer.getTurner().getServo();
-        spindexerHardcode = new ShootHardcode(spindexer, shooter, pattern, true);
+
+        goToSpotCommand = new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0);
     }
 
 
@@ -201,6 +220,12 @@ public class MainTeleOp extends CommandOpMode {
             return ShootSide.LEFT;
         }
     }
+    public void addDataTelemetryGraph(String key, Number value) {
+        telemetry.addData(key, value);
+        telemetryM.addData(key, value);
+        graphM.addData(key, value);
+    }
+
 
 
     @Override
@@ -363,8 +388,6 @@ public class MainTeleOp extends CommandOpMode {
     private void spindexerCommands(){
         if(gamepad2.dpadDownWasPressed()){
             autoSpindexer = true;
-//            spindexerRotateRelative = new SpindexerRotateRelative(spindexer, Angle.fromDegrees(spindexerIntakeAngles[currentIntakeSpot]), 0.3);
-//            schedule(spindexerRotateRelative);
             spindexerGotoAngle = new SpindexerGotoAngle(spindexer, Angle.fromDegrees(spindexerIntakeAngles[currentIntakeSpot]), spindexerRunMode);
             currentIntakeSpot = (currentIntakeSpot + 1) % 3;
         }
@@ -386,8 +409,29 @@ public class MainTeleOp extends CommandOpMode {
         }
     }
     private void intakeCommands(){
-        intakePower = gamepad2.right_stick_y * maxIntakePower;
-        intake.setDirectPower(intakePower);
+        if(gamepad2.bWasPressed()){
+            autoIntake = !autoIntake;
+            if(spindexer.getNearestEmptyIntakeSpot() == null){//no empty spots to go to
+                return;
+            }
+            goToSpotCommand = new SpindexerGotoSpot(spindexer, spindexer.getNearestEmptyIntakeSpot(), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0);
+            schedule(goToSpotCommand);
+        }
+        if(!autoIntake) {
+            intakePower = gamepad2.right_stick_y * maxIntakePower;
+            intake.setDirectPower(intakePower);
+        }
+        else{
+            intake.setDirectPower(autoIntakePower);
+            spindexer.updateBallColors();
+
+            SpindexerSpot spindexerNearestEmpSpot = spindexer.getNearestEmptyIntakeSpot();
+            if(spindexer.newBallDetected() && spindexerNearestEmpSpot != null){
+                goToSpotCommand = new SpindexerGotoSpot(spindexer, spindexerNearestEmpSpot, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0);
+                schedule(goToSpotCommand);
+            }
+        }
+
     }
 
     private void flywheelCommands(){
@@ -399,6 +443,7 @@ public class MainTeleOp extends CommandOpMode {
                 shooter.stopFlywheels();
             }
         }
+
         shooter.setRunMode(shooterRunMode);
 
         if(shooterRunMode == TwoWheelShooter.RunMode.VelocityControl){
@@ -452,11 +497,11 @@ public class MainTeleOp extends CommandOpMode {
         telemetry.addData("Shooter Mode", shooterRunMode);
         telemetry.addData("Shooter Top Power", topShooterPower);
         telemetry.addData("Shooter Bot Power", botShooterPower);
-        telemetry.addData("Shooter Top Vel", shooter.high.getVelocity());
-        telemetry.addData("Shooter Bot Vel", shooter.low.getVelocity());
+        addDataTelemetryGraph("Shooter Top Vel", shooter.high.getVelocity());
+        addDataTelemetryGraph("Shooter Bot Vel", shooter.low.getVelocity());
 
-        telemetry.addData("Shooter Corr Top Vel", shooter.high.getCorrectedVelocity());
-        telemetry.addData("Shooter Corr Bot Vel", shooter.low.getCorrectedVelocity());
+        addDataTelemetryGraph("Shooter Corr Top Vel", shooter.high.getCorrectedVelocity());
+        addDataTelemetryGraph("Shooter Corr Bot Vel", shooter.low.getCorrectedVelocity());
         telemetry.addData("Distance From Goal", shooter.getDistance(follower.getPose(), shootSide));
 
 
@@ -468,6 +513,8 @@ public class MainTeleOp extends CommandOpMode {
         telemetry.addData("Spindexer Intake Spot", currentIntakeSpot);
 
 
+        telemetryM.update();;
+        graphM.update();
         telemetry.update();
 
     }

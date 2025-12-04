@@ -34,7 +34,6 @@ public class Spindexer extends SubsystemBase {
     // 0 is defined as the position of the shooter
     public static Angle detectRange = Angle.fromDegrees(40); // How far off from the center of the spot that you detect. You don't want to trust measurements that are too off from the center
     public static Angle finishedThreshold = Angle.fromDegrees(2); // Threshold at which it's finished turning to a spot
-    public static Angle OUTAKE_OFFSET_ANGLE = Angle.fromDegrees(60);
     //0 degrees is facing intake
     //assuming layout at start is initialized as 0 from this position
     //  X X
@@ -45,6 +44,7 @@ public class Spindexer extends SubsystemBase {
     BallDetector[] ballDetectors;
     Angle currentAngle;
     BallColor[] ballColors;
+    BallColor[] ballColorsPrev;
     public SpindexerSpot[] sequence;
     ColorBuffer buffer;
 
@@ -83,6 +83,7 @@ public class Spindexer extends SubsystemBase {
     public void periodic() {
         currentAngle = Angle.fromDegrees(turner.getEncoder().getAngle());
         if (useColorSensors) updateBallColors();
+        ballColorsPrev = ballColors;
     }
 
     public Spindexer initAngle() {
@@ -118,6 +119,14 @@ public class Spindexer extends SubsystemBase {
         return this;
     }
 
+    public boolean newBallDetected(){
+        for(int i = 0; i < ballColors.length; i++){
+            if(ballColorsPrev[i] == BallColor.NONE && ballColors[i] != BallColor.NONE){
+                return true;
+            }
+        }
+        return false;
+    }
     public void updateBallColors() {
         SpindexerSpot spot = getNearestSpot(currentAngle, SpotType.INTAKE);
         if(ballColors[spot.getIndex()] != BallColor.NONE){//already has a color
@@ -245,6 +254,24 @@ public class Spindexer extends SubsystemBase {
         return findNearestSpot(query, spotType, null);
     }
 
+    public SpindexerSpot getNearestEmptyIntakeSpot(){
+        double minSpotDiff = 400;
+        int nearestSpot = 0;
+        for(int i = 0; i < ballColors.length; i++){
+            Angle spotAngle = SpindexerSpot.fromIndex(i).getIntakeAngle();
+            if(ballColors[i] == BallColor.NONE){
+                double currSpotDiff = currentAngle.absGap(spotAngle).toDegrees();
+                if(currSpotDiff < minSpotDiff){
+                    minSpotDiff = currSpotDiff;
+                    nearestSpot = i;
+                }
+            }
+        }
+        if(minSpotDiff == 400){
+            return null;
+        }
+        return SpindexerSpot.fromIndex(nearestSpot);
+    }
     public SpindexerSpot getNearestSpot(Angle query, SpotType spotType, BallColor matchColor) {
         return findNearestSpot(query, spotType, matchColor);
     }

@@ -17,17 +17,13 @@ public class ShootHardcode extends SequentialCommandGroup {
     //     Shooter
     //   P(0) G(120)
     //     P(240)
-    Spindexer spindexer;
-    TwoWheelShooter shooter;
-    boolean isClose;
 
-    public ShootHardcode(
+    public ShootHardcode(//first balls to shoot
             Spindexer spindexer,
             TwoWheelShooter shooter,
             MotifEnums.Motif motif,
-            boolean isClose
+            double distToGoal
     ) {
-        spindexer.initAngle(Angle.fromDegrees(60));
         SpindexerSpot[] sequence;
         int momentum;
         if (motif == MotifEnums.Motif.GPP || motif == MotifEnums.Motif.NONE) {
@@ -42,8 +38,7 @@ public class ShootHardcode extends SequentialCommandGroup {
         }
         addCommands(
                 new InstantCommand(() -> {
-                    shooter.low.motor.setPower(0.74);
-                    shooter.high.motor.setPower(1);
+                    shooter.setFlywheelsPower(distToGoal);
                 }),
                 new SpindexerRawSequence(spindexer, sequence, SpotType.OUTTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
                 new InstantCommand(() -> spindexer.spin(momentum)),
