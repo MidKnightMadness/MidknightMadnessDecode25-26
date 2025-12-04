@@ -1,30 +1,27 @@
 package org.firstinspires.ftc.teamcode.colors;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 
 public class ColorSensorBuffer {
-    public ArrayList<Double> list;
-    public double avg = 0;
-    public double sum = 0;
 
-    final double MAX_SIZE = 10;
-    public ColorSensorBuffer(){
-        list = new ArrayList<>();
-    }
+    private final int MAX_SIZE = 10;          // number of samples kept
+    private final LinkedList<Double> buffer = new LinkedList<>();
+    private double sum = 0;
 
-    public void addList(double addNum){
-        list.add(addNum);
-        if (list.size() >= MAX_SIZE){
-            for (int i = 0; i < list.size(); i++) {
-                sum += list.get(i);
-            }
-            avg = sum/3;
-            sum = 0;
-            list.clear();
+    /** Add a new value to the rolling buffer */
+    public void add(double value) {
+        buffer.add(value);
+        sum += value;
+
+        // Remove oldest value if buffer is full
+        if (buffer.size() > MAX_SIZE) {
+            sum -= buffer.removeFirst();
         }
     }
 
-    public double getAverage(){
-        return avg;
+    /** Returns the average of the last MAX_SIZE samples */
+    public double getAverage() {
+        if (buffer.isEmpty()) return 0;
+        return sum / buffer.size();
     }
 }
