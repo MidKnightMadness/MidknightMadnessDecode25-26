@@ -35,18 +35,24 @@ public class LinearPath extends OpMode {
     double acceleration;
     boolean startedPath = false;
 
+    public static double timeOutConstraint = 1000;
+    public static double headingConstraint = 0.03;
+    public static double pathDistThresholdMin = 1;
     @Override
     public void init() {
         PanelsDrawing.init();
         timer = new Timer();
-        telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
-        graphM = PanelsGraph.INSTANCE.getManager();
+//        telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
+//        graphM = PanelsGraph.INSTANCE.getManager();
 
-        follower = ConstantsBot.createPinpointFollowerCustom(hardwareMap, startPose);
+        follower = ConstantsBot.createPinpointFollower(hardwareMap);
         follower.setStartingPose(startPose);
         path = follower.pathBuilder()
                 .addPath(new BezierLine(startPose, endPose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), endPose.getHeading())
+                .setTimeoutConstraint(timeOutConstraint)
+                .setHeadingConstraint(headingConstraint)
+                .setTranslationalConstraint(pathDistThresholdMin)
                 .build();
     }
 
@@ -85,20 +91,21 @@ public class LinearPath extends OpMode {
 
     public void updateTelemetry() {
         // Field
-        PanelsDrawing.drawRobot(currentPose);
-        PanelsDrawing.drawPoseHistory(follower.getPoseHistory());
-        PanelsDrawing.sendPacket();
+//        PanelsDrawing.drawRobot(currentPose);
+//        PanelsDrawing.drawPoseHistory(follower.getPoseHistory());
+//        PanelsDrawing.sendPacket();
 
         // Telemetry
-        addDataTelemetryGraph("Loop time (ms)", timer.getDeltaTime(TimeUnit.MILLISECONDS));
-        telemetryM.addData("Pose X (in)", currentPose.getX());
-        telemetryM.addData("Pose Y (in)", currentPose.getY());
-        telemetryM.addData("Pose Heading (rad)", currentPose.getHeading());
-        addDataTelemetryGraph("Speed (in/s)", speed);
-        addDataTelemetryGraph("Acceleration (in/s^2)", acceleration);
+//        addDataTelemetryGraph("Loop time (ms)", timer.getDeltaTime(TimeUnit.MILLISECONDS));
+        telemetry.addData("Pose X (in)", currentPose.getX());
+        telemetry.addData("Pose Y (in)", currentPose.getY());
+        telemetry.addData("Pose Heading (rad)", currentPose.getHeading());
+//        telemetry.addData("Device Status", ConstantsBot.deviceStatus)
+//        addDataTelemetryGraph("Speed (in/s)", speed);
+//        addDataTelemetryGraph("Acceleration (in/s^2)", acceleration);
 
         // Updates
-        telemetryM.update(telemetry);
-        graphM.update();
+//        telemetryM.update(telemetry);
+//        graphM.update();
     }
 }
