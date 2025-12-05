@@ -23,7 +23,7 @@ import org.firstinspires.ftc.teamcode.game.ShootSide;
 
 @Config
 @Configurable
-@Autonomous(name = "Back Left", group = "Competition")
+@Autonomous(name = "3 Back Left", group = "Competition")
 public class ThreeBallBackLeftAuto extends BaseAuto {
     public static double motifDetectionTimeMs = 5000;
     int startPipeline = 1;

@@ -31,8 +31,8 @@ public class TwoWheelShooter extends SubsystemBase {
     InterpLUT distToHighVel;
 
     // fill in later
-    public static double[] distArr = {58, 88.6, 70.5, 107};
-    public static double[] bottomVel = {2000, 1700, 1900, 2100}; // Ticks per second when 1:1 gear ratio
+    public static double[] distArr = {58, 70.5, 88.6, 107};
+    public static double[] bottomVel = {2000, 1900, 1700, 2100}; // Ticks per second when 1:1 gear ratio
     public static double[] topVel = {1850, 1950, 1950, 2150};
 
     public static double gearRatio = 3;
@@ -50,11 +50,12 @@ public class TwoWheelShooter extends SubsystemBase {
 
     public static boolean lowMotorDirForward = true;
     public static boolean highMotorDirForward = true;
+    public static double topVelocityOffset = 500;
     double predictedTopVel = 0;
     double predictedBotVel = 0;
 
-    public static double topRecoveryFactor = 1.15;//TUNE
-    public static double botRecoveryFactor = 1.05;//TUNE
+    public static double topRecoveryFactor = 1.18;//TUNE
+    public static double botRecoveryFactor = 1.17;//TUNE
     double currTopFactor = 1;
     double currBotFactor = 1;
     public static double recoveryTime = 150;
@@ -142,8 +143,14 @@ public class TwoWheelShooter extends SubsystemBase {
     }
 
     public void setCustomPower(double lowPower, double highPower) {
-        low.set(lowPower);
-        high.set(highPower);
+        if(runMode == RunMode.VelocityControl){
+            low.set(lowPower);
+            high.set(highPower + topVelocityOffset);//account for belted motor
+        }
+        else {
+            low.set(lowPower);
+            high.set(highPower);
+        }
     }
 
     public boolean setFlywheelsPower(Pose robotPose, ShootSide side){

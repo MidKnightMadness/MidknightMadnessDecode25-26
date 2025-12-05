@@ -42,16 +42,16 @@ public class SpindexerGotoSpot extends CommandBase {
     @Override
     public boolean isFinished() {
         boolean atSpot = spindexer.isAtSpot(spot, spotType);
-        if (atSpot) {
-            if (runMode == CRServoEx2.RunMode.RawPower) {
-                runMode = CRServoEx2.RunMode.OptimizedPositionalControl;
-            }
-            if (!wasFinished) finishedTimer.restart();
-            if (finishedTimer.getTime() > finishedTimeThreshold) {
-                spindexer.getTurner().stop();
-                return true;
-            }
-        }
+//        if (atSpot) {
+//            if (runMode == CRServoEx2.RunMode.RawPower) {
+//                runMode = CRServoEx2.RunMode.OptimizedPositionalControl;
+//            }
+//            if (!wasFinished) finishedTimer.restart();
+//            if (finishedTimer.getTime() > finishedTimeThreshold) {
+//                spindexer.getTurner().stop();
+//                return true;
+//            }
+//        }
         wasFinished = atSpot;
         return false;
     }

@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.tests.opModes;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -12,6 +14,8 @@ import org.firstinspires.ftc.teamcode.colors.ColorSensorBuffer;
 import org.firstinspires.ftc.teamcode.util.ButtonToggle;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 
+@Config
+@Configurable
 @TeleOp(name = "ColorSensorTesting")
 public class ColorSensorTesting extends OpMode {
 
@@ -43,23 +47,23 @@ public class ColorSensorTesting extends OpMode {
     ColorNormalizer rNorm;
 
     // Green ball thresholds
-    double greenRedMin = 0.05, greenRedMax = 0.40;
-    double greenGreenMin = 0.645, greenGreenMax = 0.93;
-    double greenBlueMin = 0.44, greenBlueMax = 0.75;
+    public static double greenRedMin = 0.05,  greenRedMax = 0.40;
+    public static double greenGreenMin = 0.645, greenGreenMax = 0.93;
+    public static double greenBlueMin = 0.44, greenBlueMax = 0.75;
 
     // Purple ball thresholds
-    double purpleRedMin = 0.28, purpleRedMax = 0.53;
-    double purpleGreenMin = 0.30, purpleGreenMax = 0.73;
-    double purpleBlueMin = 0.5875, purpleBlueMax = 0.93;
+    public static double purpleRedMin = 0.28, purpleRedMax = 0.53;
+    public static double purpleGreenMin = 0.30, purpleGreenMax = 0.73;
+    public static double purpleBlueMin = 0.5875, purpleBlueMax = 0.93;
 
     @Override
     public void init() {
 
-        leftSensor = hardwareMap.get(RevColorSensorV3.class, ConfigNames.intakeColorLeft);
-        rightSensor = hardwareMap.get(RevColorSensorV3.class, ConfigNames.intakeColorRight);
+        leftSensor = hardwareMap.get(ColorSensor.class, ConfigNames.intakeColorLeft);
+        rightSensor = hardwareMap.get(ColorSensor.class, ConfigNames.intakeColorRight);
 
-        leftSensor.enableLed(true);
-        rightSensor.enableLed(true);
+//        leftSensor.enableLed(true);
+//        rightSensor.enableLed(true);
 
         lNorm = new ColorNormalizer(0, 0, 0);
         rNorm = new ColorNormalizer(0, 0, 0);

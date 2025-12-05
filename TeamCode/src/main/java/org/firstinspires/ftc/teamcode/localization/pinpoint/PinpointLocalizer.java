@@ -5,21 +5,17 @@ import android.annotation.SuppressLint;
 import com.pedropathing.ftc.PoseConverter;
 import com.pedropathing.ftc.localization.constants.PinpointConstants;
 import com.pedropathing.geometry.PedroCoordinates;
+import com.pedropathing.localization.Localizer;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
-import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 
-import com.pedropathing.localization.Localizer;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.MathFunctions;
 import com.pedropathing.math.Vector;
-import com.pedropathing.util.NanoTimer;
-
-import java.util.Objects;
 
 /**
  * This is the Pinpoint class. This class extends the Localizer superclass and is a
@@ -39,6 +35,7 @@ public class PinpointLocalizer implements Localizer {
     private Pose currentVelocity;
     private Pose pinpointPose;
 
+    double currentHeading;
 
     /**
      * This creates a new PinpointLocalizer from a HardwareMap, with a starting Pose at (0,0)
@@ -65,6 +62,10 @@ public class PinpointLocalizer implements Localizer {
             odo.setYawScalar(constants.yawScalar.getAsDouble());
         }
 
+
+        while(odo.getDeviceStatus() != GoBildaPinpointDriver.DeviceStatus.READY){
+
+        }
         if(constants.customEncoderResolution.isPresent()) {
             odo.setEncoderResolution(constants.customEncoderResolution.getAsDouble(), constants.distanceUnit);
         } else {
@@ -73,9 +74,10 @@ public class PinpointLocalizer implements Localizer {
 
         odo.setEncoderDirections(constants.forwardEncoderDirection, constants.strafeEncoderDirection);
 
+        odo.setPosition(new Pose2D(DistanceUnit.INCH, setStartPose.getY(), setStartPose.getX(), AngleUnit.RADIANS, AngleUnit.normalizeRadians(setStartPose.getHeading()-Math.PI/2)));
 
-        odo.setPosition(new Pose2D(DistanceUnit.INCH, setStartPose.getY(), setStartPose.getX(),AngleUnit.RADIANS, AngleUnit.normalizeRadians(setStartPose.getHeading()-Math.PI/2)));
         startPose = new Pose(setStartPose.getX(), setStartPose.getY(), setStartPose.getHeading());
+
 
         totalHeading = 0;
         pinpointPose = startPose;
@@ -92,6 +94,11 @@ public class PinpointLocalizer implements Localizer {
     public Pose getPose() {
         return pinpointPose;
     }
+
+//    @Override
+//    public Pose getTestPose(){
+//        return new Pose(odo.getPosX(DistanceUnit.INCH), odo.getPosY(DistanceUnit.INCH), odo.getHeading(AngleUnit.RADIANS));
+//    }
 
     /**
      * This returns the current velocity estimate.

@@ -33,7 +33,7 @@ public class Spindexer extends SubsystemBase {
 
     // 0 is defined as the position of the shooter
     public static Angle detectRange = Angle.fromDegrees(40); // How far off from the center of the spot that you detect. You don't want to trust measurements that are too off from the center
-    public static Angle finishedThreshold = Angle.fromDegrees(2); // Threshold at which it's finished turning to a spot
+    public static Angle finishedThreshold = Angle.fromDegrees(4); // Threshold at which it's finished turning to a spot
     //0 degrees is facing intake
     //assuming layout at start is initialized as 0 from this position
     //  X X
@@ -75,8 +75,8 @@ public class Spindexer extends SubsystemBase {
         }
         if(ballColors!= null){
             setBallColors(ballColors);
-            buffer = new ColorBuffer();
         }
+        buffer = new ColorBuffer();
     }
 
     @Override
@@ -113,9 +113,22 @@ public class Spindexer extends SubsystemBase {
         return ballColors;
     }
 
+    public boolean allOccuppiedBallColors(){
+        boolean works = true;
+        for(BallColor ballColor : ballColors){
+            if(ballColor != BallColor.NONE){
+                works = false;
+            }
+        }
+        return works;
+    }
     public Spindexer setBallColors(BallColor[] ballColors) {
-        assert ballColors.length == NUM_SPOTS : "ballColors must be length " + NUM_SPOTS;
-        this.ballColors = ballColors;
+        if(ballColors != null && ballColors.length == 3){
+            this.ballColors = ballColors;
+        }
+        else{
+            ballColors = new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE};
+        }
         return this;
     }
 
@@ -129,6 +142,9 @@ public class Spindexer extends SubsystemBase {
     }
     public void updateBallColors() {
         SpindexerSpot spot = getNearestSpot(currentAngle, SpotType.INTAKE);
+        if(ballColors == null){
+            return;
+        }
         if(ballColors[spot.getIndex()] != BallColor.NONE){//already has a color
             return;//assume ball stays in position
         }
@@ -303,9 +319,9 @@ public class Spindexer extends SubsystemBase {
     public void goToAngle(Angle angle, CRServoEx2.RunMode runMode) {
         turner.setRunMode(runMode);
         if (runMode == CRServoEx2.RunMode.OptimizedPositionalControl) {
-            turner.set(-angle.toDegrees());
+            turner.set(angle.toDegrees());
         } else {
-            turner.set(-currentAngle.add(angle).sign() * shootRawPower); // Careful signs work out
+            turner.set(currentAngle.add(angle).sign() * shootRawPower); // Careful signs work out
         }
     }
 

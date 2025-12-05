@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.colors;
 
 import org.firstinspires.ftc.teamcode.game.BallColor;
+import org.firstinspires.ftc.teamcode.hardware.BallDetector;
 
 import java.util.ArrayList;
 
@@ -8,7 +9,7 @@ public class ColorBuffer {
     public int purpleCount = 0;
     public int greenCount = 0;
     public int minColorValue = 4;//need 4 at least to be definitively G/P
-    public final double MAX_SIZE = 10;
+    public final double MAX_SIZE = 5;
     public int loopRuns = 0;
 
     BallColor prevColor;

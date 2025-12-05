@@ -21,21 +21,22 @@ import org.firstinspires.ftc.teamcode.util.ConfigNames;
 @Configurable
 public class ConstantsBot {
     public static boolean motifIsBusy = true;
+    public static GoBildaPinpointDriver.DeviceStatus deviceStatus = GoBildaPinpointDriver.DeviceStatus.FAULT_BAD_READ;
     public static FollowerConstants followerConstants = new FollowerConstants()
             .forwardZeroPowerAcceleration(-57)//TUNED
             .lateralZeroPowerAcceleration(-85)//TUNED
             // Translational PIDF
             .translationalPIDFSwitch(4)
-            .translationalPIDFCoefficients(new PIDFCoefficients(0.2, 0, 0.001, 0))
-            .secondaryTranslationalPIDFCoefficients(new PIDFCoefficients(0.2, 0, 0.02, 0.03))
+            .translationalPIDFCoefficients(new PIDFCoefficients(0.1, 0, 0.04, 0))
+            .secondaryTranslationalPIDFCoefficients(new PIDFCoefficients(0.1, 0, 0.04, 0.03))
             // Heading PIDF
             .headingPIDFCoefficients(new PIDFCoefficients(2, 0, 0.02, 0.02))
             .secondaryHeadingPIDFCoefficients(new PIDFCoefficients(1.5, 0, 0.01, 0.02))
             // Drive PIDF
             .drivePIDFSwitch(15)
             .useSecondaryDrivePIDF(true)
-            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.015, 0, 0.002, 0.6, 0.02))
-            .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(0.015, 0, 0.002, 0.6, 0.02))
+            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.01, 0, 0.003, 0.6, 0.02))
+            .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(0.015, 0, 0.005, 0.6, 0.03))
             .centripetalScaling(0.0005)
             .mass(15.5);
 

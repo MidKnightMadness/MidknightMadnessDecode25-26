@@ -7,7 +7,9 @@ import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
@@ -17,6 +19,7 @@ import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import org.firstinspires.ftc.teamcode.commands.PoseWriteCommand;
 import org.firstinspires.ftc.teamcode.commands.SideWriteCommand;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
+import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
@@ -32,7 +35,7 @@ public abstract class BaseAuto extends CommandOpMode {
     Limelight3A limelight;
     Spindexer spindexer;
     TwoWheelShooter shooter;
-
+    Intake intake;
     TelemetryManager telemetryManager;
     GraphManager graphManager;
     boolean prevVisionComplete = false;
@@ -56,30 +59,36 @@ public abstract class BaseAuto extends CommandOpMode {
 
 
         startPose = getStartPose();
-        follower = ConstantsBot.createPinpointFollowerCustom(hardwareMap, startPose);
+        follower = ConstantsBot.createPinpointFollower(hardwareMap);
+        follower.setStartingPose(startPose);
 
         telemetryManager = PanelsTelemetry.INSTANCE.getTelemetry();
         graphManager = PanelsGraph.INSTANCE.getManager();
         buildPaths();
         setupVision();
-        schedule(preMotifSequence());
+        if(preMotifSequence() != null) {
+            schedule(preMotifSequence());
+        }
     }
 
     protected void initializeMechanisms() {
 //        limelight = hardwareMap.get(Limelight3A.class, ConfigNames.limelight);
         spindexer = new Spindexer(hardwareMap);
         shooter = new TwoWheelShooter(hardwareMap, TwoWheelShooter.RunMode.VelocityControl);
+        intake = new Intake(hardwareMap, Intake.RunMode.RawPower);
     }
 
     protected ShootSide getSide(){
-        return null;
+        return ShootSide.LEFT;
     }
 
     @Override
     public void run(){
         super.run();
         if(!prevVisionComplete && isVisionComplete()){
-            schedule(postMotifSequence());
+            if(postMotifSequence() != null) {
+                schedule(postMotifSequence());
+            }
             prevVisionComplete = true;
         }
 //        if (timer.getTime() >= maxTimeMs) requestOpModeStop();
@@ -94,8 +103,10 @@ public abstract class BaseAuto extends CommandOpMode {
                     new PoseWriteCommand(follower.getPose(), maxWritePoseTimeMs),
                     new SideWriteCommand(getSide(), maxSideWriteTimeMs)));
             stopEnd = true;
+            requestOpModeStop();
         }
     }
+
 
     protected Command postMotifSequence() {
         return null;
@@ -113,8 +124,8 @@ public abstract class BaseAuto extends CommandOpMode {
     }
 
     protected void buildPaths() {
-
     }
+
     protected void updateTelemetry(){
     }
 

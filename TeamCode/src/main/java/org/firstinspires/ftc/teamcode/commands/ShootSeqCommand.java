@@ -26,7 +26,7 @@ public class ShootSeqCommand extends CommandBase {
     ShootSide shootSide;
     int currBallIndex = 0;
     boolean goingToSpot = false;
-    double angleTolerance = 10;
+    public static double angleTolerance = 10;
     boolean mapDistToShoot;
     public ShootSeqCommand(Spindexer spindexer, TwoWheelShooter shooter, SpindexerSpot[] seq, Follower follower, ShootSide shootSide, boolean mapDistToShoot){
         this.spindexer = spindexer;

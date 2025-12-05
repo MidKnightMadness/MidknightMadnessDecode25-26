@@ -103,17 +103,24 @@ public class SpindexerGotoSpotTest extends CommandOpMode {
 
     public void updateTelemetry() {
 //        addDataTelemetryGraph("Error", spindexer.getTurner().error);
-        addDataTelemetryGraph("Power", spindexer.getTurner().power);
+//        addDataTelemetryGraph("Power", spindexer.getTurner().power);
 //        telemetryM.addData("Test", spindexer.test);
 //        telemetryM.addData("Positive power count", spindexer.getTurner().positivePowerCount);
 //        telemetryM.addData("Power change count", spindexer.getTurner().powerChangeCount);
 //        telemetryM.addData("Set call count", spindexer.getTurner().setCount);
-        telemetryM.addData("Revolutions", spindexer.getEncoder().getRevolutions());
-        addDataTelemetryGraph("Raw Angle", spindexer.getEncoder().getAngle());
-        telemetryM.addData("Target Spot", targetSpot);
-        telemetryM.addData("Ball Colors", spindexer.getBallColors());
-        telemetryM.addData("Loop time (ms)", timer.getDeltaTime());
-        telemetryM.update(telemetry);
+//        telemetryM.addData("Revolutions", spindexer.getEncoder().getRevolutions());
+////        addDataTelemetryGraph("Raw Angle", spindexer.getEncoder().getAngle());
+//        telemetryM.addData("Target Spot", targetSpot);
+//        telemetryM.addData("Ball Colors", spindexer.getBallColors());
+//        telemetryM.addData("Loop time (ms)", timer.getDeltaTime());
+//        telemetryM.update(telemetry);
+        telemetry.addData("Current Angle", spindexer.getCurrentAngle());
+        telemetry.addData("Error", spindexer.getTurner().error);
+        telemetry.addData("Revolutions", spindexer.getEncoder().getRevolutions());
+        telemetry.addData("Ball Colors", spindexer.getBallColors());
+        telemetry.addData("Loop time (ms)", timer.getDeltaTime());
+
+        telemetry.update();
         graphM.update();
     }
 }

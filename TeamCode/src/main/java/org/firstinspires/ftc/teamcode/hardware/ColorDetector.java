@@ -13,10 +13,10 @@ public abstract class ColorDetector<T> {
         this.defaultValue = defaultColor;
     }
 
-    public abstract double[] readRawColor();
+    public abstract float[] readRawColor();
 
     public T readColor() {
-        double[] color = readRawColor();
+        float[] color = readRawColor();
 
         for (Map.Entry<T, Threshold[]> entry : thresholds.entrySet()) {
             boolean inThreshold = true;
