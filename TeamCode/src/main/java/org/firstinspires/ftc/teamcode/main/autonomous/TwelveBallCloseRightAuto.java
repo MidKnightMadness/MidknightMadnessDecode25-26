@@ -15,6 +15,7 @@ import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 
+import org.firstinspires.ftc.teamcode.commands.AutoIntakeCommand;
 import org.firstinspires.ftc.teamcode.commands.IntakeSpindexerCommand;
 import org.firstinspires.ftc.teamcode.commands.IntakeTimeCommand;
 import org.firstinspires.ftc.teamcode.commands.MotifWriteCommand;
@@ -29,6 +30,9 @@ import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
+import org.firstinspires.ftc.teamcode.util.Timer;
+
+import java.lang.reflect.WildcardType;
 
 @Config
 @Configurable
@@ -58,8 +62,11 @@ public class TwelveBallCloseRightAuto extends BaseAuto {
 
     public static double pathDistThresholdMin = 1;
     public static double headingError = 0.03;
-    public static double timeOutConstraint = 500;
+    public static double timeOutConstraint = 100;
     public static double intakeTime = 4000;
+    public static double intakePower = 1;
+    public static double xChangeIntake = 20;
+
     public static BallColor[] ballColorStart = new  BallColor[] {BallColor.PURPLE, BallColor.GREEN, BallColor.PURPLE};
     @Override
     protected Pose getStartPose(){
@@ -84,7 +91,7 @@ public class TwelveBallCloseRightAuto extends BaseAuto {
                 .addPath(new BezierLine(startPose, motifDetectionPose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), motifDetectionPose.getHeading())
                 .setHeadingConstraint(headingError)
-                .setTimeoutConstraint(3000)
+                .setTimeoutConstraint(timeOutConstraint)
                 .setTranslationalConstraint(pathDistThresholdMin)
                 .build();
     }
@@ -97,6 +104,9 @@ public class TwelveBallCloseRightAuto extends BaseAuto {
 //            ConstantsBot.motifIsBusy = false;
 //            return true;
 //        }
+        if(timer.getTime() > timeOutConstraint){
+            firstPath.end(true);
+        }
         return firstPath.isFinished();
     }
 
@@ -105,7 +115,8 @@ public class TwelveBallCloseRightAuto extends BaseAuto {
 //        motifCommand = new MotifWriteCommand(limelight, motifDetectionTimeMs);
         firstPath = new FollowPathCommand(follower, toMotifPath).setGlobalMaxPower(0.7);
         return new SequentialCommandGroup(
-                firstPath
+                firstPath,
+                new WaitCommand(500)
 //                motifCommand
         );
 
@@ -120,35 +131,60 @@ public class TwelveBallCloseRightAuto extends BaseAuto {
     @Override
     protected Command postMotifSequence(){
 //        limelight.stop();//temporarily turn it off to hand to localizer
-        return new SequentialCommandGroup(
-                getToShootCommand(),
-                //new InstantCommand(() -> spindexer.setBallColors(ballColorStart)),
-                //shoot(),
-                getToLineNum(1),
-                //new ParallelCommandGroup(
-                //        new IntakeTimeCommand(intake, intakeTime)
-                //),//some intakeCommand
-                getToShootCommand(),
-                //shoot(),
-                getToLineNum(2),
-                //shoot()
-                getToShootCommand(),
-                getToLineNum(3),
-                park()
-
-
-
-        );
+//        return new SequentialCommandGroup(
+//                getToShootCommand(),
+//                //new InstantCommand(() -> spindexer.setBallColors(ballColorStart)),
+//                //shoot(),
+//
+//                getToLineNum(1),
+//                // intake(1),
+//                openGate(),
+//                getToShootCommand(),
+//               // shoot(),
+//
+//                getToLineNum(2),
+//              //  intake(1),
+//                getToShootCommand(),
+//              //  shoot(),
+//
+//                getToLineNum(3),
+//                // intake(3),
+//                getToShootCommand(),
+//               // shoot(),
+//
+//                park()
+//
+//        );
+        return null;
 
     }
 
-    protected SchedulePathTo park(){
-        return new SchedulePathTo(follower, parkPose, headingError, timeOutConstraint, pathDistThresholdMin);
+    protected SchedulePathTo openGate(){
+        return new SchedulePathTo(follower, openGatePose, headingError, timeOutConstraint, pathDistThresholdMin);
+    }
+    protected ParallelCommandGroup intake(int spot, long milliSec){
+        return new ParallelCommandGroup(
+                new AutoIntakeCommand(spindexer, intake, intakePower, intakeTime),
+                driveToIntakeEnd(spot, milliSec)
+        );
+    }
+    protected SequentialCommandGroup driveToIntakeEnd(int intakeNumber, long milliSec){
+        follower.update();
+        return new SequentialCommandGroup(
+                new SchedulePathTo(follower, new Pose(follower.getPose().getX() + xChangeIntake, follower.getPose().getY(), follower.getHeading()), headingError, timeOutConstraint, pathDistThresholdMin),
+                new WaitCommand(milliSec));
+    }
+
+    protected SequentialCommandGroup park(long milliSec){
+        return new SequentialCommandGroup(
+                new SchedulePathTo(follower, parkPose, headingError, timeOutConstraint, pathDistThresholdMin),
+                new WaitCommand(milliSec)
+        );
     }
     protected ShootSeqCommand shoot(){
         return new ShootSeqCommand(spindexer, shooter, spindexer.getOptimalSequence(motifPattern), follower, shootSide, false);
     }
-    protected SchedulePathTo getToLineNum(int lineNum){
+    protected SchedulePathTo getToLineNum(int lineNum, long milliSec){
         if(lineNum == 1) return new SchedulePathTo(follower, intakeOnePose, headingError, timeOutConstraint, pathDistThresholdMin);
         else if(lineNum == 2) return new SchedulePathTo(follower, intakeTwoPose, headingError, timeOutConstraint, pathDistThresholdMin);
         return new SchedulePathTo(follower, intakeThreePose, headingError, timeOutConstraint, pathDistThresholdMin);

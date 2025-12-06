@@ -11,26 +11,31 @@ public enum SpindexerSpot {
     SPOT0(
         0,
         Angle.fromDegrees(0),
-        Angle.fromDegrees(60)
+        Angle.fromDegrees(60),
+            Angle.fromDegrees(40)
     ),
     SPOT1(
             1,
         Angle.fromDegrees(120),
-        Angle.fromDegrees(180)
+        Angle.fromDegrees(180),
+            Angle.fromDegrees(160)
     ),
     SPOT2(
             2,
         Angle.fromDegrees(240),
-        Angle.fromDegrees(300)
+        Angle.fromDegrees(300),
+            Angle.fromDegrees(280)
     );
     final double NUM_SPOTS = 3;
     Angle intakeAngle;
     Angle outtakeAngle;
+    Angle preOuttakeAngle;
     int index;
-    SpindexerSpot(int index, Angle intakeAngle, Angle outtakeAngle) {
+    SpindexerSpot(int index, Angle intakeAngle, Angle outtakeAngle, Angle preOuttakeAngle) {
         this.index = index;
         this.intakeAngle = intakeAngle;
         this.outtakeAngle = outtakeAngle;
+        this.preOuttakeAngle = preOuttakeAngle;
     }
 
     public static SpindexerSpot fromIndex(int index){
@@ -65,6 +70,8 @@ public enum SpindexerSpot {
     public Angle getIntakeAngle(){
         return intakeAngle;
     }
-
+    public Angle getPreOuttakeAngle(){
+        return preOuttakeAngle;
+    }
 
 }

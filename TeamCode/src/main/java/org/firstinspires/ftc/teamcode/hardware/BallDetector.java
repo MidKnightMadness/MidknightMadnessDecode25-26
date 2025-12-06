@@ -18,15 +18,15 @@ public class BallDetector extends ColorDetector<BallColor> {
 
         public static Threshold[] greenThreshold = new Threshold[] {
                 //normalized rgb out of magnitudes
-                new Threshold(0.05f, 0.40f),
-                new Threshold(0.645f, 0.93f),
-                new Threshold(0.44f, 0.75f)
+                new Threshold(90, 160),//hsv
+                new Threshold(0.25, 1),
+                new Threshold(0.20, 1)
         };
 
         public static Threshold[] purpleThreshold = new Threshold[] {
-                new Threshold(0.28f, 0.53f),
-                        new Threshold(0.30f, 0.6f),
-                        new Threshold(0.5875f, 09.3f)
+                new Threshold(240, 360),//hsv
+                        new Threshold(0.30, 1),
+                        new Threshold(0.20, 1)
         };
         public BallDetector(HardwareMap hardwareMap, String deviceName) {
                 super(

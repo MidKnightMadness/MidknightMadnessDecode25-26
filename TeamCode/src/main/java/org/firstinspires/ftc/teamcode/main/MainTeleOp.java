@@ -471,34 +471,48 @@ public class MainTeleOp extends CommandOpMode {
             autoShootSeq = false;
         }
         if(!autoShootSeq) {
-//            SpindexerSpot closestSpot = spindexer.getNearestSpot(spindexer.getCurrentAngle(), SpotType.OUTTAKE);
-//            if(shooter.low.motor.getPower() < 0.05 && shooter.high.motor.getPower() < 0.05 && spindexer.getCurrentAngle().sub(closestSpot.getOuttakeAngle()).toDegrees() < shootAngleTolerance){
-//                spindexer.removeBall(closestSpot.getIndex());
-//            }
-            if (gamepad2.left_trigger > 0.5) {
-                shooterRunMode = shooterRunMode == TwoWheelShooter.RunMode.RawPower ? TwoWheelShooter.RunMode.VelocityControl : TwoWheelShooter.RunMode.RawPower;
-                if (shooterRunMode == TwoWheelShooter.RunMode.VelocityControl) {
-                    resetVelocityGains(shooter, pidBotGainsShooter, kBotGainsShooter, pidTopGainsShooter, kTopGainsShooter);
-                }
-                shooter.stopFlywheels();
-            }
+            handleOuttakeBallRemoval();
 
-            shooter.setRunMode(shooterRunMode);
+            handleShooterInput();
+        }
+    }
+    private void handleOuttakeBallRemoval(){
+        boolean shootOn = false;
 
+        if(shooter.getPredictedBotVel() > 50 || shooter.getPredictedTopVel() > 50 || shooter.low.motor.getPower() > 0.05 || shooter.high.motor.getPower() > 0.05){
+            shootOn = true;
+        }
+
+        SpindexerSpot closestSpot = spindexer.getNearestSpot(spindexer.getCurrentAngle(), SpotType.OUTTAKE);
+        if(shootOn && spindexer.getCurrentAngle().sub(closestSpot.getOuttakeAngle()).toDegrees() < shootAngleTolerance){
+            spindexer.removeBall(closestSpot.getIndex());
+        }
+    }
+
+    private void handleShooterInput(){
+        if (gamepad2.left_trigger > 0.5) {
+            shooterRunMode = shooterRunMode == TwoWheelShooter.RunMode.RawPower ? TwoWheelShooter.RunMode.VelocityControl : TwoWheelShooter.RunMode.RawPower;
             if (shooterRunMode == TwoWheelShooter.RunMode.VelocityControl) {
-                shooter.setCustomPower(targetBotVel, targetTopVel);//offset
-            } else {
-                shooter.setFlywheelsPower(currentShootDist);
+                resetVelocityGains(shooter, pidBotGainsShooter, kBotGainsShooter, pidTopGainsShooter, kTopGainsShooter);
             }
+            shooter.stopFlywheels();
+        }
 
-            if (gamepad2.rightBumperWasPressed()) {
-                shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Close);
-            } else if (gamepad2.leftBumperWasPressed()) {
-                shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Far);
-            }
-            if (gamepad2.right_trigger > 0.5) {
-                shooter.stopFlywheels();
-            }
+        shooter.setRunMode(shooterRunMode);
+
+        if (shooterRunMode == TwoWheelShooter.RunMode.VelocityControl) {
+            shooter.setCustomPower(targetBotVel, targetTopVel);//offset
+        } else {
+            shooter.setFlywheelsPower(currentShootDist);
+        }
+
+        if (gamepad2.rightBumperWasPressed()) {
+            shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Close);
+        } else if (gamepad2.leftBumperWasPressed()) {
+            shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Far);
+        }
+        if (gamepad2.right_trigger > 0.5) {
+            shooter.stopFlywheels();
         }
     }
     private void updateTelem() {

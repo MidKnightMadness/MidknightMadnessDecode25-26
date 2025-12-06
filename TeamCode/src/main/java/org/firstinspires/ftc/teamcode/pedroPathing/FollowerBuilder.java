@@ -14,6 +14,7 @@ import com.pedropathing.ftc.localization.constants.ThreeWheelIMUConstants;
 import com.pedropathing.ftc.localization.constants.TwoWheelConstants;
 import com.pedropathing.ftc.localization.localizers.DriveEncoderLocalizer;
 import com.pedropathing.ftc.localization.localizers.OTOSLocalizer;
+import com.pedropathing.ftc.localization.localizers.PinpointLocalizer;
 import com.pedropathing.ftc.localization.localizers.ThreeWheelIMULocalizer;
 import com.pedropathing.ftc.localization.localizers.ThreeWheelLocalizer;
 import com.pedropathing.ftc.localization.localizers.TwoWheelLocalizer;
@@ -26,7 +27,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.localization.kalmanFilter.KalmanPinpointAprilConstants;
 import org.firstinspires.ftc.teamcode.localization.kalmanFilter.KalmanPinpointAprilLocalizer;
-import org.firstinspires.ftc.teamcode.localization.pinpoint.PinpointLocalizer;
+
 /** This is the FollowerBuilder.
  * It is used to create Followers with a specific drivetrain + localizer without having to use a full constructor
  *

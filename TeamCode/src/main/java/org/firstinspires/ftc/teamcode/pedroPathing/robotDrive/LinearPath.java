@@ -45,8 +45,8 @@ public class LinearPath extends OpMode {
 //        telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 //        graphM = PanelsGraph.INSTANCE.getManager();
 
-        follower = ConstantsBot.createPinpointFollower(hardwareMap);
-        follower.setStartingPose(startPose);
+        follower = ConstantsBot.createPinpointFollowerCustom(hardwareMap, new Pose(0, 0, 0));
+        follower.setPose(startPose);
         path = follower.pathBuilder()
                 .addPath(new BezierLine(startPose, endPose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), endPose.getHeading())

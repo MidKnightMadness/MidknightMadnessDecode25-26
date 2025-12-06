@@ -8,6 +8,7 @@ import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 
+import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
 import org.firstinspires.ftc.teamcode.game.SpotType;
@@ -40,6 +41,7 @@ public class ShootSeqCommand extends CommandBase {
 
     @Override
     public void execute(){
+        spindexer.goToColor(BallColor.GREEN, SpotType.PREOUTTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
         if(currBallIndex >= seq.length) return;
         follower.update();
         Pose robotPose = follower.getPose();

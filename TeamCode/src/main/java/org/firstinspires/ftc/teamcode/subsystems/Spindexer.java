@@ -20,6 +20,7 @@ import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.teamcode.util.ExtraFns;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -205,40 +206,31 @@ public class Spindexer extends SubsystemBase {
     }
 
     public SpindexerSpot[] getOptimalSequence(MotifEnums.Motif motif) {
-        SpindexerSpot[] sequence;
-        int greenSpot = -1, greenCount = 0, purpleCount = 0;
-        for (int i = 0; i < ballColors.length; i++) {
-            if (ballColors[i] == BallColor.GREEN) {
-                greenCount++;
-                greenSpot = i;
-            }
-            else if (ballColors[i] == BallColor.PURPLE) purpleCount++;
-        }
-
-        if (!motif.equals(MotifEnums.Motif.NONE) && greenCount == 1 && purpleCount == 2) {
-            sequence = sequenceForMotif(motif, SpindexerSpot.fromIndex(greenSpot));
-        } else {
-            sequence = sequenceDefault(greenCount + purpleCount);
-        }
-
-        this.sequence = sequence;
-        return sequence;
-    }
-
-
-
-    private SpindexerSpot[] sequenceDefault(int totalCount) {
         SpindexerSpot[] seq = new SpindexerSpot[NUM_SPOTS];
-        int momentum = 0;
+        boolean[] used = new boolean[NUM_SPOTS];
+        int seqIndex = 0;
+        //first pass to fill in ones that match with motif
+        for(int i = 0; i < NUM_SPOTS; i++){
+            SpindexerSpot spot = SpindexerSpot.fromIndex(i);
+            BallColor ball = ballColors[i];
+            if (ball != BallColor.NONE && ball == motif.getBallColorFromIndex(i)) {
+                seq[seqIndex] = spot;
+                seqIndex++;
+            }
 
-        for (int i = 0; i < totalCount; i++) {
-            SpindexerSpot spot = getNextOuttakeSpot(seq, i, momentum);
-            seq[i] = spot;
-            momentum = computeMomentum(seq, SpotType.OUTTAKE, i);
         }
-
+        //second pass put whatevers left
+        for(int i = 0; i < NUM_SPOTS; i++){
+            SpindexerSpot spot = SpindexerSpot.fromIndex(i);
+            BallColor ball = ballColors[i];
+            //only adds ball to spot if theres ball there and not already added
+            if(ball != BallColor.NONE && !Arrays.asList(seq).contains(spot)){
+                seq[seqIndex++] = spot;
+            }
+        }
         return seq;
     }
+
 
 
     // The current angle of a spot relative to the outtake
@@ -327,5 +319,22 @@ public class Spindexer extends SubsystemBase {
 
     public void goToSpot(SpindexerSpot spot, SpotType spotType, CRServoEx2.RunMode runMode) {
         goToAngle(spot.getSpotAngle(spotType), runMode);
+    }
+
+    public void goToColor(BallColor ballColor, SpotType spotType, CRServoEx2.RunMode runMode) {
+        double angleClosest = 400;
+        SpindexerSpot closestSpot = null;
+        for(int i = 0; i < NUM_SPOTS; i++){
+            if(ballColor == ballColors[i]){
+                if((currentAngle.absGap(SpindexerSpot.fromIndex(i).getPreOuttakeAngle()).toDegrees()) < angleClosest){
+                    angleClosest = currentAngle.absGap(SpindexerSpot.fromIndex(i).getPreOuttakeAngle()).toDegrees();
+                    closestSpot = SpindexerSpot.fromIndex(i);
+                }
+            }
+        }
+        if(closestSpot != null){
+            goToSpot(closestSpot, spotType, runMode);
+        }
+
     }
 }

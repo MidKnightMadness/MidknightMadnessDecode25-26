@@ -44,8 +44,8 @@ public class ConstantsBot {
 
     //competition
     public static PinpointConstants pinpointLocalizerConstants = new PinpointConstants()
-            .forwardPodY(-115/25.4)
-            .strafePodX(173.7/25.4)
+            .forwardPodY(115.39/25.4)
+            .strafePodX(-173.57/25.4)
             .distanceUnit(DistanceUnit.INCH)
             .hardwareMapName(ConfigNames.pinpoint)
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
@@ -53,8 +53,8 @@ public class ConstantsBot {
             .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
     public static PinpointConstants customPinpointLocalizerConstants = new PinpointConstants()
-            .forwardPodY(-115/25.4)
-            .strafePodX(173.7/25.4)
+            .forwardPodY(115/25.4)
+            .strafePodX(-173.7/25.4)
             .distanceUnit(DistanceUnit.INCH)
             .hardwareMapName(ConfigNames.pinpoint)
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
