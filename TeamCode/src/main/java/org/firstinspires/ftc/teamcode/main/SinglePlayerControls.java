@@ -86,7 +86,7 @@ public class SinglePlayerControls extends CommandOpMode {
 
     double currturnerSpeed = 1;
     double maxTurnerSpeed = 1;
-    double change = 0.3;
+    double change = 1;
 
     Pose leftTarget = new Pose(0, 144, Math.toRadians(45));
     Pose rightTarget = new Pose(144, 144, Math.toRadians(-45));

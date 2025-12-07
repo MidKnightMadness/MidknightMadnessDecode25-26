@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.tests.opModes;
 
+import android.graphics.Color;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -20,14 +22,12 @@ import org.firstinspires.ftc.teamcode.util.ConfigNames;
 public class ColorSensorTesting extends OpMode {
 
     // Left sensor values
-    int lR, lG, lB, lA;
-    double lNormR, lNormG, lNormB;
+    float lR, lG, lB, lA;
     String lDetected = "No reading yet";
     String lDetectedBuffer = "No buffered reading yet";
 
     // Right sensor values
-    int rR, rG, rB, rA;
-    double rNormR, rNormG, rNormB;
+    float rR, rG, rB, rA;
     String rDetected = "No reading yet";
     String rDetectedBuffer = "No buffered reading yet";
 
@@ -43,30 +43,32 @@ public class ColorSensorTesting extends OpMode {
     ColorSensorBuffer rBufferRed, rBufferGreen, rBufferBlue;
 
     // Normalizers
-    ColorNormalizer lNorm;
-    ColorNormalizer rNorm;
+//    ColorNormalizer lNorm;
+//    ColorNormalizer rNorm;
 
     // Green ball thresholds
-    public static double greenRedMin = 0.05,  greenRedMax = 0.40;
-    public static double greenGreenMin = 0.645, greenGreenMax = 0.93;
-    public static double greenBlueMin = 0.44, greenBlueMax = 0.75;
+    public static float greenHMin = 100f,  greenHMax = 180f;
+    public static float greenSMin = 0.0f, greenSMax = 1f;
+    public static float greenVMin = 0.0f, greenVMax = 1f;
 
     // Purple ball thresholds
-    public static double purpleRedMin = 0.28, purpleRedMax = 0.53;
-    public static double purpleGreenMin = 0.30, purpleGreenMax = 0.73;
-    public static double purpleBlueMin = 0.5875, purpleBlueMax = 0.93;
-
+    public static float purpleHMin = 0f, purpleHMax = 60f;
+    public static float purpleSMin = 0f, purpleSMax = 1f;
+    public static float purpleVMin = 0f, purpleVMax = 1f;
+    float[] colorLeft = new float[]{0, 0, 0};
+    float[] colorRight = new float[]{0, 0, 0};
     @Override
     public void init() {
 
         leftSensor = hardwareMap.get(ColorSensor.class, ConfigNames.intakeColorLeft);
         rightSensor = hardwareMap.get(ColorSensor.class, ConfigNames.intakeColorRight);
 
-//        leftSensor.enableLed(true);
-//        rightSensor.enableLed(true);
 
-        lNorm = new ColorNormalizer(0, 0, 0);
-        rNorm = new ColorNormalizer(0, 0, 0);
+        leftSensor.enableLed(true);
+        rightSensor.enableLed(true);
+
+//        lNorm = new ColorNormalizer(0, 0, 0);
+//        rNorm = new ColorNormalizer(0, 0, 0);
 
         // Rolling buffers
         lBufferRed = new ColorSensorBuffer();
@@ -80,7 +82,7 @@ public class ColorSensorTesting extends OpMode {
         buttonToggle = new ButtonToggle();
 
         // Setup telemetry only once
-        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+//        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
     }
 
     @Override
@@ -94,19 +96,20 @@ public class ColorSensorTesting extends OpMode {
             lB = leftSensor.blue();
             lA = leftSensor.alpha();
 
-            lNorm.red = lR;
-            lNorm.green = lG;
-            lNorm.blue = lB;
+            colorLeft = new float[3];
 
-            lNormR = lNorm.normalizeRed();
-            lNormG = lNorm.normalizeGreen();
-            lNormB = lNorm.normalizeBlue();
+            RGBToHSV(
+                    leftSensor.red(),
+                    leftSensor.green(),
+                    leftSensor.blue(),
+                    colorLeft
+            );
 
-            lBufferRed.add(lNormR);
-            lBufferGreen.add(lNormG);
-            lBufferBlue.add(lNormB);
+            lBufferRed.add(colorLeft[0]);
+            lBufferGreen.add(colorLeft[1]);
+            lBufferBlue.add(colorLeft[2]);
 
-            lDetected = detectBallColor(lNormR, lNormG, lNormB);
+            lDetected = detectBallColor(colorLeft[0], colorLeft[1], colorLeft[2]);
             lDetectedBuffer = detectBallColor(
                     lBufferRed.getAverage(),
                     lBufferGreen.getAverage(),
@@ -119,19 +122,21 @@ public class ColorSensorTesting extends OpMode {
             rB = rightSensor.blue();
             rA = rightSensor.alpha();
 
-            rNorm.red = rR;
-            rNorm.green = rG;
-            rNorm.blue = rB;
+            colorRight = new float[3];
 
-            rNormR = rNorm.normalizeRed();
-            rNormG = rNorm.normalizeGreen();
-            rNormB = rNorm.normalizeBlue();
+            RGBToHSV(
+                    rightSensor.red(),
+                    rightSensor.green(),
+                    rightSensor.blue(),
+                    colorRight
+            );
 
-            rBufferRed.add(rNormR);
-            rBufferGreen.add(rNormG);
-            rBufferBlue.add(rNormB);
+            rBufferRed.add(colorRight[0]);
+            rBufferGreen.add(colorRight[1]);
+            rBufferBlue.add(colorRight[2]);
 
-            rDetected = detectBallColor(rNormR, rNormG, rNormB);
+            rDetected = detectBallColor(colorRight[0], colorRight[1], colorRight[2]);
+
             rDetectedBuffer = detectBallColor(
                     rBufferRed.getAverage(),
                     rBufferGreen.getAverage(),
@@ -141,33 +146,61 @@ public class ColorSensorTesting extends OpMode {
 
         // TELEMETRY
         telemetry.addLine("=== LEFT Color Sensor ===");
-        telemetry.addData("Raw R/G/B", "%d / %d / %d", lR, lG, lB);
-        telemetry.addData("Norm R/G/B", "%.3f / %.3f / %.3f", lNormR, lNormG, lNormB);
-        telemetry.addData("Avg R/G/B", "%.3f / %.3f / %.3f",
-                lBufferRed.getAverage(), lBufferGreen.getAverage(), lBufferBlue.getAverage());
+        telemetry.addData("Raw R/G/B", "%f / %f / %f", lR, lG, lB);
+        telemetry.addData("HSV", "%f / %f / %f",
+                colorLeft[0],colorLeft[1], colorLeft[2]);
         telemetry.addData("Detected", lDetected);
         telemetry.addData("Detected (Buffered)", lDetectedBuffer);
 
         telemetry.addLine("=== RIGHT Color Sensor ===");
-        telemetry.addData("Raw R/G/B", "%d / %d / %d", rR, rG, rB);
-        telemetry.addData("Norm R/G/B", "%.3f / %.3f / %.3f", rNormR, rNormG, rNormB);
-        telemetry.addData("Avg R/G/B", "%.3f / %.3f / %.3f",
-                rBufferRed.getAverage(), rBufferGreen.getAverage(), rBufferBlue.getAverage());
+        telemetry.addData("Raw R/G/B", "%f / %f / %f", rR, rG, rB);
+        telemetry.addData("HSV", "%f / %f / %f",
+                colorRight[0],colorRight[1], colorRight[2]);
         telemetry.addData("Detected", rDetected);
         telemetry.addData("Detected (Buffered)", rDetectedBuffer);
 
         telemetry.update();
     }
+    public static void RGBToHSV(int red, int green, int blue, float[] hsv) {
+        float r = red / 255f;
+        float g = green / 255f;
+        float b = blue / 255f;
 
-    private String detectBallColor(double r, double g, double b) {
-        if (r >= greenRedMin && r <= greenRedMax &&
-                g >= greenGreenMin && g <= greenGreenMax &&
-                b >= greenBlueMin && b <= greenBlueMax)
+        float max = Math.max(r, Math.max(g, b));
+        float min = Math.min(r, Math.min(g, b));
+        float delta = max - min;
+
+        float h, s, v = max;
+
+        // Hue
+        if (delta == 0) {
+            h = 0;
+        } else if (max == r) {
+            h = 60 * (((g - b) / delta) % 6);
+        } else if (max == g) {
+            h = 60 * (((b - r) / delta) + 2);
+        } else { // max == b
+            h = 60 * (((r - g) / delta) + 4);
+        }
+        if (h < 0) h += 360;
+
+        // Saturation
+        s = (max == 0) ? 0 : (delta / max);
+
+        hsv[0] = h;
+        hsv[1] = s;
+        hsv[2] = v;
+    }
+
+    private String detectBallColor(double h, double s, double v) {
+        if (h >= greenHMin && h <= greenHMax &&
+                s >= greenSMin && s <= greenSMax &&
+                v >= greenVMin && v <= greenVMax)
             return "Green Ball";
 
-        if (r >= purpleRedMin && r <= purpleRedMax &&
-                g >= purpleGreenMin && g <= purpleGreenMax &&
-                b >= purpleBlueMin && b <= purpleBlueMax)
+        if (h >= purpleHMin && h <= purpleHMax &&
+                s >= purpleSMin && s <= purpleSMax &&
+                v >= purpleVMin && v <= purpleVMax)
             return "Purple Ball";
 
         return "Unknown Color";

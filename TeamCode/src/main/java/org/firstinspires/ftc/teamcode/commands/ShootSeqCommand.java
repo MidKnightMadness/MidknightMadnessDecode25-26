@@ -16,6 +16,7 @@ import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
 import org.firstinspires.ftc.teamcode.util.Angle;
+import org.firstinspires.ftc.teamcode.util.Timer;
 
 @Config
 @Configurable
@@ -26,23 +27,71 @@ public class ShootSeqCommand extends CommandBase {
     Follower follower;
     ShootSide shootSide;
     int currBallIndex = 0;
-    boolean goingToSpot = false;
-    public static double angleTolerance = 10;
+    public static double angleTolerance = 25;
     boolean mapDistToShoot;
-    public ShootSeqCommand(Spindexer spindexer, TwoWheelShooter shooter, SpindexerSpot[] seq, Follower follower, ShootSide shootSide, boolean mapDistToShoot){
+    Timer timer;
+
+    public static double goToGreenSpotWait = 1000;
+    public static double flywheelSpinupWait = 1000;
+    public static double betweenShotsWait = 200;
+    boolean goneToStartSpot = false;
+    double goneToStartSpotTime = 0;
+    boolean flywheelSpinupStarted = false;
+    double flywheelSpinupStartTime = 0;
+
+    public boolean spinStarted = false;
+    boolean spinEnded = false;
+    boolean removedBall = false;
+    double spinStartTime = 0;
+    boolean lastBallRemoved = false;
+
+    public boolean farthestMoved = false;
+    TwoWheelShooter.ShootDist shootDist;
+    public static double[] pidBotGainsShooter = new double[]{0.0004, 0, 0.00001};
+    public static double[] kBotGainsShooter = new double[]{0, 0.00005, 0};
+    public static double[] pidTopGainsShooter = new double[]{0.0004, 0, 0.00001};
+    public static double[] kTopGainsShooter = new double[]{0.02, 0.00005, 0};
+    public ShootSeqCommand(Spindexer spindexer, TwoWheelShooter shooter, SpindexerSpot[] seq, Follower follower, ShootSide shootSide, boolean mapDistToShoot, TwoWheelShooter.ShootDist shootDist){
         this.spindexer = spindexer;
         this.shooter = shooter;
         this.seq = seq;
         this.follower = follower;
         this.shootSide = shootSide;
+        this.shootDist = shootDist;
         this.mapDistToShoot = mapDistToShoot;
         addRequirements(spindexer, shooter);
+        timer = new Timer();
+        timer.restart();
     }
 
     @Override
     public void execute(){
-        spindexer.goToColor(BallColor.GREEN, SpotType.PREOUTTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
         if(currBallIndex >= seq.length) return;
+
+        //have spindexer go to start spot if farthest from outtake
+        if(!goneToStartSpot) {
+            farthestMoved = false;
+            if(spindexer.farthestFromAngle(spindexer.getCurrentAngle(), SpotType.OUTTAKE) == seq[0]){
+                spindexer.goToSpot(seq[0], SpotType.PREOUTTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
+                farthestMoved = true;
+            }
+
+            if(farthestMoved){//no need to go to green
+                goneToStartSpot = true;
+                goneToStartSpotTime = timer.getTime();
+                goToGreenSpotWait = 0;
+            }
+            else {
+                goneToStartSpot = true;
+                goneToStartSpotTime = timer.getTime();
+            }
+        }
+
+        if(!(goneToStartSpot && timer.getTime() - goneToStartSpotTime > goToGreenSpotWait)) {
+            return;
+        }
+
+        //update distance to goal and reset flywheel powers/velocity
         follower.update();
         Pose robotPose = follower.getPose();
         double distToGoal = shooter.getDistance(robotPose, shootSide);
@@ -51,41 +100,74 @@ public class ShootSeqCommand extends CommandBase {
             shooter.setFlywheelsPower(distToGoal);
         }
         else{
-            if(distToGoal >= 85){
-                shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Far);
-            }
-            else{
+            if(shootDist == TwoWheelShooter.ShootDist.Close){
                 shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Close);
             }
+            else{
+                shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Far);
+            }
         }
 
+        //start the flywheel
+        if(!flywheelSpinupStarted){
+            flywheelSpinupStarted = true;
+            flywheelSpinupStartTime = timer.getTime();
+        }
+
+        if(!(flywheelSpinupStarted && timer.getTime() - flywheelSpinupStartTime > flywheelSpinupWait)){
+            return;
+        }
+        //once flywheel gets to the right power/velocity, now go to each position w/ wait time for each wait position
 
         SpindexerSpot currSpot = seq[currBallIndex];
-
-        if(!goingToSpot){
-            spindexer.goToSpot(currSpot, SpotType.OUTTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
-            goingToSpot = true;
+        spindexer.goToSpot(currSpot, SpotType.OUTTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
+        if(!spinStarted){
+            spinStarted = true;
         }
 
-        Angle diff = spindexer.getCurrentAngle().sub(currSpot.getOuttakeAngle());
-        if(diff.toDegrees() > angleTolerance){
-            spindexer.removeBall(currSpot.getIndex());
-            if(currBallIndex != seq.length -1){
-                shooter.triggerBallShot();
+        //remove the ball if possible
+        if(spinStarted && !removedBall){
+            Angle diff = spindexer.getCurrentAngle().absGap(currSpot.getOuttakeAngle());
+            if (diff.toDegrees() < angleTolerance) {
+                spindexer.removeBall(currSpot.getIndex());
+                spindexer.getTurner().stop();
+                removedBall = true;
+                if (currBallIndex != seq.length - 1) {
+//                shooter.triggerBallShot();
+                }
             }
+        }
+
+        if(removedBall && !spinEnded) {//just removed a ball can perform wait time
+            spinStartTime = timer.getTime();
+            spinEnded = true;
+        }
+
+        if(currBallIndex == seq.length - 1 && removedBall){
+            lastBallRemoved = true;
+        }
+        //move on, reset
+        if(spinStarted && spinStartTime != 0 && timer.getTime() - spinStartTime > betweenShotsWait) {
             currBallIndex++;
-            goingToSpot = false;
+            spinStarted = false;
+            spinStartTime = 0;
+            removedBall = false;
+            spinEnded = false;
         }
     }
 
     @Override
     public boolean isFinished(){
-        return currBallIndex >= seq.length;
+        if(currBallIndex >= seq.length && lastBallRemoved) {
+            return true;
+        }
+        return false;
     }
 
     @Override
     public void end(boolean interrupted){
         shooter.stopFlywheels();
-        spindexer.getTurner().stop();
+        spindexer.goToSpot(SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
+
     }
 }

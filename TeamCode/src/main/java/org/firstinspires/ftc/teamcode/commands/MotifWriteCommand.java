@@ -118,4 +118,7 @@ public class MotifWriteCommand extends CommandBase {
     }
 
 
+    public double getTime() {
+        return timer.getTime();
+    }
 }

@@ -4,6 +4,7 @@ import android.graphics.Color;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
+import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -14,19 +15,19 @@ import java.util.Map;
 @Config
 @Configurable
 public class BallDetector extends ColorDetector<BallColor> {
-        private final ColorSensor colorSensor;
+        private final RevColorSensorV3 colorSensor;
 
         public static Threshold[] greenThreshold = new Threshold[] {
                 //normalized rgb out of magnitudes
-                new Threshold(90, 160),//hsv
-                new Threshold(0.25, 1),
-                new Threshold(0.20, 1)
+                new Threshold(100f, 180f),//hsv
+                new Threshold(0f, 1f),
+                new Threshold(0f, 1f)
         };
 
         public static Threshold[] purpleThreshold = new Threshold[] {
-                new Threshold(240, 360),//hsv
-                        new Threshold(0.30, 1),
-                        new Threshold(0.20, 1)
+                new Threshold(0f, 60f),//hsv
+                        new Threshold(0f, 1f),
+                        new Threshold(0f, 1)
         };
         public BallDetector(HardwareMap hardwareMap, String deviceName) {
                 super(
@@ -36,28 +37,54 @@ public class BallDetector extends ColorDetector<BallColor> {
                         ),
                         BallColor.NONE
                 );
-                colorSensor = hardwareMap.get(ColorSensor.class, deviceName);
+                colorSensor = hardwareMap.get(RevColorSensorV3.class, deviceName);
+                colorSensor.enableLed(true);
         }
 
+        public static void RGBToHSV(int red, int green, int blue, float[] hsv) {
+                float r = red / 255f;
+                float g = green / 255f;
+                float b = blue / 255f;
+
+                float max = Math.max(r, Math.max(g, b));
+                float min = Math.min(r, Math.min(g, b));
+                float delta = max - min;
+
+                float h, s, v = max;
+
+                // Hue
+                if (delta == 0) {
+                        h = 0;
+                } else if (max == r) {
+                        h = 60 * (((g - b) / delta) % 6);
+                } else if (max == g) {
+                        h = 60 * (((b - r) / delta) + 2);
+                } else { // max == b
+                        h = 60 * (((r - g) / delta) + 4);
+                }
+                if (h < 0) h += 360;
+
+                // Saturation
+                s = (max == 0) ? 0 : (delta / max);
+
+                hsv[0] = h;
+                hsv[1] = s;
+                hsv[2] = v;
+        }
         @Override
         public float[] readRawColor() {
                 float[] color = new float[3];
-                //dont read to hsv for now
-//                color[0] = colorSensor.red();
-//                color[1] = colorSensor.green();
-//                color[2] = colorSensor.blue();
-                Color.RGBToHSV(
+
+                color[0] = colorSensor.red();
+                color[1] = colorSensor.green();
+                color[2] = colorSensor.blue();
+
+                RGBToHSV(
                         colorSensor.red(),
                         colorSensor.green(),
                         colorSensor.blue(),
                         color
                 );
-
-//                double normRTotal = ColorNormalizer.normalizeRed(color[0], color[1], color[2]);
-//                double normGTotal = ColorNormalizer.normalizeGreen(color[0], color[1], color[2]);
-//                double normBTotal = ColorNormalizer.normalizeBlue(color[0], color[1], color[2]);
-//
-//                return new double[]{normRTotal, normGTotal, normBTotal};
                 return color;
         }
 }

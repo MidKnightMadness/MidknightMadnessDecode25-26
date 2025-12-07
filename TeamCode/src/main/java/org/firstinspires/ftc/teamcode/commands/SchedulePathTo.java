@@ -21,6 +21,7 @@ public class SchedulePathTo extends SequentialCommandGroup {
         this.timeOutConstraint = timeOutConstraint;
         this.translationalConstraint = translationalConstraint;
     }
+
     FollowPathCommand followCommand;
     @Override
     public void initialize(){

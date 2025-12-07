@@ -11,9 +11,9 @@ import java.util.ArrayList;
 @Config
 @Configurable
 public class ColorBuffer {
-    public static int purpleCount = 0;
-    public static int greenCount = 0;
-    public static int minColorValue = 2;//need 4 at least to be definitively G/P
+    int purpleCount = 0;
+    int greenCount = 0;
+    int noneCount = 0;
     public static final double MAX_SIZE = 5;
     public static int loopRuns = 0;
 
@@ -31,14 +31,33 @@ public class ColorBuffer {
         else if(color == BallColor.PURPLE){
             purpleCount++;
         }
+        else{
+            noneCount++;
+        }
+
 
         if (loopRuns >= MAX_SIZE){
-            loopRuns = 0;
-            BallColor majority = (purpleCount > greenCount && purpleCount > minColorValue) ? BallColor.PURPLE : (greenCount > purpleCount && greenCount > minColorValue) ? BallColor.GREEN : BallColor.NONE;
+            BallColor majority = (purpleCount > greenCount && purpleCount > noneCount) ? BallColor.PURPLE : (greenCount > purpleCount && greenCount > noneCount) ? BallColor.GREEN : BallColor.NONE;
             prevColor = majority;
+
+            //reset
+            loopRuns = 0;
             purpleCount = 0;
             greenCount = 0;
+            noneCount = 0;
         }
+    }
+
+    public int getGreenCount(){
+        return greenCount;
+    }
+
+    public int getPurpleCount(){
+        return purpleCount;
+    }
+
+    public int getNoneCount(){
+        return noneCount;
     }
     public BallColor getColor(){
         return prevColor;

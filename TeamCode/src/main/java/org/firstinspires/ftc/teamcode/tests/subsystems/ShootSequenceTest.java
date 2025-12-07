@@ -19,6 +19,8 @@ import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.teamcode.commands.ShootSeqCommand;
 import org.firstinspires.ftc.teamcode.commands.SpindexerGotoSpot;
+import org.firstinspires.ftc.teamcode.game.BallColor;
+import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
 import org.firstinspires.ftc.teamcode.game.SpotType;
@@ -36,7 +38,7 @@ public class ShootSequenceTest extends CommandOpMode {
     public static Angle currAngle;
 
     Button shootSeqButton;
-    public static int[] shootArray = new int[]{0, 1, 2};
+//    public static int[] shootArray = new int[]{0, 1, 2};
     Spindexer spindexer;
     TwoWheelShooter shooter;
     GamepadEx gp1;
@@ -44,33 +46,39 @@ public class ShootSequenceTest extends CommandOpMode {
     GraphManager graphM;
     Timer timer;
     Follower follower;
-    SpindexerSpot[] spots;
-    public static Pose startPose = new Pose(0, 0, Math.toRadians(90));
+    public static Pose startPose = new Pose(72, 3, Math.toRadians(90));
     public static ShootSide shootSide = ShootSide.RIGHT;
+    public static BallColor[] ballColors = new BallColor[]{BallColor.GREEN, BallColor.PURPLE, BallColor.PURPLE};
+    public static MotifEnums.Motif motif = MotifEnums.Motif.GPP;
     @Override
     public void initialize() {
         super.reset();
-        follower = ConstantsBot.createPinpointFollowerCustom(hardwareMap, startPose);
+        follower = ConstantsBot.createPinpointFollowerCustom(hardwareMap, new Pose(0, 0, 0));
+        follower.setPose(startPose);
         CommandScheduler.getInstance().setBulkReading(
                 hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
         );
-        SpindexerSpot[] spots = SpindexerSpot.convertFromindex(shootArray);
+        spindexer.setBallColors(ballColors);
+        SpindexerSpot[] spots = spindexer.getOptimalSequence(motif);
 
         timer = new Timer();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         graphM = PanelsGraph.INSTANCE.getManager();
         spindexer = new Spindexer(hardwareMap, false);
         spindexer.initAngle(); // would put this later but oh well
+        shooter = new TwoWheelShooter(hardwareMap, TwoWheelShooter.RunMode.VelocityControl);
+
         gp1 = new GamepadEx(gamepad1);
 
         shootSeqButton = gp1.getGamepadButton(GamepadKeys.Button.A);
 
         shootSeqButton.whenPressed(new SequentialCommandGroup(
-                new ShootSeqCommand(spindexer, shooter, spots, follower, shootSide, true)
+                new ShootSeqCommand(spindexer, shooter, spots, follower, shootSide, false, TwoWheelShooter.ShootDist.Close)
         ));
 
         register(spindexer, shooter);
         follower.startTeleopDrive();
+
     }
 
     @Override
@@ -87,19 +95,19 @@ public class ShootSequenceTest extends CommandOpMode {
     }
 
     public void updateTelemetry() {
-        addDataTelemetryGraph("Top Target Vel", shooter.getPredictedTopVel());
-        addDataTelemetryGraph("Top Velocity", shooter.high.getVelocity());
+        telemetry.addData("Top Target Vel", shooter.getPredictedTopVel());
+        telemetry.addData("Top Velocity", shooter.high.getVelocity());
 
-        addDataTelemetryGraph("Bot Target Vel", shooter.getPredictedBotVel());
-        addDataTelemetryGraph("Bot Velocity", shooter.low.getVelocity());
+        telemetry.addData("Bot Target Vel", shooter.getPredictedBotVel());
+        telemetry.addData("Bot Velocity", shooter.low.getVelocity());
 
         telemetry.addData("Dist From Goal", shooter.getDistance(follower.getPose(), shootSide));
-        telemetryM.addData("Revolutions", spindexer.getEncoder().getRevolutions());
-        addDataTelemetryGraph("Raw Angle", spindexer.getEncoder().getAngle());
+        telemetry.addData("Revolutions", spindexer.getEncoder().getRevolutions());
+//        addDataTelemetryGraph("Raw Angle", spindexer.getEncoder().getAngle());
         telemetry.addData("Spindexer Current Angle", spindexer.getCurrentAngle());
-        telemetryM.addData("Ball Colors", spindexer.getBallColors());
-        telemetryM.addData("Loop time (ms)", timer.getDeltaTime());
-        telemetryM.update(telemetry);
-        graphM.update();
+        telemetry.addData("Ball Colors", spindexer.getBallColors());
+        telemetry.addData("Loop time (ms)", timer.getDeltaTime());
+        telemetry.update();
+//        graphM.update();
     }
 }

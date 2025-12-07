@@ -11,20 +11,20 @@ public enum SpindexerSpot {
     SPOT0(
         0,
         Angle.fromDegrees(0),
-        Angle.fromDegrees(60),
-            Angle.fromDegrees(40)
+        Angle.fromDegrees(180),
+            Angle.fromDegrees(120)
     ),
     SPOT1(
             1,
         Angle.fromDegrees(120),
-        Angle.fromDegrees(180),
-            Angle.fromDegrees(160)
+        Angle.fromDegrees(300),
+            Angle.fromDegrees(340)
     ),
     SPOT2(
             2,
         Angle.fromDegrees(240),
-        Angle.fromDegrees(300),
-            Angle.fromDegrees(280)
+        Angle.fromDegrees(60),
+            Angle.fromDegrees(300)
     );
     final double NUM_SPOTS = 3;
     Angle intakeAngle;
@@ -73,5 +73,6 @@ public enum SpindexerSpot {
     public Angle getPreOuttakeAngle(){
         return preOuttakeAngle;
     }
+
 
 }
