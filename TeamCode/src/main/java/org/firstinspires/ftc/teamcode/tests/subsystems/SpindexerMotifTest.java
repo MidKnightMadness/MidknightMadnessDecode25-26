@@ -38,6 +38,7 @@ public class SpindexerMotifTest extends CommandOpMode {
     GraphManager graphM;
     Timer timer;
     int targetSpot = 0;
+    MotifEnums.Motif motif = MotifEnums.Motif.PGP;
 
     @Override
     public void initialize() {
@@ -55,9 +56,10 @@ public class SpindexerMotifTest extends CommandOpMode {
         gp1 = new GamepadEx(gamepad1);
 
         gp1.getGamepadButton(GamepadKeys.Button.A).whenPressed(new SequentialCommandGroup(
-                new InstantCommand(() -> targetSpot = 0),
+//                new InstantCommand(() -> targetSpot = 0),
+
                 new SpindexerMotifSequence(
-                        spindexer, MotifEnums.Motif.GPP,
+                        spindexer, motif,
                         runMode, finishedTimeThreshold
                 )
         ));
@@ -78,15 +80,17 @@ public class SpindexerMotifTest extends CommandOpMode {
     }
 
     public void updateTelemetry() {
-        addDataTelemetryGraph("Power", spindexer.getTurner().power);
-        telemetryM.addData("Sequence", spindexer.sequence[0] + " " + spindexer.sequence[1] + " " + spindexer.sequence[2]);
+//        addDataTelemetryGraph("Power", spindexer.getTurner().power);
+        if(spindexer.sequence != null) {
+            telemetry.addData("Sequence", spindexer.sequence[0] + " " + spindexer.sequence[1] + " " + spindexer.sequence[2]);
+        }
 //        telemetryM.addData("Sub angle thing", spindexer.test);
-        telemetryM.addData("Revolutions", spindexer.getEncoder().getRevolutions());
-        addDataTelemetryGraph("Raw Angle", spindexer.getEncoder().getAngle());
-        telemetryM.addData("Target Spot", targetSpot);
-        telemetryM.addData("Ball Colors", spindexer.getBallColors());
-        telemetryM.addData("Loop time (ms)", timer.getDeltaTime());
-        telemetryM.update(telemetry);
-        graphM.update();
+        telemetry.addData("Revolutions", spindexer.getEncoder().getRevolutions());
+//        addDataTelemetryGraph("Raw Angle", spindexer.getEncoder().getAngle());
+        telemetry.addData("Target Spot", targetSpot);
+        telemetry.addData("Ball Colors", spindexer.getBallColors());
+        telemetry.addData("Loop time (ms)", timer.getDeltaTime());
+        telemetry.update();
+//        graphM.update();
     }
 }

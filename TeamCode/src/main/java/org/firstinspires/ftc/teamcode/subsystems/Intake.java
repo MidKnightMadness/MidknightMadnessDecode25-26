@@ -25,6 +25,7 @@ public class Intake extends SubsystemBase {
 
     public static boolean motorDirectionForward = true;
 
+
     public enum RunMode{
         VelocityControl, RawPower
     }
@@ -43,6 +44,10 @@ public class Intake extends SubsystemBase {
         intakeMotor.motor.setDirection(motorDirectionForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);
     }
 
+
+    public MotorEx getMotor(){
+        return intakeMotor;
+    }
     public void setPid(double kp, double ki, double kd) {
         intakeMotor.setVeloCoefficients(kp, ki, kd);
     }

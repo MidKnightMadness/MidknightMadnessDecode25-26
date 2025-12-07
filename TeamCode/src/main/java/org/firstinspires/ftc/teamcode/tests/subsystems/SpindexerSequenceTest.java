@@ -75,12 +75,12 @@ public class SpindexerSequenceTest extends CommandOpMode {
 
     public void updateTelemetry() {
 //        telemetryM.addData("Sub angle thing", spindexer.test);
-        telemetryM.addData("Revolutions", spindexer.getEncoder().getRevolutions());
-        addDataTelemetryGraph("Raw Angle", spindexer.getEncoder().getAngle());
-        telemetryM.addData("Target Spot", targetSpot);
-        telemetryM.addData("Ball Colors", spindexer.getBallColors());
-        telemetryM.addData("Loop time (ms)", timer.getDeltaTime());
-        telemetryM.update(telemetry);
-        graphM.update();
+        telemetry.addData("Revolutions", spindexer.getEncoder().getRevolutions());
+//        addDataTelemetryGraph("Raw Angle", spindexer.getEncoder().getAngle());
+        telemetry.addData("Target Spot", targetSpot);
+        telemetry.addData("Ball Colors", spindexer.getBallColors());
+        telemetry.addData("Loop time (ms)", timer.getDeltaTime());
+
+
     }
 }

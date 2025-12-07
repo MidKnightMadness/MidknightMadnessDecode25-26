@@ -31,6 +31,7 @@ public class IntakeTimeCommand extends CommandBase {
         this.intake = intake;
         this.timeDuration = timeDuration;
         timer = new Timer();
+        timer.restart();
 
         if(runMode == Intake.RunMode.VelocityControl){
             intake.setPid(pGain, iGain, dGain);
@@ -38,10 +39,13 @@ public class IntakeTimeCommand extends CommandBase {
         }
     }
 
+
     @Override
     public void initialize(){
+        intake.setRunMode(runMode);
+        intake.setDirectPower(motorPower);
         timer.restart();
-        intake.resetEncoder();
+//        intake.resetEncoder();
     }
 
     @Override
@@ -56,7 +60,7 @@ public class IntakeTimeCommand extends CommandBase {
 
     @Override
     public boolean isFinished(){
-        boolean finished = timer.getTime() < timeDuration;
+        boolean finished = timer.getTime() > timeDuration;
         if(finished){
             intake.stopPower();
         }

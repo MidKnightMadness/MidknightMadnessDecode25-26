@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 
 public class SpindexerRawSequence extends SequentialCommandGroup {
-    public static long waitMs = 200;
+    public static long waitMs = 500;
     public static long finalWaitMs = 500;
 
     public SpindexerRawSequence(

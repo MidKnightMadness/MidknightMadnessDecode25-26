@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.main.autonomous;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.graph.GraphManager;
 import com.bylazar.graph.PanelsGraph;
@@ -18,6 +20,7 @@ import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 
 import org.firstinspires.ftc.teamcode.commands.PoseWriteCommand;
 import org.firstinspires.ftc.teamcode.commands.SideWriteCommand;
+import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
@@ -41,10 +44,16 @@ public abstract class BaseAuto extends CommandOpMode {
     boolean prevVisionComplete = false;
     public static Pose leftTargetPose = new Pose(12, 132, 0);
     public static Pose rightTargetPose = new Pose(132, 132, 0);
+    FtcDashboard dashboard;
+    TelemetryPacket dashboardPacket;
 
     public static double maxTimeMs = 29500;
     public static double maxWritePoseTimeMs = 200;
     public static double maxSideWriteTimeMs = 200;
+    public static double[] pidBotGainsShooter = new double[]{0.0004, 0, 0.00001};
+    public static double[] kBotGainsShooter = new double[]{0, 0.00005, 0};
+    public static double[] pidTopGainsShooter = new double[]{0.0004, 0, 0.00001};
+    public static double[] kTopGainsShooter = new double[]{0.02, 0.00005, 0};
 
     boolean stopEnd = false;
     ShootSide side;
@@ -62,6 +71,9 @@ public abstract class BaseAuto extends CommandOpMode {
         follower = ConstantsBot.createPinpointFollowerCustom(hardwareMap, new Pose(0, 0, 0));
         follower.setPose(startPose);
 
+        dashboard = FtcDashboard.getInstance();
+        dashboardPacket = new TelemetryPacket();
+
         telemetryManager = PanelsTelemetry.INSTANCE.getTelemetry();
         graphManager = PanelsGraph.INSTANCE.getManager();
         buildPaths();
@@ -73,9 +85,11 @@ public abstract class BaseAuto extends CommandOpMode {
 
     protected void initializeMechanisms() {
 //        limelight = hardwareMap.get(Limelight3A.class, ConfigNames.limelight);
-        spindexer = new Spindexer(hardwareMap);
-        shooter = new TwoWheelShooter(hardwareMap, TwoWheelShooter.RunMode.VelocityControl);
-        intake = new Intake(hardwareMap, Intake.RunMode.RawPower);
+
+    }
+
+    protected BallColor[] getStartBallColors(){
+        return null;
     }
 
     protected ShootSide getSide(){
@@ -85,6 +99,7 @@ public abstract class BaseAuto extends CommandOpMode {
     @Override
     public void run(){
         super.run();
+        update();
         if(!prevVisionComplete && isVisionComplete()){
             if(postMotifSequence() != null) {
                 schedule(postMotifSequence());
@@ -96,6 +111,9 @@ public abstract class BaseAuto extends CommandOpMode {
         writeValues();
     }
 
+    public void update(){
+
+    }
     public void writeValues() {
         if(timer.getTime() >= maxTimeMs & !stopEnd) {
             CommandScheduler.getInstance().cancelAll();

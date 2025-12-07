@@ -80,6 +80,7 @@ public class TwoWheelShooter extends SubsystemBase {
         low.motor.setDirection(lowMotorDirForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);
         high.motor.setDirection(highMotorDirForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);
 
+
     }
 
 
@@ -138,12 +139,21 @@ public class TwoWheelShooter extends SubsystemBase {
         return predictedBotVel;
     }
     public void setFlywheelsPower(ShootDist dist) {
-        if (dist == ShootDist.Close) setCustomPower(0.73, 1);
-        else setCustomPower(1, 1);
+        if(runMode == RunMode.VelocityControl){
+            if (dist == ShootDist.Close) setCustomPower(1600, 1800);
+            else setCustomPower(2000, 2000);
+        }
+        else{
+            if (dist == ShootDist.Close) setCustomPower(0.75, 0.95);
+            else setCustomPower(1, 1);
+        }
     }
+
 
     public void setCustomPower(double lowPower, double highPower) {
         if(runMode == RunMode.VelocityControl){
+            low.setRunMode(Motor.RunMode.VelocityControl);
+            high.setRunMode(Motor.RunMode.VelocityControl);
             low.set(lowPower);
             high.set(highPower + topVelocityOffset);//account for belted motor
         }

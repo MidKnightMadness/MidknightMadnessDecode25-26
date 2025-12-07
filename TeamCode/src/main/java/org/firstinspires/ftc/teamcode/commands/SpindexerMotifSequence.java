@@ -13,6 +13,7 @@ public class SpindexerMotifSequence extends SequentialCommandGroup {
     MotifEnums.Motif motif;
     CRServoEx2.RunMode runMode;
     double finishedTimeThreshold;
+    SpindexerRawSequence command;
 
     public SpindexerMotifSequence(
             Spindexer spindexer,
@@ -30,10 +31,16 @@ public class SpindexerMotifSequence extends SequentialCommandGroup {
     @Override
     public void initialize() {
         SpindexerSpot[] sequence = spindexer.getOptimalSequence(motif);
-        addCommands(new SpindexerRawSequence(
+        addCommands(
+                command = new SpindexerRawSequence(
                 spindexer, sequence, SpotType.OUTTAKE,
                 runMode, finishedTimeThreshold)
         );;
         super.initialize();
+    }
+
+    @Override
+    public boolean isFinished(){
+        return command.isFinished();
     }
 }

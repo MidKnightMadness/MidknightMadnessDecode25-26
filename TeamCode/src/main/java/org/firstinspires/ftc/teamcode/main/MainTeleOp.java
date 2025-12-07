@@ -188,7 +188,7 @@ public class MainTeleOp extends CommandOpMode {
         FtcDashboard dashboard = FtcDashboard.getInstance();
         dashboardTelemetry = dashboard.getTelemetry();
         goToSpotCommand = new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0);
-        seqCommand = new ShootSeqCommand(spindexer, shooter, new SpindexerSpot[]{SpindexerSpot.SPOT0, SpindexerSpot.SPOT1, SpindexerSpot.SPOT2}, follower, shootSide, mapDistToShoot);
+        seqCommand = new ShootSeqCommand(spindexer, shooter, new SpindexerSpot[]{SpindexerSpot.SPOT0, SpindexerSpot.SPOT1, SpindexerSpot.SPOT2}, follower, shootSide, mapDistToShoot, TwoWheelShooter.ShootDist.Close);
         spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE});
 
     }
@@ -465,7 +465,7 @@ public class MainTeleOp extends CommandOpMode {
     private void flywheelCommands(){
         if(gamepad2.aWasPressed()){
             autoShootSeq = true;
-            seqCommand = new ShootSeqCommand(spindexer, shooter, spindexer.getOptimalSequence(pattern), follower, shootSide, true);
+            seqCommand = new ShootSeqCommand(spindexer, shooter, spindexer.getOptimalSequence(pattern), follower, shootSide, true, TwoWheelShooter.ShootDist.Close);
         }
         if(autoShootSeq && seqCommand.isFinished()){
             autoShootSeq = false;
