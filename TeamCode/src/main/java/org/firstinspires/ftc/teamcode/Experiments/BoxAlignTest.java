@@ -1,4 +1,4 @@
-
+/*
 package org.firstinspires.ftc.teamcode.Experiments;
 
 
@@ -118,7 +118,7 @@ public class BoxAlignTest {
 
          */
 
-
+/*
 
         if (color == 'r') {
             //boolean stuff here because i don't want to put all of it in the if statement
@@ -177,3 +177,4 @@ public class BoxAlignTest {
         }
     }
 }
+*/
