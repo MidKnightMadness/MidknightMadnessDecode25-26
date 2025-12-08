@@ -53,9 +53,9 @@ public class SpindexerGotoSpotTest extends CommandOpMode {
         spindexer.initAngle(); // would put this later but oh well
         gp1 = new GamepadEx(gamepad1);
 
-        intakeSpot0Button = gp1.getGamepadButton(GamepadKeys.Button.A);
-        intakeSpot1Button = gp1.getGamepadButton(GamepadKeys.Button.B);
-        intakeSpot2Button = gp1.getGamepadButton(GamepadKeys.Button.X);
+        intakeSpot0Button = gp1.getGamepadButton(GamepadKeys.Button.X);
+        intakeSpot1Button = gp1.getGamepadButton(GamepadKeys.Button.A);
+        intakeSpot2Button = gp1.getGamepadButton(GamepadKeys.Button.B);
         outakeSpot0Button = gp1.getGamepadButton(GamepadKeys.Button.DPAD_LEFT);
         outakeSpot1Button = gp1.getGamepadButton(GamepadKeys.Button.DPAD_UP);
         outakeSpot2Button = gp1.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT);

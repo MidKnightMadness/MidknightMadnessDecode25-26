@@ -56,4 +56,8 @@ public class SpindexerGotoSpot extends CommandBase {
         return false;
     }
 
+    @Override
+    public void end(boolean interrupted){
+        spindexer.getTurner().getServo().setPower(0);
+    }
 }

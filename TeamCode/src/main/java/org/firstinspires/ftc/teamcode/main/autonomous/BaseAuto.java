@@ -13,6 +13,7 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
@@ -32,7 +33,7 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 @Configurable
 public abstract class BaseAuto extends CommandOpMode {
     Follower follower;
-    Timer timer;
+    Timer gameTimer;
     Pose startPose;
 
     Limelight3A limelight;
@@ -60,9 +61,14 @@ public abstract class BaseAuto extends CommandOpMode {
 
     @Override
     public void initialize() {
+
+        CommandScheduler.getInstance().setBulkReading(
+                hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
+        );
+
         super.reset();
-        timer = new Timer();
-        timer.restart();
+        gameTimer = new Timer();
+        gameTimer.restart();
 
         initializeMechanisms();
 
@@ -88,9 +94,9 @@ public abstract class BaseAuto extends CommandOpMode {
 
     }
 
-    protected BallColor[] getStartBallColors(){
-        return null;
-    }
+//    protected BallColor[] getStartBallColors(){
+//        return null;
+//    }
 
     protected ShootSide getSide(){
         return ShootSide.LEFT;
@@ -115,7 +121,7 @@ public abstract class BaseAuto extends CommandOpMode {
 
     }
     public void writeValues() {
-        if(timer.getTime() >= maxTimeMs & !stopEnd) {
+        if(gameTimer.getTime() >= maxTimeMs & !stopEnd) {
             CommandScheduler.getInstance().cancelAll();
             schedule(new ParallelCommandGroup(
                     new PoseWriteCommand(follower.getPose(), maxWritePoseTimeMs),

@@ -40,7 +40,7 @@ public class SpindexerIntakeTimed extends CommandBase {
     @Override
     public void end(boolean interrupted){
         intake.setDirectPower(0);
-        spindexer.getTurner().set(0);
+        spindexer.getTurner().getServo().setPower(0);
     }
 }
 

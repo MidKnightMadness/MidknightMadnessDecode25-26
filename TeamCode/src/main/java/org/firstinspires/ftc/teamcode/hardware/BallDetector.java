@@ -8,6 +8,7 @@ import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.colors.Threshold;
 import java.util.Map;
@@ -86,5 +87,9 @@ public class BallDetector extends ColorDetector<BallColor> {
                         color
                 );
                 return color;
+        }
+
+        public double getProximity() {
+            return colorSensor.getDistance(DistanceUnit.INCH);
         }
 }

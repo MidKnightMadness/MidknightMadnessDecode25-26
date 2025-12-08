@@ -43,7 +43,7 @@ public class ShootHardcode extends SequentialCommandGroup {
                 new SpindexerRawSequence(spindexer, sequence, SpotType.OUTTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
                 new InstantCommand(() -> spindexer.spin(momentum)),
                 new WaitCommand(250),
-                new InstantCommand(() -> spindexer.getTurner().stop()),
+                new InstantCommand(() -> spindexer.getTurner().getServo().setPower(0)),
                 new InstantCommand(shooter::stopFlywheels)
         );
 

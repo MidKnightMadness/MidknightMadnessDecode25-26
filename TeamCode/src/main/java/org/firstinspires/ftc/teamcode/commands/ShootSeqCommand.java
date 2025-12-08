@@ -27,12 +27,12 @@ public class ShootSeqCommand extends CommandBase {
     Follower follower;
     ShootSide shootSide;
     int currBallIndex = 0;
-    public static double angleTolerance = 25;
+    public static double angleTolerance = 10;
     boolean mapDistToShoot;
     Timer timer;
 
     public static double goToGreenSpotWait = 1000;
-    public static double flywheelSpinupWait = 1000;
+    public static double flywheelSpinupWait = 500;
     public static double betweenShotsWait = 200;
     boolean goneToStartSpot = false;
     double goneToStartSpotTime = 0;
@@ -46,18 +46,16 @@ public class ShootSeqCommand extends CommandBase {
     boolean lastBallRemoved = false;
 
     public boolean farthestMoved = false;
+    boolean powerFlywheel;
     TwoWheelShooter.ShootDist shootDist;
-    public static double[] pidBotGainsShooter = new double[]{0.0004, 0, 0.00001};
-    public static double[] kBotGainsShooter = new double[]{0, 0.00005, 0};
-    public static double[] pidTopGainsShooter = new double[]{0.0004, 0, 0.00001};
-    public static double[] kTopGainsShooter = new double[]{0.02, 0.00005, 0};
-    public ShootSeqCommand(Spindexer spindexer, TwoWheelShooter shooter, SpindexerSpot[] seq, Follower follower, ShootSide shootSide, boolean mapDistToShoot, TwoWheelShooter.ShootDist shootDist){
+    public ShootSeqCommand(Spindexer spindexer, TwoWheelShooter shooter, SpindexerSpot[] seq, Follower follower, ShootSide shootSide, boolean mapDistToShoot, TwoWheelShooter.ShootDist shootDist, boolean powerFlywheel){
         this.spindexer = spindexer;
         this.shooter = shooter;
         this.seq = seq;
         this.follower = follower;
         this.shootSide = shootSide;
         this.shootDist = shootDist;
+        this.powerFlywheel = powerFlywheel;
         this.mapDistToShoot = mapDistToShoot;
         addRequirements(spindexer, shooter);
         timer = new Timer();
@@ -76,7 +74,7 @@ public class ShootSeqCommand extends CommandBase {
                 farthestMoved = true;
             }
 
-            if(farthestMoved){//no need to go to green
+            if(!farthestMoved){//no need to go to green
                 goneToStartSpot = true;
                 goneToStartSpotTime = timer.getTime();
                 goToGreenSpotWait = 0;
@@ -87,24 +85,23 @@ public class ShootSeqCommand extends CommandBase {
             }
         }
 
-        if(!(goneToStartSpot && timer.getTime() - goneToStartSpotTime > goToGreenSpotWait)) {
+        if(!(goneToStartSpot && timer.getTime() - goneToStartSpotTime >= goToGreenSpotWait)) {
             return;
         }
 
         //update distance to goal and reset flywheel powers/velocity
-        follower.update();
-        Pose robotPose = follower.getPose();
-        double distToGoal = shooter.getDistance(robotPose, shootSide);
-
-        if(mapDistToShoot){
-            shooter.setFlywheelsPower(distToGoal);
-        }
-        else{
-            if(shootDist == TwoWheelShooter.ShootDist.Close){
-                shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Close);
-            }
-            else{
-                shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Far);
+        if(powerFlywheel) {
+            if (mapDistToShoot) {
+                follower.update();
+                Pose robotPose = follower.getPose();
+                double distToGoal = shooter.getDistance(robotPose, shootSide);
+                shooter.setFlywheelsPower(distToGoal);
+            } else {
+                if (shootDist == TwoWheelShooter.ShootDist.Close) {
+                    shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Close);
+                } else {
+                    shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Far);
+                }
             }
         }
 
@@ -167,7 +164,6 @@ public class ShootSeqCommand extends CommandBase {
     @Override
     public void end(boolean interrupted){
         shooter.stopFlywheels();
-        spindexer.goToSpot(SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
-
+        spindexer.getTurner().getServo().setPower(0);
     }
 }

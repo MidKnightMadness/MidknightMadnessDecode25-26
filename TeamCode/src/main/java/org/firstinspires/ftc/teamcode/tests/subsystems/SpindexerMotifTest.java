@@ -81,8 +81,8 @@ public class SpindexerMotifTest extends CommandOpMode {
 
     public void updateTelemetry() {
 //        addDataTelemetryGraph("Power", spindexer.getTurner().power);
-        if(spindexer.sequence != null) {
-            telemetry.addData("Sequence", spindexer.sequence[0] + " " + spindexer.sequence[1] + " " + spindexer.sequence[2]);
+        if(spindexer.getSequence() != null) {
+            telemetry.addData("Sequence", spindexer.getSequence()[0] + " " + spindexer.getSequence()[1] + " " + spindexer.getSequence()[2]);
         }
 //        telemetryM.addData("Sub angle thing", spindexer.test);
         telemetry.addData("Revolutions", spindexer.getEncoder().getRevolutions());

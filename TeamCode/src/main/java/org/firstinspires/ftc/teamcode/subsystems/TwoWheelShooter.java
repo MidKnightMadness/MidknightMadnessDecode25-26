@@ -152,8 +152,8 @@ public class TwoWheelShooter extends SubsystemBase {
 
     public void setCustomPower(double lowPower, double highPower) {
         if(runMode == RunMode.VelocityControl){
-            low.setRunMode(Motor.RunMode.VelocityControl);
-            high.setRunMode(Motor.RunMode.VelocityControl);
+//            low.setRunMode(Motor.RunMode.VelocityControl);
+//            high.setRunMode(Motor.RunMode.VelocityControl);
             low.set(lowPower);
             high.set(highPower + topVelocityOffset);//account for belted motor
         }

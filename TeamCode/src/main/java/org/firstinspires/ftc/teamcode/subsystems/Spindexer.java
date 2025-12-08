@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.qualcomm.hardware.andymark.AndyMarkColorSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
@@ -30,8 +31,9 @@ public class Spindexer extends SubsystemBase {
     //Ball sensors(two) facing each other right in the intake before it goes into the spindexer
     //public static double intakeSpinPower = 0.3;
     public static double shootRawPower = 1;
-    public static PIDFCoefficients turnerCoefficients = new PIDFCoefficients(0.003, 0, 0, 0);
+    //Old coefficients:   public static PIDFCoefficients turnerCoefficients = new PIDFCoefficients(0.003, 0, 0, 0);
 
+    public static PIDFCoefficients turnerCoefficients = new PIDFCoefficients(0.01, 0, 0.001, 0);
     // 0 is defined as the position of the shooter
     public static Angle detectRange = Angle.fromDegrees(25); // How far off from the center of the spot that you detect. You don't want to trust measurements that are too off from the center
     public static Angle finishedThreshold = Angle.fromDegrees(25); // Threshold at which it's finished turning to a spot
@@ -42,12 +44,13 @@ public class Spindexer extends SubsystemBase {
     private static final int NUM_SPOTS = 3;
     boolean useColorSensors;
     CRServoEx2<IncrementalEncoder> turner;
-    BallDetector[] ballDetectors;
+    public BallDetector[] ballDetectors;
     Angle currentAngle;
     BallColor[] ballColors;
     BallColor[] ballColorsPrev;
-    public SpindexerSpot[] sequence;
+    SpindexerSpot[] sequence;
     ColorBuffer buffer;
+    public static double ballDetectedDistThreshold = 3; // for color sensors
 
     public Spindexer(HardwareMap hardwareMap) {
         this(hardwareMap, false);
@@ -88,6 +91,10 @@ public class Spindexer extends SubsystemBase {
         if(ballColors != null) {
             ballColorsPrev = ballColors.clone();
         }
+    }
+
+    public SpindexerSpot[] getSequence(){
+        return sequence;
     }
 
     public Spindexer initAngle() {
@@ -190,6 +197,21 @@ public class Spindexer extends SubsystemBase {
         }
         return spot;
     }
+    private SpindexerSpot getNextOuttakeSpot(SpindexerSpot[] seq, int i, int momentum) {
+        SpindexerSpot spot;
+        if (i == 0) {
+            spot = getNearestSpot(currentAngle, SpotType.OUTTAKE);
+        }
+        else {
+            int nextIndex = (seq[i - 1].getIndex() + momentum + NUM_SPOTS) % NUM_SPOTS;
+            while (ballColors[nextIndex] == BallColor.NONE) {
+                nextIndex = (nextIndex + 1) % NUM_SPOTS;
+            }
+            spot = SpindexerSpot.fromIndex(nextIndex);
+        }
+        return spot;
+    }
+
 
     private SpindexerSpot[] sequenceForMotif(MotifEnums.Motif motif, SpindexerSpot greenSpot) {//outtake
         if(motif.equals(MotifEnums.Motif.NONE)) return null;
@@ -214,7 +236,7 @@ public class Spindexer extends SubsystemBase {
         int momentum = 0;
 
         for (int i = 0; i < totalCount; i++) {
-            SpindexerSpot spot = getNextOuttakeSpot(seq, i, momentum, BallColor.NONE);
+            SpindexerSpot spot = getNextOuttakeSpot(seq, i, momentum);
             seq[i] = spot;
             momentum = computeMomentum(seq, SpotType.OUTTAKE, i);
         }
@@ -224,9 +246,9 @@ public class Spindexer extends SubsystemBase {
 
     public SpindexerSpot[] getOptimalSequence(MotifEnums.Motif motif) {
         SpindexerSpot[] sequence;
-        int greenSpot = -1, greenCount = 0, purpleCount = 0;
+        int greenSpot = -1, greenCount = 0, purpleCount = 0, noneCount = 0;
         if(ballColors == null){
-            return sequenceDefault(3);
+            return sequenceDefault(NUM_SPOTS);
         }
         for (int i = 0; i < ballColors.length; i++) {
             if (ballColors[i] == BallColor.GREEN) {
@@ -234,6 +256,10 @@ public class Spindexer extends SubsystemBase {
                 greenSpot = i;
             }
             else if (ballColors[i] == BallColor.PURPLE) purpleCount++;
+            else noneCount++;
+        }
+        if(noneCount == NUM_SPOTS){
+            return sequenceDefault(NUM_SPOTS);
         }
 
         if (!motif.equals(MotifEnums.Motif.NONE) && ((greenCount == 1 && purpleCount == 2) || (greenCount == 2 && purpleCount == 1))){
@@ -385,5 +411,16 @@ public class Spindexer extends SubsystemBase {
             }
         }
         return ballsColored;
+    }
+
+    public boolean updateProximity() {
+        boolean ball = false;
+        for(int i = 0; i < ballDetectors.length; i++){
+            double rawDistance = ballDetectors[i].getProximity();
+            if(rawDistance < ballDetectedDistThreshold){
+                ball = true;
+            }
+        }
+        return ball;
     }
 }

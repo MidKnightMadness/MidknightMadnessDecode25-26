@@ -61,7 +61,6 @@ public class MotifWriteCommand extends CommandBase {
 
     @Override
     public void execute() {
-        double currentTime = timer.getTime();
         LLResult result = limelight.getLatestResult();
         if (result != null) {
             List<LLResultTypes.FiducialResult> list = result.getFiducialResults();

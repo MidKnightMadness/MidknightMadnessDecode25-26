@@ -154,11 +154,17 @@ public class CRServoEx2<E extends Encoder> extends CRServo {
                 positivePowerCount++;
             }
             crServo.setPower(power);
+
+//            crServo.setPower(clamp(power, - 0.8, 0.8));//clamp to make sure not setting to too fast
         } else {
             this.power = output;
             crServo.setPower(output);
         }
     }
+    public double clamp(double x1, double min, double max){
+       return x1 < min ? min : x1 > max ? max : x1;
+    }
+
 
     /**
      * @param pwmRange the PWM range the CR servo should be set to
@@ -182,6 +188,7 @@ public class CRServoEx2<E extends Encoder> extends CRServo {
     public com.qualcomm.robotcore.hardware.CRServo getServo() {
         return this.crServo;
     }
+
 
     /**
      * @param power power to be assigned to the servo if difference is greater than caching tolerance or if power is exactly 0
