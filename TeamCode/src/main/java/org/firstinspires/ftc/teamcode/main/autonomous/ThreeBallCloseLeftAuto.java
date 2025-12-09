@@ -28,11 +28,11 @@ import org.firstinspires.ftc.teamcode.game.ShootSide;
 @Autonomous(name = "3 Close Left", group = "Competition")
 public class ThreeBallCloseLeftAuto extends ThreeBallCloseRightAuto {
     static {
-          startPose = new Pose(144-118.7, 130, Math.toRadians(180 - 43));
-          motifDetectionPose = new Pose(144 - 87, 94, Math.toRadians(180 - 100));
-          shootPose = new Pose(144 - 87, 94, Math.toRadians(230+90));
-          leavePose = new Pose(144 - 85, 67, Math.toRadians(180));
-          shootSide = ShootSide.LEFT;
+        startPose = new Pose(144 - 118, 130, Math.toRadians(135));
+        motifDetectionPose = new Pose(144 -87, 94, Math.toRadians(80));
+        shootPose = new Pose(144 - 87, 94, Math.toRadians(310));
+        parkPose = new Pose(144 - 114, 94, Math.toRadians(330));
+        shootSide = ShootSide.LEFT;
     }
 
 }

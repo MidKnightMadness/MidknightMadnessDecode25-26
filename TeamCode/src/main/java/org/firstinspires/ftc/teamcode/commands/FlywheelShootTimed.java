@@ -45,10 +45,10 @@ public class FlywheelShootTimed extends CommandBase {
         }
         else{
             if(shootDist == TwoWheelShooter.ShootDist.Close){
-                shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Close);
+                shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Close, TwoWheelShooter.RunMode.VelocityControl);
             }
             else{
-                shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Far);
+                shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Far, TwoWheelShooter.RunMode.VelocityControl);
             }
         }
     }

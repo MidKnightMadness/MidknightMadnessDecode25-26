@@ -26,9 +26,11 @@ import org.firstinspires.ftc.teamcode.game.ShootSide;
 @Autonomous(name = "3 Back Left", group = "Competition")
 public class ThreeBallBackLeftAuto extends ThreeBallBackRightAuto {
     static{
-        startPose = new Pose(56, 8,  Math.toRadians(90));
-        shootPose = new Pose(60, 17, Math.toRadians(285));
-        leavePose = new Pose(58, 38, Math.toRadians(180));
+        startPose = new Pose(144-88, 8,  Math.toRadians(90));
+        driveForwardPose = new Pose(144- 87, 14, Math.toRadians(90));
+        shootPose = new Pose(144- 84, 17, Math.toRadians(290));
+        leavePose = new Pose(144- 86, 38, Math.toRadians(180));
+
         shootSide = ShootSide.LEFT;
     }
 

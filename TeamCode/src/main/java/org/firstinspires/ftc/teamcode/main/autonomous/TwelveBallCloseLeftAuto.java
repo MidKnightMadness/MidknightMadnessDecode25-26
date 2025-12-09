@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.main.autonomous;
 
 import com.pedropathing.geometry.Pose;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 
+@Autonomous(name = "12 Close Left", group = "Competition")
 public class TwelveBallCloseLeftAuto extends TwelveBallCloseRightAuto{
     static{
         startPose = new Pose(180 - 118.7, 130, Math.toRadians(137));

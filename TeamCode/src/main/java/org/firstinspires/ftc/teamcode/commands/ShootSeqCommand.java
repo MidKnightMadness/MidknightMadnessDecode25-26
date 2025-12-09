@@ -27,13 +27,13 @@ public class ShootSeqCommand extends CommandBase {
     Follower follower;
     ShootSide shootSide;
     int currBallIndex = 0;
-    public static double angleTolerance = 10;
+    public static double angleTolerance = 20;
     boolean mapDistToShoot;
     Timer timer;
 
     public static double goToGreenSpotWait = 1000;
-    public static double flywheelSpinupWait = 500;
-    public static double betweenShotsWait = 200;
+    public static double flywheelSpinupWait = 1500;
+    public static double betweenShotsWait = 1000;
     boolean goneToStartSpot = false;
     double goneToStartSpotTime = 0;
     boolean flywheelSpinupStarted = false;
@@ -48,6 +48,7 @@ public class ShootSeqCommand extends CommandBase {
     public boolean farthestMoved = false;
     boolean powerFlywheel;
     TwoWheelShooter.ShootDist shootDist;
+    public static double maxTimeShoot = 6700;
     public ShootSeqCommand(Spindexer spindexer, TwoWheelShooter shooter, SpindexerSpot[] seq, Follower follower, ShootSide shootSide, boolean mapDistToShoot, TwoWheelShooter.ShootDist shootDist, boolean powerFlywheel){
         this.spindexer = spindexer;
         this.shooter = shooter;
@@ -59,6 +60,9 @@ public class ShootSeqCommand extends CommandBase {
         this.mapDistToShoot = mapDistToShoot;
         addRequirements(spindexer, shooter);
         timer = new Timer();
+    }
+    @Override
+    public void initialize(){
         timer.restart();
     }
 
@@ -67,27 +71,27 @@ public class ShootSeqCommand extends CommandBase {
         if(currBallIndex >= seq.length) return;
 
         //have spindexer go to start spot if farthest from outtake
-        if(!goneToStartSpot) {
-            farthestMoved = false;
-            if(spindexer.farthestFromAngle(spindexer.getCurrentAngle(), SpotType.OUTTAKE) == seq[0]){
-                spindexer.goToSpot(seq[0], SpotType.PREOUTTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
-                farthestMoved = true;
-            }
+//        if(!goneToStartSpot) {
+//            farthestMoved = false;
+//            if(spindexer.farthestFromAngle(spindexer.getCurrentAngle(), SpotType.OUTTAKE) == seq[0]){
+//                spindexer.goToSpot(seq[0], SpotType.PREOUTTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
+//                farthestMoved = true;
+//            }
+//
+//            if(!farthestMoved){//no need to go to green
+//                goneToStartSpot = true;
+//                goneToStartSpotTime = timer.getTime();
+//                goToGreenSpotWait = 0;
+//            }
+//            else {
+//                goneToStartSpot = true;
+//                goneToStartSpotTime = timer.getTime();
+//            }
+//        }
 
-            if(!farthestMoved){//no need to go to green
-                goneToStartSpot = true;
-                goneToStartSpotTime = timer.getTime();
-                goToGreenSpotWait = 0;
-            }
-            else {
-                goneToStartSpot = true;
-                goneToStartSpotTime = timer.getTime();
-            }
-        }
-
-        if(!(goneToStartSpot && timer.getTime() - goneToStartSpotTime >= goToGreenSpotWait)) {
-            return;
-        }
+//        if(!(timer.getTime() - goneToStartSpotTime >= goToGreenSpotWait)) {
+//            return;
+//        }
 
         //update distance to goal and reset flywheel powers/velocity
         if(powerFlywheel) {
@@ -98,9 +102,9 @@ public class ShootSeqCommand extends CommandBase {
                 shooter.setFlywheelsPower(distToGoal);
             } else {
                 if (shootDist == TwoWheelShooter.ShootDist.Close) {
-                    shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Close);
+                    shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Close, TwoWheelShooter.RunMode.RawPower);
                 } else {
-                    shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Far);
+                    shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Far, TwoWheelShooter.RunMode.RawPower);
                 }
             }
         }
@@ -126,7 +130,7 @@ public class ShootSeqCommand extends CommandBase {
         if(spinStarted && !removedBall){
             Angle diff = spindexer.getCurrentAngle().absGap(currSpot.getOuttakeAngle());
             if (diff.toDegrees() < angleTolerance) {
-                spindexer.removeBall(currSpot.getIndex());
+//                spindexer.removeBall(currSpot.getIndex());
                 spindexer.getTurner().stop();
                 removedBall = true;
                 if (currBallIndex != seq.length - 1) {
@@ -155,7 +159,7 @@ public class ShootSeqCommand extends CommandBase {
 
     @Override
     public boolean isFinished(){
-        if(currBallIndex >= seq.length && lastBallRemoved) {
+        if((currBallIndex >= (seq.length) && lastBallRemoved) || timer.getTime() > maxTimeShoot) {
             return true;
         }
         return false;
@@ -164,6 +168,7 @@ public class ShootSeqCommand extends CommandBase {
     @Override
     public void end(boolean interrupted){
         shooter.stopFlywheels();
-        spindexer.getTurner().getServo().setPower(0);
+        spindexer.goToSpot(SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
+
     }
 }

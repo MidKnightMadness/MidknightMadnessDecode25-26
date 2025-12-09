@@ -21,7 +21,6 @@ import org.firstinspires.ftc.teamcode.commands.IntakeSpindexerCommand;
 import org.firstinspires.ftc.teamcode.commands.IntakeTimeCommand;
 import org.firstinspires.ftc.teamcode.commands.MotifWriteCommand;
 import org.firstinspires.ftc.teamcode.commands.SchedulePathTo;
-import org.firstinspires.ftc.teamcode.commands.SchedulePathToReversed;
 import org.firstinspires.ftc.teamcode.commands.ShootSeqCommand;
 import org.firstinspires.ftc.teamcode.commands.SpindexerGotoSpot;
 import org.firstinspires.ftc.teamcode.commands.TurnToCommand;
@@ -43,20 +42,24 @@ import java.lang.reflect.WildcardType;
 
 @Config
 @Configurable
-@Autonomous(name = "3 Back Right", group = "Competition")
-public class ThreeBallBackRightAuto extends BaseAuto {
+@Autonomous(name = "12 Close Prev Right", group = "Competition")
+public class TwelveBallClosePrevious extends BaseAuto {
     public static double motifDetectionTimeMs = 3000;
     int startPipeline = 1;
-    public static Pose startPose = new Pose(88, 8,  Math.toRadians(90));
-    public static Pose driveForwardPose = new Pose(87, 14, Math.toRadians(90));
-    public static Pose shootPose = new Pose(84, 17, Math.toRadians(250));
-    public static Pose leavePose = new Pose(86, 38, Math.toRadians(0));
-
+    public static Pose startPose = new Pose(118, 130, Math.toRadians(45));
+    public static Pose motifDetectionPose = new Pose(87, 94, Math.toRadians(100));
+    public static Pose shootPose = new Pose(87, 94, Math.toRadians(230));
+    public static Pose parkPose = new Pose(114, 94, Math.toRadians(210));
+    public static Pose openGatePose = new Pose(136, 76, Math.toRadians(180));
+    public static Pose intakeOnePose = new Pose(110, 84, Math.toRadians(0));
+    public static Pose intakeTwoPose = new Pose(110, 60, Math.toRadians(0));
+    public static Pose intakeThreePose = new Pose(110, 36, Math.toRadians(0));
+    public static double intakeDistForward = 14;
     PathChain toMotifPath;
     MotifEnums.Motif motifPattern = MotifEnums.Motif.GPP;
     MotifWriteCommand motifCommand = null;
 
-    public static ShootSide shootSide = ShootSide.RIGHT;
+    ShootSide shootSide = ShootSide.RIGHT;
     Pose currentPose;
 
     Command firstPath;
@@ -96,14 +99,14 @@ public class ThreeBallBackRightAuto extends BaseAuto {
     //keep these empty and build the path using follower's current Pose
     @Override
     protected void buildPaths(){
-//        toMotifPath = follower.pathBuilder()
-//                .addPath(new BezierLine(startPose, motifDetectionPose))
-//                .setLinearHeadingInterpolation(startPose.getHeading(), motifDetectionPose.getHeading())
-//                .setHeadingConstraint(headingError)
-//                .setTimeoutConstraint(timeOutConstraint)
-//                .setTranslationalConstraint(pathDistThresholdMin)
-//                .setTValueConstraint(0.97)
-//                .build();
+        toMotifPath = follower.pathBuilder()
+                .addPath(new BezierLine(startPose, motifDetectionPose))
+                .setLinearHeadingInterpolation(startPose.getHeading(), motifDetectionPose.getHeading())
+                .setHeadingConstraint(headingError)
+                .setTimeoutConstraint(timeOutConstraint)
+                .setTranslationalConstraint(pathDistThresholdMin)
+                .setTValueConstraint(0.97)
+                .build();
     }
 
 
@@ -128,10 +131,10 @@ public class ThreeBallBackRightAuto extends BaseAuto {
     protected Command preMotifSequence(){
         motifCommand = new MotifWriteCommand(limelight, motifDetectionTimeMs);
 
-//        firstPath = new FollowPathCommand(follower, toMotifPath, true).setGlobalMaxPower(0.9);
+        firstPath = new FollowPathCommand(follower, toMotifPath, true).setGlobalMaxPower(0.9);
         return new SequentialCommandGroup(
                 setDefaultStartColors(),
-//                firstPath,
+                firstPath,
                 motifCommand
         );
 
@@ -161,7 +164,6 @@ public class ThreeBallBackRightAuto extends BaseAuto {
 //        limelight.stop();//temporarily turn it off to hand to localizer
         return new SequentialCommandGroup(
 //              getToShootCommand(1000),
-                forwardCommand(),
                 new WaitCommand(waitTime),
                 getToShootCommand(500),
 //                startShoot()
@@ -177,14 +179,14 @@ public class ThreeBallBackRightAuto extends BaseAuto {
 //                getToShootCommand(500)
 //              shoot(),
 //
-                //    getToLineNum(2, 500),
+            //    getToLineNum(2, 500),
 //              intake(1),
-                //   getToShootCommand(500),
+             //   getToShootCommand(500),
 //              shoot(),
 //
-                //  getToLineNum(3, 500),
+              //  getToLineNum(3, 500),
 //              intake(3),
-                //  getToShootCommand(500),
+              //  getToShootCommand(500),
 //              shoot(),
 //
                 park(100)
@@ -196,33 +198,27 @@ public class ThreeBallBackRightAuto extends BaseAuto {
 
     }
 
-    private SequentialCommandGroup forwardCommand() {
-        return new SequentialCommandGroup(
-                new SchedulePathTo(follower, driveForwardPose, headingError, timeOutConstraint, pathDistThresholdMin)
-        );
-    }
-
     private Command intakePower(long milliSec) {
         return new IntakeTimeCommand(intake, milliSec);
     }
 
-//    protected SequentialCommandGroup goToMotifDetection(long milliSec){
-//        return new SequentialCommandGroup(
-//                new SchedulePathTo(follower, motifDetectionPose, headingError, timeOutConstraint, pathDistThresholdMin),
-//                new WaitCommand(milliSec)
-//        );
-//    }
+    protected SequentialCommandGroup goToMotifDetection(long milliSec){
+        return new SequentialCommandGroup(
+                new SchedulePathTo(follower, motifDetectionPose, headingError, timeOutConstraint, pathDistThresholdMin),
+                new WaitCommand(milliSec)
+        );
+    }
     protected SequentialCommandGroup setDefaultStartColors(){
         return new SequentialCommandGroup(
                 new InstantCommand(() -> spindexer.setBallColors(startBallColors))
         );
     }
-//    protected SequentialCommandGroup openGate(long milliSec){
-//        return new SequentialCommandGroup(
-//                new SchedulePathTo(follower, openGatePose, headingError, timeOutConstraint, pathDistThresholdMin),
-//                new WaitCommand(milliSec)
-//        );
-//    }
+    protected SequentialCommandGroup openGate(long milliSec){
+        return new SequentialCommandGroup(
+                new SchedulePathTo(follower, openGatePose, headingError, timeOutConstraint, pathDistThresholdMin),
+                new WaitCommand(milliSec)
+        );
+    }
 
     protected Command intake(int spot, long milliSec){
 //        autoIntakeCommand = new AutoIntakeCommand(spindexer, intake, intakePower, intakeTime);
@@ -233,24 +229,24 @@ public class ThreeBallBackRightAuto extends BaseAuto {
 //        );
         return intakePower(milliSec);
     }
-//    protected SequentialCommandGroup driveToIntakeEnd(int spot, long milliSec){
-//        Pose intakePose = (spot == 1) ? intakeOnePose : (spot == 2) ? intakeTwoPose : intakeThreePose;
-//
-//        follower.update();
-//        return new SequentialCommandGroup(
-//                new SchedulePathTo(follower, new Pose(intakePose.getX() + xChangeIntake, intakePose.getY(), intakePose.getHeading()), headingError, timeOutConstraint, pathDistThresholdMin),
-//                new WaitCommand(milliSec));
-//    }
+    protected SequentialCommandGroup driveToIntakeEnd(int spot, long milliSec){
+        Pose intakePose = (spot == 1) ? intakeOnePose : (spot == 2) ? intakeTwoPose : intakeThreePose;
+
+        follower.update();
+        return new SequentialCommandGroup(
+                new SchedulePathTo(follower, new Pose(intakePose.getX() + xChangeIntake, intakePose.getY(), intakePose.getHeading()), headingError, timeOutConstraint, pathDistThresholdMin),
+                new WaitCommand(milliSec));
+    }
 
     protected SequentialCommandGroup park(long milliSec){
         return new SequentialCommandGroup(
-                new SchedulePathTo(follower, leavePose, headingError, timeOutConstraint, pathDistThresholdMin),
+                new SchedulePathTo(follower, parkPose, headingError, timeOutConstraint, pathDistThresholdMin),
                 new WaitCommand(milliSec)
         );
     }
     protected SequentialCommandGroup startShoot(){
         return new SequentialCommandGroup(
-                new ShootSeqCommand(spindexer, shooter, SpindexerSpot.convertFromindex(shootArray), follower, shootSide, false, TwoWheelShooter.ShootDist.Far, true)
+                new ShootSeqCommand(spindexer, shooter, SpindexerSpot.convertFromindex(shootArray), follower, shootSide, false, TwoWheelShooter.ShootDist.Close, true)
         );
     }
     protected SequentialCommandGroup shootOptimal(MotifEnums.Motif pattern){
@@ -272,9 +268,9 @@ public class ThreeBallBackRightAuto extends BaseAuto {
     }
     protected SequentialCommandGroup getToLineNum(int lineNum, long milliSec){
         SchedulePathTo command = null;
-//        if(lineNum == 1) command = new SchedulePathTo(follower, intakeOnePose, headingError, timeOutConstraint, pathDistThresholdMin);
-//        else if(lineNum == 2) command =  new SchedulePathTo(follower, intakeTwoPose, headingError, timeOutConstraint, pathDistThresholdMin);
-//        else command = new SchedulePathTo(follower, intakeThreePose, headingError, timeOutConstraint, pathDistThresholdMin);
+        if(lineNum == 1) command = new SchedulePathTo(follower, intakeOnePose, headingError, timeOutConstraint, pathDistThresholdMin);
+        else if(lineNum == 2) command =  new SchedulePathTo(follower, intakeTwoPose, headingError, timeOutConstraint, pathDistThresholdMin);
+        else command = new SchedulePathTo(follower, intakeThreePose, headingError, timeOutConstraint, pathDistThresholdMin);
 
         return new SequentialCommandGroup(
                 command,

@@ -84,7 +84,7 @@ public class MotifWriteCommand extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return (timer.getTime() > maxTimeMs) || motifPattern != MotifEnums.Motif.NONE;
+        return (timer.getTime() > maxTimeMs);
     }
 
 

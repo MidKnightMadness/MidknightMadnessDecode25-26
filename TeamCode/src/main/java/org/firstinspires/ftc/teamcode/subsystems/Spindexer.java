@@ -31,9 +31,9 @@ public class Spindexer extends SubsystemBase {
     //Ball sensors(two) facing each other right in the intake before it goes into the spindexer
     //public static double intakeSpinPower = 0.3;
     public static double shootRawPower = 1;
-    //Old coefficients:   public static PIDFCoefficients turnerCoefficients = new PIDFCoefficients(0.003, 0, 0, 0);
+    public static PIDFCoefficients turnerCoefficients = new PIDFCoefficients(0.003, 0, 0, 0);
 
-    public static PIDFCoefficients turnerCoefficients = new PIDFCoefficients(0.01, 0, 0.001, 0);
+    //public static PIDFCoefficients turnerCoefficients = new PIDFCoefficients(0.01, 0, 0.001, 0);
     // 0 is defined as the position of the shooter
     public static Angle detectRange = Angle.fromDegrees(25); // How far off from the center of the spot that you detect. You don't want to trust measurements that are too off from the center
     public static Angle finishedThreshold = Angle.fromDegrees(25); // Threshold at which it's finished turning to a spot
@@ -68,7 +68,7 @@ public class Spindexer extends SubsystemBase {
         ).setReversed(true);
         turner = new CRServoEx2<>(
                 hardwareMap, ConfigNames.turner,
-                turnerEncoder, CRServoEx2.RunMode.RawPower
+                turnerEncoder, CRServoEx2.RunMode.OptimizedPositionalControl
         ).setPIDF(turnerCoefficients).setReversed(true);
         this.useColorSensors = useColorSensors;
         if (useColorSensors) {

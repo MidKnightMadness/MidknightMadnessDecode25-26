@@ -16,7 +16,6 @@ import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 import com.seattlesolvers.solverslib.pedroCommand.TurnCommand;
 
-
 import org.firstinspires.ftc.teamcode.commands.AutoIntakeCommand;
 import org.firstinspires.ftc.teamcode.commands.FlywheelShootTimed;
 import org.firstinspires.ftc.teamcode.commands.IntakeSpindexerCommand;
@@ -45,7 +44,7 @@ import java.lang.reflect.WildcardType;
 
 @Config
 @Configurable
-@Autonomous(name = "12 Back Left", group = "Competition")
+@Autonomous(name = "12 Close Right", group = "Competition")
 public class TwelveBallCloseRightAuto extends BaseAuto {
     public static double motifDetectionTimeMs = 3000;
     int startPipeline = 1;
@@ -175,7 +174,7 @@ public class TwelveBallCloseRightAuto extends BaseAuto {
 //        limelight.stop();//temporarily turn it off to hand to localizer
         return new SequentialCommandGroup(
               shootInitial(),
-              line1Commands(),
+//                line1Commands(),
 //              line2Commands(),
 //              line3Commands(),
               parkCommands()
@@ -370,9 +369,11 @@ public class TwelveBallCloseRightAuto extends BaseAuto {
             telemetry.addData("Spindexer Ball Color 0", spindexer.getBallColors()[0]);
             telemetry.addData("Spindexer Ball Color 1", spindexer.getBallColors()[1]);
             telemetry.addData("Spindexer Ball Color 2", spindexer.getBallColors()[2]);
-            telemetry.addData("Spindexer Optimal Sequence 0", spindexer.getSequence()[0]);
-            telemetry.addData("Spindexer Optimal Sequence 1", spindexer.getSequence()[1]);
-            telemetry.addData("Spindexer Optimal Sequence 1", spindexer.getSequence()[2]);
+            if(spindexer.getSequence()!= null) {
+                telemetry.addData("Spindexer Optimal Sequence 0", spindexer.getSequence()[0]);
+                telemetry.addData("Spindexer Optimal Sequence 1", spindexer.getSequence()[1]);
+                telemetry.addData("Spindexer Optimal Sequence 1", spindexer.getSequence()[2]);
+            }
         }
         telemetry.addData("All Occupied", spindexer.allOccuppiedBallColors());
 

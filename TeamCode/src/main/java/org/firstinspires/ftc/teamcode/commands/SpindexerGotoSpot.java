@@ -34,6 +34,7 @@ public class SpindexerGotoSpot extends CommandBase {
         addRequirements(this.spindexer);
     }
 
+
     @Override
     public void execute() {
         spindexer.goToSpot(spot, spotType, runMode);

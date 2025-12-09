@@ -64,7 +64,7 @@ public class FollowerBuilder {
         return setLocalizer(new com.pedropathing.ftc.localization.localizers.PinpointLocalizer(hardwareMap, lConstants));
     }
     public FollowerBuilder pinpointLocalizerCustom(PinpointConstants lConstants, Pose startPose) {
-        return setLocalizer(new PinpointLocalizer(hardwareMap, lConstants, startPose));
+        return setLocalizer(new org.firstinspires.ftc.teamcode.localization.pinpoint.PinpointLocalizer(hardwareMap, lConstants, startPose));
     }
 
     public FollowerBuilder threeWheelIMULocalizer(ThreeWheelIMUConstants lConstants) {

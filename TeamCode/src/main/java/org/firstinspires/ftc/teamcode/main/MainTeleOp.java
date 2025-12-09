@@ -83,16 +83,16 @@ public class MainTeleOp extends CommandOpMode {
     GraphManager graphM;
 
     public static double autoIntakePower = 1;
-    public static double[] pidBotGainsShooter = new double[]{0.0004, 0, 0.00001};
+    public static double[] pidBotGainsShooter = new double[]{0.001, 0, 0.0001};
     public static double[] kBotGainsShooter = new double[]{0, 0.00005, 0};
-    public static double[] pidTopGainsShooter = new double[]{0.0004, 0, 0.00001};
+    public static double[] pidTopGainsShooter = new double[]{0.001, 0, 0.0001};
     public static double[] kTopGainsShooter = new double[]{0.02, 0.00005, 0};
     public static double[] pidIntakeGains = new double[]{0.0004, 0.0, 0.00001};
     public static double[] kIntakeGains = new double[]{0, 0, 0};
     double topShooterPower = 0.8;
     double botShooterPower = 0.6;
     Pose toCloseLeftShoot = new Pose(72, 72, Math.toRadians(135));
-    Pose toCloseRightShoot = new Pose(72, 72, Math.toRadians(135));
+    Pose toCloseRightShoot = new Pose(72, 72, Math.toRadians(45));
     Pose toFarLeftShoot = new Pose(67, 11, Math.toRadians(110));
     Pose toFarRightShoot = new Pose(5, 11, Math.toRadians(70));
     ShootSide shootSide = ShootSide.LEFT;
@@ -146,12 +146,17 @@ public class MainTeleOp extends CommandOpMode {
     public static double headingErrorMax = 0.025;
     public static double timeOutConstraint = 200;
 
+    boolean spindexerGoingToSpot = false;
+    int goToSpotCurrNum = 0;
+    SpotType gotToSpotType = SpotType.INTAKE;
+
     BallColor[] defaultBallColor = new BallColor[]{BallColor.PURPLE, BallColor.GREEN, BallColor.PURPLE};
     @Override
     public void initialize() {
         CommandScheduler.getInstance().setBulkReading(
                 hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
         );
+        CommandScheduler.getInstance().cancelAll();
 
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         graphM = PanelsGraph.INSTANCE.getManager();
@@ -191,6 +196,7 @@ public class MainTeleOp extends CommandOpMode {
         spindexer = new Spindexer(hardwareMap, true, new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE});
         spindexer.initAngle(Angle.fromDegrees(0));
         spindexer.setMode(spindexerRunMode);
+        spindexer.getTurner().stop();
 
         intake = new Intake(hardwareMap, intakeRunMode);
         if(intakeRunMode == Intake.RunMode.VelocityControl){
@@ -256,7 +262,9 @@ public class MainTeleOp extends CommandOpMode {
     }
 
     public void updateShootDist(){
-        currentShootDist = (startPose.getY() > 20) ? TwoWheelShooter.ShootDist.Close : TwoWheelShooter.ShootDist.Far;
+        if(currentPose != null) {
+            currentShootDist = (startPose.getY() > 20) ? TwoWheelShooter.ShootDist.Close : TwoWheelShooter.ShootDist.Far;
+        }
     }
 
 
@@ -356,8 +364,8 @@ public class MainTeleOp extends CommandOpMode {
         currentPose = follower.getPose();
 
         setAlignTurnPower();
-        driveRobot();//includes automations
         manualChangeShootSide();
+        driveRobot();//includes automations
         manualChangeMotif();
         //change min/max speed
         if (gamepad1.rightBumperWasPressed()) {
@@ -412,7 +420,7 @@ public class MainTeleOp extends CommandOpMode {
             followPathCommand = new FollowPathCommand(follower, pathChain);
             schedule(followPathCommand);
         }
-        else if(gamepad1.xWasPressed()){
+        else if(gamepad1.yWasPressed()){
             if(followPathCommand != null && !followPathCommand.isFinished()) {
                 followPathCommand.end(true);
                 autoDriveToShoot = false;
@@ -433,55 +441,63 @@ public class MainTeleOp extends CommandOpMode {
     private void spindexerCommands(){
         //OUTTAKE go to spots
         if(!autoSpindexer && gamepad2.dpadLeftWasPressed() && !autoIntake){
-            autoSpindexer = true;
-            spindexerGotoSpot = new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex(0), SpotType.OUTTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0);
-            schedule(spindexerGotoSpot);
+            spindexerGoingToSpot = true;
+            goToSpotCurrNum = 0;
+            gotToSpotType = SpotType.OUTTAKE;
         }
-        if(!autoSpindexer && gamepad2.dpadDownWasPressed() && !autoIntake){
-            autoSpindexer = true;
-            spindexerGotoSpot = new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex(1), SpotType.OUTTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0);
-            schedule(spindexerGotoSpot);
+        else if(!autoSpindexer && gamepad2.dpadDownWasPressed() && !autoIntake){
+            spindexerGoingToSpot = true;
+           goToSpotCurrNum = 1;
+           gotToSpotType = SpotType.OUTTAKE;
         }
-        if(!autoSpindexer && gamepad2.dpadRightWasPressed() && !autoIntake){
-           autoSpindexer = true;
-           spindexerGotoSpot = new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex(2), SpotType.OUTTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0);
-           schedule(spindexerGotoSpot);
+        else if(!autoSpindexer && gamepad2.dpadRightWasPressed() && !autoIntake){
+            spindexerGoingToSpot = true;
+            goToSpotCurrNum = 2;
+            gotToSpotType = SpotType.OUTTAKE;
+        }
+        else if(!autoSpindexer && gamepad2.xWasPressed() && !autoIntake){
+            spindexerGoingToSpot = true;
+            goToSpotCurrNum = 0;
+            gotToSpotType = SpotType.INTAKE;
+        }
+        else if(!autoSpindexer && gamepad2.aWasPressed() && !autoIntake){
+            spindexerGoingToSpot = true;
+            goToSpotCurrNum = 1;
+            gotToSpotType = SpotType.OUTTAKE;
+        }
+        else if(!autoSpindexer && gamepad2.bWasPressed() && !autoIntake){
+            spindexerGoingToSpot = true;
+            goToSpotCurrNum = 2;
+            gotToSpotType = SpotType.OUTTAKE;
         }
 
-        if(!autoSpindexer && gamepad2.xWasPressed() && !autoIntake){
-            autoSpindexer = true;
-            spindexerGotoSpot = new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex(0), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0);
-            schedule(spindexerGotoSpot);
-        }
-        if(!autoSpindexer && gamepad2.aWasPressed() && !autoIntake){
-            autoSpindexer = true;
-            spindexerGotoSpot = new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex(1), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0);
-            schedule(spindexerGotoSpot);
-        }
-        if(!autoSpindexer && gamepad2.bWasPressed() && !autoIntake){
-            autoSpindexer = true;
-            spindexerGotoSpot = new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex(2), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0);
-            schedule(spindexerGotoSpot);
-        }
 
-
+        if(spindexerGoingToSpot){
+            spindexerGoingToSpot = false;
+            autoSpindexer = true;
+            spindexer.getTurner().setRunMode(CRServoEx2.RunMode.OptimizedPositionalControl);
+            spindexerGotoSpot = new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex(goToSpotCurrNum), gotToSpotType, CRServoEx2.RunMode.OptimizedPositionalControl, 0);
+            schedule(spindexerGotoSpot);
+        }
 
         //back to 0 position give back manual control to the driver
         if(autoSpindexer && spindexerGotoSpot.isFinished() && !autoIntake){
             autoSpindexer = false;
         }
 
+        //manual exit - exit out of auto command
         if(!autoIntake && gamepad2.dpadUpWasPressed()){
-            autoSpindexer = !autoSpindexer;
-            //trying to turn off spindexer
-            if(!autoSpindexer && spindexerGotoSpot != null && !spindexerGotoSpot.isFinished()) {
+            if(autoSpindexer && spindexerGotoSpot != null && !spindexerGotoSpot.isFinished()){
                 spindexerGotoSpot.end(true);
+                autoSpindexer = false;
             }
+            //trying to turn off spindexer
         }
 
         //manual intake powering
         if(!autoIntake && !autoSpindexer){
-            spindexerServo.setPower(gamepad2.left_stick_y * currturnerSpeed * change);
+            spindexer.setMode(CRServoEx2.RunMode.RawPower);
+            spindexer.getTurner().set(gamepad2.left_stick_y * currturnerSpeed * change);
         }
     }
     private void intakeCommands(){
@@ -510,6 +526,7 @@ public class MainTeleOp extends CommandOpMode {
                 if(autoIntakeCommand != null && !autoIntakeCommand.isFinished()){
                     autoIntakeCommand.end(true);
                 }
+                autoIntake = false;
             }
         }
         else{
@@ -524,19 +541,17 @@ public class MainTeleOp extends CommandOpMode {
             seqCommand = new ShootSeqCommand(spindexer, shooter, spindexer.getOptimalSequence(pattern), follower, shootSide, true, TwoWheelShooter.ShootDist.Close, true);
         }
         if(gamepad2.dpadUpWasPressed()){
-            if(autoShootSeq && !seqCommand.isFinished()){
+            if(autoShootSeq && seqCommand != null && seqCommand.isFinished()){
+                spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE});
+                seqCommand.end(true);
                 autoShootSeq = false;
             }
         }
         if(autoShootSeq && seqCommand.isFinished()){
+            spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE});
             autoShootSeq = false;
         }
         if(!autoShootSeq) {
-            if(seqCommand != null && !seqCommand.isFinished()) {
-                seqCommand.end(true);
-            }
-            spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE});
-
             handleShooterInput();
         }
     }
@@ -569,7 +584,7 @@ public class MainTeleOp extends CommandOpMode {
             }
             else {
                 currentShootDist = TwoWheelShooter.ShootDist.Close;
-                shooter.setFlywheelsPower(currentShootDist);
+                shooter.setFlywheelsPower(currentShootDist, shooterRunMode);
             }
         } else if (gamepad2.leftBumperWasPressed()) {
             if(useLUT){
@@ -577,7 +592,7 @@ public class MainTeleOp extends CommandOpMode {
             }
             else {
                 currentShootDist = TwoWheelShooter.ShootDist.Far;
-                shooter.setFlywheelsPower(currentShootDist);
+                shooter.setFlywheelsPower(currentShootDist, shooterRunMode);
             }
         }
         if (gamepad2.right_trigger > 0.5) {
@@ -632,12 +647,16 @@ public class MainTeleOp extends CommandOpMode {
         telemetry.addData("Spindexer Angle", spindexer.getCurrentAngle());
         telemetry.addData("Spindexer Norm Angle", spindexer.getEncoder().getAngle());
         telemetry.addData("Spindexer Raw Angle", spindexer.getEncoder().getAngleUnnormalized());
-        telemetry.addData("Spindexer Seq 0", spindexer.getSequence()[0]);
-        telemetry.addData("Spindexer Seq 1", spindexer.getSequence()[1]);
-        telemetry.addData("Spindexer Seq 2", spindexer.getSequence()[2]);
-        telemetry.addData("Spindexer Ball Color 0", spindexer.getBallColors()[0]);
-        telemetry.addData("Spindexer Ball Color 1", spindexer.getBallColors()[1]);
-        telemetry.addData("Spindexer Ball Color 2", spindexer.getBallColors()[2]);
+        if(spindexer.getSequence() != null) {
+            telemetry.addData("Spindexer Seq 0", spindexer.getSequence()[0]);
+            telemetry.addData("Spindexer Seq 1", spindexer.getSequence()[1]);
+            telemetry.addData("Spindexer Seq 2", spindexer.getSequence()[2]);
+        }
+        if(spindexer.getBallColors() != null) {
+            telemetry.addData("Spindexer Ball Color 0", spindexer.getBallColors()[0]);
+            telemetry.addData("Spindexer Ball Color 1", spindexer.getBallColors()[1]);
+            telemetry.addData("Spindexer Ball Color 2", spindexer.getBallColors()[2]);
+        }
 
 
         telemetryM.update();;

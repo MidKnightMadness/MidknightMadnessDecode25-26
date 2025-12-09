@@ -29,7 +29,7 @@ public class SchedulePathTo extends SequentialCommandGroup {
         Pose currentPose = follower.getPose();
 
         PathChain pathChain = follower.pathBuilder()
-                .addPath(new BezierLine(follower.getPose(), targetPose))
+                .addPath(new BezierLine(currentPose, targetPose))
                 .setLinearHeadingInterpolation(currentPose.getHeading(), targetPose.getHeading())
                 .setHeadingConstraint(headingConstraint)
                 .setTimeoutConstraint(timeOutConstraint)
