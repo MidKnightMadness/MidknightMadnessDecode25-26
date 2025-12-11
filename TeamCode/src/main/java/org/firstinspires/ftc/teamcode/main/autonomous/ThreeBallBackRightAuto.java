@@ -40,6 +40,8 @@ import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
 import java.lang.reflect.WildcardType;
+import java.util.Arrays;
+import java.util.Objects;
 
 @Config
 @Configurable
@@ -47,9 +49,9 @@ import java.lang.reflect.WildcardType;
 public class ThreeBallBackRightAuto extends BaseAuto {
     public static double motifDetectionTimeMs = 3000;
     int startPipeline = 1;
-    public static Pose startPose = new Pose(88, 8,  Math.toRadians(90));
-    public static Pose driveForwardPose = new Pose(87, 14, Math.toRadians(90));
-    public static Pose shootPose = new Pose(84, 17, Math.toRadians(250));
+    public static  Pose startPose = new Pose(88, 8,  Math.toRadians(90));
+    public static Pose driveForwardPose = new Pose(88, 14, Math.toRadians(90));
+    public static Pose shootPose = new Pose(84, 17, Math.toRadians(245));
     public static Pose leavePose = new Pose(86, 38, Math.toRadians(0));
 
     PathChain toMotifPath;
@@ -69,7 +71,7 @@ public class ThreeBallBackRightAuto extends BaseAuto {
     public static double xChangeIntake = 20;
     public static int[] shootArray = new int[]{2, 1, 0};
 
-    TwoWheelShooter.RunMode shooterRunMode = TwoWheelShooter.RunMode.RawPower;
+    TwoWheelShooter.RunMode shooterRunMode = TwoWheelShooter.RunMode.VelocityControl;
 
     private final BallColor[] startBallColors = new BallColor[] {BallColor.PURPLE, BallColor.PURPLE, BallColor.GREEN};
     SpindexerSpot[] seq = SpindexerSpot.convertFromindex(new int[]{0, 0, 0});
@@ -77,6 +79,7 @@ public class ThreeBallBackRightAuto extends BaseAuto {
     SpindexerSpot[] spots;
 
     ShootSeqCommand seqTestCommand;
+    PathChain forwardPath;
     @Override
     protected Pose getStartPose(){
         return startPose;
@@ -96,14 +99,14 @@ public class ThreeBallBackRightAuto extends BaseAuto {
     //keep these empty and build the path using follower's current Pose
     @Override
     protected void buildPaths(){
-//        toMotifPath = follower.pathBuilder()
-//                .addPath(new BezierLine(startPose, motifDetectionPose))
-//                .setLinearHeadingInterpolation(startPose.getHeading(), motifDetectionPose.getHeading())
-//                .setHeadingConstraint(headingError)
-//                .setTimeoutConstraint(timeOutConstraint)
-//                .setTranslationalConstraint(pathDistThresholdMin)
-//                .setTValueConstraint(0.97)
-//                .build();
+        forwardPath = follower.pathBuilder()
+                .addPath(new BezierLine(startPose, driveForwardPose))
+                .setLinearHeadingInterpolation(startPose.getHeading(), driveForwardPose.getHeading())
+                .setHeadingConstraint(headingError)
+                .setTimeoutConstraint(timeOutConstraint)
+                .setTranslationalConstraint(pathDistThresholdMin)
+                .setTValueConstraint(0.97)
+                .build();
     }
 
 
@@ -120,7 +123,7 @@ public class ThreeBallBackRightAuto extends BaseAuto {
         }
         return false;
     }
-    public static long waitTime = 500;
+    public static long waitTime = 1000;
     AutoIntakeCommand autoIntakeCommand;
     boolean autoStart = false;
 
@@ -131,8 +134,9 @@ public class ThreeBallBackRightAuto extends BaseAuto {
 //        firstPath = new FollowPathCommand(follower, toMotifPath, true).setGlobalMaxPower(0.9);
         return new SequentialCommandGroup(
                 setDefaultStartColors(),
-//                firstPath,
+                forwardCommand(500),
                 motifCommand
+//                firstPath,
         );
 
     }
@@ -143,27 +147,27 @@ public class ThreeBallBackRightAuto extends BaseAuto {
     @Override
     protected void initializeMechanisms() {
         limelight = hardwareMap.get(Limelight3A.class, ConfigNames.limelight);
-        spindexer = new Spindexer(hardwareMap, true).setBallColors(startBallColors);
+        spindexer = new Spindexer(hardwareMap, false).setBallColors(startBallColors);
 
         shooter = new TwoWheelShooter(hardwareMap, shooterRunMode);
-        shooter.setRunMode(TwoWheelShooter.RunMode.RawPower);
+//        shooter.setRunMode(TwoWheelShooter.RunMode.RawPower);
         intake = new Intake(hardwareMap, Intake.RunMode.RawPower);
 
-//        shooter.low.setVeloCoefficients(pidBotGainsShooter[0], pidBotGainsShooter[1], pidBotGainsShooter[2]);
-//        shooter.high.setVeloCoefficients(pidTopGainsShooter[0], pidTopGainsShooter[1], pidTopGainsShooter[2]);
-//        shooter.low.setFeedforwardCoefficients(kBotGainsShooter[0], kBotGainsShooter[1], kBotGainsShooter[2]);
-//        shooter.high.setFeedforwardCoefficients(kTopGainsShooter[0], kTopGainsShooter[1], kTopGainsShooter[2]);
-
+        if(shooterRunMode == TwoWheelShooter.RunMode.VelocityControl) {
+            shooter.low.setVeloCoefficients(pidBotGainsShooter[0], pidBotGainsShooter[1], pidBotGainsShooter[2]);
+            shooter.high.setVeloCoefficients(pidTopGainsShooter[0], pidTopGainsShooter[1], pidTopGainsShooter[2]);
+            shooter.low.setFeedforwardCoefficients(kBotGainsShooter[0], kBotGainsShooter[1], kBotGainsShooter[2]);
+            shooter.high.setFeedforwardCoefficients(kTopGainsShooter[0], kTopGainsShooter[1], kTopGainsShooter[2]);
+        }
     }
 
     @Override
     protected Command postMotifSequence(){
-//        limelight.stop();//temporarily turn it off to hand to localizer
+        limelight.stop();//temporarily turn it off to hand to localizer
         return new SequentialCommandGroup(
-//              getToShootCommand(1000),
-                forwardCommand(),
+//              getToShootCommand(1000)
                 new WaitCommand(waitTime),
-                getToShootCommand(500),
+                getToShootCommand(1500),
 //                startShoot()
                 shootOptimal(motifPattern),
 //                intakePower(intakeHelpTime)),
@@ -196,9 +200,10 @@ public class ThreeBallBackRightAuto extends BaseAuto {
 
     }
 
-    private SequentialCommandGroup forwardCommand() {
+    private SequentialCommandGroup forwardCommand(long waitTime) {
         return new SequentialCommandGroup(
-                new SchedulePathTo(follower, driveForwardPose, headingError, timeOutConstraint, pathDistThresholdMin)
+                new FollowPathCommand(follower, forwardPath).setGlobalMaxPower(0.5),
+                new WaitCommand(waitTime)
         );
     }
 
@@ -255,16 +260,32 @@ public class ThreeBallBackRightAuto extends BaseAuto {
     }
     protected SequentialCommandGroup shootOptimal(MotifEnums.Motif pattern){
         if(pattern == MotifEnums.Motif.GPP){
-            spots = SpindexerSpot.convertFromindex(new int[]{2, 1, 0});
+            if(Arrays.equals(spindexer.getBallColors(), new BallColor[]{BallColor.PURPLE, BallColor.PURPLE, BallColor.GREEN})){
+                spots = SpindexerSpot.convertFromindex(new int[]{2, 1, 0});
+            }
+            else if(Arrays.equals(spindexer.getBallColors(), new BallColor[]{BallColor.PURPLE, BallColor.GREEN, BallColor.PURPLE})){
+                spots = SpindexerSpot.convertFromindex(new int[]{1, 2, 0});
+            }
         }else if(pattern == MotifEnums.Motif.PGP){
-            spots = SpindexerSpot.convertFromindex(new int[]{1, 2, 0});
+            if(Arrays.equals(spindexer.getBallColors(), new BallColor[]{BallColor.PURPLE, BallColor.PURPLE, BallColor.GREEN})){
+                spots = SpindexerSpot.convertFromindex(new int[]{1, 2, 0});
+            }
+            else if(Arrays.equals(spindexer.getBallColors(), new BallColor[]{BallColor.PURPLE, BallColor.GREEN, BallColor.PURPLE})){
+                spots = SpindexerSpot.convertFromindex(new int[]{2, 1, 0});
+            }
         }else if(pattern == MotifEnums.Motif.PPG){
-            spots = SpindexerSpot.convertFromindex(new int[]{1, 0, 2});
+            if (Arrays.equals(spindexer.getBallColors(), new BallColor[]{BallColor.PURPLE, BallColor.PURPLE, BallColor.GREEN})) {
+                spots = SpindexerSpot.convertFromindex(new int[]{1, 0, 2});
+            }
+            else if(Arrays.equals(spindexer.getBallColors(), new BallColor[]{BallColor.PURPLE, BallColor.GREEN, BallColor.PURPLE})){
+                spots = SpindexerSpot.convertFromindex(new int[]{2, 0, 1});
+            }
+
         }else {
             spots = SpindexerSpot.convertFromindex(new int[]{1, 0, 2});
         }
 
-        seqTestCommand = new ShootSeqCommand(spindexer, shooter, spots, follower, shootSide, false, TwoWheelShooter.ShootDist.Close, true);
+        seqTestCommand = new ShootSeqCommand(spindexer, shooter, spots, follower, shootSide, false, TwoWheelShooter.ShootDist.Far, true);
         return new SequentialCommandGroup(
                 seqTestCommand,
                 new InstantCommand(() -> spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE}))
@@ -289,7 +310,7 @@ public class ThreeBallBackRightAuto extends BaseAuto {
         );
     }
 
-
+    @Override
     protected void updateTelemetry(){
         // Update pose & follower
         follower.update();
@@ -341,6 +362,8 @@ public class ThreeBallBackRightAuto extends BaseAuto {
             addToAllTelemGraph("Shooter Low Flywheel Vel", shooter.low.getVelocity());
             addToAllTelemGraph("Shooter High Flywheel Vel", shooter.high.getVelocity());
             telemetry.addData("Shooter RunMode", shooterRunMode);
+            telemetry.addData("Shooter Low RunMode", shooter.low.motorEx.getMode());
+            telemetry.addData("Shooter High RunMode", shooter.low.motorEx.getMode());
         }
 
         //Spindexer

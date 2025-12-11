@@ -48,14 +48,14 @@ public class ColorSensorTesting extends OpMode {
 //    ColorNormalizer rNorm;
 
     // Green ball thresholds
-    public static float greenHMin = 100f,  greenHMax = 180f;
-    public static float greenSMin = 0.0f, greenSMax = 1f;
-    public static float greenVMin = 0.0f, greenVMax = 1f;
+    public static float greenHMin = 180f,  greenHMax = 180f;
+    public static float greenSMin = 0.25f, greenSMax = 1f;
+    public static float greenVMin = 0.25f, greenVMax = 1f;
 
     // Purple ball thresholds
     public static float purpleHMin = 0f, purpleHMax = 60f;
-    public static float purpleSMin = 0f, purpleSMax = 1f;
-    public static float purpleVMin = 0f, purpleVMax = 1f;
+    public static float purpleSMin = 0.25f, purpleSMax = 1f;
+    public static float purpleVMin = 0.25f, purpleVMax = 1f;
     float[] colorLeft = new float[]{0, 0, 0};
     float[] colorRight = new float[]{0, 0, 0};
 

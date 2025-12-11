@@ -5,10 +5,7 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.seattlesolvers.solverslib.command.CommandBase;
-import com.seattlesolvers.solverslib.command.InstantCommand;
-import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 
-import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
 import org.firstinspires.ftc.teamcode.game.SpotType;
@@ -26,20 +23,20 @@ public class ShootSeqCommand extends CommandBase {
     SpindexerSpot[] seq;
     Follower follower;
     ShootSide shootSide;
-    int currBallIndex = 0;
+    public int currBallIndex = 0;
     public static double angleTolerance = 20;
     boolean mapDistToShoot;
     Timer timer;
 
     public static double goToGreenSpotWait = 1000;
     public static double flywheelSpinupWait = 1500;
-    public static double betweenShotsWait = 1000;
+    public static double betweenShotsWait = 1500;
     boolean goneToStartSpot = false;
     double goneToStartSpotTime = 0;
     boolean flywheelSpinupStarted = false;
     double flywheelSpinupStartTime = 0;
 
-    public boolean spinStarted = false;
+//    public boolean spinStarted = false;
     boolean spinEnded = false;
     boolean removedBall = false;
     double spinStartTime = 0;
@@ -102,9 +99,9 @@ public class ShootSeqCommand extends CommandBase {
                 shooter.setFlywheelsPower(distToGoal);
             } else {
                 if (shootDist == TwoWheelShooter.ShootDist.Close) {
-                    shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Close, TwoWheelShooter.RunMode.RawPower);
+                    shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Close);
                 } else {
-                    shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Far, TwoWheelShooter.RunMode.RawPower);
+                    shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Far);
                 }
             }
         }
@@ -120,18 +117,15 @@ public class ShootSeqCommand extends CommandBase {
         }
         //once flywheel gets to the right power/velocity, now go to each position w/ wait time for each wait position
 
+
         SpindexerSpot currSpot = seq[currBallIndex];
         spindexer.goToSpot(currSpot, SpotType.OUTTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
-        if(!spinStarted){
-            spinStarted = true;
-        }
 
         //remove the ball if possible
-        if(spinStarted && !removedBall){
-            Angle diff = spindexer.getCurrentAngle().absGap(currSpot.getOuttakeAngle());
-            if (diff.toDegrees() < angleTolerance) {
+        if(!removedBall){
+            if (spindexer.isAtSpot(currSpot, SpotType.OUTTAKE)){
 //                spindexer.removeBall(currSpot.getIndex());
-                spindexer.getTurner().stop();
+//                spindexer.getTurner().getServo().setPower(0);
                 removedBall = true;
                 if (currBallIndex != seq.length - 1) {
 //                shooter.triggerBallShot();
@@ -148,12 +142,12 @@ public class ShootSeqCommand extends CommandBase {
             lastBallRemoved = true;
         }
         //move on, reset
-        if(spinStarted && spinStartTime != 0 && timer.getTime() - spinStartTime > betweenShotsWait) {
+        if(spinEnded && spinStartTime != 0 && timer.getTime() - spinStartTime > betweenShotsWait) {
             currBallIndex++;
-            spinStarted = false;
             spinStartTime = 0;
             removedBall = false;
             spinEnded = false;
+            //go to next spot
         }
     }
 
@@ -168,7 +162,7 @@ public class ShootSeqCommand extends CommandBase {
     @Override
     public void end(boolean interrupted){
         shooter.stopFlywheels();
-        spindexer.goToSpot(SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
-
+//        spindexer.goToSpot(SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
+        spindexer.getTurner().getServo().setPower(0);
     }
 }

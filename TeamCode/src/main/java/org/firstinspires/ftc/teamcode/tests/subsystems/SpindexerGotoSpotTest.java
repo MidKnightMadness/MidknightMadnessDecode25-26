@@ -42,9 +42,9 @@ public class SpindexerGotoSpotTest extends CommandOpMode {
     @Override
     public void initialize() {
         super.reset();
-        CommandScheduler.getInstance().setBulkReading(
-                hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
-        );
+//        CommandScheduler.getInstance().setBulkReading(
+//                hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
+//        );
 
         timer = new Timer();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();

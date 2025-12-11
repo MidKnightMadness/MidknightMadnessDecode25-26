@@ -58,15 +58,18 @@ public abstract class BaseAuto extends CommandOpMode {
 
     boolean stopEnd = false;
     ShootSide side;
+    boolean postMotif = false;
 
     @Override
     public void initialize() {
 
-        CommandScheduler.getInstance().setBulkReading(
-                hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
-        );
+//        CommandScheduler.getInstance().setBulkReading(
+//                hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
+//        );
 
+        CommandScheduler.getInstance().cancelAll();
         super.reset();
+
         gameTimer = new Timer();
         gameTimer.restart();
 
@@ -86,7 +89,10 @@ public abstract class BaseAuto extends CommandOpMode {
         setupVision();
         if(preMotifSequence() != null) {
             schedule(preMotifSequence());
+
         }
+
+
     }
 
     protected void initializeMechanisms() {
@@ -112,6 +118,12 @@ public abstract class BaseAuto extends CommandOpMode {
             }
             prevVisionComplete = true;
         }
+
+     //   if(postMotifSequence().isFinished()){
+//            if(goToIntakeLine()!= null){
+//                schedule(goToIntakeLine());
+//            }
+    //    }
 //        if (timer.getTime() >= maxTimeMs) requestOpModeStop();
         updateTelemetry();
         writeValues();
@@ -130,6 +142,10 @@ public abstract class BaseAuto extends CommandOpMode {
             requestOpModeStop();
         }
     }
+
+//    public Command goToIntakeLine(){
+//        return null;
+//    }
 
 
     protected Command postMotifSequence() {

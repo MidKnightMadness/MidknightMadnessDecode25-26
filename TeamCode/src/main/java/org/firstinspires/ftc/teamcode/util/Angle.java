@@ -78,6 +78,13 @@ public class Angle {
         return this.sub(other).abs();
     }
 
+    public Angle smallestAbsDifferenceDegrees(Angle b) {
+        Angle diff = Angle.fromDegrees(Math.abs(this.toDegrees() - b.toDegrees()) % 360.0);
+        if (diff.toDegrees() > 180) {
+            return Angle.fromDegrees(360 - diff.toDegrees());
+        }
+        return diff;
+    }
     public Angle abs() {
         return new Angle(java.lang.Math.abs(value), unit);
     }

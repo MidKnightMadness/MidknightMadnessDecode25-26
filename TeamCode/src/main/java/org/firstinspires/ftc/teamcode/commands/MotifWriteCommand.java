@@ -35,6 +35,7 @@ public class MotifWriteCommand extends CommandBase {
     boolean finishedWriting = false;
     public Timer timer;
 
+    int aprilTagDetected = 0;
     public MotifWriteCommand(Limelight3A limelight, double timeMs){
         this.limelight = limelight;
         this.maxTimeMs = timeMs;
@@ -61,19 +62,19 @@ public class MotifWriteCommand extends CommandBase {
 
     @Override
     public void execute() {
-        LLResult result = limelight.getLatestResult();
-        if (result != null) {
-            List<LLResultTypes.FiducialResult> list = result.getFiducialResults();
-            for (LLResultTypes.FiducialResult item : list) {
-                int aprilTagID = item.getFiducialId();
-                motifPattern = idMap.getOrDefault(aprilTagID, MotifEnums.Motif.NONE);
-                if(motifPattern != MotifEnums.Motif.NONE) {
-                    writeToFile(fileWriter, String.valueOf(aprilTagID));
-                    closeFileWriter(fileWriter);
-                    finishedWriting = true;
+        if(motifPattern != MotifEnums.Motif.NONE) {
+            LLResult result = limelight.getLatestResult();
+            if (result != null) {
+                List<LLResultTypes.FiducialResult> list = result.getFiducialResults();
+                for (LLResultTypes.FiducialResult item : list) {
+                    int aprilTagID = item.getFiducialId();
+                    motifPattern = idMap.getOrDefault(aprilTagID, MotifEnums.Motif.NONE);
+                    if (motifPattern != MotifEnums.Motif.NONE) {
+                        finishedWriting = true;
+                    }
                 }
-            }
 
+            }
         }
     }
 
@@ -84,9 +85,14 @@ public class MotifWriteCommand extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return (timer.getTime() > maxTimeMs);
+        return (timer.getTime() >= maxTimeMs);
     }
 
+    @Override
+    public void end(boolean interrupted){
+        writeToFile(fileWriter, String.valueOf(aprilTagDetected));
+        closeFileWriter(fileWriter);
+    }
 
 
     private static File createFile(String fileName, String dirName){

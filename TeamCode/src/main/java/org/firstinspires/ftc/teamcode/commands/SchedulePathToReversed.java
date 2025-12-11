@@ -8,59 +8,36 @@ import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
-public class SchedulePathTo extends SequentialCommandGroup {
+public class SchedulePathToReversed extends SequentialCommandGroup {
     Follower follower;
     Pose targetPose;
-    Pose startPose;
     double headingConstraint;
     double timeOutConstraint;
     double translationalConstraint;
-    boolean maxPowerUse = false;
-    double maxPower = 0;
-    public SchedulePathTo(Follower follower, Pose startPose, Pose targetPose, double headingConstraint, double timeOutConstraint, double translationalConstraint){
-        this.follower = follower;
-        this.startPose = startPose;
-        this.targetPose = targetPose;
-        this.headingConstraint = headingConstraint;
-        this.timeOutConstraint = timeOutConstraint;
-        this.translationalConstraint = translationalConstraint;
-    }
-
-    public SchedulePathTo(Follower follower, Pose targetPose, double headingConstraint, double timeOutConstraint, double translationalConstraint){
+    public SchedulePathToReversed(Follower follower, Pose targetPose, double headingConstraint, double timeOutConstraint, double translationalConstraint){
         this.follower = follower;
         this.targetPose = targetPose;
         this.headingConstraint = headingConstraint;
         this.timeOutConstraint = timeOutConstraint;
         this.translationalConstraint = translationalConstraint;
-        this.startPose = null;
     }
 
     FollowPathCommand followCommand;
-
-    public SchedulePathTo setMaxPower(double maxPower){
-        this.maxPower = maxPower;
-        maxPowerUse = true;
-        return this;
-    }
     @Override
     public void initialize(){
-        follower.update();
-        Pose currentPose = startPose == null ? follower.getPose() : startPose;
+        follower.update();;
+        Pose currentPose = follower.getPose();
 
         PathChain pathChain = follower.pathBuilder()
-                .addPath(new BezierLine(currentPose, targetPose))
+                .addPath(new BezierLine(follower.getPose(), targetPose))
                 .setLinearHeadingInterpolation(currentPose.getHeading(), targetPose.getHeading())
+                .setReversed()
                 .setHeadingConstraint(headingConstraint)
                 .setTimeoutConstraint(timeOutConstraint)
                 .setTranslationalConstraint(translationalConstraint)
                 .build();
 
-        if(maxPowerUse) {
-            followCommand = new FollowPathCommand(follower, pathChain).setGlobalMaxPower(maxPower);
-        }
-        else{
-            followCommand = new FollowPathCommand(follower, pathChain);
-        }
+        followCommand = new FollowPathCommand(follower, pathChain);
         addCommands(followCommand);
         super.initialize();
     }

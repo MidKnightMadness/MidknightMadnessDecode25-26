@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.commands;
 
 import com.seattlesolvers.solverslib.command.CommandBase;
-import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
 import org.firstinspires.ftc.teamcode.game.SpotType;
@@ -37,6 +36,7 @@ public class SpindexerGotoSpot extends CommandBase {
 
     @Override
     public void execute() {
+
         spindexer.goToSpot(spot, spotType, runMode);
     }
 
@@ -54,11 +54,12 @@ public class SpindexerGotoSpot extends CommandBase {
 //            }
 //        }
         wasFinished = atSpot;
-        return false;
+        return atSpot;
     }
 
     @Override
     public void end(boolean interrupted){
+//        spindexer.getTurner().setRunMode(CRServoEx2.RunMode.RawPower);
         spindexer.getTurner().getServo().setPower(0);
     }
 }

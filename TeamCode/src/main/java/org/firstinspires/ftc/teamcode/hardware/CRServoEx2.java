@@ -98,10 +98,12 @@ public class CRServoEx2<E extends Encoder> extends CRServo {
      * @param coefficients the coefficients for the PIDF controller
      * @return this object for chaining purposes
      */
-    public CRServoEx2<E> setPIDF(PIDFCoefficients coefficients) {
+
+    public CRServoEx2<E> setPIDFTOUse(PIDFCoefficients coefficients){
         this.pidf = new PIDFController(coefficients);
         return this;
     }
+
 
     /**
      * @param cachingTolerance the new caching tolerance between CR servo writes
@@ -147,6 +149,7 @@ public class CRServoEx2<E extends Encoder> extends CRServo {
             }
 
             double error = MathUtils.normalizeAngle(output - encoder.getAngle(), false, encoder.getAngleUnit());
+
             double power = pidf.calculate(0, error);
             this.error = error;
             this.power = power;

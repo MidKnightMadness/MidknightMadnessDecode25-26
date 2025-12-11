@@ -22,63 +22,49 @@ public class AutoIntakeCommand extends CommandBase {
     SpindexerSpot nextSpot;
     double timeout_MS;
 
-    public static double[] betweenBallThresholds = new double[]{1000, 2000};
+    public static double[] betweenBallThresholds = new double[]{0, 2000, 4000};
 
     Timer timer;
-    double startTime = 0;
-    double inBetweenStart = 0;
-    int currSpotIndex = 0;
+    double startTime;
+    int currNumBall = 0;
     public AutoIntakeCommand(Spindexer spindexer, Intake intake, double power, double timeOutMS){
         this.spindexer = spindexer;
         this.intake = intake;
         this.power = power;
         this.timeout_MS = timeOutMS;
 
-
+        timer = new Timer();
         addRequirements(intake, spindexer);
     }
 
     @Override
     public void initialize(){
-        spindexer.updateBallColors();
-        nextSpot = SpindexerSpot.fromIndex(currSpotIndex);
+//        spindexer.updateBallColors();
+        nextSpot = SpindexerSpot.fromIndex(0);
 
 
-        timer = new Timer();
         timer.restart();
         startTime = timer.getTime();
-        inBetweenStart = startTime;
     }
 
 
     @Override
     public void execute(){
-
         intake.setDirectPower(power);
-        spindexer.updateBallColors();
+//        spindexer.updateBallColors();
+        boolean detectedBall = spindexer.updateProximity();
 
-        if(swapSpots && nextSpot != null){
-            if(spindexer.isAtSpot(nextSpot, SpotType.INTAKE)){
-                swapSpots = false;
-                currSpotIndex++;
-                inBetweenStart = timer.getTime();
-            }
+        if(detectedBall){
+            currNumBall++;
         }
-
-        if((!swapSpots && (spindexer.newBallDetected() || spindexer.updateProximity())) || timer.getTime() - inBetweenStart > betweenBallThresholds[currSpotIndex]){
-            nextSpot = SpindexerSpot.fromIndex(currSpotIndex);
-            if(nextSpot != null){
-                spindexer.goToSpot(nextSpot, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
-                swapSpots = true;
-            }
-        }
+      //  spindexer.goToSpot(spindexer,SpindexerSpot.fromIndex(currNumBall), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0 );
 
 
     }
 
     @Override
     public boolean isFinished(){
-        if(timer.getTime() - startTime >= timeout_MS || currSpotIndex >= 2){
+        if(timer.getTime() - startTime >= timeout_MS || currNumBall >= 3){
             intake.setDirectPower(0);
             return true;
         }
