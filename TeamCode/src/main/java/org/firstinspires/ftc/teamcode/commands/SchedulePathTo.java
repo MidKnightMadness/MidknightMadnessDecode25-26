@@ -56,10 +56,10 @@ public class SchedulePathTo extends SequentialCommandGroup {
                 .build();
 
         if(maxPowerUse) {
-            followCommand = new FollowPathCommand(follower, pathChain).setGlobalMaxPower(maxPower);
+            followCommand = new FollowPathCommand(follower, pathChain, false ).setGlobalMaxPower(maxPower);
         }
         else{
-            followCommand = new FollowPathCommand(follower, pathChain);
+            followCommand = new FollowPathCommand(follower, pathChain, false);
         }
         addCommands(followCommand);
         super.initialize();

@@ -51,9 +51,9 @@ public abstract class BaseAuto extends CommandOpMode {
     public static double maxTimeMs = 29500;
     public static double maxWritePoseTimeMs = 200;
     public static double maxSideWriteTimeMs = 200;
-    public static double[] pidBotGainsShooter = new double[]{0.0004, 0, 0.00001};
+    public static double[] pidBotGainsShooter = new double[]{0.0004, 0.00001, 0.00001};
     public static double[] kBotGainsShooter = new double[]{0, 0.00005, 0};
-    public static double[] pidTopGainsShooter = new double[]{0.0004, 0, 0.00001};
+    public static double[] pidTopGainsShooter = new double[]{0.0004, 0.00001, 0.00001};
     public static double[] kTopGainsShooter = new double[]{0.02, 0.00005, 0};
 
     boolean stopEnd = false;

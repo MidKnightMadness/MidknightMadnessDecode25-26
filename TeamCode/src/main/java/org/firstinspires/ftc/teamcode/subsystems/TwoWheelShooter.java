@@ -61,16 +61,20 @@ public class TwoWheelShooter extends SubsystemBase {
     public static double recoveryTime = 150;
     double recoveryEndTime = 0;
 
+    public static double targetVoltage = 12.0;
+
 //    public static double[] closeTargetVelocities = new double[] {1800, 1900};
     public static double[] closeTargetVelocities = new double[] {1600, 1750};
     public static double[] farTargetVelocities = new double[]{2300, 2500};
     public static double[] closeTargetPowers = new double[]{0.75, 0.95};
     public static double[] farTargetPowers = new double[]{1, 0.95};
+    HardwareMap map;
 
 
     public TwoWheelShooter(HardwareMap hardwareMap, RunMode runMode) {
         low = new MotorEx(hardwareMap, ConfigNames.lowFlywheelMotor);
         high = new MotorEx(hardwareMap, ConfigNames.highFlywheelMotor);
+        hardwareMap = map;
         setRunMode(runMode);
 
 //        distToLowVel = new InterpLUT();
@@ -108,6 +112,31 @@ public class TwoWheelShooter extends SubsystemBase {
     public void setFeedforward(double kS, double kV, double kA){
         low.setFeedforwardCoefficients(kS, kV, kA);
         high.setFeedforwardCoefficients(kS, kV, kA);
+    }
+    public boolean setFlywheelsPowerVoltage(ShootDist dist) {//assuming facing the shooting area
+        double currVolt = map.voltageSensor.iterator().next().getVoltage();
+        if(currVolt < 10){currVolt = 10;}
+
+        if(runMode == RunMode.VelocityControl){
+            if (dist == ShootDist.Close) {
+//                low.set(closeTargetVelocities[0] + 30 );//may need to do set instead
+//                high.set(closeTargetVelocities[1] + topVelocityOffset + 30);
+                low.set(closeTargetVelocities[0] * (targetVoltage / currVolt));
+                high.set(closeTargetVelocities[1] * (targetVoltage / currVolt));
+            }
+            else{
+                low.set(farTargetVelocities[0] * (targetVoltage / currVolt));
+                high.set(farTargetVelocities[1] * (targetVoltage / currVolt));
+            }
+        }
+        else{
+//            if (dist == ShootDist.Close) setCustomPower(0.75, 0.95);
+//            else setCustomPower(1, 1);
+            if (dist == ShootDist.Close) setCustomPower(closeTargetPowers[0], closeTargetPowers[1]);
+            else setCustomPower(farTargetPowers[0], farTargetPowers[1]);
+        }
+
+        return true;
     }
 
     public boolean setFlywheelsPower(double dist) {//assuming facing the shooting area

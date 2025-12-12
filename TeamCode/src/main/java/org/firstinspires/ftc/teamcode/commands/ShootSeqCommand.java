@@ -5,6 +5,7 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.seattlesolvers.solverslib.command.CommandBase;
+import com.seattlesolvers.solverslib.command.WaitCommand;
 
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
@@ -30,11 +31,11 @@ public class ShootSeqCommand extends CommandBase {
 
     public static double goToGreenSpotWait = 1000;
     public static double flywheelSpinupWait = 2500;
-    public static double betweenShotsWait = 1500;
+    public static double betweenShotsWait = 500;
+    public static double betweenShotsWaitArr[] = new double[]{2000, 1000, 1000};
     boolean goneToStartSpot = false;
     double goneToStartSpotTime = 0;
     boolean flywheelSpinupStarted = false;
-    double flywheelSpinupStartTime = 0;
 
 //    public boolean spinStarted = false;
     boolean spinEnded = false;
@@ -46,6 +47,10 @@ public class ShootSeqCommand extends CommandBase {
     boolean powerFlywheel;
     TwoWheelShooter.ShootDist shootDist;
     public static double maxTimeShoot = 8000;
+    public int getCurrBallIndex(){
+        return currBallIndex;
+    }
+
     public ShootSeqCommand(Spindexer spindexer, TwoWheelShooter shooter, SpindexerSpot[] seq, Follower follower, ShootSide shootSide, boolean mapDistToShoot, TwoWheelShooter.ShootDist shootDist, boolean powerFlywheel){
         this.spindexer = spindexer;
         this.shooter = shooter;
@@ -67,30 +72,6 @@ public class ShootSeqCommand extends CommandBase {
     public void execute(){
         if(currBallIndex >= seq.length) return;
 
-        //have spindexer go to start spot if farthest from outtake
-//        if(!goneToStartSpot) {
-//            farthestMoved = false;
-//            if(spindexer.farthestFromAngle(spindexer.getCurrentAngle(), SpotType.OUTTAKE) == seq[0]){
-//                spindexer.goToSpot(seq[0], SpotType.PREOUTTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
-//                farthestMoved = true;
-//            }
-//
-//            if(!farthestMoved){//no need to go to green
-//                goneToStartSpot = true;
-//                goneToStartSpotTime = timer.getTime();
-//                goToGreenSpotWait = 0;
-//            }
-//            else {
-//                goneToStartSpot = true;
-//                goneToStartSpotTime = timer.getTime();
-//            }
-//        }
-
-//        if(!(timer.getTime() - goneToStartSpotTime >= goToGreenSpotWait)) {
-//            return;
-//        }
-
-        //update distance to goal and reset flywheel powers/velocity
         if(powerFlywheel) {
             if (mapDistToShoot) {
                 follower.update();
@@ -106,48 +87,35 @@ public class ShootSeqCommand extends CommandBase {
             }
         }
 
-        //start the flywheel
-        if(!flywheelSpinupStarted){
-            flywheelSpinupStarted = true;
-            flywheelSpinupStartTime = timer.getTime();
-        }
-
-        if(!(flywheelSpinupStarted || timer.getTime() - flywheelSpinupStartTime > flywheelSpinupWait)){
+        if(timer.getTime() < flywheelSpinupWait){
             return;
         }
-        //once flywheel gets to the right power/velocity, now go to each position w/ wait time for each wait position
-
 
         SpindexerSpot currSpot = seq[currBallIndex];
+
         spindexer.goToSpot(currSpot, SpotType.OUTTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
 
-        //remove the ball if possible
-        if(!removedBall){
-            if (spindexer.isAtSpot(currSpot, SpotType.OUTTAKE)){
-//                spindexer.removeBall(currSpot.getIndex());
-//                spindexer.getTurner().getServo().setPower(0);
+        if(!removedBall) {
+            if(spindexer.isAtSpot(currSpot, SpotType.OUTTAKE)) {
+                // Ball is in position to shoot!
                 removedBall = true;
-                if (currBallIndex != seq.length - 1) {
-//                shooter.triggerBallShot();
+                spinStartTime = timer.getTime();  // ← START THE TIMER NOW
+
+                if(currBallIndex == seq.length - 1) {
+                    lastBallRemoved = true;
                 }
             }
+            return;
         }
 
-        if(removedBall && !spinEnded) {//just removed a ball can perform wait time
-            spinStartTime = timer.getTime();
-            spinEnded = true;
-        }
-
-        if(currBallIndex == seq.length - 1 && removedBall){
-            lastBallRemoved = true;
-        }
-        //move on, reset
-        if(spinEnded && spinStartTime != 0 && timer.getTime() - spinStartTime > betweenShotsWait) {
-            currBallIndex++;
-            spinStartTime = 0;
-            removedBall = false;
-            spinEnded = false;
-            //go to next spot
+        if(removedBall && !spinEnded) {
+            double waitTime = betweenShotsWaitArr[currBallIndex];
+            if(timer.getTime() - spinStartTime >= waitTime) {
+                // Shot complete, move to next ball
+                currBallIndex++;
+                removedBall = false;
+                spinEnded = false;
+            }
         }
     }
 
