@@ -62,7 +62,7 @@ public class TwoWheelShooter extends SubsystemBase {
     double recoveryEndTime = 0;
 
 //    public static double[] closeTargetVelocities = new double[] {1800, 1900};
-    public static double[] closeTargetVelocities = new double[] {1700, 1800};
+    public static double[] closeTargetVelocities = new double[] {1600, 1750};
     public static double[] farTargetVelocities = new double[]{2300, 2500};
     public static double[] closeTargetPowers = new double[]{0.75, 0.95};
     public static double[] farTargetPowers = new double[]{1, 0.95};

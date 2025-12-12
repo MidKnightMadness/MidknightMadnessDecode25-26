@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.main.autonomous;
 
+import static org.firstinspires.ftc.teamcode.main.autonomous.IntakeAutoTest.fourthWaitTime;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.BezierLine;
@@ -10,6 +12,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
+import com.seattlesolvers.solverslib.command.ParallelDeadlineGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
@@ -52,9 +55,9 @@ public class TwelveBallClosePrevious extends BaseAuto {
     public static Pose shootPose = new Pose(87, 94, Math.toRadians(230));
     public static Pose parkPose = new Pose(114, 94, Math.toRadians(210));
     public static Pose openGatePose = new Pose(136, 76, Math.toRadians(180));
-    public static Pose intakeOnePose = new Pose(100, 84, Math.toRadians(0));
-    public static Pose intakeTwoPose = new Pose(100, 60, Math.toRadians(0));
-    public static Pose intakeThreePose = new Pose(100, 36, Math.toRadians(0));
+    public static Pose intakeOnePose = new Pose(102, 84, Math.toRadians(0));
+    public static Pose intakeTwoPose = new Pose(102, 60, Math.toRadians(0));
+    public static Pose intakeThreePose = new Pose(102, 36, Math.toRadians(0));
     public static double intakeDistForward = 14;
     PathChain toMotifPath;
     MotifEnums.Motif motifPattern = MotifEnums.Motif.GPP;
@@ -64,11 +67,16 @@ public class TwelveBallClosePrevious extends BaseAuto {
     Pose currentPose;
 
     Command firstPath;
+    public static long firstWaitTime = 700;
+    public static long secondWaitTime = 200;
+    public static long thirdWaitTime = 150;//250 old
+
+    public static long fourthWaitTime = 500;
 
     public static double pathDistThresholdMin = 0.5;
-    public static double headingError = 0.025;
+    public static double headingError = 0.015;
     public static double timeOutConstraint = 200;
-    public static double xChangeIntake = 15;
+    public static double xChangeIntake = 23;
     public static int[] shootArray = new int[]{2, 1, 0};
 
     TwoWheelShooter.RunMode shooterRunMode = TwoWheelShooter.RunMode.VelocityControl;
@@ -114,11 +122,13 @@ public class TwelveBallClosePrevious extends BaseAuto {
 
     @Override
     protected boolean isVisionComplete(){
-        if(motifCommand.getDetected() == MotifEnums.Motif.NONE){
+        if(motifCommand.getDetected() != MotifEnums.Motif.NONE){
             motifPattern = motifCommand.getDetected();
+        }
+        if(motifCommand.isFinished()){
             return true;
         }
-        return motifCommand.isFinished();
+        return false;
     }
     public static long waitTime = 500;
     AutoIntakeCommand autoIntakeCommand;
@@ -128,7 +138,7 @@ public class TwelveBallClosePrevious extends BaseAuto {
     protected Command preMotifSequence(){
         motifCommand = new MotifWriteCommand(limelight, motifDetectionTimeMs);
 
-        firstPath = new FollowPathCommand(follower, toMotifPath, true).setGlobalMaxPower(0.7);
+        firstPath = new FollowPathCommand(follower, toMotifPath, true).setGlobalMaxPower(0.9);
         return new SequentialCommandGroup(
                 setDefaultStartColors(),
                 firstPath,
@@ -157,7 +167,7 @@ public class TwelveBallClosePrevious extends BaseAuto {
     }
 
 
-//    @Override
+    //    @Override
 //    public Command goToIntakeLine(){
 //        return new SequentialCommandGroup(
 //
@@ -165,22 +175,33 @@ public class TwelveBallClosePrevious extends BaseAuto {
 //    }
     @Override
     protected Command postMotifSequence(){
-        limelight.stop();//temporarily turn it off to hand to localizer
+        limelight.stop();
+        //temporarily turn it off to hand to localizer
         return new SequentialCommandGroup(
-                new WaitCommand(500),
-                getToShootCommand(500),
-                new WaitCommand(500),
+                getToShootCommand(1000),
                 shootOptimal(motifPattern),
                 //new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0)),
+                //new WaitCommand(1000),
+                getToLineNum(1, 500),
+//                new InstantCommand(() -> spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE})),
+                new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
+                new WaitCommand(500),
+                intake(1, 0),
+                new InstantCommand(() -> spindexer.getTurner().getServo().setPower(0)),
+                setDefaultStartColors(),
+                new ParallelCommandGroup(
+                    getToShootCommand(0),
+                    new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0)
+                ),
+                shootOptimal(motifPattern)
 
-                line1Commands(),
                 //new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 1000),
 //                openGate(1000),
-//
-                line2Commands(),
-                line3Commands(),
+////
+//                line2Commands(),
+//                line3Commands(),
 
-                park(100)
+             //   park(100)
 //
 //               new InstantCommand(() -> spindexer.goTo(Angle.fromDegrees(0), CRServoEx2.RunMode.OptimizedPositionalControl))
 //
@@ -193,16 +214,17 @@ public class TwelveBallClosePrevious extends BaseAuto {
 
     protected Command line1Commands(){
         return new SequentialCommandGroup(
-                getToLineNum(1, 1000),
-                new WaitCommand(500),
+                getToLineNum(1, 2000),
+                new WaitCommand(2000),
 //                new InstantCommand(() -> spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE})),
                 new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
-                new WaitCommand(500),
+                new WaitCommand(2000),
                 intake(1, 0),
+                new InstantCommand(() -> spindexer.getTurner().getServo().setPower(0)),
                 setDefaultStartColors(),
-                new WaitCommand(500),
+                new WaitCommand(2000),
                 new InstantCommand(()-> intake.setDirectPower(0)),
-                getToShootCommand(500),
+                getToShootCommand(2000),
                 new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
                 shootOptimal(motifPattern)
         );
@@ -259,27 +281,35 @@ public class TwelveBallClosePrevious extends BaseAuto {
                 new WaitCommand(milliSec)
         );
     }
-
     protected Command intake(int targetSpot, int initialSpindexerIntakeSpot){
 //        autoIntakeCommand = new AutoIntakeCommand(spindexer, intake, intakePower, intakeTime);
-        autoStart = true;
-            return new ParallelCommandGroup(
-                    new InstantCommand(() -> intake.setDirectPower(0.8)),
-                    new SequentialCommandGroup(
-                            new WaitCommand(1000),
-                            new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 1) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
-                            new InstantCommand(() -> spindexer.getTurner().setPIDFTOUse(spindexer.intakeTurnerCoeff)),
-                            new WaitCommand(1000),
-                            new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 2) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
-                            new InstantCommand(() -> spindexer.getTurner().setPIDFTOUse(spindexer.outtakeTurnerCoeff)),
-                            new WaitCommand(1000),
-                            new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 2) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0)
-                    ),
-                    driveToIntakeEnd(targetSpot)
-            );
+        return new SequentialCommandGroup(
+                new ParallelCommandGroup(
+                        new InstantCommand(() -> intake.setDirectPower(1.0)),
+                        new SequentialCommandGroup(
+                                new WaitCommand(firstWaitTime),
+                                new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 1) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
+                                // new InstantCommand(() -> spindexer.getTurner().setPIDFTOUse(spindexer.intakeTurnerCoeff)),
+                                new WaitCommand(secondWaitTime),
+//                            new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 2) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
+//                            new InstantCommand(() -> spindexer.getTurner().setPIDFTOUse(spindexer.outtakeTurnerCoeff)),
+//                            new WaitCommand(thirdWaitTime),
+//                            new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 2) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0)
+                                new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0.6)),//rotate manually for the last one
+                                new WaitCommand(thirdWaitTime),
+                                new InstantCommand(()-> spindexer.setAngleTolerance(Angle.fromDegrees(10))),
+                                new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 2) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
+                                new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0)),
+                                new WaitCommand(fourthWaitTime)
+                        ),
+                        driveToIntakeEnd(targetSpot)
+                ),
+                new InstantCommand(()-> intake.stopPower())
+        );
 
 //        return intakePower(milliSec);
     }
+
     protected SequentialCommandGroup driveToIntakeEnd(int spot){
         Pose intakePose = (spot == 1) ? intakeOnePose : (spot == 2) ? intakeTwoPose : intakeThreePose;
 
@@ -302,36 +332,37 @@ public class TwelveBallClosePrevious extends BaseAuto {
         );
     }
     protected SequentialCommandGroup shootOptimal(MotifEnums.Motif pattern){
-        BallColor[] colors = spindexer.getBallColors();
+        BallColor[] colors = new BallColor[]{BallColor.PURPLE, BallColor.PURPLE, BallColor.GREEN};
         BallColor[] PPG = {BallColor.PURPLE, BallColor.PURPLE, BallColor.GREEN};
         BallColor[] PGP = {BallColor.PURPLE, BallColor.GREEN, BallColor.PURPLE};
 
         if (pattern == MotifEnums.Motif.GPP) {
-            if (Arrays.equals(colors, PPG)) {
+//            if (Arrays.equals(colors, PPG)) {
                 spots = SpindexerSpot.convertFromindex(new int[]{2, 1, 0});
-            } else if (Arrays.equals(colors, PGP)) {
-                spots = SpindexerSpot.convertFromindex(new int[]{1, 2, 0});
-            }
+//            } else if (Arrays.equals(colors, PGP)) {
+//                spots = SpindexerSpot.convertFromindex(new int[]{1, 2, 0});
+//            }
+        //    }
         }
         else if (pattern == MotifEnums.Motif.PGP) {
-            if (Arrays.equals(colors, PPG)) {
+//            if (Arrays.equals(colors, PPG)) {
                 spots = SpindexerSpot.convertFromindex(new int[]{1, 2, 0});
-            } else if (Arrays.equals(colors, PGP)) {
-                spots = SpindexerSpot.convertFromindex(new int[]{2, 1, 0});
-            }
+//            } else if (Arrays.equals(colors, PGP)) {
+//                spots = SpindexerSpot.convertFromindex(new int[]{2, 1, 0});
+//            }
         }
         else if (pattern == MotifEnums.Motif.PPG) {
-            if (Arrays.equals(colors, PPG)) {
+           // if (Arrays.equals(colors, PPG)) {
                 spots = SpindexerSpot.convertFromindex(new int[]{1, 0, 2});
-            } else if (Arrays.equals(colors, PGP)) {
-                spots = SpindexerSpot.convertFromindex(new int[]{2, 0, 1});
-            }
+//            } else if (Arrays.equals(colors, PGP)) {
+//                spots = SpindexerSpot.convertFromindex(new int[]{2, 0, 1});
+//            }
         }
         else {
             spots = SpindexerSpot.convertFromindex(new int[]{1, 0, 2});
         }
 
-       seqShootCommand = new ShootSeqCommand(spindexer, shooter, spots, follower, shootSide, false, TwoWheelShooter.ShootDist.Close, true);
+        seqShootCommand = new ShootSeqCommand(spindexer, shooter, spots, follower, shootSide, false, TwoWheelShooter.ShootDist.Close, true);
         return new SequentialCommandGroup(
                 seqShootCommand
 //                new InstantCommand(() -> shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Close)),

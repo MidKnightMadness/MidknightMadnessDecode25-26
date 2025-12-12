@@ -34,8 +34,8 @@ apply plugin: 'kotlin-android'
 
 android {
     namespace = 'org.firstinspires.ftc.teamcode'
+    compileSdk 36
 
-    compileSdk 35
     defaultConfig {
         minSdk 24
     }
@@ -48,6 +48,10 @@ android {
 repositories {
     maven {
         url = "https://repo.dairy.foundation/releases"
+    }
+    //CHANGED
+    maven {
+        url = "https://repo.dairy.foundation/snapshots"
     }
 }
 

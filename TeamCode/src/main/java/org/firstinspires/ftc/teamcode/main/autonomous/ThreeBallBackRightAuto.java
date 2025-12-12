@@ -53,6 +53,9 @@ public class ThreeBallBackRightAuto extends BaseAuto {
     public static Pose driveForwardPose = new Pose(88, 14, Math.toRadians(90));
     public static Pose shootPose = new Pose(84, 17, Math.toRadians(245));
     public static Pose leavePose = new Pose(86, 38, Math.toRadians(0));
+    public static Pose intakeOnePose = new Pose(100, 36, Math.toRadians(0));
+    public static Pose intakeTwoPose = new Pose(100, 60, Math.toRadians(0));
+    public static Pose intakeThreePose = new Pose(100, 84, Math.toRadians(0));
 
     PathChain toMotifPath;
     MotifEnums.Motif motifPattern = MotifEnums.Motif.GPP;
@@ -80,6 +83,9 @@ public class ThreeBallBackRightAuto extends BaseAuto {
 
     ShootSeqCommand seqTestCommand;
     PathChain forwardPath;
+    public static long firstWaitTime = 1000;
+    public static long secondWaitTime = 500;
+    public static long thirdWaitTime = 1000;
     @Override
     protected Pose getStartPose(){
         return startPose;
@@ -117,7 +123,9 @@ public class ThreeBallBackRightAuto extends BaseAuto {
 
     @Override
     protected boolean isVisionComplete(){
-        motifPattern = motifCommand.getDetected();
+        if(motifCommand.getDetected() != MotifEnums.Motif.NONE){
+            motifPattern = motifCommand.getDetected();
+        }
         if(motifCommand.isFinished()){
             return true;
         }
@@ -136,7 +144,6 @@ public class ThreeBallBackRightAuto extends BaseAuto {
                 setDefaultStartColors(),
                 forwardCommand(500),
                 motifCommand
-//                firstPath,
         );
 
     }
@@ -165,31 +172,14 @@ public class ThreeBallBackRightAuto extends BaseAuto {
     protected Command postMotifSequence(){
         limelight.stop();//temporarily turn it off to hand to localizer
         return new SequentialCommandGroup(
-//              getToShootCommand(1000)
-                new WaitCommand(waitTime),
+                new WaitCommand(2000),
                 getToShootCommand(1500),
-//                startShoot()
+                new WaitCommand(2000),
                 shootOptimal(motifPattern),
-//                intakePower(intakeHelpTime)),
-//
-//                getToLineNum(1, 500),
-//                new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 1000),
-//                new InstantCommand(() -> spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE})),
-//                intake(1, 5000),
-//                openGate(1000),
-//
-//                getToShootCommand(500)
-//              shoot(),
-//
-                //    getToLineNum(2, 500),
-//              intake(1),
-                //   getToShootCommand(500),
-//              shoot(),
-//
-                //  getToLineNum(3, 500),
-//              intake(3),
-                //  getToShootCommand(500),
-//              shoot(),
+
+                line1Commands(),
+                line2Commands(),
+                line3Commands(),
 //
                 park(100)
 //                new InstantCommand(() -> spindexer.goTo(Angle.fromDegrees(0), CRServoEx2.RunMode.OptimizedPositionalControl))
@@ -200,6 +190,53 @@ public class ThreeBallBackRightAuto extends BaseAuto {
 
     }
 
+    protected Command line1Commands(){
+        return new SequentialCommandGroup(
+                getToLineNum(1, 2000),
+                new WaitCommand(2000),
+//                new InstantCommand(() -> spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE})),
+                new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT2, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
+                new WaitCommand(2000),
+                intake(0, 0),
+                setDefaultStartColors(),
+                new WaitCommand(2000),
+                new InstantCommand(()-> intake.setDirectPower(0)),
+                getToShootCommand(2000),
+                new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
+                shootOptimal(motifPattern)
+        );
+    }
+    protected Command line2Commands(){
+        return new SequentialCommandGroup(
+                getToLineNum(2, 1000),
+                new WaitCommand(500),
+//                new InstantCommand(() -> spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE})),
+                new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT1, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
+                new WaitCommand(500),
+                intake(1, 1),
+                setDefaultStartColors(),
+                new WaitCommand(500),
+                new InstantCommand(()-> intake.setDirectPower(0)),
+                getToShootCommand(500),
+                shootOptimal(motifPattern)
+        );
+    }
+    protected Command line3Commands(){
+        return new SequentialCommandGroup(
+                getToLineNum(3, 1000),
+                new WaitCommand(500),
+//                new InstantCommand(() -> spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE})),
+                new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
+                new WaitCommand(500),
+                intake(2, 2),
+                setDefaultStartColors(),
+                new WaitCommand(500),
+                new InstantCommand(()-> intake.setDirectPower(0)),
+                getToShootCommand(500),
+                new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
+                shootOptimal(motifPattern)
+        );
+    }
     private SequentialCommandGroup forwardCommand(long waitTime) {
         return new SequentialCommandGroup(
                 new FollowPathCommand(follower, forwardPath).setGlobalMaxPower(0.5),
@@ -229,23 +266,35 @@ public class ThreeBallBackRightAuto extends BaseAuto {
 //        );
 //    }
 
-    protected Command intake(int spot, long milliSec){
-//        autoIntakeCommand = new AutoIntakeCommand(spindexer, intake, intakePower, intakeTime);
-//        autoStart = true;
-//        return new ParallelCommandGroup(
-//                autoIntakeCommand
-////                driveToIntakeEnd(spot, milliSec)
-//        );
-        return intakePower(milliSec);
+    protected Command intake(int targetSpot, int initialSpindexerIntakeSpot){
+        autoStart = true;
+        return new ParallelCommandGroup(
+                new InstantCommand(() -> intake.setDirectPower(0.9)),
+                new SequentialCommandGroup(
+                        new WaitCommand(firstWaitTime),
+                        new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 1) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
+                        new InstantCommand(() -> spindexer.getTurner().setPIDFTOUse(spindexer.intakeTurnerCoeff)),
+                        new WaitCommand(secondWaitTime),
+//                            new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 2) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
+//                            new InstantCommand(() -> spindexer.setAngleTolerance(Angle.fromDegrees(10))),
+                        new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0.6)),//rotate manually for the last one
+                        new WaitCommand(thirdWaitTime)
+//                            new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 2) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
+//                            new InstantCommand(()-> spindexer.setDefaultAngleTolerance())
+                ),
+                driveToIntakeEnd(targetSpot)
+        );
+
     }
-//    protected SequentialCommandGroup driveToIntakeEnd(int spot, long milliSec){
-//        Pose intakePose = (spot == 1) ? intakeOnePose : (spot == 2) ? intakeTwoPose : intakeThreePose;
-//
-//        follower.update();
-//        return new SequentialCommandGroup(
-//                new SchedulePathTo(follower, new Pose(intakePose.getX() + xChangeIntake, intakePose.getY(), intakePose.getHeading()), headingError, timeOutConstraint, pathDistThresholdMin),
-//                new WaitCommand(milliSec));
-//    }
+    protected SequentialCommandGroup driveToIntakeEnd(int spot){
+        Pose intakePose = (spot == 1) ? intakeOnePose : (spot == 2) ? intakeTwoPose : intakeThreePose;
+
+        follower.update();
+        return new SequentialCommandGroup(
+                new SchedulePathTo(follower, new Pose(intakePose.getX() + xChangeIntake, intakePose.getY(), intakePose.getHeading()), headingError, timeOutConstraint, pathDistThresholdMin)
+                        .setMaxPower(0.3)
+        );
+    }
 
     protected SequentialCommandGroup park(long milliSec){
         return new SequentialCommandGroup(

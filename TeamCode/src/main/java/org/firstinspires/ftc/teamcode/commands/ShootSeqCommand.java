@@ -29,7 +29,7 @@ public class ShootSeqCommand extends CommandBase {
     Timer timer;
 
     public static double goToGreenSpotWait = 1000;
-    public static double flywheelSpinupWait = 1500;
+    public static double flywheelSpinupWait = 2500;
     public static double betweenShotsWait = 1500;
     boolean goneToStartSpot = false;
     double goneToStartSpotTime = 0;
@@ -45,7 +45,7 @@ public class ShootSeqCommand extends CommandBase {
     public boolean farthestMoved = false;
     boolean powerFlywheel;
     TwoWheelShooter.ShootDist shootDist;
-    public static double maxTimeShoot = 6700;
+    public static double maxTimeShoot = 8000;
     public ShootSeqCommand(Spindexer spindexer, TwoWheelShooter shooter, SpindexerSpot[] seq, Follower follower, ShootSide shootSide, boolean mapDistToShoot, TwoWheelShooter.ShootDist shootDist, boolean powerFlywheel){
         this.spindexer = spindexer;
         this.shooter = shooter;
@@ -112,7 +112,7 @@ public class ShootSeqCommand extends CommandBase {
             flywheelSpinupStartTime = timer.getTime();
         }
 
-        if(!(flywheelSpinupStarted && timer.getTime() - flywheelSpinupStartTime > flywheelSpinupWait)){
+        if(!(flywheelSpinupStarted || timer.getTime() - flywheelSpinupStartTime > flywheelSpinupWait)){
             return;
         }
         //once flywheel gets to the right power/velocity, now go to each position w/ wait time for each wait position

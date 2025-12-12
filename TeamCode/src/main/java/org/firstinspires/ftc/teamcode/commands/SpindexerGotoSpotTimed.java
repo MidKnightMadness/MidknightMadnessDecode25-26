@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
-public class SpindexerGotoSpot extends CommandBase {
+public class SpindexerGotoSpotTimed extends CommandBase {
     private boolean wasFinished;
     SpindexerSpot spot;
     private final Spindexer spindexer;
@@ -16,13 +16,15 @@ public class SpindexerGotoSpot extends CommandBase {
     private CRServoEx2.RunMode runMode;
     private final Timer finishedTimer;
     private final double finishedTimeThreshold;
+    double maxTime;
 
-    public SpindexerGotoSpot(
+    public SpindexerGotoSpotTimed(
             Spindexer spindexer,
             SpindexerSpot spot,
             SpotType spotType,
             CRServoEx2.RunMode runMode,
-            double finishedTimeThreshold
+            double finishedTimeThreshold,
+            double maxTime
     ) {
         this.spot = spot;
         this.spindexer = spindexer;
@@ -34,6 +36,10 @@ public class SpindexerGotoSpot extends CommandBase {
     }
 
 
+    @Override
+    public void initialize(){
+        finishedTimer.restart();
+    }
     @Override
     public void execute() {
         spindexer.goToSpot(spot, spotType, runMode);
@@ -53,8 +59,10 @@ public class SpindexerGotoSpot extends CommandBase {
 //            }
 //        }
         wasFinished = atSpot;
-        return atSpot;
+
+        return atSpot || finishedTimer.getTime() >= maxTime;
     }
+
 
     @Override
     public void end(boolean interrupted){

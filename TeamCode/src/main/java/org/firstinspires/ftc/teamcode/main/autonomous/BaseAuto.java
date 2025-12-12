@@ -71,7 +71,6 @@ public abstract class BaseAuto extends CommandOpMode {
         super.reset();
 
         gameTimer = new Timer();
-        gameTimer.restart();
 
         initializeMechanisms();
 
@@ -92,6 +91,7 @@ public abstract class BaseAuto extends CommandOpMode {
 
         }
 
+        gameTimer.restart();
 
     }
 
