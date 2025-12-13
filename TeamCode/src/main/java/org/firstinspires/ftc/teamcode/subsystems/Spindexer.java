@@ -23,14 +23,14 @@ public class Spindexer extends SubsystemBase {
     //Ball sensors(two) facing each other right in the intake before it goes into the spindexer
     //public static double intakeSpinPower = 0.3;
     public static double shootRawPower = 1;
-    public PIDFCoefficients outtakeTurnerCoeff = new PIDFCoefficients(0.003, 0, 0, 0);
+    public PIDFCoefficients outtakeTurnerCoeff = new PIDFCoefficients(0.003, 0, 0.0001, 0);
     public PIDFCoefficients intakeTurnerCoeff = new PIDFCoefficients(1, 0, 0.1, 0.01);
 
    /// public static PIDFCoefficients turnerCoefficients = new PIDFCoefficients(0.01, 0, 0.001, 0.001);
     // 0 is defined as the position of the shooter
     public static Angle detectRange = Angle.fromDegrees(25); // How far off from the center of the spot that you detect. You don't want to trust measurements that are too off from the center
-    public static Angle defaultFinishedThreshold = Angle.fromDegrees(20); // Threshold at which it's finished turning to a spot
-    public static Angle finishedThreshold = Angle.fromDegrees(20);
+    public static Angle defaultFinishedThreshold = Angle.fromDegrees(15); // Threshold at which it's finished turning to a spot
+    public static Angle finishedThreshold = Angle.fromDegrees(15);//changed from 20
     //0 degrees is facing intake
     //assuming layout at start is initialized as 0 from this position
     //  X X

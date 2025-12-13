@@ -74,8 +74,8 @@ public class MainTeleOp extends CommandOpMode {
     String botHeadingFileName = "competition/robot_heading.txt";
     String sideFileName = "competition/side.txt";
 
-    double currSpeed = 0.8;
-    double maxSpeed = 0.8;
+    double currSpeed = 1.0;
+    double maxSpeed = 1.0;
     double midSpeed = 0.5;
     double intakePower = 0.6;
     public static double maxIntakePower = 1;
@@ -116,7 +116,8 @@ public class MainTeleOp extends CommandOpMode {
     public static double spindexerCompensationOffset = Math.toRadians(5);//degrees
     int spindexerDirection;
 
-    TwoWheelShooter.RunMode shooterRunMode = TwoWheelShooter.RunMode.VelocityControl;
+    public static TwoWheelShooter.RunMode shooterRunMode = TwoWheelShooter.RunMode.VelocityControl;
+//    VelocityControl
 
     public static double[] pidAutoAlign = new double[]{0.7, 0, 0.2};//1.5, 0, 0.1
     public static double alignmentWeight = 0.2;
@@ -170,12 +171,13 @@ public class MainTeleOp extends CommandOpMode {
         timer = new Timer();
 
         pattern = readMotifFromFile(motifFileName);
-        double robotX = readDoubleFromPose(botXFileName);
-        double robotY = readDoubleFromPose(botYFileName);
-        double robotHeading = readDoubleFromPose(botHeadingFileName);
+//        double robotX = readDoubleFromPose(botXFileName);
+//        double robotY = readDoubleFromPose(botYFileName);
+//        double robotHeading = readDoubleFromPose(botHeadingFileName);
+
         shootSide = readShootSideFromFile(sideFileName);
 
-        Pose roboPose = new Pose(robotX, robotY, robotHeading);
+        Pose roboPose = new Pose(0, 0, 0);
         startPose = roboPose != null ? roboPose : startPose;
 
         currentShootDist = (startPose.getY() > 20) ? TwoWheelShooter.ShootDist.Close : TwoWheelShooter.ShootDist.Far;
@@ -643,6 +645,8 @@ public class MainTeleOp extends CommandOpMode {
         }
     }
     private void updateTelem() {
+        telemetry.addData("Current Voltage", shooter.getCurrVoltage());
+        telemetry.addData("Ratio Voltage ", shooter.getTargetVoltage() / shooter.getCurrVoltage());
         telemetry.addData("Start Pose",  startPose.getPose().toString());
         telemetry.addData("Start Heading(Deg)", "%.4f", convertRadToDegrees(startPose.getHeading()));
         telemetry.addData("Current Pose",  follower.getPose().toString());

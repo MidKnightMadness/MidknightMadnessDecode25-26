@@ -61,20 +61,25 @@ public class TwoWheelShooter extends SubsystemBase {
     public static double recoveryTime = 150;
     double recoveryEndTime = 0;
 
-    public static double targetVoltage = 12.0;
+    public static double targetVoltage = 12.5;
 
 //    public static double[] closeTargetVelocities = new double[] {1800, 1900};
     public static double[] closeTargetVelocities = new double[] {1600, 1750};
     public static double[] farTargetVelocities = new double[]{2300, 2500};
     public static double[] closeTargetPowers = new double[]{0.75, 0.95};
-    public static double[] farTargetPowers = new double[]{1, 0.95};
+    public static double[] farTargetPowers = new double[]{1, 1};
+    double currVolt = 0;
     HardwareMap map;
 
+
+    public double getTargetVoltage(){
+        return targetVoltage;
+    }
 
     public TwoWheelShooter(HardwareMap hardwareMap, RunMode runMode) {
         low = new MotorEx(hardwareMap, ConfigNames.lowFlywheelMotor);
         high = new MotorEx(hardwareMap, ConfigNames.highFlywheelMotor);
-        hardwareMap = map;
+        this.map = hardwareMap;
         setRunMode(runMode);
 
 //        distToLowVel = new InterpLUT();
@@ -91,6 +96,10 @@ public class TwoWheelShooter extends SubsystemBase {
         high.motor.setDirection(highMotorDirForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);
 
 
+    }
+
+    public double getCurrVoltage(){
+        return currVolt;
     }
 
 
@@ -114,7 +123,7 @@ public class TwoWheelShooter extends SubsystemBase {
         high.setFeedforwardCoefficients(kS, kV, kA);
     }
     public boolean setFlywheelsPowerVoltage(ShootDist dist) {//assuming facing the shooting area
-        double currVolt = map.voltageSensor.iterator().next().getVoltage();
+        currVolt = map.voltageSensor.iterator().next().getVoltage();
         if(currVolt < 10){currVolt = 10;}
 
         if(runMode == RunMode.VelocityControl){
@@ -132,8 +141,8 @@ public class TwoWheelShooter extends SubsystemBase {
         else{
 //            if (dist == ShootDist.Close) setCustomPower(0.75, 0.95);
 //            else setCustomPower(1, 1);
-            if (dist == ShootDist.Close) setCustomPower(closeTargetPowers[0], closeTargetPowers[1]);
-            else setCustomPower(farTargetPowers[0], farTargetPowers[1]);
+            if (dist == ShootDist.Close) setCustomPower(closeTargetPowers[0] * targetVoltage / currVolt, closeTargetPowers[1] * targetVoltage / currVolt);
+            else setCustomPower(farTargetPowers[0] * targetVoltage/ currVolt, farTargetPowers[1] * targetVoltage / currVolt);
         }
 
         return true;

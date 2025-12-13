@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.main.autonomous;
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.Command;
@@ -33,21 +32,19 @@ import org.firstinspires.ftc.teamcode.game.ShootSide;
 
 @Config
 @Configurable
-@Autonomous(name = "12 Close Prev NonSorted", group = "Competition")
+@Autonomous(name = "9 Close Right NonSorted", group = "Competition")
 public class NineBallCloseRightNonSorted extends BaseAuto {
     public static double motifDetectionTimeMs = 3000;
     int startPipeline = 1;
     public static Pose startPose = new Pose(118, 130, Math.toRadians(220));
 //    public static Pose motifDetectionPose = new Pose(87, 94, Math.toRadians(100));
     public static Pose shootPose = new Pose(87, 94, Math.toRadians(225));
-    public static Pose secondShootPose = new Pose(87, 94, Math.toRadians(225));
-    public static Pose parkPose = new Pose(114, 94, Math.toRadians(210));
+    public static Pose secondShootPose = new Pose(87, 94, Math.toRadians(221));
+    public static Pose parkPose = new Pose(85, 109, Math.toRadians(0));
     public static Pose openGatePose = new Pose(136, 76, Math.toRadians(180));
     public static Pose intakeOnePose = new Pose(102, 84, Math.toRadians(0));
     public static Pose intakeTwoPose = new Pose(102, 60, Math.toRadians(0));
     public static Pose intakeThreePose = new Pose(102, 36, Math.toRadians(0));
-    public static double intakeDistForward = 14;
-    PathChain toMotifPath;
     MotifEnums.Motif motifPattern = MotifEnums.Motif.GPP;
     MotifWriteCommand motifCommand = null;
 
@@ -55,16 +52,17 @@ public class NineBallCloseRightNonSorted extends BaseAuto {
     Pose currentPose;
 
     Command firstPath;
-    public static long firstWaitTime = 500;
+    public static long firstWaitTime = 700;
     public static long secondWaitTime = 200;
     public static long thirdWaitTime = 150;//250 old
 
-    public static long fourthWaitTime = 700;
+    public static long fourthWaitTime = 500;
 
     public static double pathDistThresholdMin = 1.5;
     public static double headingError = Math.toRadians(2);
     public static double timeOutConstraint = 200;
-    public static double xChangeIntake = 23;
+    public static double tValueConstraint = 0.98;
+    public static double xChangeIntake = 25;
     public static int[] shootArray = new int[]{2, 1, 0};
 
     TwoWheelShooter.RunMode shooterRunMode = TwoWheelShooter.RunMode.RawPower;
@@ -149,11 +147,13 @@ public class NineBallCloseRightNonSorted extends BaseAuto {
 //        shooter.setRunMode(TwoWheelShooter.RunMode.RawPower);
         intake = new Intake(hardwareMap, Intake.RunMode.RawPower);
 
-        shooter.low.setVeloCoefficients(pidBotGainsShooter[0], pidBotGainsShooter[1], pidBotGainsShooter[2]);
-        shooter.high.setVeloCoefficients(pidTopGainsShooter[0], pidTopGainsShooter[1], pidTopGainsShooter[2]);
-        shooter.low.setFeedforwardCoefficients(kBotGainsShooter[0], kBotGainsShooter[1], kBotGainsShooter[2]);
-        shooter.high.setFeedforwardCoefficients(kTopGainsShooter[0], kTopGainsShooter[1], kTopGainsShooter[2]);
 
+        if(shooterRunMode == TwoWheelShooter.RunMode.VelocityControl) {
+            shooter.low.setVeloCoefficients(pidBotGainsShooter[0], pidBotGainsShooter[1], pidBotGainsShooter[2]);
+            shooter.high.setVeloCoefficients(pidTopGainsShooter[0], pidTopGainsShooter[1], pidTopGainsShooter[2]);
+            shooter.low.setFeedforwardCoefficients(kBotGainsShooter[0], kBotGainsShooter[1], kBotGainsShooter[2]);
+            shooter.high.setFeedforwardCoefficients(kTopGainsShooter[0], kTopGainsShooter[1], kTopGainsShooter[2]);
+        }
     }
 
 
@@ -168,18 +168,19 @@ public class NineBallCloseRightNonSorted extends BaseAuto {
         limelight.stop();
         //temporarily turn it off to hand to localizer
         return new SequentialCommandGroup(
-                getToShootCommand(1, 1000),
+//                getToShootCommand(1, 1000),
 //                new ParallelDeadlineGroup(
 //                        new FlywheelShootTimed(shooter, follower, shootSide,  TwoWheelShooter.ShootDist.Close, false, 5000, false)
 //                ),
                 new ParallelCommandGroup(
                     new InstantCommand(()-> shooter.setFlywheelsPowerVoltage(TwoWheelShooter.ShootDist.Close)),
                         new SequentialCommandGroup(
-                                new WaitCommand(2000),
-                                new InstantCommand(()-> spindexer.spin(-0.3))
+                                getToShootCommand(1, 500),
+                                new WaitCommand(500),
+                                new InstantCommand(()-> spindexer.spin(-0.25))
                         )
                 ),
-                new WaitCommand(1200),
+                new WaitCommand(2000),
                 new InstantCommand(()-> shooter.stopFlywheels()),
                 //new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0)),
                 //new WaitCommand(1000),
@@ -194,49 +195,57 @@ public class NineBallCloseRightNonSorted extends BaseAuto {
                 new InstantCommand(() -> spindexer.getTurner().getServo().setPower(0)),
                 setDefaultStartColors(),
 //                new ParallelCommandGroup(
-                getToShootCommand(2, 0),
+//                getToShootCommand(2, 0),
+                new WaitCommand(1000),
                 new ParallelCommandGroup(
                         new InstantCommand(()-> shooter.setFlywheelsPowerVoltage(TwoWheelShooter.ShootDist.Close)),
                         new SequentialCommandGroup(
-                                new WaitCommand(2000),
-                                new InstantCommand(()-> spindexer.spin(-0.3))
+                                getToShootCommand(2, 500),
+                                new WaitCommand(500),
+                                new InstantCommand(()-> spindexer.spin(-0.25))
                         )
                 ),
-                new WaitCommand(1200),
+                new WaitCommand(2000),
                 new InstantCommand(()-> shooter.stopFlywheels()),
                 new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0)),
                 // new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT1, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
-                new ParallelCommandGroup(
-                        getToLineNum(2, 200),
+//                new ParallelCommandGroup(
+//                        getToLineNum(2, 200),
+////                new InstantCommand(() -> spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE})),
+//                        new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0)
+//                ),
+                getToLineNum(2, 200),
 //                new InstantCommand(() -> spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE})),
-                        new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0)
-                ),
+                new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
+
 //                new InstantCommand(() -> spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE})),
                 //new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
                 new WaitCommand(200),
                 intake(2, 0),
+
                 new InstantCommand(() -> spindexer.getTurner().getServo().setPower(0)),
                 setDefaultStartColors(),
 //                new ParallelCommandGroup(
-                getToShootCommand(2, 0),
+//                getToShootCommand(2, 0),
+                new WaitCommand(1000),
                 new ParallelCommandGroup(
                         new InstantCommand(()-> shooter.setFlywheelsPowerVoltage(TwoWheelShooter.ShootDist.Close)),
                         new SequentialCommandGroup(
-                            new WaitCommand(2000),
-                            new InstantCommand(()-> spindexer.spin(-0.3))
+                            getToShootCommand(2, 500),
+                            new WaitCommand(500),
+                            new InstantCommand(()-> spindexer.spin(-0.25))
                         )
                 ),
-                new WaitCommand(1000),
+                new WaitCommand(2000),
                 new InstantCommand(()-> shooter.stopFlywheels()),
-                new WaitCommand(1500),
-                new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0))
+                new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0)),
                 //new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 1000),
 //                openGate(1000),
 ////
 //                line2Commands(),
 //                line3Commands(),
 
-                //   park(100)
+                park(100)
 //
 //               new InstantCommand(() -> spindexer.goTo(Angle.fromDegrees(0), CRServoEx2.RunMode.OptimizedPositionalControl))
 //
@@ -264,52 +273,84 @@ public class NineBallCloseRightNonSorted extends BaseAuto {
     }
     protected SequentialCommandGroup openGate(long milliSec){
         return new SequentialCommandGroup(
-                new SchedulePathTo(follower, openGatePose, headingError, timeOutConstraint, pathDistThresholdMin),
+                new SchedulePathTo(follower, openGatePose, headingError, timeOutConstraint, pathDistThresholdMin, tValueConstraint),
                 new WaitCommand(milliSec)
         );
     }
-    protected Command intake(int targetSpot, int initialSpindexerIntakeSpot){
+//    protected Command intake(int targetSpot, int initialSpindexerIntakeSpot){
+////        autoIntakeCommand = new AutoIntakeCommand(spindexer, intake, intakePower, intakeTime);
+//        return new SequentialCommandGroup(
+//                new ParallelCommandGroup(
+//                        new InstantCommand(() -> intake.setDirectPower(1.0)),
+//                        new SequentialCommandGroup(
+//                                new WaitCommand(firstWaitTime),
+//                                new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 1) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
+//                                // new InstantCommand(() -> spindexer.getTurner().setPIDFTOUse(spindexer.intakeTurnerCoeff)),
+//                                new WaitCommand(secondWaitTime),
+//                               new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 2) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
+////                            new InstantCommand(() -> spindexer.getTurner().setPIDFTOUse(spindexer.outtakeTurnerCoeff)),
+////                            new WaitCommand(thirdWaitTime),
+////                            new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 2) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0)
+////                                new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0.6)),//rotate manually for the last one
+//                                new WaitCommand(thirdWaitTime),
+//
+//                                //new InstantCommand(()-> spindexer.getTurner().setPIDFTOUse(spindexer.intakeTurnerCoeff)),
+//                               new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0))
+////                                new InstantCommand(()-> spindexer.setAngleTolerance(Angle.fromDegrees(10))),
+////                               new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 2) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
+////                                new WaitCommand(fourthWaitTime)
+//                        ),
+//                        driveToIntakeEnd(targetSpot)
+//                ).withTimeout(3500),
+//                new InstantCommand(()-> spindexer.setDefaultAngleTolerance()),
+//                new InstantCommand(()-> spindexer.getTurner().setPIDFTOUse(spindexer.outtakeTurnerCoeff)),
+//                new InstantCommand(()-> intake.stopPower())
+//        );
+//
+////        return intakePower(milliSec);
+//    }
+protected Command intake(int targetSpot, int initialSpindexerIntakeSpot){
 //        autoIntakeCommand = new AutoIntakeCommand(spindexer, intake, intakePower, intakeTime);
-        return new SequentialCommandGroup(
-                new ParallelCommandGroup(
-                        new InstantCommand(() -> intake.setDirectPower(1.0)),
-                        new SequentialCommandGroup(
-                                new WaitCommand(firstWaitTime),
-                                new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 1) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
-                                // new InstantCommand(() -> spindexer.getTurner().setPIDFTOUse(spindexer.intakeTurnerCoeff)),
-                                new WaitCommand(secondWaitTime),
+    return new SequentialCommandGroup(
+            new ParallelCommandGroup(
+                    new InstantCommand(() -> intake.setDirectPower(1.0)),
+                    new SequentialCommandGroup(
+                            new WaitCommand(firstWaitTime),
+                            new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 1) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
+                            // new InstantCommand(() -> spindexer.getTurner().setPIDFTOUse(spindexer.intakeTurnerCoeff)),
+                            new WaitCommand(secondWaitTime),
 //                            new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 2) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
 //                            new InstantCommand(() -> spindexer.getTurner().setPIDFTOUse(spindexer.outtakeTurnerCoeff)),
 //                            new WaitCommand(thirdWaitTime),
 //                            new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 2) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0)
-                                new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0.6)),//rotate manually for the last one
-                                new WaitCommand(thirdWaitTime),
-                                new InstantCommand(()-> spindexer.setAngleTolerance(Angle.fromDegrees(10))),
-                                new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 2) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
-                                new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0)),
-                                new WaitCommand(fourthWaitTime)
-                        ),
-                        driveToIntakeEnd(targetSpot)
-                ).withTimeout(3500),
-                new InstantCommand(()-> intake.stopPower())
-        );
+                            new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0.6)),//rotate manually for the last one
+                            new WaitCommand(thirdWaitTime),
+                            new InstantCommand(()-> spindexer.setAngleTolerance(Angle.fromDegrees(10))),
+                            new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 2) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
+                            new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0)),
+                            new WaitCommand(fourthWaitTime)
+                    ),
+                    driveToIntakeEnd(targetSpot)
+            ),
+            new InstantCommand(()-> intake.stopPower())
+    );
 
 //        return intakePower(milliSec);
-    }
+}
 
     protected SequentialCommandGroup driveToIntakeEnd(int spot){
         Pose intakePose = (spot == 1) ? intakeOnePose : (spot == 2) ? intakeTwoPose : intakeThreePose;
 
-        follower.update();
+//        follower.update();
         if(spot != 2) {
             return new SequentialCommandGroup(
-                    new SchedulePathTo(follower, new Pose(intakePose.getX() + xChangeIntake, intakePose.getY(), intakePose.getHeading()), headingError, timeOutConstraint, pathDistThresholdMin)
+                    new SchedulePathTo(follower, new Pose(intakePose.getX() + xChangeIntake, intakePose.getY(), intakePose.getHeading()), headingError, timeOutConstraint, pathDistThresholdMin, tValueConstraint)
                             .setMaxPower(0.3)
             );
         }
         else{
             return new SequentialCommandGroup(
-                    new SchedulePathTo(follower, new Pose(intakePose.getX() + xChangeIntake + 6, intakePose.getY(), intakePose.getHeading()), headingError, timeOutConstraint, pathDistThresholdMin)
+                    new SchedulePathTo(follower, new Pose(intakePose.getX() + xChangeIntake + 6, intakePose.getY(), intakePose.getHeading()), headingError, timeOutConstraint, pathDistThresholdMin, tValueConstraint)
                             .setMaxPower(0.3)
             );
         }
@@ -317,7 +358,7 @@ public class NineBallCloseRightNonSorted extends BaseAuto {
 
     protected SequentialCommandGroup park(long milliSec){
         return new SequentialCommandGroup(
-                new SchedulePathTo(follower, parkPose, headingError, timeOutConstraint, pathDistThresholdMin),
+                new SchedulePathTo(follower, parkPose, headingError, timeOutConstraint, pathDistThresholdMin, tValueConstraint),
                 new WaitCommand(milliSec)
         );
     }
@@ -371,9 +412,9 @@ public class NineBallCloseRightNonSorted extends BaseAuto {
     }
     protected SequentialCommandGroup getToLineNum(int lineNum, long milliSec){
         SchedulePathTo command = null;
-        if(lineNum == 1) command = new SchedulePathTo(follower, intakeOnePose, headingError, timeOutConstraint, pathDistThresholdMin);
-        else if(lineNum == 2) command =  new SchedulePathTo(follower, intakeTwoPose, headingError, timeOutConstraint, pathDistThresholdMin);
-        else command = new SchedulePathTo(follower, intakeThreePose, headingError, timeOutConstraint, pathDistThresholdMin);
+        if(lineNum == 1) command = new SchedulePathTo(follower, intakeOnePose, headingError, timeOutConstraint, pathDistThresholdMin, tValueConstraint);
+        else if(lineNum == 2) command =  new SchedulePathTo(follower, intakeTwoPose, headingError, timeOutConstraint, pathDistThresholdMin, tValueConstraint);
+        else command = new SchedulePathTo(follower, intakeThreePose, headingError, timeOutConstraint, pathDistThresholdMin, tValueConstraint);
 
         return new SequentialCommandGroup(
                 command
@@ -383,13 +424,13 @@ public class NineBallCloseRightNonSorted extends BaseAuto {
     protected SequentialCommandGroup getToShootCommand(int num, long millSec){
         if(num == 1) {
             return new SequentialCommandGroup(
-                    new SchedulePathTo(follower, shootPose, headingError, timeOutConstraint, pathDistThresholdMin).setMaxPower(0.9),
+                    new SchedulePathTo(follower, shootPose, headingError, timeOutConstraint, pathDistThresholdMin, tValueConstraint).setMaxPower(1.0),
                     new WaitCommand(millSec)
             );
         }
         else{
             return new SequentialCommandGroup(
-                    new SchedulePathTo(follower, secondShootPose, headingError, timeOutConstraint, pathDistThresholdMin).setMaxPower(0.9),
+                    new SchedulePathTo(follower, secondShootPose, headingError, timeOutConstraint, pathDistThresholdMin, tValueConstraint).setMaxPower(1.0),
                     new WaitCommand(millSec)
             );
         }
@@ -403,6 +444,8 @@ public class NineBallCloseRightNonSorted extends BaseAuto {
         double currentTime = gameTimer.getTime();
 
         // Follower
+        telemetry.addData("Current Voltage", shooter.getCurrVoltage());
+        telemetry.addData("Ratio Voltage ", shooter.getTargetVoltage() / shooter.getCurrVoltage());
         telemetry.addData("Current Follower Pose", currentPose.getPose());
         telemetry.addData("Follower Velocity", follower.getVelocity());
         telemetry.addData("Start Ball Color 0", startBallColors[0]);

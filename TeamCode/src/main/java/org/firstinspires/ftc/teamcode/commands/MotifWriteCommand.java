@@ -67,16 +67,14 @@ public class MotifWriteCommand extends CommandBase {
         LLResult result = limelight.getLatestResult();
         if (result != null) {
             List<LLResultTypes.FiducialResult> list = result.getFiducialResults();
-            for (LLResultTypes.FiducialResult item : list) {
-                int aprilTagID = item.getFiducialId();
-                motifPattern = idMap.getOrDefault(aprilTagID, MotifEnums.Motif.NONE);
-                if(motifPattern != MotifEnums.Motif.NONE) {
-                    writeToFile(fileWriter, String.valueOf(aprilTagID));
-                    closeFileWriter(fileWriter);
-                    finishedWriting = true;
-                }
+            LLResultTypes.FiducialResult item = list.get(0);
+            int aprilTagID = item.getFiducialId();
+            motifPattern = idMap.getOrDefault(aprilTagID, MotifEnums.Motif.NONE);
+            if(motifPattern != MotifEnums.Motif.NONE) {
+                writeToFile(fileWriter, String.valueOf(aprilTagID));
+                closeFileWriter(fileWriter);
+                finishedWriting = true;
             }
-
         }
     }
 
@@ -87,7 +85,7 @@ public class MotifWriteCommand extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return motifPattern != MotifEnums.Motif.NONE || (timer.getTime() >= maxTimeMs);
+        return (motifPattern != MotifEnums.Motif.NONE && finishedWriting)|| (timer.getTime() >= maxTimeMs);
     }
 
 

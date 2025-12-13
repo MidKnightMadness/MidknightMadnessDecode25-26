@@ -48,7 +48,7 @@ public abstract class BaseAuto extends CommandOpMode {
     FtcDashboard dashboard;
     TelemetryPacket dashboardPacket;
 
-    public static double maxTimeMs = 29500;
+    public static double maxTimeMs = 20500;
     public static double maxWritePoseTimeMs = 200;
     public static double maxSideWriteTimeMs = 200;
     public static double[] pidBotGainsShooter = new double[]{0.0004, 0.00001, 0.00001};
@@ -59,6 +59,7 @@ public abstract class BaseAuto extends CommandOpMode {
     boolean stopEnd = false;
     ShootSide side;
     boolean postMotif = false;
+    boolean gameTimerStarted = false;
 
     @Override
     public void initialize() {
@@ -91,9 +92,9 @@ public abstract class BaseAuto extends CommandOpMode {
 
         }
 
-        gameTimer.restart();
-
     }
+
+
 
     protected void initializeMechanisms() {
 //        limelight = hardwareMap.get(Limelight3A.class, ConfigNames.limelight);
@@ -111,6 +112,10 @@ public abstract class BaseAuto extends CommandOpMode {
     @Override
     public void run(){
         super.run();
+        if(!gameTimerStarted){
+            gameTimer.restart();
+            gameTimerStarted = true;
+        }
         update();
         if(!prevVisionComplete && isVisionComplete()){
             if(postMotifSequence() != null) {
@@ -125,9 +130,12 @@ public abstract class BaseAuto extends CommandOpMode {
 //            }
     //    }
 //        if (timer.getTime() >= maxTimeMs) requestOpModeStop();
+       // writeValues();
         updateTelemetry();
-        writeValues();
+
     }
+
+
 
     public void update(){
 

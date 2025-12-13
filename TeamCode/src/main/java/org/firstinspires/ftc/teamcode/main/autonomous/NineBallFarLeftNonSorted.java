@@ -1,10 +1,7 @@
 package org.firstinspires.ftc.teamcode.main.autonomous;
 
-import static org.firstinspires.ftc.teamcode.main.autonomous.IntakeAutoTest.fourthWaitTime;
-
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
-import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -12,86 +9,73 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
-import com.seattlesolvers.solverslib.command.ParallelDeadlineGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
-import com.seattlesolvers.solverslib.pedroCommand.TurnCommand;
 
 
 import org.firstinspires.ftc.teamcode.commands.AutoIntakeCommand;
-import org.firstinspires.ftc.teamcode.commands.FlywheelShootTimed;
-import org.firstinspires.ftc.teamcode.commands.IntakeSpindexerCommand;
 import org.firstinspires.ftc.teamcode.commands.IntakeTimeCommand;
 import org.firstinspires.ftc.teamcode.commands.MotifWriteCommand;
 import org.firstinspires.ftc.teamcode.commands.SchedulePathTo;
 import org.firstinspires.ftc.teamcode.commands.ShootSeqCommand;
 import org.firstinspires.ftc.teamcode.commands.SpindexerGotoSpot;
-import org.firstinspires.ftc.teamcode.commands.TurnToCommand;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
 import org.firstinspires.ftc.teamcode.game.SpotType;
 import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
-import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
 import org.firstinspires.ftc.teamcode.util.Angle;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
-import org.firstinspires.ftc.teamcode.util.Timer;
-
-import java.lang.reflect.WildcardType;
-import java.util.Arrays;
 
 @Config
 @Configurable
-@Autonomous(name = "12 Close Prev Right", group = "Competition")
-public class TwelveBallClosePrevious extends BaseAuto {
+@Autonomous(name = "9 Far Left NonSorted", group = "Competition")
+public class NineBallFarLeftNonSorted extends BaseAuto {
     public static double motifDetectionTimeMs = 3000;
     int startPipeline = 1;
-    public static Pose startPose = new Pose(118, 130, Math.toRadians(40));
-    public static Pose motifDetectionPose = new Pose(87, 94, Math.toRadians(100));
-    public static Pose shootPose = new Pose(87, 94, Math.toRadians(230));
-    public static Pose secondShootPose = new Pose(87, 94, Math.toRadians(225));
-    public static Pose parkPose = new Pose(114, 94, Math.toRadians(210));
-    public static Pose openGatePose = new Pose(136, 76, Math.toRadians(180));
-    public static Pose intakeOnePose = new Pose(102, 84, Math.toRadians(0));
-    public static Pose intakeTwoPose = new Pose(102, 60, Math.toRadians(0));
-    public static Pose intakeThreePose = new Pose(102, 36, Math.toRadians(0));
+    public static Pose startPose = new Pose(144-88, 8, Math.toRadians(270));
+    //    public static Pose motifDetectionPose = new Pose(87, 94, Math.toRadians(100));
+    public static Pose shootPose = new Pose(144-84, 17, Math.toRadians(270+270-246));
+    //    public static Pose forwardPose = new Pose(88, 14, Math.toRadians(180));
+    public static Pose secondShootPose = new Pose(144-84, 17, Math.toRadians(270+270-246));
+    public static Pose parkPose = new Pose(144-86, 38, Math.toRadians(180));
+    public static Pose openGatePose = new Pose(144-136, 76, Math.toRadians(180));
+    public static Pose intakeOnePose = new Pose(144-102, 84, Math.toRadians(180));
+    public static Pose intakeTwoPose = new Pose(144-102, 56, Math.toRadians(180));
+    public static Pose intakeThreePose = new Pose(144- 102, 36, Math.toRadians(180));
     public static double intakeDistForward = 14;
     PathChain toMotifPath;
-    MotifEnums.Motif motifPattern = MotifEnums.Motif.GPP;
+    MotifEnums.Motif motifPattern = MotifEnums.Motif.NONE;
     MotifWriteCommand motifCommand = null;
 
-    ShootSide shootSide = ShootSide.RIGHT;
+    ShootSide shootSide = ShootSide.LEFT;
     Pose currentPose;
 
     Command firstPath;
-    public static long firstWaitTime = 700;
+    public static long firstWaitTime = 500;
     public static long secondWaitTime = 200;
     public static long thirdWaitTime = 150;//250 old
 
     public static long fourthWaitTime = 700;
 
-    public static double pathDistThresholdMin = 1;
+    public static double pathDistThresholdMin = 1.5;
     public static double headingError = Math.toRadians(2);
     public static double timeOutConstraint = 200;
-    public static double xChangeIntake = 23;
+    public static double xChangeIntake = -25;
     public static int[] shootArray = new int[]{2, 1, 0};
 
-    TwoWheelShooter.RunMode shooterRunMode = TwoWheelShooter.RunMode.VelocityControl;
+    public static TwoWheelShooter.RunMode shooterRunMode = TwoWheelShooter.RunMode.RawPower;
 
     private final BallColor[] startBallColors = new BallColor[] {BallColor.PURPLE, BallColor.PURPLE, BallColor.GREEN};
     SpindexerSpot[] spots;
 
     ShootSeqCommand seqShootCommand;
     public static long moveGreenWaitTime = 150;
-    public static long flywheelSpinupTime = 2500;
-    public static long firstBallWaitTime = 1000;
-    public static long secondBallWaitTime = 1000;
-    public static long thirdBallWaitTime = 1000;
     @Override
     protected Pose getStartPose(){
         return startPose;
@@ -111,14 +95,14 @@ public class TwelveBallClosePrevious extends BaseAuto {
     //keep these empty and build the path using follower's current Pose
     @Override
     protected void buildPaths(){
-        toMotifPath = follower.pathBuilder()
-                .addPath(new BezierLine(startPose, motifDetectionPose))
-                .setLinearHeadingInterpolation(startPose.getHeading(), motifDetectionPose.getHeading())
-                .setHeadingConstraint(headingError)
-                .setTimeoutConstraint(timeOutConstraint)
-                .setTranslationalConstraint(pathDistThresholdMin)
-                .setTValueConstraint(0.97)
-                .build();
+//        toMotifPath = follower.pathBuilder()
+//                .addPath(new BezierLine(startPose, motifDetectionPose))
+//                .setLinearHeadingInterpolation(startPose.getHeading(), motifDetectionPose.getHeading())
+//                .setHeadingConstraint(headingError)
+//                .setTimeoutConstraint(timeOutConstraint)
+//                .setTranslationalConstraint(pathDistThresholdMin)
+//                .setTValueConstraint(0.97)
+//                .build();
     }
 
 
@@ -129,13 +113,13 @@ public class TwelveBallClosePrevious extends BaseAuto {
 
     @Override
     protected boolean isVisionComplete(){
-        if(motifCommand.getDetected() != MotifEnums.Motif.NONE){
-            motifPattern = motifCommand.getDetected();
-        }
-        if(motifCommand.isFinished()){
-            return true;
-        }
-        return false;
+//        if(motifCommand.getDetected() != MotifEnums.Motif.NONE){
+//            motifPattern = motifCommand.getDetected();
+//        }
+//        if(motifCommand.isFinished()){
+//            return true;
+//        }
+        return true;
     }
     public static long waitTime = 500;
     AutoIntakeCommand autoIntakeCommand;
@@ -143,14 +127,15 @@ public class TwelveBallClosePrevious extends BaseAuto {
 
     @Override
     protected Command preMotifSequence(){
-        motifCommand = new MotifWriteCommand(limelight, motifDetectionTimeMs);
-
-        firstPath = new FollowPathCommand(follower, toMotifPath, true).setGlobalMaxPower(0.9);
-        return new SequentialCommandGroup(
-                setDefaultStartColors(),
-                firstPath,
-                motifCommand
-        );
+//        motifCommand = new MotifWriteCommand(limelight, motifDetectionTimeMs);
+//
+//        firstPath = new FollowPathCommand(follower, , true).setGlobalMaxPower(0.9);
+//        return new SequentialCommandGroup(
+//                setDefaultStartColors(),
+//                firstPath,
+//                motifCommand
+//        );
+        return null;
 
     }
     @Override
@@ -166,11 +151,12 @@ public class TwelveBallClosePrevious extends BaseAuto {
 //        shooter.setRunMode(TwoWheelShooter.RunMode.RawPower);
         intake = new Intake(hardwareMap, Intake.RunMode.RawPower);
 
-        shooter.low.setVeloCoefficients(pidBotGainsShooter[0], pidBotGainsShooter[1], pidBotGainsShooter[2]);
-        shooter.high.setVeloCoefficients(pidTopGainsShooter[0], pidTopGainsShooter[1], pidTopGainsShooter[2]);
-        shooter.low.setFeedforwardCoefficients(kBotGainsShooter[0], kBotGainsShooter[1], kBotGainsShooter[2]);
-        shooter.high.setFeedforwardCoefficients(kTopGainsShooter[0], kTopGainsShooter[1], kTopGainsShooter[2]);
-
+        if(shooterRunMode == TwoWheelShooter.RunMode.VelocityControl) {
+            shooter.low.setVeloCoefficients(pidBotGainsShooter[0], pidBotGainsShooter[1], pidBotGainsShooter[2]);
+            shooter.high.setVeloCoefficients(pidTopGainsShooter[0], pidTopGainsShooter[1], pidTopGainsShooter[2]);
+            shooter.low.setFeedforwardCoefficients(kBotGainsShooter[0], kBotGainsShooter[1], kBotGainsShooter[2]);
+            shooter.high.setFeedforwardCoefficients(kTopGainsShooter[0], kTopGainsShooter[1], kTopGainsShooter[2]);
+        }
     }
 
 
@@ -185,149 +171,102 @@ public class TwelveBallClosePrevious extends BaseAuto {
         limelight.stop();
         //temporarily turn it off to hand to localizer
         return new SequentialCommandGroup(
-                getToShootCommand(1, 1000),
+                //new SchedulePathTo(follower, forwardPose, headingError, timeOutConstraint, pathDistThresholdMin),
+//                getToShootCommand(1, 1000),
 //                new ParallelDeadlineGroup(
 //                        new FlywheelShootTimed(shooter, follower, shootSide,  TwoWheelShooter.ShootDist.Close, false, 5000, false)
 //                ),
-//                shootOptimal(motifPattern),
-                //FLYWHEEL SHOOT
+                new WaitCommand(1500),
                 new ParallelCommandGroup(
-                        new InstantCommand(() -> shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Close)),
+                        new InstantCommand(()-> shooter.setFlywheelsPowerVoltage(TwoWheelShooter.ShootDist.Far)),
                         new SequentialCommandGroup(
-                                new WaitCommand(flywheelSpinupTime),
-                                new SpindexerGotoSpot(spindexer, spots[0], SpotType.OUTTAKE,
-                                        CRServoEx2.RunMode.OptimizedPositionalControl, 0),
-                                new WaitCommand(firstBallWaitTime),
-                                new SpindexerGotoSpot(spindexer, spots[1], SpotType.OUTTAKE,
-                                        CRServoEx2.RunMode.OptimizedPositionalControl, 0),
-                                new WaitCommand(secondBallWaitTime),
-                                new SpindexerGotoSpot(spindexer, spots[2], SpotType.OUTTAKE,
-                                        CRServoEx2.RunMode.OptimizedPositionalControl, 0),
-                                new WaitCommand(thirdBallWaitTime),
-                                new InstantCommand(() -> {
-                                    shooter.stopFlywheels();
-                                    spindexer.getTurner().getServo().setPower(0);
-                                    spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE});
-                                }
-                                )
+                                getToShootCommand(1, 500),
+                                new WaitCommand(500),
+                                new InstantCommand(()-> spindexer.spin(-0.15))
                         )
                 ),
-                //END FLYWHEEL SHOOT
-
+                new WaitCommand(3000),
+                new InstantCommand(()-> shooter.stopFlywheels()),
                 //new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0)),
                 //new WaitCommand(1000),
-                getToLineNum(1, 500),
+                new InstantCommand(() -> spindexer.getTurner().getServo().setPower(0)),
+                new ParallelCommandGroup(
+                        getToLineNum(3, 200),
 //                new InstantCommand(() -> spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE})),
-                new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
-                new WaitCommand(500),
-                intake(1, 0),
+                        new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0)
+                ),
+                new WaitCommand(200),
+                intake(3, 0),
                 new InstantCommand(() -> spindexer.getTurner().getServo().setPower(0)),
                 setDefaultStartColors(),
 //                new ParallelCommandGroup(
-                getToShootCommand(2, 0),
-                new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0.4)),
-                new WaitCommand(moveGreenWaitTime),
+//                getToShootCommand(2, 0),
+                new WaitCommand(200),
+                new ParallelCommandGroup(
+                        new InstantCommand(()-> shooter.setFlywheelsPowerVoltage(TwoWheelShooter.ShootDist.Far)),
+                        new SequentialCommandGroup(
+                                getToShootCommand(2, 500),
+                                new WaitCommand(500),
+                                new InstantCommand(()-> spindexer.spin(-0.15))
+                        )
+                ),
+                new WaitCommand(2000),
+                new InstantCommand(()-> shooter.stopFlywheels()),
                 new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0)),
                 // new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT1, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
-                new WaitCommand(500),
-
-//                shootOptimal(motifPattern)
-                //FLYWHEEL SHOOT
                 new ParallelCommandGroup(
-                    new InstantCommand(() -> shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Close)),
-                    new SequentialCommandGroup(
-                        new WaitCommand(flywheelSpinupTime),
-                        new SpindexerGotoSpot(spindexer, spots[0], SpotType.OUTTAKE,
-                                CRServoEx2.RunMode.OptimizedPositionalControl, 0),
-                        new WaitCommand(firstBallWaitTime),
-                        new SpindexerGotoSpot(spindexer, spots[1], SpotType.OUTTAKE,
-                             CRServoEx2.RunMode.OptimizedPositionalControl, 0),
-                         new WaitCommand(secondBallWaitTime),
-                         new SpindexerGotoSpot(spindexer, spots[2], SpotType.OUTTAKE,
-                            CRServoEx2.RunMode.OptimizedPositionalControl, 0),
-                        new WaitCommand(thirdBallWaitTime),
-                        new InstantCommand(() -> {
-                            shooter.stopFlywheels();
-                            spindexer.getTurner().getServo().setPower(0);
-                            spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE});
-                        }
-                        )
-                    )
-                )
-                //END FLYWHEEL SHOOT
+                        getToLineNum(2, 200),
+//                new InstantCommand(() -> spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE})),
+                        new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0)
+                ),
+//                new InstantCommand(() -> spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE})),
+                //new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
+                new WaitCommand(200),
+                intake(2, 0),
 
+                new InstantCommand(() -> spindexer.getTurner().getServo().setPower(0)),
+                setDefaultStartColors(),
+//                new ParallelCommandGroup(
+//                getToShootCommand(2, 0),
+                new WaitCommand(200),
+                new ParallelCommandGroup(
+                        new InstantCommand(()-> shooter.setFlywheelsPowerVoltage(TwoWheelShooter.ShootDist.Far)),
+                        new SequentialCommandGroup(
+                                getToShootCommand(2, 500),
+                                new WaitCommand(500),
+                                new InstantCommand(()-> spindexer.spin(-0.15))
+                        )
+                ),
+                new WaitCommand(2000),
+                new InstantCommand(()-> shooter.stopFlywheels()),
+                new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0)),
                 //new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 1000),
 //                openGate(1000),
 ////
 //                line2Commands(),
 //                line3Commands(),
 
-                //   park(100)
+                park(100)
 //
 //               new InstantCommand(() -> spindexer.goTo(Angle.fromDegrees(0), CRServoEx2.RunMode.OptimizedPositionalControl))
 //
         );
+//        else{
+//        return null;
+
     }
 
 
-    protected Command line1Commands(){
-        return new SequentialCommandGroup(
-                getToLineNum(1, 2000),
-                new WaitCommand(2000),
-//                new InstantCommand(() -> spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE})),
-                new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
-                new WaitCommand(2000),
-                intake(1, 0),
-                new InstantCommand(() -> spindexer.getTurner().getServo().setPower(0)),
-                setDefaultStartColors(),
-                new WaitCommand(2000),
-                new InstantCommand(()-> intake.setDirectPower(0)),
-                getToShootCommand(1, 2000),
-                new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
-                shootOptimal(motifPattern)
-        );
-    }
-    protected Command line2Commands(){
-        return new SequentialCommandGroup(
-                getToLineNum(2, 1000),
-                new WaitCommand(500),
-//                new InstantCommand(() -> spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE})),
-                new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT1, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
-                new WaitCommand(500),
-                intake(2, 1),
-                setDefaultStartColors(),
-                new WaitCommand(500),
-                new InstantCommand(()-> intake.setDirectPower(0)),
-                getToShootCommand(2, 500),
-                shootOptimal(motifPattern)
-        );
-    }
-    protected Command line3Commands(){
-        return new SequentialCommandGroup(
-                getToLineNum(3, 1000),
-                new WaitCommand(500),
-//                new InstantCommand(() -> spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE})),
-                new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT2, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
-                new WaitCommand(500),
-                intake(3, 2),
-                setDefaultStartColors(),
-                new WaitCommand(500),
-                new InstantCommand(()-> intake.setDirectPower(0)),
-                getToShootCommand(3, 500),
-                new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
-                shootOptimal(motifPattern)
-        );
-    }
     private Command intakePower(long milliSec) {
         return new IntakeTimeCommand(intake, milliSec);
     }
 
-    protected SequentialCommandGroup goToMotifDetection(long milliSec){
-        return new SequentialCommandGroup(
-                new SchedulePathTo(follower, motifDetectionPose, headingError, timeOutConstraint, pathDistThresholdMin),
-                new WaitCommand(milliSec)
-        );
-    }
+    //    protected SequentialCommandGroup goToMotifDetection(long milliSec){
+//        return new SequentialCommandGroup(
+//                new SchedulePathTo(follower, motifDetectionPose, headingError, timeOutConstraint, pathDistThresholdMin),
+//                new WaitCommand(milliSec)
+//        );
+//    }
     protected SequentialCommandGroup setDefaultStartColors(){
         return new SequentialCommandGroup(
                 new InstantCommand(() -> spindexer.setBallColors(startBallColors))
@@ -355,14 +294,14 @@ public class TwelveBallClosePrevious extends BaseAuto {
 //                            new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 2) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0)
                                 new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0.6)),//rotate manually for the last one
                                 new WaitCommand(thirdWaitTime),
+                                new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0)),
                                 new InstantCommand(()-> spindexer.setAngleTolerance(Angle.fromDegrees(10))),
                                 new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 2) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
-                                new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0)),
-                                new InstantCommand(() -> spindexer.setDefaultAngleTolerance()),
                                 new WaitCommand(fourthWaitTime)
                         ),
                         driveToIntakeEnd(targetSpot)
-                ).withTimeout(6500),
+                ).withTimeout(3500),
+                new InstantCommand(()-> spindexer.setDefaultAngleTolerance()),
                 new InstantCommand(()-> intake.stopPower())
         );
 
@@ -372,11 +311,19 @@ public class TwelveBallClosePrevious extends BaseAuto {
     protected SequentialCommandGroup driveToIntakeEnd(int spot){
         Pose intakePose = (spot == 1) ? intakeOnePose : (spot == 2) ? intakeTwoPose : intakeThreePose;
 
-        follower.update();
-        return new SequentialCommandGroup(
-                new SchedulePathTo(follower, new Pose(intakePose.getX() + xChangeIntake, intakePose.getY(), intakePose.getHeading()), headingError, timeOutConstraint, pathDistThresholdMin)
-                        .setMaxPower(0.3)
-        );
+//        follower.update();
+        if(spot == 1) {
+            return new SequentialCommandGroup(
+                    new SchedulePathTo(follower, new Pose(intakePose.getX() + xChangeIntake, intakePose.getY(), intakePose.getHeading()), headingError, timeOutConstraint, pathDistThresholdMin)
+                            .setMaxPower(0.3)
+            );
+        }
+        else{
+            return new SequentialCommandGroup(
+                    new SchedulePathTo(follower, new Pose(intakePose.getX() + xChangeIntake - 6, intakePose.getY(), intakePose.getHeading()), headingError, timeOutConstraint, pathDistThresholdMin)
+                            .setMaxPower(0.3)
+            );
+        }
     }
 
     protected SequentialCommandGroup park(long milliSec){
@@ -391,7 +338,9 @@ public class TwelveBallClosePrevious extends BaseAuto {
         );
     }
     protected SequentialCommandGroup shootOptimal(MotifEnums.Motif pattern){
-        //spindexer spots should be PPG
+        BallColor[] colors = new BallColor[]{BallColor.PURPLE, BallColor.PURPLE, BallColor.GREEN};
+        BallColor[] PPG = {BallColor.PURPLE, BallColor.PURPLE, BallColor.GREEN};
+        BallColor[] PGP = {BallColor.PURPLE, BallColor.GREEN, BallColor.PURPLE};
 
         if (pattern == MotifEnums.Motif.GPP) {
 //            if (Arrays.equals(colors, PPG)) {
@@ -445,13 +394,13 @@ public class TwelveBallClosePrevious extends BaseAuto {
     protected SequentialCommandGroup getToShootCommand(int num, long millSec){
         if(num == 1) {
             return new SequentialCommandGroup(
-                    new SchedulePathTo(follower, shootPose, headingError, timeOutConstraint, pathDistThresholdMin).setMaxPower(0.7),
+                    new SchedulePathTo(follower, shootPose, headingError, timeOutConstraint, pathDistThresholdMin).setMaxPower(1.0),
                     new WaitCommand(millSec)
             );
         }
         else{
             return new SequentialCommandGroup(
-                    new SchedulePathTo(follower, secondShootPose, headingError, timeOutConstraint, pathDistThresholdMin).setMaxPower(0.7),
+                    new SchedulePathTo(follower, shootPose, headingError, timeOutConstraint, pathDistThresholdMin).setMaxPower(1.0),
                     new WaitCommand(millSec)
             );
         }
@@ -465,6 +414,9 @@ public class TwelveBallClosePrevious extends BaseAuto {
         double currentTime = gameTimer.getTime();
 
         // Follower
+        telemetry.addData("Current Voltage", shooter.getCurrVoltage());
+        telemetry.addData("Ratio Voltage ", shooter.getTargetVoltage() / shooter.getCurrVoltage());
+
         telemetry.addData("Current Follower Pose", currentPose.getPose());
         telemetry.addData("Follower Velocity", follower.getVelocity());
         telemetry.addData("Start Ball Color 0", startBallColors[0]);

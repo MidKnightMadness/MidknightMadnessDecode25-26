@@ -56,7 +56,7 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
 
 
     PathChain toMotifPath;
-    MotifEnums.Motif motifPattern = MotifEnums.Motif.GPP;
+    MotifEnums.Motif motifPattern = MotifEnums.Motif.NONE;
     MotifWriteCommand motifCommand = null;
 
     public static ShootSide shootSide = ShootSide.LEFT;
@@ -67,6 +67,7 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
     public static double pathDistThresholdMin = 0.5;
     public static double headingError = 0.025;
     public static double timeOutConstraint = 200;
+    public static double tValueConstraint = 0.97;
     public static double intakeTime = 6000;
     public static double intakePower = 1;
     public static double xChangeIntake = 20;
@@ -106,7 +107,7 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
                 .setHeadingConstraint(headingError)
                 .setTimeoutConstraint(timeOutConstraint)
                 .setTranslationalConstraint(pathDistThresholdMin)
-                .setTValueConstraint(0.97)
+                .setTValueConstraint(tValueConstraint)
                 .build();
     }
 
@@ -118,7 +119,9 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
 
     @Override
     protected boolean isVisionComplete(){
-        motifPattern = motifCommand.getDetected();
+        if(motifCommand.getDetected() == MotifEnums.Motif.NONE){
+            motifPattern = motifCommand.getDetected();
+        }
         if(motifCommand.isFinished()){
             return true;
         }
@@ -155,10 +158,10 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
         intake = new Intake(hardwareMap, Intake.RunMode.RawPower);
 
         if(shooterRunMode == TwoWheelShooter.RunMode.VelocityControl) {
-//            shooter.low.setVeloCoefficients(pidBotGainsShooter[0], pidBotGainsShooter[1], pidBotGainsShooter[2]);
-//            shooter.high.setVeloCoefficients(pidTopGainsShooter[0], pidTopGainsShooter[1], pidTopGainsShooter[2]);
-//            shooter.low.setFeedforwardCoefficients(kBotGainsShooter[0], kBotGainsShooter[1], kBotGainsShooter[2]);
-//            shooter.high.setFeedforwardCoefficients(kTopGainsShooter[0], kTopGainsShooter[1], kTopGainsShooter[2]);
+            shooter.low.setVeloCoefficients(pidBotGainsShooter[0], pidBotGainsShooter[1], pidBotGainsShooter[2]);
+            shooter.high.setVeloCoefficients(pidTopGainsShooter[0], pidTopGainsShooter[1], pidTopGainsShooter[2]);
+            shooter.low.setFeedforwardCoefficients(kBotGainsShooter[0], kBotGainsShooter[1], kBotGainsShooter[2]);
+            shooter.high.setFeedforwardCoefficients(kTopGainsShooter[0], kTopGainsShooter[1], kTopGainsShooter[2]);
 
         }
     }
@@ -320,6 +323,9 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
         double currentTime = gameTimer.getTime();
 
         // Follower
+        telemetry.addData("Current Voltage", shooter.getCurrVoltage());
+        telemetry.addData("Ratio Voltage ", shooter.getTargetVoltage() / shooter.getCurrVoltage());
+
         telemetry.addData("Current Follower Pose", currentPose.getPose());
         telemetry.addData("Follower Velocity", follower.getVelocity());
         telemetry.addData("Start Ball Color 0", startBallColors[0]);

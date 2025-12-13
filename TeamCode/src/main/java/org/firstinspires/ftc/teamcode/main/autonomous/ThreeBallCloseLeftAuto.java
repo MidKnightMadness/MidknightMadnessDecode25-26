@@ -59,7 +59,7 @@ public class ThreeBallCloseLeftAuto extends BaseAuto {
 
     public static double intakeDistForward = 14;
     PathChain toMotifPath;
-    MotifEnums.Motif motifPattern = MotifEnums.Motif.GPP;
+    MotifEnums.Motif motifPattern = MotifEnums.Motif.NONE;
     MotifWriteCommand motifCommand = null;
 
     ShootSide shootSide = ShootSide.LEFT;
@@ -151,11 +151,13 @@ public class ThreeBallCloseLeftAuto extends BaseAuto {
 //        shooter.setRunMode(TwoWheelShooter.RunMode.RawPower);
         intake = new Intake(hardwareMap, Intake.RunMode.RawPower);
 
-        shooter.low.setVeloCoefficients(pidBotGainsShooter[0], pidBotGainsShooter[1], pidBotGainsShooter[2]);
-        shooter.high.setVeloCoefficients(pidTopGainsShooter[0], pidTopGainsShooter[1], pidTopGainsShooter[2]);
-        shooter.low.setFeedforwardCoefficients(kBotGainsShooter[0], kBotGainsShooter[1], kBotGainsShooter[2]);
-        shooter.high.setFeedforwardCoefficients(kTopGainsShooter[0], kTopGainsShooter[1], kTopGainsShooter[2]);
+        if(shooterRunMode == TwoWheelShooter.RunMode.VelocityControl) {
+            shooter.low.setVeloCoefficients(pidBotGainsShooter[0], pidBotGainsShooter[1], pidBotGainsShooter[2]);
+            shooter.high.setVeloCoefficients(pidTopGainsShooter[0], pidTopGainsShooter[1], pidTopGainsShooter[2]);
+            shooter.low.setFeedforwardCoefficients(kBotGainsShooter[0], kBotGainsShooter[1], kBotGainsShooter[2]);
+            shooter.high.setFeedforwardCoefficients(kTopGainsShooter[0], kTopGainsShooter[1], kTopGainsShooter[2]);
 
+        }
     }
 
 
@@ -285,7 +287,7 @@ public class ThreeBallCloseLeftAuto extends BaseAuto {
     protected SequentialCommandGroup driveToIntakeEnd(int spot){
         Pose intakePose = (spot == 1) ? intakeOnePose : (spot == 2) ? intakeTwoPose : intakeThreePose;
 
-        follower.update();
+//        follower.update();
         return new SequentialCommandGroup(
                 new SchedulePathTo(follower, new Pose(intakePose.getX() + xChangeIntake, intakePose.getY(), intakePose.getHeading()), headingError, timeOutConstraint, pathDistThresholdMin)
                         .setMaxPower(0.3)
@@ -371,6 +373,9 @@ public class ThreeBallCloseLeftAuto extends BaseAuto {
         double currentTime = gameTimer.getTime();
 
         // Follower
+        telemetry.addData("Current Voltage", shooter.getCurrVoltage());
+        telemetry.addData("Ratio Voltage ", shooter.getTargetVoltage() / shooter.getCurrVoltage());
+
         telemetry.addData("Current Follower Pose", currentPose.getPose());
         telemetry.addData("Follower Velocity", follower.getVelocity());
         telemetry.addData("Start Ball Color 0", startBallColors[0]);
