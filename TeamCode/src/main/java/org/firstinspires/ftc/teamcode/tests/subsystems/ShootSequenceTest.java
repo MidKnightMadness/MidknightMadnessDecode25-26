@@ -73,7 +73,7 @@ public class ShootSequenceTest extends CommandOpMode {
         shootSeqButton = gp1.getGamepadButton(GamepadKeys.Button.A);
 
         shootSeqButton.whenPressed(new SequentialCommandGroup(
-                new ShootSeqCommand(spindexer, shooter, spots, follower, shootSide, false, TwoWheelShooter.ShootDist.Close)
+                new ShootSeqCommand(spindexer, shooter, spots, follower, shootSide, false, TwoWheelShooter.ShootDist.Close, true)
         ));
 
         register(spindexer, shooter);

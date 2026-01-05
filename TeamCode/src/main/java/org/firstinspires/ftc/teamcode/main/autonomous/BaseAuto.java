@@ -13,6 +13,7 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
@@ -32,7 +33,7 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 @Configurable
 public abstract class BaseAuto extends CommandOpMode {
     Follower follower;
-    Timer timer;
+    Timer gameTimer;
     Pose startPose;
 
     Limelight3A limelight;
@@ -47,22 +48,30 @@ public abstract class BaseAuto extends CommandOpMode {
     FtcDashboard dashboard;
     TelemetryPacket dashboardPacket;
 
-    public static double maxTimeMs = 29500;
+    public static double maxTimeMs = 20500;
     public static double maxWritePoseTimeMs = 200;
     public static double maxSideWriteTimeMs = 200;
-    public static double[] pidBotGainsShooter = new double[]{0.0004, 0, 0.00001};
+    public static double[] pidBotGainsShooter = new double[]{0.0004, 0.00001, 0.00001};
     public static double[] kBotGainsShooter = new double[]{0, 0.00005, 0};
-    public static double[] pidTopGainsShooter = new double[]{0.0004, 0, 0.00001};
+    public static double[] pidTopGainsShooter = new double[]{0.0004, 0.00001, 0.00001};
     public static double[] kTopGainsShooter = new double[]{0.02, 0.00005, 0};
 
     boolean stopEnd = false;
     ShootSide side;
+    boolean postMotif = false;
+    boolean gameTimerStarted = false;
 
     @Override
     public void initialize() {
+
+//        CommandScheduler.getInstance().setBulkReading(
+//                hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
+//        );
+
+        CommandScheduler.getInstance().cancelAll();
         super.reset();
-        timer = new Timer();
-        timer.restart();
+
+        gameTimer = new Timer();
 
         initializeMechanisms();
 
@@ -80,17 +89,21 @@ public abstract class BaseAuto extends CommandOpMode {
         setupVision();
         if(preMotifSequence() != null) {
             schedule(preMotifSequence());
+
         }
+
     }
+
+
 
     protected void initializeMechanisms() {
 //        limelight = hardwareMap.get(Limelight3A.class, ConfigNames.limelight);
 
     }
 
-    protected BallColor[] getStartBallColors(){
-        return null;
-    }
+//    protected BallColor[] getStartBallColors(){
+//        return null;
+//    }
 
     protected ShootSide getSide(){
         return ShootSide.LEFT;
@@ -99,6 +112,10 @@ public abstract class BaseAuto extends CommandOpMode {
     @Override
     public void run(){
         super.run();
+        if(!gameTimerStarted){
+            gameTimer.restart();
+            gameTimerStarted = true;
+        }
         update();
         if(!prevVisionComplete && isVisionComplete()){
             if(postMotifSequence() != null) {
@@ -106,16 +123,25 @@ public abstract class BaseAuto extends CommandOpMode {
             }
             prevVisionComplete = true;
         }
+
+     //   if(postMotifSequence().isFinished()){
+//            if(goToIntakeLine()!= null){
+//                schedule(goToIntakeLine());
+//            }
+    //    }
 //        if (timer.getTime() >= maxTimeMs) requestOpModeStop();
+       // writeValues();
         updateTelemetry();
-        writeValues();
+
     }
+
+
 
     public void update(){
 
     }
     public void writeValues() {
-        if(timer.getTime() >= maxTimeMs & !stopEnd) {
+        if(gameTimer.getTime() >= maxTimeMs & !stopEnd) {
             CommandScheduler.getInstance().cancelAll();
             schedule(new ParallelCommandGroup(
                     new PoseWriteCommand(follower.getPose(), maxWritePoseTimeMs),
@@ -124,6 +150,10 @@ public abstract class BaseAuto extends CommandOpMode {
             requestOpModeStop();
         }
     }
+
+//    public Command goToIntakeLine(){
+//        return null;
+//    }
 
 
     protected Command postMotifSequence() {

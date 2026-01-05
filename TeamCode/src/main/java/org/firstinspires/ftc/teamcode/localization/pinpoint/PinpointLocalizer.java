@@ -10,7 +10,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 
 import com.pedropathing.localization.Localizer;
 import com.pedropathing.geometry.Pose;
@@ -53,6 +52,7 @@ public class PinpointLocalizer implements Localizer {
      * @param map the HardwareMap
      * @param setStartPose the Pose to start from
      */
+    @SuppressLint("NewApi")
     public PinpointLocalizer(HardwareMap map, PinpointConstants constants, Pose setStartPose){
 
         odo = map.get(GoBildaPinpointDriver.class,constants.hardwareMapName);
@@ -84,7 +84,13 @@ public class PinpointLocalizer implements Localizer {
      */
     @Override
     public Pose getPose() {
-        return pinpointPose;
+        double heading = wrap0to2PI(pinpointPose.getHeading());
+        return new Pose(pinpointPose.getX(), pinpointPose.getY(), heading);
+    }
+    public static double wrap0to2PI(double angle) {
+        while (angle < 0) angle += 2*Math.PI;
+        while (angle > 2 * Math.PI) angle -= 2*Math.PI;
+        return angle;
     }
 
     /**
@@ -148,7 +154,7 @@ public class PinpointLocalizer implements Localizer {
         // Thank you to GoldenElf58 of FTC Team 16657 for spotting a bug here; it was resolved by adding the turn direction.
         totalHeading += MathFunctions.getSmallestAngleDifference(currentPinpointPose.getHeading(), previousHeading) * MathFunctions.getTurnDirection(previousHeading, currentPinpointPose.getHeading());
         previousHeading = currentPinpointPose.getHeading();
-        currentVelocity = new Pose(odo.getVelX(DistanceUnit.INCH), odo.getVelY(DistanceUnit.INCH), odo.getHeadingVelocity(UnnormalizedAngleUnit.RADIANS));
+        currentVelocity = new Pose(odo.getVelX(DistanceUnit.INCH), odo.getVelY(DistanceUnit.INCH), odo.getHeading(AngleUnit.RADIANS));
         pinpointPose = currentPinpointPose;
     }
 

@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.colors.ColorNormalizer;
 import org.firstinspires.ftc.teamcode.colors.ColorSensorBuffer;
 import org.firstinspires.ftc.teamcode.util.ButtonToggle;
@@ -32,8 +33,8 @@ public class ColorSensorTesting extends OpMode {
     String rDetectedBuffer = "No buffered reading yet";
 
     // Hardware
-    ColorSensor leftSensor;
-    ColorSensor rightSensor;
+    RevColorSensorV3 leftSensor;
+    RevColorSensorV3 rightSensor;
 
     // Button toggle for sampling
     ButtonToggle buttonToggle;
@@ -47,21 +48,24 @@ public class ColorSensorTesting extends OpMode {
 //    ColorNormalizer rNorm;
 
     // Green ball thresholds
-    public static float greenHMin = 100f,  greenHMax = 180f;
-    public static float greenSMin = 0.0f, greenSMax = 1f;
-    public static float greenVMin = 0.0f, greenVMax = 1f;
+    public static float greenHMin = 180f,  greenHMax = 180f;
+    public static float greenSMin = 0.25f, greenSMax = 1f;
+    public static float greenVMin = 0.25f, greenVMax = 1f;
 
     // Purple ball thresholds
     public static float purpleHMin = 0f, purpleHMax = 60f;
-    public static float purpleSMin = 0f, purpleSMax = 1f;
-    public static float purpleVMin = 0f, purpleVMax = 1f;
+    public static float purpleSMin = 0.25f, purpleSMax = 1f;
+    public static float purpleVMin = 0.25f, purpleVMax = 1f;
     float[] colorLeft = new float[]{0, 0, 0};
     float[] colorRight = new float[]{0, 0, 0};
+
+    double leftDistance;
+    double rightDistance;
     @Override
     public void init() {
 
-        leftSensor = hardwareMap.get(ColorSensor.class, ConfigNames.intakeColorLeft);
-        rightSensor = hardwareMap.get(ColorSensor.class, ConfigNames.intakeColorRight);
+        leftSensor = hardwareMap.get(RevColorSensorV3.class, ConfigNames.intakeColorLeft);
+        rightSensor = hardwareMap.get(RevColorSensorV3.class, ConfigNames.intakeColorRight);
 
 
         leftSensor.enableLed(true);
@@ -96,6 +100,7 @@ public class ColorSensorTesting extends OpMode {
             lB = leftSensor.blue();
             lA = leftSensor.alpha();
 
+            leftDistance = leftSensor.getDistance(DistanceUnit.INCH);
             colorLeft = new float[3];
 
             RGBToHSV(
@@ -121,6 +126,7 @@ public class ColorSensorTesting extends OpMode {
             rG = rightSensor.green();
             rB = rightSensor.blue();
             rA = rightSensor.alpha();
+            rightDistance = rightSensor.getDistance(DistanceUnit.INCH);
 
             colorRight = new float[3];
 
@@ -151,6 +157,7 @@ public class ColorSensorTesting extends OpMode {
                 colorLeft[0],colorLeft[1], colorLeft[2]);
         telemetry.addData("Detected", lDetected);
         telemetry.addData("Detected (Buffered)", lDetectedBuffer);
+        telemetry.addData("Distance", leftDistance);
 
         telemetry.addLine("=== RIGHT Color Sensor ===");
         telemetry.addData("Raw R/G/B", "%f / %f / %f", rR, rG, rB);
@@ -158,6 +165,7 @@ public class ColorSensorTesting extends OpMode {
                 colorRight[0],colorRight[1], colorRight[2]);
         telemetry.addData("Detected", rDetected);
         telemetry.addData("Detected (Buffered)", rDetectedBuffer);
+        telemetry.addData("Distance", rightDistance);
 
         telemetry.update();
     }

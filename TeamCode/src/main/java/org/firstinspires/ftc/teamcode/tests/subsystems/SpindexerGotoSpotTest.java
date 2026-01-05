@@ -42,9 +42,9 @@ public class SpindexerGotoSpotTest extends CommandOpMode {
     @Override
     public void initialize() {
         super.reset();
-        CommandScheduler.getInstance().setBulkReading(
-                hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
-        );
+//        CommandScheduler.getInstance().setBulkReading(
+//                hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
+//        );
 
         timer = new Timer();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
@@ -53,9 +53,8 @@ public class SpindexerGotoSpotTest extends CommandOpMode {
         spindexer.initAngle(); // would put this later but oh well
         gp1 = new GamepadEx(gamepad1);
 
-        intakeSpot0Button = gp1.getGamepadButton(GamepadKeys.Button.A);
-        intakeSpot1Button = gp1.getGamepadButton(GamepadKeys.Button.B);
-        intakeSpot2Button = gp1.getGamepadButton(GamepadKeys.Button.X);
+        intakeSpot0Button = gp1.getGamepadButton(GamepadKeys.Button.X);
+        intakeSpot1Button = gp1.getGamepadButton(GamepadKeys.Button.A);
         outakeSpot0Button = gp1.getGamepadButton(GamepadKeys.Button.DPAD_LEFT);
         outakeSpot1Button = gp1.getGamepadButton(GamepadKeys.Button.DPAD_UP);
         outakeSpot2Button = gp1.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT);
@@ -67,10 +66,6 @@ public class SpindexerGotoSpotTest extends CommandOpMode {
         intakeSpot1Button.whenPressed(new SequentialCommandGroup(
                 new InstantCommand(() -> targetSpot = 1),
                 new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT1, SpotType.INTAKE, runMode, finishedTimeThreshold)
-        ));
-        intakeSpot2Button.whenPressed(new SequentialCommandGroup(
-                new InstantCommand(() -> targetSpot = 2),
-                new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT2, SpotType.INTAKE, runMode, finishedTimeThreshold)
         ));
         outakeSpot0Button.whenPressed(new SequentialCommandGroup(
                 new InstantCommand(() -> targetSpot = 0),
@@ -94,6 +89,10 @@ public class SpindexerGotoSpotTest extends CommandOpMode {
         gp1.readButtons();
         updateTelemetry();
         super.run();
+        if(gamepad1.b){
+            spindexer.goToSpot(SpindexerSpot.SPOT2, SpotType.INTAKE, runMode);
+        }
+
     }
 
     public void addDataTelemetryGraph(String key, Number value) {

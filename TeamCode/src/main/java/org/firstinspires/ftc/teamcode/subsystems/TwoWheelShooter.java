@@ -38,7 +38,7 @@ public class TwoWheelShooter extends SubsystemBase {
     public static double gearRatio = 3;
     public final MotorEx low;
     public final MotorEx high;
-    private RunMode runMode;
+    public RunMode runMode;
     public static double minDistanceThreshold = 10;//INCH
     public static Pose leftShootPose = new Pose(0, 144, Math.toRadians(90));
     public static Pose rightShootPose = new Pose(144, 144, Math.toRadians(90));
@@ -61,18 +61,33 @@ public class TwoWheelShooter extends SubsystemBase {
     public static double recoveryTime = 150;
     double recoveryEndTime = 0;
 
+    public static double targetVoltage = 12.5;
+
+//    public static double[] closeTargetVelocities = new double[] {1800, 1900};
+    public static double[] closeTargetVelocities = new double[] {1600, 1750};
+    public static double[] farTargetVelocities = new double[]{2300, 2500};
+    public static double[] closeTargetPowers = new double[]{0.75, 0.95};
+    public static double[] farTargetPowers = new double[]{1, 1};
+    double currVolt = 0;
+    HardwareMap map;
+
+
+    public double getTargetVoltage(){
+        return targetVoltage;
+    }
 
     public TwoWheelShooter(HardwareMap hardwareMap, RunMode runMode) {
         low = new MotorEx(hardwareMap, ConfigNames.lowFlywheelMotor);
         high = new MotorEx(hardwareMap, ConfigNames.highFlywheelMotor);
+        this.map = hardwareMap;
         setRunMode(runMode);
 
-        distToLowVel = new InterpLUT();
-        distToHighVel = new InterpLUT();
-        for (int i = 0; i < distArr.length; i++) {
-            distToLowVel.add(distArr[i], bottomVel[i]);
-            distToHighVel.add(distArr[i], topVel[i]);
-        }
+//        distToLowVel = new InterpLUT();
+//        distToHighVel = new InterpLUT();
+//        for (int i = 0; i < distArr.length; i++) {
+//            distToLowVel.add(distArr[i], bottomVel[i]);
+//            distToHighVel.add(distArr[i], topVel[i]);
+//        }
 //
 //        distToLowVel.createLUT();
 //        distToHighVel.createLUT();
@@ -81,6 +96,10 @@ public class TwoWheelShooter extends SubsystemBase {
         high.motor.setDirection(highMotorDirForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);
 
 
+    }
+
+    public double getCurrVoltage(){
+        return currVolt;
     }
 
 
@@ -103,25 +122,50 @@ public class TwoWheelShooter extends SubsystemBase {
         low.setFeedforwardCoefficients(kS, kV, kA);
         high.setFeedforwardCoefficients(kS, kV, kA);
     }
+    public boolean setFlywheelsPowerVoltage(ShootDist dist) {//assuming facing the shooting area
+        currVolt = map.voltageSensor.iterator().next().getVoltage();
+        if(currVolt < 10){currVolt = 10;}
+
+        if(runMode == RunMode.VelocityControl){
+            if (dist == ShootDist.Close) {
+//                low.set(closeTargetVelocities[0] + 30 );//may need to do set instead
+//                high.set(closeTargetVelocities[1] + topVelocityOffset + 30);
+                low.set(closeTargetVelocities[0] * (targetVoltage / currVolt));
+                high.set(closeTargetVelocities[1] * (targetVoltage / currVolt));
+            }
+            else{
+                low.set(farTargetVelocities[0] * (targetVoltage / currVolt));
+                high.set(farTargetVelocities[1] * (targetVoltage / currVolt));
+            }
+        }
+        else{
+//            if (dist == ShootDist.Close) setCustomPower(0.75, 0.95);
+//            else setCustomPower(1, 1);
+            if (dist == ShootDist.Close) setCustomPower(closeTargetPowers[0] * targetVoltage / currVolt, closeTargetPowers[1] * targetVoltage / currVolt);
+            else setCustomPower(farTargetPowers[0] * targetVoltage/ currVolt, farTargetPowers[1] * targetVoltage / currVolt);
+        }
+
+        return true;
+    }
 
     public boolean setFlywheelsPower(double dist) {//assuming facing the shooting area
-        if(System.currentTimeMillis() > recoveryTime){
-            currBotFactor = 0;
-            currTopFactor = 0;
-        }
-
-        predictedBotVel = distToLowVel.get(dist) * currBotFactor;
-        predictedTopVel = distToHighVel.get(dist) * currTopFactor;
-        switch (runMode) {
-            case VelocityControl:
-                low.set(predictedBotVel); high.set(predictedTopVel);
-                break;
-
-            case RawPower:
-                low.set(predictedBotVel / low.ACHIEVABLE_MAX_TICKS_PER_SECOND);
-                high.set(predictedTopVel / high.ACHIEVABLE_MAX_TICKS_PER_SECOND);
-                break;
-        }
+//        if(System.currentTimeMillis() > recoveryTime){
+//            currBotFactor = 0;
+//            currTopFactor = 0;
+//        }
+//
+//        predictedBotVel = distToLowVel.get(dist) * currBotFactor;
+//        predictedTopVel = distToHighVel.get(dist) * currTopFactor;
+//        switch (runMode) {
+//            case VelocityControl:
+//                low.set(predictedBotVel); high.set(predictedTopVel);
+//                break;
+//
+//            case RawPower:
+//                low.set(predictedBotVel / low.ACHIEVABLE_MAX_TICKS_PER_SECOND);
+//                high.set(predictedTopVel / high.ACHIEVABLE_MAX_TICKS_PER_SECOND);
+//                break;
+//        }
         return true;
     }
 
@@ -139,21 +183,50 @@ public class TwoWheelShooter extends SubsystemBase {
         return predictedBotVel;
     }
     public void setFlywheelsPower(ShootDist dist) {
+//        setRunMode(runMode);
         if(runMode == RunMode.VelocityControl){
-            if (dist == ShootDist.Close) setCustomPower(1600, 1800);
-            else setCustomPower(2000, 2000);
+            if (dist == ShootDist.Close) {
+                low.set(closeTargetVelocities[0]);//may need to do set instead
+                high.set(closeTargetVelocities[1] + topVelocityOffset);
+            }
+            else{
+                low.set(farTargetVelocities[0]);
+                high.set(farTargetVelocities[1]);
+            }
         }
         else{
-            if (dist == ShootDist.Close) setCustomPower(0.75, 0.95);
-            else setCustomPower(1, 1);
+//            if (dist == ShootDist.Close) setCustomPower(0.75, 0.95);
+//            else setCustomPower(1, 1);
+            if (dist == ShootDist.Close) setCustomPower(closeTargetPowers[0], closeTargetPowers[1]);
+            else setCustomPower(farTargetPowers[0], farTargetPowers[1]);
+        }
+    }
+
+    public void setFlywheelsPower(ShootDist dist, TwoWheelShooter.RunMode runMode) {
+//        setRunMode(runMode);
+        if(this.runMode == RunMode.VelocityControl){
+            if (dist == ShootDist.Close) {
+                low.setVelocity(closeTargetVelocities[0]);
+                high.setVelocity(closeTargetVelocities[1] + 500);
+            }
+            else{
+                low.setVelocity(farTargetVelocities[0]);
+                high.setVelocity(farTargetVelocities[1]);
+            }
+        }
+        else{
+//            if (dist == ShootDist.Close) setCustomPower(0.75, 0.95);
+//            else setCustomPower(1, 1);
+            if (dist == ShootDist.Close) setCustomPower(closeTargetPowers[0], closeTargetPowers[1]);
+            else setCustomPower(farTargetPowers[0], farTargetPowers[1]);
         }
     }
 
 
     public void setCustomPower(double lowPower, double highPower) {
         if(runMode == RunMode.VelocityControl){
-            low.setRunMode(Motor.RunMode.VelocityControl);
-            high.setRunMode(Motor.RunMode.VelocityControl);
+//            low.setRunMode(Motor.RunMode.VelocityControl);
+//            high.setRunMode(Motor.RunMode.VelocityControl);
             low.set(lowPower);
             high.set(highPower + topVelocityOffset);//account for belted motor
         }

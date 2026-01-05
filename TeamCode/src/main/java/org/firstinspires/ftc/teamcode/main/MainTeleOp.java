@@ -18,12 +18,16 @@ import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ReadWriteFile;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
+import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
+import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.commands.AutoIntakeCommand;
 import org.firstinspires.ftc.teamcode.commands.ShootSeqCommand;
 import org.firstinspires.ftc.teamcode.commands.SpindexerGotoAngle;
 import org.firstinspires.ftc.teamcode.commands.SpindexerGotoSpot;
@@ -54,7 +58,6 @@ public class MainTeleOp extends CommandOpMode {
     Timer timer;
 
     Spindexer spindexer;
-    Ramp ramp;
     TwoWheelShooter shooter;
     Intake intake;
 
@@ -70,14 +73,12 @@ public class MainTeleOp extends CommandOpMode {
     String botYFileName = "competition/robot_y.txt";
     String botHeadingFileName = "competition/robot_heading.txt";
     String sideFileName = "competition/side.txt";
-    File motifFile;
-    String id;
 
-    double currSpeed = 0.8;
-    double maxSpeed = 0.8;
+    double currSpeed = 1.0;
+    double maxSpeed = 1.0;
     double midSpeed = 0.5;
-    double intakePower = 1;
-    double maxIntakePower = 1;
+    double intakePower = 0.6;
+    public static double maxIntakePower = 1;
     double intakeTargetVel = 3;
     public static double headingAlignThresholRad = Math.toRadians(1.5);
     TelemetryManager telemetryM;
@@ -92,16 +93,14 @@ public class MainTeleOp extends CommandOpMode {
     public static double[] kIntakeGains = new double[]{0, 0, 0};
     double topShooterPower = 0.8;
     double botShooterPower = 0.6;
-    Pose toCloseLeftShoot = new Pose(72, 72, Math.toRadians(135));
-    Pose toCloseRightShoot = new Pose(72, 72, Math.toRadians(135));
+    Pose toCloseLeftShoot = new Pose(57, 94, Math.toRadians(310));
+    Pose toCloseRightShoot =  new Pose(87, 94, Math.toRadians(230));
     Pose toFarLeftShoot = new Pose(67, 11, Math.toRadians(110));
     Pose toFarRightShoot = new Pose(5, 11, Math.toRadians(70));
     ShootSide shootSide = ShootSide.LEFT;
-    public static double headingErrorMax = 0.3;
-    public static double pathDistThresholdMax = 3;
     CRServo spindexerServo;
 
-    public static double currturnerSpeed = 1;
+    public static double currturnerSpeed = 0.3;
     double maxTurnerSpeed = 1;
 
     Pose leftTarget = new Pose(0, 144, Math.toRadians(45));
@@ -114,9 +113,13 @@ public class MainTeleOp extends CommandOpMode {
     boolean autoIntake = false;
     boolean autoShootSeq = false;
 
-    public static TwoWheelShooter.RunMode shooterRunMode = TwoWheelShooter.RunMode.RawPower;
+    public static double spindexerCompensationOffset = Math.toRadians(5);//degrees
+    int spindexerDirection;
 
-    public static double[] pidAutoAlign = new double[]{0.9, 0, 0.2};//1.5, 0, 0.1
+    public static TwoWheelShooter.RunMode shooterRunMode = TwoWheelShooter.RunMode.VelocityControl;
+//    VelocityControl
+
+    public static double[] pidAutoAlign = new double[]{0.7, 0, 0.2};//1.5, 0, 0.1
     public static double alignmentWeight = 0.2;
     FollowPathCommand followPathCommand;
     double prevHeadingError = 0;
@@ -126,61 +129,64 @@ public class MainTeleOp extends CommandOpMode {
     public static CRServoEx2.RunMode spindexerRunMode = CRServoEx2.RunMode.OptimizedPositionalControl;
 //    public static double spindexerFinishedTimeThreshold = 300;//mms
 //    SpindexerGotoSpot spindexerSpotCommand;
-    SpindexerGotoAngle spindexerGotoAngle;
-    double change = 0.3;
+    SpindexerGotoSpot spindexerGotoSpot;
+    public static double change = 1;
 
-    public static double[] spindexerIntakeAngles = new double[]{0, 120, 240};
+
     int currentIntakeSpot = 0;
 
-    public static double targetTopVel = 1000;
-    public static double targetBotVel = 1000;
+//    public static double targetTopVel = 1000;
+//    public static double targetBotVel = 1000;
     public static double shootAngleTolerance = 10;
     ShootSeqCommand seqCommand;
     SpindexerGotoSpot goToSpotCommand;
+    AutoIntakeCommand autoIntakeCommand;
     boolean mapDistToShoot = true;
 
     Telemetry dashboardTelemetry;
     TwoWheelShooter.ShootDist currentShootDist;
+    boolean useLUT = false;
+
+
+    public static double pathDistThresholdMax = 0.5;
+    public static double headingErrorMax = 0.025;
+    public static double timeOutConstraint = 200;
+
+    boolean spindexerGoingToSpot = false;
+    int goToSpotCurrNum = 0;
+    SpotType gotToSpotType = SpotType.INTAKE;
+
+    BallColor[] defaultBallColor = new BallColor[]{BallColor.PURPLE, BallColor.GREEN, BallColor.PURPLE};
     @Override
     public void initialize() {
-        CommandScheduler.getInstance().setBulkReading(
-                hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
-        );
+//        CommandScheduler.getInstance().setBulkReading(
+//                hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
+//        );
+        CommandScheduler.getInstance().cancelAll();
+
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         graphM = PanelsGraph.INSTANCE.getManager();
 
-        ConstantsBot.motifIsBusy = false;
+//       ConstantsBot.motifIsBusy = false; -> meant for pinpointAprilTagLocalizer
         timer = new Timer();
-        spindexer = new Spindexer(hardwareMap, true, new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE});
-        spindexer.initAngle(Angle.fromDegrees(0));
-        spindexer.setMode(spindexerRunMode);
-
-
-        shooter = new TwoWheelShooter(hardwareMap, shooterRunMode);
 
         pattern = readMotifFromFile(motifFileName);
-        double robotX = readDoubleFromPose(botXFileName);
-        double robotY = readDoubleFromPose(botYFileName);
-        double robotHeading = readDoubleFromPose(botHeadingFileName);
+//        double robotX = readDoubleFromPose(botXFileName);
+//        double robotY = readDoubleFromPose(botYFileName);
+//        double robotHeading = readDoubleFromPose(botHeadingFileName);
+
         shootSide = readShootSideFromFile(sideFileName);
 
-//        Pose roboPose = new Pose(robotX, robotY, robotHeading);
-//        startPose = roboPose != null ? roboPose : startPose;
+        Pose roboPose = new Pose(0, 0, 0);
+        startPose = roboPose != null ? roboPose : startPose;
 
-        currentShootDist = (startPose.getY() > 10) ? TwoWheelShooter.ShootDist.Close : TwoWheelShooter.ShootDist.Far;
+        currentShootDist = (startPose.getY() > 20) ? TwoWheelShooter.ShootDist.Close : TwoWheelShooter.ShootDist.Far;
 
-        follower = ConstantsBot.createPinpointFollower(hardwareMap);
-        follower.setStartingPose(startPose);
-        intake = new Intake(hardwareMap, intakeRunMode);
-        if(intakeRunMode == Intake.RunMode.VelocityControl){
-            resetVelocityGains(intake, pidIntakeGains, kIntakeGains);
+        follower = ConstantsBot.createPinpointFollowerCustom(hardwareMap, new Pose(0, 0, 0));
+        follower.setPose(startPose);
 
-        }
+        initializeSubsystems();
 
-        shooter.setRunMode(shooterRunMode);
-        if(shooterRunMode == TwoWheelShooter.RunMode.VelocityControl) {
-            resetVelocityGains(shooter, pidBotGainsShooter, kBotGainsShooter, pidTopGainsShooter, kTopGainsShooter);
-        }
 
         follower.startTeleopDrive();
         spindexerServo = spindexer.getTurner().getServo();
@@ -188,8 +194,36 @@ public class MainTeleOp extends CommandOpMode {
         FtcDashboard dashboard = FtcDashboard.getInstance();
         dashboardTelemetry = dashboard.getTelemetry();
         goToSpotCommand = new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0);
-        seqCommand = new ShootSeqCommand(spindexer, shooter, new SpindexerSpot[]{SpindexerSpot.SPOT0, SpindexerSpot.SPOT1, SpindexerSpot.SPOT2}, follower, shootSide, mapDistToShoot, TwoWheelShooter.ShootDist.Close);
+        seqCommand = new ShootSeqCommand(spindexer, shooter, new SpindexerSpot[]{SpindexerSpot.SPOT0, SpindexerSpot.SPOT1, SpindexerSpot.SPOT2}, follower, shootSide, mapDistToShoot, TwoWheelShooter.ShootDist.Close, true);
         spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE});
+
+
+        updateStartShootDist();
+        register(intake, shooter, spindexer);
+    }
+
+    public void initializeSubsystems(){
+        spindexer = new Spindexer(hardwareMap, false, new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE});
+        spindexer.initAngle(Angle.fromDegrees(0));
+        spindexer.setMode(spindexerRunMode);
+        spindexer.getTurner().stop();
+
+        intake = new Intake(hardwareMap, intakeRunMode);
+        if(intakeRunMode == Intake.RunMode.VelocityControl){
+            resetVelocityGains(intake, pidIntakeGains, kIntakeGains);
+
+        }
+
+        shooter = new TwoWheelShooter(hardwareMap, shooterRunMode);
+//        shooter.setRunMode(shooterRunMode);
+        if(shooterRunMode == TwoWheelShooter.RunMode.VelocityControl) {
+            resetVelocityGains(shooter, pidBotGainsShooter, kBotGainsShooter, pidTopGainsShooter, kTopGainsShooter);
+        }
+        shooter.low.motorEx.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        shooter.high.motorEx.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        shooter.low.stopAndResetEncoder();
+        shooter.high.stopAndResetEncoder();
 
     }
 
@@ -228,7 +262,7 @@ public class MainTeleOp extends CommandOpMode {
     public ShootSide readShootSideFromFile(String fileName){
         File file = new File(Environment.getExternalStorageDirectory(), fileName);
         if(file.exists()) {
-            return fileName.equals("Left") ? ShootSide.LEFT : ShootSide.RIGHT;
+            return ReadWriteFile.readFile(file).equals("Left") ? ShootSide.LEFT : ShootSide.RIGHT;
         }
         else {
             return ShootSide.LEFT;
@@ -240,18 +274,19 @@ public class MainTeleOp extends CommandOpMode {
         graphM.addData(key, value);
     }
 
-    public void updateShootDist(){
-        currentShootDist = (startPose.getY() > 10) ? TwoWheelShooter.ShootDist.Close : TwoWheelShooter.ShootDist.Far;
+    public void updateStartShootDist(){
+        if(currentPose != null) {
+            currentShootDist = (startPose.getY() > 20) ? TwoWheelShooter.ShootDist.Close : TwoWheelShooter.ShootDist.Far;
+        }
     }
 
 
     @Override
     public void run(){
         super.run();
-        updateShootDist();;
         runGamepad1Comands();
         runGamepad2Commands();
-
+        emergencyStops();
         follower.update();
 
         updateTelem();
@@ -259,12 +294,51 @@ public class MainTeleOp extends CommandOpMode {
 
     }
 
+    private void emergencyStops() {
+        if(gamepad2.dpadUpWasPressed()) {
+            if (autoSpindexer) {
+                if (spindexerGotoSpot != null) {
+//                    spindexerGotoSpot.end(true);
+                    CommandScheduler.getInstance().cancel(spindexerGotoSpot);
+                }
+                //trying to turn off spindexer
+//                spindexer.getTurner().setRunMode(CRServoEx2.RunMode.RawPower);
+                spindexer.getTurner().setRunMode(CRServoEx2.RunMode.RawPower);
+                spindexerServo.setPower(0);
+                autoSpindexer = false;
+            }
+
+            if (autoIntake) {
+                if (goToSpotCommand != null && !goToSpotCommand.isFinished()) {
+                    CommandScheduler.getInstance().cancel(goToSpotCommand);
+//                    goToSpotCommand.end(true);
+                }
+                if (autoIntakeCommand != null && !autoIntakeCommand.isFinished()) {
+                    CommandScheduler.getInstance().cancel(autoIntakeCommand);
+//                    autoIntakeCommand.end(true);
+                }
+//                spindexer.getTurner().setRunMode(CRServoEx2.RunMode.RawPower);
+                autoIntake = false;
+            }
+
+            if (autoShootSeq) {
+                if(seqCommand != null && !seqCommand.isFinished()){
+                    CommandScheduler.getInstance().cancel(seqCommand);
+//                    seqCommand.end(true);
+                }
+                spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE});
+                autoShootSeq = false;
+            }
+        }
+    }
+
+
     public PathChain getPathChain(Pose pose1, Pose pose2){
         PathChain pathChain = follower.pathBuilder()
                 .addPath(new BezierLine(pose1.getPose(), pose2.getPose()))
                 .setLinearHeadingInterpolation(pose1.getHeading(), pose2.getHeading())
                 .setHeadingConstraint(headingErrorMax)
-                .setTimeoutConstraint(3000)
+                .setTimeoutConstraint(timeOutConstraint)
                 .setTranslationalConstraint(pathDistThresholdMax)
                 .build();
         return pathChain;
@@ -305,7 +379,7 @@ public class MainTeleOp extends CommandOpMode {
         if(Math.abs(filteredHeadingError) < headingAlignThresholRad){
             return 0;
         }
-        prevHeadingError = filteredHeadingError;
+
         return power;
     }
     public double getAngleError(Pose position, Pose target){
@@ -331,17 +405,28 @@ public class MainTeleOp extends CommandOpMode {
         turnPower = -gamepad1.right_stick_x * currSpeed;
         //MODIFY so that the heading is facing the outake side, not the intake side
         Pose outakeSide = new Pose(follower.getPose().getX(), follower.getPose().getY(), normAngle(follower.getHeading() + Math.PI));
+        //add compensation for spindexer direction
+        double distToTarget = getDistance(follower.getPose(), outakeSide);
+        double compY = outakeSide.getY() + spindexerDirection * distToTarget * Math.tan(spindexerCompensationOffset);
+
+        Pose compensatedPose = new Pose(outakeSide.getX(), compY, outakeSide.getHeading());
         headingError = getAngleError(outakeSide, ((shootSide == ShootSide.LEFT) ? leftTarget : rightTarget));
         if(autoAlign) {
             turnPower = calculateGamepadPID(prevHeadingError, headingError);
         }
+        prevHeadingError = headingError;
+    }
+
+    public static double getDistance(Pose start, Pose target){
+        double dist = Math.sqrt(Math.pow(Math.abs(target.getY() - start.getY()), 2) + Math.pow(Math.abs(target.getX() - start.getX()), 2));
+        return dist;
     }
     private void runGamepad1Comands(){
         currentPose = follower.getPose();
 
         setAlignTurnPower();
-        driveRobot();//includes automations
         manualChangeShootSide();
+        driveRobot();//includes automations
         manualChangeMotif();
         //change min/max speed
         if (gamepad1.rightBumperWasPressed()) {
@@ -377,9 +462,15 @@ public class MainTeleOp extends CommandOpMode {
             }
         }
     }
+
+    public void setBallColorsDefault(){
+        if(gamepad2.leftStickButtonWasPressed()) {
+            spindexer.setBallColors(defaultBallColor);
+        };
+    }
     private void driveRobot(){
         if(autoDriveToShoot){
-            if(followPathCommand.isFinished()){
+            if(followPathCommand != null && followPathCommand.isFinished()){
                 autoDriveToShoot = false;
             }
         }
@@ -390,13 +481,13 @@ public class MainTeleOp extends CommandOpMode {
             followPathCommand = new FollowPathCommand(follower, pathChain);
             schedule(followPathCommand);
         }
-        else if(gamepad1.xWasPressed()){
-            autoDriveToShoot = true;
-            Pose toPose = (shootSide == ShootSide.LEFT) ? toFarLeftShoot : toFarRightShoot;
-            PathChain pathChain = getPathChain(follower.getPose(), toPose);
-            followPathCommand = new FollowPathCommand(follower, pathChain);
-            schedule(followPathCommand);
+        else if(gamepad1.yWasPressed()){
+            if(followPathCommand != null && !followPathCommand.isFinished()) {
+                CommandScheduler.getInstance().cancel(followPathCommand);
+            }
+            autoDriveToShoot = false;
         }
+
         if(!autoDriveToShoot) {
             follower.setTeleOpDrive(gamepad1.left_stick_y * currSpeed, gamepad1.left_stick_x * currSpeed, turnPower, true);
         }
@@ -405,74 +496,105 @@ public class MainTeleOp extends CommandOpMode {
         flywheelCommands();
         intakeCommands();
         spindexerCommands();
+        setBallColorsDefault();
+
     }
 
     private void spindexerCommands(){
-        if(gamepad2.dpadDownWasPressed() && !autoIntake){
+        //OUTTAKE go to spots
+        if(!autoSpindexer && gamepad2.dpadLeftWasPressed() && !autoIntake){
+            spindexerGoingToSpot = true;
+            goToSpotCurrNum = 0;
+            gotToSpotType = SpotType.OUTTAKE;
+        }
+        else if(!autoSpindexer && gamepad2.dpadDownWasPressed() && !autoIntake){
+            spindexerGoingToSpot = true;
+           goToSpotCurrNum = 1;
+           gotToSpotType = SpotType.OUTTAKE;
+        }
+        else if(!autoSpindexer && gamepad2.dpadRightWasPressed() && !autoIntake){
+            spindexerGoingToSpot = true;
+            goToSpotCurrNum = 2;
+            gotToSpotType = SpotType.OUTTAKE;
+        }
+        else if(!autoSpindexer && gamepad2.xWasPressed() && !autoIntake){
+            spindexerGoingToSpot = true;
+            goToSpotCurrNum = 0;
+            gotToSpotType = SpotType.INTAKE;
+        }
+        else if(!autoSpindexer && gamepad2.aWasPressed() && !autoIntake){
+            spindexerGoingToSpot = true;
+            goToSpotCurrNum = 1;
+            gotToSpotType = SpotType.INTAKE;
+        }
+        else if(!autoSpindexer && gamepad2.bWasPressed() && !autoIntake){
+            spindexerGoingToSpot = true;
+            goToSpotCurrNum = 2;
+            gotToSpotType = SpotType.INTAKE;
+        }
+
+
+        if(spindexerGoingToSpot){
+            spindexerGoingToSpot = false;
             autoSpindexer = true;
-            spindexerGotoAngle = new SpindexerGotoAngle(spindexer, Angle.fromDegrees(spindexerIntakeAngles[currentIntakeSpot]), spindexerRunMode);
-            currentIntakeSpot = (currentIntakeSpot + 1) % 3;
+            spindexer.getTurner().setRunMode(CRServoEx2.RunMode.OptimizedPositionalControl);
+            spindexerGotoSpot = new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex(goToSpotCurrNum), gotToSpotType, CRServoEx2.RunMode.OptimizedPositionalControl, 0);
+            schedule(spindexerGotoSpot);
         }
 
         //back to 0 position give back manual control to the driver
-        if(currentIntakeSpot == 0 && autoSpindexer && spindexerGotoAngle.isFinished()){
+        if(autoSpindexer && spindexerGotoSpot != null && spindexerGotoSpot.isFinished() && !autoIntake){
             autoSpindexer = false;
         }
 
-        if(!autoIntake && gamepad2.dpadUpWasPressed()){
-            autoSpindexer = !autoSpindexer;
-            if(spindexerGotoAngle != null && !spindexerGotoAngle.isFinished()) {
-                spindexerGotoAngle.end(true);
-            }
+        //manual exit - exit out of auto command
+
+
+        //manual intake powering
+        if(!autoIntake && !autoSpindexer){
+//            spindexer.setMode(CRServoEx2.RunMode.RawPower);
+            double power = gamepad2.left_stick_y * currturnerSpeed * change;
+            spindexerServo.setPower(gamepad2.left_stick_y * currturnerSpeed * change);
+            spindexerDirection = power > 0 ? 1: -1;
         }
 
-        if(!autoIntake && !autoSpindexer){
-            spindexerServo.setPower(gamepad2.left_stick_y * currturnerSpeed * change);
-        }
     }
     private void intakeCommands(){
-        if(gamepad2.bWasPressed()){
-            autoIntake = !autoIntake;
+        if(gamepad2.yWasPressed()){
+            autoIntake = true;
 
             if(spindexer.getNearestEmptyIntakeSpot() == null){
                 autoIntake = false;
             }
 
             if(autoIntake) {
-                goToSpotCommand = new SpindexerGotoSpot(spindexer, spindexer.getNearestEmptyIntakeSpot(), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0);
-                schedule(goToSpotCommand);
+//                goToSpotCommand = new SpindexerGotoSpot(spindexer, spindexer.getNearestEmptyIntakeSpot(), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0);
+//                autoIntakeCommand = new AutoIntakeCommand(spindexer, intake, 1 , 5000);
+//                schedule(new SequentialCommandGroup(
+//                        goToSpotCommand,
+//                        autoIntakeCommand
+//                ));
             }
+
         }
 
-        spindexer.updateBallColors();
-        if(autoIntake){
-            intake.setDirectPower(autoIntakePower);
-
-            if(goToSpotCommand != null && goToSpotCommand.isFinished() && spindexer.newBallDetected() && spindexer.getNearestEmptyIntakeSpot() != null){
-                goToSpotCommand = new SpindexerGotoSpot(spindexer, spindexer.getNearestEmptyIntakeSpot(), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0);
-                schedule(goToSpotCommand);
-            }
-            if(spindexer.allOccuppiedBallColors()){
-                autoIntake = false;
-            }
-        }
-        else{
+        if(!autoIntake){
             intakePower = gamepad2.right_stick_y * maxIntakePower;
             intake.setDirectPower(intakePower);
         }
     }
 
     private void flywheelCommands(){
-        if(gamepad2.aWasPressed()){
+        if(gamepad2.startWasPressed()){
             autoShootSeq = true;
-            seqCommand = new ShootSeqCommand(spindexer, shooter, spindexer.getOptimalSequence(pattern), follower, shootSide, true, TwoWheelShooter.ShootDist.Close);
+            seqCommand = new ShootSeqCommand(spindexer, shooter, spindexer.getOptimalSequence(pattern), follower, shootSide, false, currentShootDist, true);
         }
+
         if(autoShootSeq && seqCommand.isFinished()){
+            spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE});
             autoShootSeq = false;
         }
         if(!autoShootSeq) {
-            handleOuttakeBallRemoval();
-
             handleShooterInput();
         }
     }
@@ -494,28 +616,37 @@ public class MainTeleOp extends CommandOpMode {
             shooterRunMode = shooterRunMode == TwoWheelShooter.RunMode.RawPower ? TwoWheelShooter.RunMode.VelocityControl : TwoWheelShooter.RunMode.RawPower;
             if (shooterRunMode == TwoWheelShooter.RunMode.VelocityControl) {
                 resetVelocityGains(shooter, pidBotGainsShooter, kBotGainsShooter, pidTopGainsShooter, kTopGainsShooter);
+                shooter.low.setRunMode(Motor.RunMode.VelocityControl);
+                shooter.high.setRunMode(Motor.RunMode.VelocityControl);
             }
-            shooter.stopFlywheels();
+            shooter.setRunMode(shooterRunMode);
         }
 
-        shooter.setRunMode(shooterRunMode);
-
-        if (shooterRunMode == TwoWheelShooter.RunMode.VelocityControl) {
-            shooter.setCustomPower(targetBotVel, targetTopVel);//offset
-        } else {
-            shooter.setFlywheelsPower(currentShootDist);
-        }
 
         if (gamepad2.rightBumperWasPressed()) {
-            shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Close);
+            if(useLUT){
+                shooter.setFlywheelsPower(follower.getPose(), shootSide);
+            }
+            else {
+                currentShootDist = TwoWheelShooter.ShootDist.Far;
+                shooter.setFlywheelsPower(currentShootDist);
+            }
         } else if (gamepad2.leftBumperWasPressed()) {
-            shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Far);
+            if(useLUT){
+                shooter.setFlywheelsPower(follower.getPose(), shootSide);
+            }
+            else {
+                currentShootDist = TwoWheelShooter.ShootDist.Close;
+                shooter.setFlywheelsPower(currentShootDist);
+            }
         }
         if (gamepad2.right_trigger > 0.5) {
             shooter.stopFlywheels();
         }
     }
     private void updateTelem() {
+        telemetry.addData("Current Voltage", shooter.getCurrVoltage());
+        telemetry.addData("Ratio Voltage ", shooter.getTargetVoltage() / shooter.getCurrVoltage());
         telemetry.addData("Start Pose",  startPose.getPose().toString());
         telemetry.addData("Start Heading(Deg)", "%.4f", convertRadToDegrees(startPose.getHeading()));
         telemetry.addData("Current Pose",  follower.getPose().toString());
@@ -524,6 +655,7 @@ public class MainTeleOp extends CommandOpMode {
         telemetry.addLine("------------------------------------");
         telemetry.addData("Current Speed", currSpeed);
         telemetry.addData("Shoot Side", shootSide);
+        telemetry.addData("Current Shoot Dist", currentShootDist);
         telemetry.addData("Pattern", pattern);
 
         telemetry.addLine("------------------------------------");
@@ -550,10 +682,11 @@ public class MainTeleOp extends CommandOpMode {
         addDataTelemetryGraph("Shooter Bot Vel", shooter.low.getVelocity());
         dashboardTelemetry.addData("Shoter Top Vel", shooter.high.getVelocity());
         dashboardTelemetry.addData("Shoter Bot Vel", shooter.low.getVelocity());
-
-
+        telemetry.addData("Shooter Bot RunMode", shooter.low.motorEx.getMode());
+        telemetry.addData("Shooter Top RunMode", shooter.low.motorEx.getMode());
         addDataTelemetryGraph("Shooter Corr Top Vel", shooter.high.getCorrectedVelocity());
         addDataTelemetryGraph("Shooter Corr Bot Vel", shooter.low.getCorrectedVelocity());
+        telemetry.addData("Shooter Dir RunMode", shooter.runMode);
         telemetry.addData("Distance From Goal", shooter.getDistance(follower.getPose(), shootSide));
 
 
@@ -562,9 +695,28 @@ public class MainTeleOp extends CommandOpMode {
         telemetry.addData("Spindexer Angle", spindexer.getCurrentAngle());
         telemetry.addData("Spindexer Norm Angle", spindexer.getEncoder().getAngle());
         telemetry.addData("Spindexer Raw Angle", spindexer.getEncoder().getAngleUnnormalized());
-        telemetry.addData("Spindexer Intake Spot", currentIntakeSpot);
-        telemetry.addData("Spindexer Colors", spindexer.getBallColors());
-
+        if(spindexerGotoSpot != null) {
+            telemetry.addData("Spindexer GotoSpot Finished", spindexerGotoSpot.isFinished());
+        }
+        telemetry.addData("Spindexer Going to Spot", spindexerGoingToSpot);
+        telemetry.addData("Spindexer Auto Spindxer", autoSpindexer);
+        if(spindexer.getSequence() != null) {
+            telemetry.addData("Spindexer Seq 0", spindexer.getSequence()[0]);
+            telemetry.addData("Spindexer Seq 1", spindexer.getSequence()[1]);
+            telemetry.addData("Spindexer Seq 2", spindexer.getSequence()[2]);
+        }
+        if(spindexer.getBallColors() != null) {
+            telemetry.addData("Spindexer Ball Color 0", spindexer.getBallColors()[0]);
+            telemetry.addData("Spindexer Ball Color 1", spindexer.getBallColors()[1]);
+            telemetry.addData("Spindexer Ball Color 2", spindexer.getBallColors()[2]);
+        }
+        telemetry.addData("Spindexer Angle Error", spindexer.getTurner().error);
+        telemetry.addData("Auto Intake", autoIntake);
+        telemetry.addData("Manual Spindexer Power", gamepad2.left_stick_y * currturnerSpeed * change);
+        telemetry.addData("Spindexer Direction", spindexerDirection);
+        telemetry.addData("Current gotoSpot", goToSpotCurrNum);
+        telemetry.addData("Current gotoSpot type", gotToSpotType);
+        telemetry.addData("Outake Spindexer Coeff on", spindexer.outakeSpindexerCoeffOn);
 
         telemetryM.update();;
         graphM.update();

@@ -34,18 +34,18 @@ import org.firstinspires.ftc.teamcode.game.ShootSide;
 
 @Config
 @Configurable
-@Autonomous(name = "3 Back Right NonSorted", group = "Competition")
-public class ThreeBallBackRightAuto extends BaseAuto {
+@Autonomous(name = "9 Far Right NonSorted", group = "Competition")
+public class NineBallFarRightNonSorted extends BaseAuto {
     public static double motifDetectionTimeMs = 3000;
     int startPipeline = 1;
     public static Pose startPose = new Pose(88, 8, Math.toRadians(270));
     //    public static Pose motifDetectionPose = new Pose(87, 94, Math.toRadians(100));
     public static Pose shootPose = new Pose(84, 17, Math.toRadians(246));
-    //    public static Pose forwardPose = new Pose(88, 14, Math.toRadians(180));
+//    public static Pose forwardPose = new Pose(88, 14, Math.toRadians(180));
     public static Pose secondShootPose = new Pose(84, 17, Math.toRadians(246));
-    public static Pose parkPose = new Pose(134, 8, Math.toRadians(0));
+    public static Pose parkPose = new Pose(86, 38, Math.toRadians(0));
     public static Pose openGatePose = new Pose(136, 76, Math.toRadians(180));
-    public static Pose intakeOnePose = new Pose(132, 8, Math.toRadians(0));//special
+    public static Pose intakeOnePose = new Pose(102, 84, Math.toRadians(0));
     public static Pose intakeTwoPose = new Pose(102, 56, Math.toRadians(0));
     public static Pose intakeThreePose = new Pose(102, 36, Math.toRadians(0));
     public static double intakeDistForward = 14;
@@ -171,7 +171,7 @@ public class ThreeBallBackRightAuto extends BaseAuto {
         limelight.stop();
         //temporarily turn it off to hand to localizer
         return new SequentialCommandGroup(
-                //new SchedulePathTo(follower, forwardPose, headingError, timeOutConstraint, pathDistThresholdMin),
+               //new SchedulePathTo(follower, forwardPose, headingError, timeOutConstraint, pathDistThresholdMin),
 //                getToShootCommand(1, 1000),
 //                new ParallelDeadlineGroup(
 //                        new FlywheelShootTimed(shooter, follower, shootSide,  TwoWheelShooter.ShootDist.Close, false, 5000, false)
@@ -181,7 +181,7 @@ public class ThreeBallBackRightAuto extends BaseAuto {
                         new InstantCommand(()-> shooter.setFlywheelsPowerVoltage(TwoWheelShooter.ShootDist.Far)),
                         new SequentialCommandGroup(
                                 getToShootCommand(1, 500),
-                                new WaitCommand(2000),
+                                new WaitCommand(500),
                                 new InstantCommand(()-> spindexer.spin(-0.15))
                         )
                 ),
@@ -191,7 +191,7 @@ public class ThreeBallBackRightAuto extends BaseAuto {
                 //new WaitCommand(1000),
                 new InstantCommand(() -> spindexer.getTurner().getServo().setPower(0)),
                 new ParallelCommandGroup(
-                        getToLineNum(1, 200),
+                        getToLineNum(3, 200),
 //                new InstantCommand(() -> spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE})),
                         new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0)
                 ),
@@ -205,21 +205,25 @@ public class ThreeBallBackRightAuto extends BaseAuto {
                 new ParallelCommandGroup(
                         new InstantCommand(()-> shooter.setFlywheelsPowerVoltage(TwoWheelShooter.ShootDist.Far)),
                         new SequentialCommandGroup(
-                                getToShootCommand(1, 500),
+                                getToShootCommand(2, 500),
                                 new WaitCommand(500),
                                 new InstantCommand(()-> spindexer.spin(-0.15))
                         )
                 ),
-                new WaitCommand(3000),
+                new WaitCommand(2000),
                 new InstantCommand(()-> shooter.stopFlywheels()),
                 new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0)),
+                // new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT1, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
                 new ParallelCommandGroup(
-                        getToLineNum(1, 200),
+                        getToLineNum(2, 200),
 //                new InstantCommand(() -> spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE})),
                         new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0)
                 ),
+//                new InstantCommand(() -> spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE})),
+                //new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
                 new WaitCommand(200),
-                intake(3, 0),
+                intake(2, 0),
+
                 new InstantCommand(() -> spindexer.getTurner().getServo().setPower(0)),
                 setDefaultStartColors(),
 //                new ParallelCommandGroup(
@@ -228,46 +232,19 @@ public class ThreeBallBackRightAuto extends BaseAuto {
                 new ParallelCommandGroup(
                         new InstantCommand(()-> shooter.setFlywheelsPowerVoltage(TwoWheelShooter.ShootDist.Far)),
                         new SequentialCommandGroup(
-                                getToShootCommand(1, 500),
+                                getToShootCommand(2, 500),
                                 new WaitCommand(500),
                                 new InstantCommand(()-> spindexer.spin(-0.15))
                         )
                 ),
-                new WaitCommand(3000),
+                new WaitCommand(2000),
                 new InstantCommand(()-> shooter.stopFlywheels()),
                 new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0)),
-//                // new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT1, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
-//                new ParallelCommandGroup(
-//                        getToLineNum(2, 200),
-////                new InstantCommand(() -> spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE})),
-//                        new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0)
-//                ),
-////                new InstantCommand(() -> spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE})),
-//                //new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
-//                new WaitCommand(200),
-//                intake(2, 0),
-//
-//                new InstantCommand(() -> spindexer.getTurner().getServo().setPower(0)),
-//                setDefaultStartColors(),
-////                new ParallelCommandGroup(
-////                getToShootCommand(2, 0),
-//                new WaitCommand(200),
-//                new ParallelCommandGroup(
-//                        new InstantCommand(()-> shooter.setFlywheelsPowerVoltage(TwoWheelShooter.ShootDist.Far)),
-//                        new SequentialCommandGroup(
-//                                getToShootCommand(2, 500),
-//                                new WaitCommand(500),
-//                                new InstantCommand(()-> spindexer.spin(-0.15))
-//                        )
-//                ),
-//                new WaitCommand(2000),
-//                new InstantCommand(()-> shooter.stopFlywheels()),
-//                new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0)),
-//                //new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 1000),
-////                openGate(1000),
-//////
-////                line2Commands(),
-////                line3Commands(),
+                //new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 1000),
+//                openGate(1000),
+////
+//                line2Commands(),
+//                line3Commands(),
 
                 park(100)
 //
@@ -322,7 +299,7 @@ public class ThreeBallBackRightAuto extends BaseAuto {
                                 new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 2) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
                                 new WaitCommand(fourthWaitTime)
                         ),
-                        driveToIntakeEnd(1)
+                        driveToIntakeEnd(targetSpot)
                 ).withTimeout(2500),
                 new InstantCommand(()-> spindexer.setDefaultAngleTolerance()),
                 new InstantCommand(()-> intake.stopPower())
@@ -343,7 +320,7 @@ public class ThreeBallBackRightAuto extends BaseAuto {
         }
         else{
             return new SequentialCommandGroup(
-                    new SchedulePathTo(follower, new Pose(intakePose.getX() + xChangeIntake + 2, intakePose.getY(), intakePose.getHeading()), headingError, timeOutConstraint, pathDistThresholdMin)
+                    new SchedulePathTo(follower, new Pose(intakePose.getX() + xChangeIntake + 6, intakePose.getY(), intakePose.getHeading()), headingError, timeOutConstraint, pathDistThresholdMin)
                             .setMaxPower(0.3)
             );
         }
