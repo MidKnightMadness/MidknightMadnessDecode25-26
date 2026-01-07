@@ -7,6 +7,7 @@ import com.bylazar.configurables.annotations.Configurable;
 @Configurable
 public class ConfigNames {
     public static String turner = "spindexerServo";
+    public static String turner2 = "spindexerServo2";
     public static String turnerEncoder = "FR";
     public static String imu = "imu";
     public static String pinpoint = "pinpoint";

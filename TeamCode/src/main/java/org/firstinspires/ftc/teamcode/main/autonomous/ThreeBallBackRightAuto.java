@@ -11,15 +11,14 @@ import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
-import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 
-import org.firstinspires.ftc.teamcode.commands.AutoIntakeCommand;
-import org.firstinspires.ftc.teamcode.commands.IntakeTimeCommand;
-import org.firstinspires.ftc.teamcode.commands.MotifWriteCommand;
-import org.firstinspires.ftc.teamcode.commands.SchedulePathTo;
+import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommand;
+import org.firstinspires.ftc.teamcode.commands.intake.IntakeTimeCommand;
+import org.firstinspires.ftc.teamcode.commands.readwrite.MotifWriteCommand;
+import org.firstinspires.ftc.teamcode.commands.pathing.SchedulePathTo;
 import org.firstinspires.ftc.teamcode.commands.ShootSeqCommand;
-import org.firstinspires.ftc.teamcode.commands.SpindexerGotoSpot;
+import org.firstinspires.ftc.teamcode.commands.spindexer.SpindexerGotoSpot;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
@@ -28,7 +27,6 @@ import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
-import org.firstinspires.ftc.teamcode.util.Angle;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 
@@ -63,7 +61,7 @@ public class ThreeBallBackRightAuto extends BaseAuto {
 
     public static long fourthWaitTime = 500;
 
-    public static double pathDistThresholdMin = 1.5;
+    public static double pathDistThresholdMin = 2;
     public static double headingError = Math.toRadians(2);
     public static double timeOutConstraint = 200;
     public static double xChangeIntake = 25;
@@ -178,7 +176,7 @@ public class ThreeBallBackRightAuto extends BaseAuto {
 //                ),
                 new WaitCommand(500),
                 new ParallelCommandGroup(
-                        new InstantCommand(()-> shooter.setFlywheelsPowerVoltage(TwoWheelShooter.ShootDist.Far)),
+                        new InstantCommand(()-> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Far, true)),
                         new SequentialCommandGroup(
                                 getToShootCommand(1, 500),
                                 new WaitCommand(2000),
@@ -203,7 +201,7 @@ public class ThreeBallBackRightAuto extends BaseAuto {
 //                getToShootCommand(2, 0),
                 new WaitCommand(200),
                 new ParallelCommandGroup(
-                        new InstantCommand(()-> shooter.setFlywheelsPowerVoltage(TwoWheelShooter.ShootDist.Far)),
+                        new InstantCommand(()-> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Far, true)),
                         new SequentialCommandGroup(
                                 getToShootCommand(1, 500),
                                 new WaitCommand(500),
@@ -226,7 +224,7 @@ public class ThreeBallBackRightAuto extends BaseAuto {
 //                getToShootCommand(2, 0),
                 new WaitCommand(200),
                 new ParallelCommandGroup(
-                        new InstantCommand(()-> shooter.setFlywheelsPowerVoltage(TwoWheelShooter.ShootDist.Far)),
+                        new InstantCommand(()-> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Far, true)),
                         new SequentialCommandGroup(
                                 getToShootCommand(1, 500),
                                 new WaitCommand(500),
@@ -315,16 +313,16 @@ public class ThreeBallBackRightAuto extends BaseAuto {
 //                            new InstantCommand(() -> spindexer.getTurner().setPIDFTOUse(spindexer.outtakeTurnerCoeff)),
 //                            new WaitCommand(thirdWaitTime),
 //                            new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 2) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0)
-                                new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0.6)),//rotate manually for the last one
+//                                new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0.6)),//rotate manually for the last one
                                 new WaitCommand(thirdWaitTime),
-                                new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0)),
-                                new InstantCommand(()-> spindexer.setAngleTolerance(Angle.fromDegrees(10))),
+//                                new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0)),
+//                                new InstantCommand(()-> spindexer.setAngleTolerance(Angle.fromDegrees(10))),
                                 new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 2) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
                                 new WaitCommand(fourthWaitTime)
                         ),
                         driveToIntakeEnd(1)
                 ).withTimeout(2500),
-                new InstantCommand(()-> spindexer.setDefaultAngleTolerance()),
+//                new InstantCommand(()-> spindexer.setDefaultAngleTolerance()),
                 new InstantCommand(()-> intake.stopPower())
         );
 
@@ -343,7 +341,7 @@ public class ThreeBallBackRightAuto extends BaseAuto {
         }
         else{
             return new SequentialCommandGroup(
-                    new SchedulePathTo(follower, new Pose(intakePose.getX() + xChangeIntake + 2, intakePose.getY(), intakePose.getHeading()), headingError, timeOutConstraint, pathDistThresholdMin)
+                    new SchedulePathTo(follower, new Pose(intakePose.getX() + xChangeIntake + 5, intakePose.getY(), intakePose.getHeading()), headingError, timeOutConstraint, pathDistThresholdMin)
                             .setMaxPower(0.3)
             );
         }

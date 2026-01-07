@@ -22,9 +22,8 @@ import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 
-import org.firstinspires.ftc.teamcode.commands.SchedulePathTo;
-import org.firstinspires.ftc.teamcode.commands.SpindexerGotoSpot;
-import org.firstinspires.ftc.teamcode.commands.SpindexerGotoSpotTimed;
+import org.firstinspires.ftc.teamcode.commands.pathing.SchedulePathTo;
+import org.firstinspires.ftc.teamcode.commands.spindexer.SpindexerGotoSpot;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;

@@ -13,12 +13,12 @@ import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 
 
-import org.firstinspires.ftc.teamcode.commands.AutoIntakeCommand;
-import org.firstinspires.ftc.teamcode.commands.IntakeTimeCommand;
-import org.firstinspires.ftc.teamcode.commands.MotifWriteCommand;
-import org.firstinspires.ftc.teamcode.commands.SchedulePathTo;
+import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommand;
+import org.firstinspires.ftc.teamcode.commands.intake.IntakeTimeCommand;
+import org.firstinspires.ftc.teamcode.commands.readwrite.MotifWriteCommand;
+import org.firstinspires.ftc.teamcode.commands.pathing.SchedulePathTo;
 import org.firstinspires.ftc.teamcode.commands.ShootSeqCommand;
-import org.firstinspires.ftc.teamcode.commands.SpindexerGotoSpot;
+import org.firstinspires.ftc.teamcode.commands.spindexer.SpindexerGotoSpot;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
@@ -173,11 +173,11 @@ public class NineBallCloseLeftNonSorted extends BaseAuto {
 //                        new FlywheelShootTimed(shooter, follower, shootSide,  TwoWheelShooter.ShootDist.Close, false, 5000, false)
 //                ),
                 new ParallelCommandGroup(
-                        new InstantCommand(()-> shooter.setFlywheelsPowerVoltage(TwoWheelShooter.ShootDist.Close)),
+                        new InstantCommand(()-> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true)),
                         new SequentialCommandGroup(
                                 getToShootCommand(1, 1000),
                                 new WaitCommand(1000),
-                                new InstantCommand(()-> spindexer.spin(-0.3))
+                                new InstantCommand(()-> spindexer.spin(-0.15))
                         )
                 ),
                 new WaitCommand(1400),
@@ -197,11 +197,11 @@ public class NineBallCloseLeftNonSorted extends BaseAuto {
 //                new ParallelCommandGroup(
 
                 new ParallelCommandGroup(
-                        new InstantCommand(()-> shooter.setFlywheelsPowerVoltage(TwoWheelShooter.ShootDist.Close)),
+                        new InstantCommand(()-> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true)),
                         new SequentialCommandGroup(
                                 getToShootCommand(2, 0),
                                 new WaitCommand(2000),
-                                new InstantCommand(()-> spindexer.spin(-0.3))
+                                new InstantCommand(()-> spindexer.spin(-0.15))
                         )
                 ),
                 new WaitCommand(1400),
@@ -221,11 +221,11 @@ public class NineBallCloseLeftNonSorted extends BaseAuto {
                 setDefaultStartColors(),
 //                new ParallelCommandGroup(
                 new ParallelCommandGroup(
-                        new InstantCommand(()-> shooter.setFlywheelsPowerVoltage(TwoWheelShooter.ShootDist.Close)),
+                        new InstantCommand(()-> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true)),
                         new SequentialCommandGroup(
                                 getToShootCommand(2, 0),
                                 new WaitCommand(2000),
-                                new InstantCommand(()-> spindexer.spin(-0.3))
+                                new InstantCommand(()-> spindexer.spin(-0.15))
                         )
                 ),
                 new WaitCommand(1000),

@@ -18,7 +18,7 @@ import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.commands.SpindexerGotoAngle;
+import org.firstinspires.ftc.teamcode.commands.spindexer.SpindexerGotoAngle;
 import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
@@ -384,13 +384,13 @@ public class SinglePlayerControls extends CommandOpMode {
         botShooterPower = shooter.low.get();
 
         if(gamepad1.rightBumperWasPressed()){
-            shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Close, TwoWheelShooter.RunMode.VelocityControl);
+            shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true);
         }
         else if(gamepad1.right_trigger >= 0.5){
             shooter.stopFlywheels();
         }
         if(gamepad1.right_trigger > 0.2 && gamepad1.right_trigger < 0.5){
-            shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Far, TwoWheelShooter.RunMode.VelocityControl);
+            shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Far, true);
         }
     }
     private void updateTelem() {

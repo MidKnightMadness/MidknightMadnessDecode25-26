@@ -13,18 +13,22 @@ import org.firstinspires.ftc.teamcode.util.ConfigNames;
 @Configurable
 @TeleOp(name = "Continuous Servo Test", group = "Tests")
 public class ContinuousServoTest extends OpMode {
-    CRServo servo;
+    CRServo servoOne;
+    CRServo servoTwo;
 
-    public static double power = 1;
+    public static double firstPower = 1;
+    public static double secondPower = 1;
     @Override
     public void init() {
-        servo = new CRServo(hardwareMap, ConfigNames.turner);
-
+        servoOne = new CRServo(hardwareMap, ConfigNames.turner);
+        servoTwo = new CRServo(hardwareMap, ConfigNames.turner2);
     }
 
     @Override
     public void loop() {
-        servo.set(power);
-        telemetry.addData("Current Power", servo.get());
+        servoOne.set(firstPower);
+        servoTwo.set(secondPower);
+        telemetry.addData("First Servo Power", firstPower);
+        telemetry.addData("Second Servo Power", secondPower);
     }
 }
