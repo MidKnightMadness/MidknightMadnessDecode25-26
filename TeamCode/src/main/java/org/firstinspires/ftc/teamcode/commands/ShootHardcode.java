@@ -4,13 +4,13 @@ import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 
+import org.firstinspires.ftc.teamcode.commands.spindexer.SpindexerRawSequence;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
 import org.firstinspires.ftc.teamcode.game.SpotType;
 import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
-import org.firstinspires.ftc.teamcode.util.Angle;
 
 public class ShootHardcode extends SequentialCommandGroup {
     // Expects this initial spot position:
@@ -38,7 +38,7 @@ public class ShootHardcode extends SequentialCommandGroup {
         }
         addCommands(
                 new InstantCommand(() -> {
-                    shooter.setFlywheelsPower(distToGoal);
+                    shooter.setFlywheelStaticLUT(distToGoal, false);
                 }),
                 new SpindexerRawSequence(spindexer, sequence, SpotType.OUTTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
                 new InstantCommand(() -> spindexer.spin(momentum)),

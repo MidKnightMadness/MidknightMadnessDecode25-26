@@ -1,7 +1,6 @@
-package org.firstinspires.ftc.teamcode.commands;
+package org.firstinspires.ftc.teamcode.commands.spindexer;
 
 import com.seattlesolvers.solverslib.command.CommandBase;
-import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 
 import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;

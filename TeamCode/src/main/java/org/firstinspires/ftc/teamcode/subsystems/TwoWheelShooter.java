@@ -2,7 +2,9 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
+import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.math.Vector;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
@@ -10,6 +12,7 @@ import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 import com.seattlesolvers.solverslib.util.InterpLUT;
 
+import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 
@@ -27,15 +30,27 @@ public class TwoWheelShooter extends SubsystemBase {
         Close,
         Far
     }
+
+    //DEFAULT GAINS
+    public static double[] pidBotGains = new double[]{0.0004, 0, 0.00001};
+    public static double[] kBotGains = new double[]{0, 0.00005, 0};
+    public static double[] pidTopGains = new double[]{0.0004, 0, 0.00001};
+    public static double[] kTopGains = new double[]{0.02, 0.00005, 0};
+
+    public static boolean useAggressiveRecovery = true;
+    boolean inRecoveryMode = false;
+    //AGGRESSIVE GAINS: FOR RECOVERY
+    public static double[] pidBotAggressiveGains = new double[]{0.0008, 0, 0.00005};
+    public static double[] pidTopAggressiveGains = new double[]{0.0008, 0, 0.00005};
+
     InterpLUT distToLowVel;
     InterpLUT distToHighVel;
 
-    // fill in later
-    public static double[] distArr = {58, 70.5, 88.6, 107};
+    public static double[] dist= {58, 70.5, 88.6, 107};
     public static double[] bottomVel = {2000, 1900, 1700, 2100}; // Ticks per second when 1:1 gear ratio
     public static double[] topVel = {1850, 1950, 1950, 2150};
 
-    public static double gearRatio = 3;
+
     public final MotorEx low;
     public final MotorEx high;
     public RunMode runMode;
@@ -47,6 +62,7 @@ public class TwoWheelShooter extends SubsystemBase {
             4., 3.61,
             5., 5.23
     ); // Unused for now
+    public static double gearRatio = 3;
 
     public static boolean lowMotorDirForward = true;
     public static boolean highMotorDirForward = true;
@@ -58,7 +74,9 @@ public class TwoWheelShooter extends SubsystemBase {
     public static double botRecoveryFactor = 1.17;//TUNE
     double currTopFactor = 1;
     double currBotFactor = 1;
-    public static double recoveryTime = 150;
+    public static double recoveryBoostTime = 1000;
+    double actualRecoveryTime = 0;
+    double recoveryStartTime = 0;
     double recoveryEndTime = 0;
 
     public static double targetVoltage = 12.5;
@@ -66,10 +84,17 @@ public class TwoWheelShooter extends SubsystemBase {
 //    public static double[] closeTargetVelocities = new double[] {1800, 1900};
     public static double[] closeTargetVelocities = new double[] {1600, 1750};
     public static double[] farTargetVelocities = new double[]{2300, 2500};
-    public static double[] closeTargetPowers = new double[]{0.75, 0.95};
-    public static double[] farTargetPowers = new double[]{1, 1};
+//    public static double[] closeTargetPowers = new double[]{0.85, 1};
+//
+//    public static double[] farTargetPowers = new double[]{0.95, 1};
+
     double currVolt = 0;
     HardwareMap map;
+    public static double kBotShootMovingFactor = 1;
+    public static double kTopShootMovingFactor = 1;
+    public static double velBotTolerance = 100;
+    public static double velTopTolerance = 100;
+    public static double velMovingThreshold = 2;//in per sec
 
 
     public double getTargetVoltage(){
@@ -82,20 +107,30 @@ public class TwoWheelShooter extends SubsystemBase {
         this.map = hardwareMap;
         setRunMode(runMode);
 
-//        distToLowVel = new InterpLUT();
-//        distToHighVel = new InterpLUT();
-//        for (int i = 0; i < distArr.length; i++) {
-//            distToLowVel.add(distArr[i], bottomVel[i]);
-//            distToHighVel.add(distArr[i], topVel[i]);
-//        }
-//
-//        distToLowVel.createLUT();
-//        distToHighVel.createLUT();
+        distToLowVel = new InterpLUT();
+        distToHighVel = new InterpLUT();
+        for (int i = 0; i < dist.length; i++) {
+            distToLowVel.add(dist[i], bottomVel[i]);
+            distToHighVel.add(dist[i], topVel[i]);
+        }
+
+        distToLowVel.createLUT();
+        distToHighVel.createLUT();
 
         low.motor.setDirection(lowMotorDirForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);
         high.motor.setDirection(highMotorDirForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);
+        resetDefaultGains();
+    }
 
-
+    public void resetDefaultGains(){
+        low.setVeloCoefficients(pidBotGains[0], pidBotGains[1], pidBotGains[2]);
+        low.setFeedforwardCoefficients(kBotGains[0], kBotGains[1], kBotGains[2]);
+        high.setVeloCoefficients(pidTopGains[0], pidTopGains[1], pidTopGains[2]);
+        high.setFeedforwardCoefficients(kTopGains[0], kTopGains[1], kTopGains[2]);
+    }
+    public void setAggressiveGains(){
+        low.setVeloCoefficients(pidBotAggressiveGains[0], pidBotAggressiveGains[1], pidBotAggressiveGains[2]);
+        high.setVeloCoefficients(pidTopAggressiveGains[0], pidTopAggressiveGains[1], pidTopAggressiveGains[2]);
     }
 
     public double getCurrVoltage(){
@@ -122,57 +157,184 @@ public class TwoWheelShooter extends SubsystemBase {
         low.setFeedforwardCoefficients(kS, kV, kA);
         high.setFeedforwardCoefficients(kS, kV, kA);
     }
-    public boolean setFlywheelsPowerVoltage(ShootDist dist) {//assuming facing the shooting area
-        currVolt = map.voltageSensor.iterator().next().getVoltage();
-        if(currVolt < 10){currVolt = 10;}
+    public void updateRecoveryState(){
+        if(inRecoveryMode && System.currentTimeMillis() > recoveryEndTime){
+            actualRecoveryTime = System.currentTimeMillis() - recoveryStartTime;
+            resetRecoveryFactors();
+            resetDefaultGains();
+            inRecoveryMode = false;
+        }
+    }
 
-        if(runMode == RunMode.VelocityControl){
-            if (dist == ShootDist.Close) {
-//                low.set(closeTargetVelocities[0] + 30 );//may need to do set instead
-//                high.set(closeTargetVelocities[1] + topVelocityOffset + 30);
-                low.set(closeTargetVelocities[0] * (targetVoltage / currVolt));
-                high.set(closeTargetVelocities[1] * (targetVoltage / currVolt));
-            }
-            else{
-                low.set(farTargetVelocities[0] * (targetVoltage / currVolt));
-                high.set(farTargetVelocities[1] * (targetVoltage / currVolt));
-            }
+    //thresholds whether robot is currently moving
+    public void setFlywheelPresets(ShootDist shootDist, Follower follower, ShootSide shootSide,  boolean voltageUse){
+        Vector robotVelocity = follower.getVelocity();
+        boolean isMoving = true;
+        if(robotVelocity.getMagnitude() <= velMovingThreshold){
+            isMoving = false;
+        }
+        if(!isMoving){
+            setFlywheelStaticPresets(shootDist, voltageUse);
+        } else{
+            setFlywheelMovingPresets(follower.getPose(), shootDist, shootSide, robotVelocity, voltageUse);
+        }
+    }
+
+    //thresholds whether robot is currently moving
+    public void setFlywheelLUT(Follower follower, ShootSide shootSide, boolean voltageUse){
+        Vector robotVelocity = follower.getVelocity();
+        boolean isMoving = true;
+        if(robotVelocity.getMagnitude() <= velMovingThreshold){
+            isMoving = false;
+        }
+        if(!isMoving){
+            setFlywheelMovingLUT(follower.getPose(), shootSide, robotVelocity, voltageUse);
+        } else{
+            setFlywheelMovingLUT(follower.getPose(), shootSide, robotVelocity, voltageUse);
+        }
+    }
+
+
+
+    public void setFlywheelStaticPresets(ShootDist shootDist, boolean voltageUse) {//assuming facing the shooting area
+        setFlywheel(0, shootDist, 0, voltageUse, false);
+    }
+    public void setFlywheelStaticLUT(Pose robotPose, ShootSide shootSide, boolean voltageUse){
+        setFlywheel(getDistance(robotPose, shootSide), null, 0, voltageUse, true);
+    }
+    public void setFlywheelStaticLUT(double distToGoal, boolean voltageUse){
+        setFlywheel(distToGoal, null, 0, voltageUse, true);
+    }
+    public void setFlywheelMovingLUT(Pose robotPose, ShootSide shootSide, Vector velVector, boolean voltageUse){
+        double dist = getDistance(robotPose, shootSide);
+        Pose targetPose = getShootPose(shootSide);
+        double dx = targetPose.getX() - robotPose.getX();
+        double dy = targetPose.getY() - robotPose.getY();
+
+        double vparallel = (velVector.getXComponent() * dx + velVector.getYComponent() * dy)
+                / dist;
+
+        setFlywheel(dist, null, vparallel, voltageUse, true);
+    }
+
+    public void setFlywheelMovingPresets(Pose robotPose, ShootDist shootDist, ShootSide shootSide, Vector velVector, boolean voltageUse){
+
+        double dist = getDistance(robotPose, shootSide);
+        Pose targetPose = getShootPose(shootSide);
+        double dx = targetPose.getX() - robotPose.getX();
+        double dy = targetPose.getY() - robotPose.getY();
+
+        double vparallel = (velVector.getXComponent() * dx + velVector.getYComponent() * dy)
+                / dist;
+
+        setFlywheel(dist, shootDist, vparallel, voltageUse, false);
+    }
+    public void setFlywheel(double dist, ShootDist shootDist, double vParallel, boolean voltageUse, boolean useLUT){
+        updateRecoveryState();
+        currVolt = map.voltageSensor.iterator().next().getVoltage();
+        double ratio = voltageUse ? (targetVoltage / currVolt) : 1;
+        ratio = Math.min(ratio, 1.25);
+
+        double botVel, topVel;
+        if(useLUT){
+            botVel = distToLowVel.get(dist);
+            topVel = distToHighVel.get(dist);
+            if(runMode != RunMode.VelocityControl) setRunMode(RunMode.VelocityControl);
         }
         else{
-//            if (dist == ShootDist.Close) setCustomPower(0.75, 0.95);
-//            else setCustomPower(1, 1);
-            if (dist == ShootDist.Close) setCustomPower(closeTargetPowers[0] * targetVoltage / currVolt, closeTargetPowers[1] * targetVoltage / currVolt);
-            else setCustomPower(farTargetPowers[0] * targetVoltage/ currVolt, farTargetPowers[1] * targetVoltage / currVolt);
+            double[] preset = (shootDist == ShootDist.Close) ? closeTargetVelocities : farTargetVelocities;
+            botVel = preset[0];
+            topVel = preset[1];
         }
 
-        return true;
+        botVel -= kBotShootMovingFactor * vParallel;
+        topVel -= kTopShootMovingFactor * vParallel;
+
+        botVel *= ratio * currBotFactor;
+        topVel *= ratio * currTopFactor;
+        setCustomPower(botVel, topVel);
     }
 
-    public boolean setFlywheelsPower(double dist) {//assuming facing the shooting area
-//        if(System.currentTimeMillis() > recoveryTime){
-//            currBotFactor = 0;
-//            currTopFactor = 0;
-//        }
-//
-//        predictedBotVel = distToLowVel.get(dist) * currBotFactor;
-//        predictedTopVel = distToHighVel.get(dist) * currTopFactor;
-//        switch (runMode) {
-//            case VelocityControl:
-//                low.set(predictedBotVel); high.set(predictedTopVel);
-//                break;
-//
-//            case RawPower:
-//                low.set(predictedBotVel / low.ACHIEVABLE_MAX_TICKS_PER_SECOND);
-//                high.set(predictedTopVel / high.ACHIEVABLE_MAX_TICKS_PER_SECOND);
-//                break;
-//        }
-        return true;
+    //set flywheel by distance -> static, not moving, lut use
+    private void setFlywheel(double dist, ShootDist shootDist, boolean voltageUse, boolean useLUT, Pose robotPose, Vector velVector, ShootSide shootSide){
+        updateRecoveryState();
+        currVolt = map.voltageSensor.iterator().next().getVoltage();
+
+        double ratio = voltageUse ? (targetVoltage / currVolt) : 1;
+        ratio = Math.min(ratio, 1.25);
+
+        boolean isMoving = true;
+        if(velVector.getXComponent() <= velMovingThreshold && velVector.getYComponent() <= velMovingThreshold){
+            isMoving = false;
+        }
+        double botVel, topVel;
+        if(useLUT){
+            botVel = distToLowVel.get(dist);
+            topVel = distToHighVel.get(dist);
+            setRunMode(RunMode.VelocityControl);
+        } else{
+            double[] preset = (shootDist == ShootDist.Close) ? closeTargetVelocities : farTargetVelocities;
+            botVel = preset[0];
+            topVel = preset[1];
+        }
+
+        if(isMoving){
+            double distGoal = getDistance(robotPose, shootSide);
+            Pose targetPose = getShootPose(shootSide);
+            double dx = targetPose.getX() - robotPose.getX();
+            double dy = targetPose.getY() - robotPose.getY();
+
+            double vparallel = (velVector.getXComponent() * dx + velVector.getYComponent() * dy)
+                    / distGoal;
+            botVel -= kBotShootMovingFactor * vparallel;
+            topVel -= kTopShootMovingFactor * vparallel;
+        }
+        botVel *= ratio * currBotFactor;
+        topVel *= ratio * currTopFactor;
+        setCustomPower(botVel, topVel);
+
     }
+
+
+    public boolean readyToShoot(){
+        return Math.abs(low.getVelocity() - predictedBotVel) <= velBotTolerance &&
+                Math.abs(high.getVelocity() - predictedTopVel) <= velTopTolerance;
+    }
+
+    public double getRecoveryTime(){
+        return actualRecoveryTime;
+    }
+
+    public double getCurrBotFactor(){
+        return currBotFactor;
+    }
+    public double getCurrTopFactor(){
+        return currTopFactor;
+    }
+
 
     public void triggerBallShot(){//every time ball is shot
+        if(useAggressiveRecovery){
+            setAggressiveGains();
+        }
+        //override curr recovery if it is in one
         currBotFactor = botRecoveryFactor;
         currTopFactor = topRecoveryFactor;
-        recoveryEndTime = System.currentTimeMillis() + recoveryTime;
+        recoveryStartTime = System.currentTimeMillis();
+
+        if(!inRecoveryMode) {
+            recoveryEndTime = System.currentTimeMillis() + recoveryBoostTime;
+        }
+        else{//trying to recover and shoot another ball
+            recoveryEndTime = System.currentTimeMillis() + recoveryBoostTime * 1.2;
+        }
+    }
+
+    public double getTopRecoveryFactor(){
+        return topRecoveryFactor;
+    }
+    public double getBotRecoveryFactor(){
+        return botRecoveryFactor;
     }
 
 
@@ -182,67 +344,36 @@ public class TwoWheelShooter extends SubsystemBase {
     public double getPredictedBotVel(){
         return predictedBotVel;
     }
-    public void setFlywheelsPower(ShootDist dist) {
-//        setRunMode(runMode);
-        if(runMode == RunMode.VelocityControl){
-            if (dist == ShootDist.Close) {
-                low.set(closeTargetVelocities[0]);//may need to do set instead
-                high.set(closeTargetVelocities[1] + topVelocityOffset);
-            }
-            else{
-                low.set(farTargetVelocities[0]);
-                high.set(farTargetVelocities[1]);
-            }
-        }
-        else{
-//            if (dist == ShootDist.Close) setCustomPower(0.75, 0.95);
-//            else setCustomPower(1, 1);
-            if (dist == ShootDist.Close) setCustomPower(closeTargetPowers[0], closeTargetPowers[1]);
-            else setCustomPower(farTargetPowers[0], farTargetPowers[1]);
-        }
-    }
-
-    public void setFlywheelsPower(ShootDist dist, TwoWheelShooter.RunMode runMode) {
-//        setRunMode(runMode);
-        if(this.runMode == RunMode.VelocityControl){
-            if (dist == ShootDist.Close) {
-                low.setVelocity(closeTargetVelocities[0]);
-                high.setVelocity(closeTargetVelocities[1] + 500);
-            }
-            else{
-                low.setVelocity(farTargetVelocities[0]);
-                high.setVelocity(farTargetVelocities[1]);
-            }
-        }
-        else{
-//            if (dist == ShootDist.Close) setCustomPower(0.75, 0.95);
-//            else setCustomPower(1, 1);
-            if (dist == ShootDist.Close) setCustomPower(closeTargetPowers[0], closeTargetPowers[1]);
-            else setCustomPower(farTargetPowers[0], farTargetPowers[1]);
-        }
-    }
 
 
     public void setCustomPower(double lowPower, double highPower) {
+        predictedBotVel = lowPower;
+        predictedTopVel = highPower;
         if(runMode == RunMode.VelocityControl){
-//            low.setRunMode(Motor.RunMode.VelocityControl);
-//            high.setRunMode(Motor.RunMode.VelocityControl);
             low.set(lowPower);
             high.set(highPower + topVelocityOffset);//account for belted motor
         }
         else {
-            low.set(lowPower);
-            high.set(highPower);
+            low.set(lowPower / low.ACHIEVABLE_MAX_TICKS_PER_SECOND);
+            high.set(highPower / high.ACHIEVABLE_MAX_TICKS_PER_SECOND);
         }
     }
 
-    public boolean setFlywheelsPower(Pose robotPose, ShootSide side){
-        return setFlywheelsPower(getDistance(robotPose, side));
+
+    public void resetRecoveryFactors(){
+        currBotFactor = 1;
+        currTopFactor = 1;
     }
+
+
     public double getDistance(Pose robotPose, ShootSide side){
         double xDist = Math.abs(robotPose.getX() - ((side == ShootSide.LEFT) ? leftShootPose.getX() : rightShootPose.getX()));
         double yDist = Math.abs(robotPose.getY() - ((side == ShootSide.LEFT) ? leftShootPose.getY() : rightShootPose.getY()));
         return Math.hypot(xDist, yDist);
+    }
+
+    public Pose getShootPose(ShootSide shootSide){
+        return shootSide == ShootSide.LEFT ? leftShootPose : rightShootPose;
     }
 
     public void stopFlywheels() {

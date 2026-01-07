@@ -5,7 +5,6 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.seattlesolvers.solverslib.command.CommandBase;
-import com.seattlesolvers.solverslib.command.WaitCommand;
 
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
@@ -13,7 +12,6 @@ import org.firstinspires.ftc.teamcode.game.SpotType;
 import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
-import org.firstinspires.ftc.teamcode.util.Angle;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
 @Config
@@ -47,6 +45,9 @@ public class ShootSeqCommand extends CommandBase {
     boolean powerFlywheel;
     TwoWheelShooter.ShootDist shootDist;
     public static double maxTimeShoot = 8000;
+
+    public static boolean voltageUse = false;
+    public static boolean useLUT = true;
     public int getCurrBallIndex(){
         return currBallIndex;
     }
@@ -75,15 +76,9 @@ public class ShootSeqCommand extends CommandBase {
         if(powerFlywheel) {
             if (mapDistToShoot) {
                 follower.update();
-                Pose robotPose = follower.getPose();
-                double distToGoal = shooter.getDistance(robotPose, shootSide);
-                shooter.setFlywheelsPower(distToGoal);
+                shooter.setFlywheelStaticLUT(follower.getPose(), shootSide, false);
             } else {
-                if (shootDist == TwoWheelShooter.ShootDist.Close) {
-                    shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Close);
-                } else {
-                    shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Far);
-                }
+                shooter.setFlywheelStaticPresets(shootDist, false);
             }
         }
 
@@ -108,7 +103,7 @@ public class ShootSeqCommand extends CommandBase {
             return;
         }
 
-        if(removedBall && !spinEnded) {
+        if(!spinEnded) {
             double waitTime = betweenShotsWaitArr[currBallIndex];
             if(timer.getTime() - spinStartTime >= waitTime) {
                 // Shot complete, move to next ball

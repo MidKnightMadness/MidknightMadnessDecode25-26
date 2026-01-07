@@ -41,15 +41,10 @@ public class FlywheelShootTimed extends CommandBase {
             follower.update();
             Pose robotPose = follower.getPose();
             double distToGoal = shooter.getDistance(robotPose, shootSide);
-            shooter.setFlywheelsPower(distToGoal);
+            shooter.setFlywheelStaticLUT(distToGoal, false);
         }
         else{
-            if(shootDist == TwoWheelShooter.ShootDist.Close){
-                shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Close, TwoWheelShooter.RunMode.VelocityControl);
-            }
-            else{
-                shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Far, TwoWheelShooter.RunMode.VelocityControl);
-            }
+            shooter.setFlywheelStaticPresets(shootDist, false);
         }
     }
 
