@@ -1,10 +1,11 @@
 package org.firstinspires.ftc.teamcode.lights;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.game.BallColor;
-
+@TeleOp
 public class SingleLightTest extends OpMode {
     LightThing light1;
     @Override
@@ -14,10 +15,10 @@ public class SingleLightTest extends OpMode {
 
     @Override
     public void loop() {
-        if(gamepad1.a){
+        if(gamepad1.b){
             light1.setColor(BallColor.PURPLE);
         }
-        if(gamepad1.b){
+        else if(gamepad1.a){
             light1.setColor(BallColor.GREEN);
         }
         else{
