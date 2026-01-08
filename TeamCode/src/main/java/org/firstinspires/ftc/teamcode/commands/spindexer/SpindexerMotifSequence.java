@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.commands;
+package org.firstinspires.ftc.teamcode.commands.spindexer;
 
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 

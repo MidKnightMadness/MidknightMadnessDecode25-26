@@ -9,19 +9,15 @@ import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.qualcomm.hardware.lynx.LynxModule;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 
-import org.firstinspires.ftc.teamcode.commands.PoseWriteCommand;
-import org.firstinspires.ftc.teamcode.commands.SideWriteCommand;
-import org.firstinspires.ftc.teamcode.game.BallColor;
+import org.firstinspires.ftc.teamcode.commands.readwrite.PoseWriteCommand;
+import org.firstinspires.ftc.teamcode.commands.readwrite.SideWriteCommand;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
@@ -77,7 +73,7 @@ public abstract class BaseAuto extends CommandOpMode {
 
 
         startPose = getStartPose();
-        follower = ConstantsBot.createPinpointFollowerCustom(hardwareMap, new Pose(0, 0, 0));
+        follower = ConstantsBot.createPinpointFollower(hardwareMap);
         follower.setPose(startPose);
 
         dashboard = FtcDashboard.getInstance();
@@ -130,9 +126,8 @@ public abstract class BaseAuto extends CommandOpMode {
 //            }
     //    }
 //        if (timer.getTime() >= maxTimeMs) requestOpModeStop();
-       // writeValues();
+        writeValues();
         updateTelemetry();
-
     }
 
 
@@ -147,7 +142,6 @@ public abstract class BaseAuto extends CommandOpMode {
                     new PoseWriteCommand(follower.getPose(), maxWritePoseTimeMs),
                     new SideWriteCommand(getSide(), maxSideWriteTimeMs)));
             stopEnd = true;
-            requestOpModeStop();
         }
     }
 

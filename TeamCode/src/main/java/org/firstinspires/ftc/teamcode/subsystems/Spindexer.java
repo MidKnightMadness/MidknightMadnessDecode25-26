@@ -23,14 +23,15 @@ public class Spindexer extends SubsystemBase {
     //Ball sensors(two) facing each other right in the intake before it goes into the spindexer
     //public static double intakeSpinPower = 0.3;
     public static double shootRawPower = 1;
-    public PIDFCoefficients outtakeTurnerCoeff = new PIDFCoefficients(0.003, 0, 0.0001, 0);
-    public PIDFCoefficients intakeTurnerCoeff = new PIDFCoefficients(1, 0, 0.1, 0.01);
+    public static PIDFCoefficients outtakeTurnerCoeff = new PIDFCoefficients(0.002, 0, 0.0008, 0.001);
+    public static PIDFCoefficients intakeTurnerCoeff = new PIDFCoefficients(1, 0, 0.1, 0.01);
 
    /// public static PIDFCoefficients turnerCoefficients = new PIDFCoefficients(0.01, 0, 0.001, 0.001);
     // 0 is defined as the position of the shooter
     public static Angle detectRange = Angle.fromDegrees(25); // How far off from the center of the spot that you detect. You don't want to trust measurements that are too off from the center
     public static Angle defaultFinishedThreshold = Angle.fromDegrees(15); // Threshold at which it's finished turning to a spot
-    public static Angle finishedThreshold = Angle.fromDegrees(15);//changed from 20
+    public static Angle finishedThreshold = Angle.fromDegrees(5);//changed from 20
+    public static Angle atPointThreshold = Angle.fromDegrees(20);
     //0 degrees is facing intake
     //assuming layout at start is initialized as 0 from this position
     //  X X
@@ -38,6 +39,7 @@ public class Spindexer extends SubsystemBase {
     private static final int NUM_SPOTS = 3;
     boolean useColorSensors;
     CRServoEx2<IncrementalEncoder> turner;
+    CRServoEx2<IncrementalEncoder> turner2;
     public BallDetector[] ballDetectors;
     Angle currentAngle;
     BallColor[] ballColors;
@@ -53,6 +55,7 @@ public class Spindexer extends SubsystemBase {
     }
     public void setMode(CRServoEx2.RunMode spindexerRunMode) {
         turner.setRunMode(spindexerRunMode);
+        turner2.setRunMode(spindexerRunMode);
     }
     public Spindexer(HardwareMap hardwareMap, boolean useColorSensors) {
         this(hardwareMap, useColorSensors, null);
@@ -66,6 +69,10 @@ public class Spindexer extends SubsystemBase {
                 hardwareMap, ConfigNames.turner,
                 turnerEncoder, CRServoEx2.RunMode.OptimizedPositionalControl
         ).setPIDFTOUse(outtakeTurnerCoeff).setReversed(true);//default pid is intake
+        turner2 =  new CRServoEx2<>(
+                hardwareMap, ConfigNames.turner2,
+                turnerEncoder, CRServoEx2.RunMode.OptimizedPositionalControl
+        ).setPIDFTOUse(outtakeTurnerCoeff).setReversed(true);
         this.useColorSensors = useColorSensors;
         if (useColorSensors) {
             ballDetectors = new BallDetector[] {
@@ -82,6 +89,7 @@ public class Spindexer extends SubsystemBase {
     @Override
     public void periodic() {
         currentAngle = Angle.fromDegrees(turner.getEncoder().getAngle());
+
 //        if (useColorSensors) updateBallColors();
         //update color sensor balls manually
         if(ballColors != null) {
@@ -104,12 +112,18 @@ public class Spindexer extends SubsystemBase {
     public Spindexer initAngle(Angle angle) {
         currentAngle = angle.neg();
         turner.getEncoder().setAngle(-angle.toDegrees());
+        turner2.getEncoder().setAngle(-angle.toDegrees());
         return this;
     }
 
     public CRServoEx2<IncrementalEncoder> getTurner() {
         return turner;
     }
+
+    public CRServoEx2<IncrementalEncoder> getTurner2() {
+        return turner2;
+    }
+
 
     public IncrementalEncoder getEncoder() {
         return turner.getEncoder();
@@ -126,8 +140,9 @@ public class Spindexer extends SubsystemBase {
     public boolean allOccuppiedBallColors(){
         boolean works = true;
         for(BallColor ballColor : ballColors){
-            if(ballColor != BallColor.NONE){
+            if(ballColor == BallColor.NONE){
                 works = false;
+                break;
             }
         }
         return works;
@@ -216,10 +231,12 @@ public class Spindexer extends SubsystemBase {
         SpindexerSpot closestSpot = getNearestSpot(currentAngle, SpotType.OUTTAKE);
         if(closestSpot.getOuttakeAngle().absGap(currentAngle).toDegrees() < dangerZoneDeg){
             turner.setPIDFTOUse(outtakeTurnerCoeff);
+            turner2.setPIDFTOUse(outtakeTurnerCoeff);
             outakeSpindexerCoeffOn = true;
         }
         else{
             turner.setPIDFTOUse(intakeTurnerCoeff);
+            turner2.setPIDFTOUse(intakeTurnerCoeff);
             outakeSpindexerCoeffOn = false;
         }
     }
@@ -310,7 +327,7 @@ public class Spindexer extends SubsystemBase {
         return spot.getSpotAngle(spotType);
     }
 
-    private SpindexerSpot findNearestSpot(Angle query, SpotType spotType, BallColor matchColorOrNull) {
+    public SpindexerSpot findNearestSpot(Angle query, SpotType spotType, BallColor matchColorOrNull) {
         SpindexerSpot bestSpot = null;
         double smallestGap = 300;
         for (int i = 0; i < SpindexerSpot.values().length; i++) {
@@ -331,22 +348,7 @@ public class Spindexer extends SubsystemBase {
     }
 
     public SpindexerSpot getNearestEmptyIntakeSpot(){
-        double minSpotDiff = 400;
-        int nearestSpot = 0;
-        for(int i = 0; i < ballColors.length; i++){
-            Angle spotAngle = SpindexerSpot.fromIndex(i).getIntakeAngle();
-            if(ballColors[i] == BallColor.NONE){
-                double currSpotDiff = currentAngle.absGap(spotAngle).toDegrees();
-                if(currSpotDiff < minSpotDiff){
-                    minSpotDiff = currSpotDiff;
-                    nearestSpot = i;
-                }
-            }
-        }
-        if(minSpotDiff == 400){
-            return null;
-        }
-        return SpindexerSpot.fromIndex(nearestSpot);
+       return getNearestSpot(currentAngle, SpotType.INTAKE, BallColor.NONE);
     }
     public SpindexerSpot getNearestSpot(Angle query, SpotType spotType, BallColor matchColor) {
         return findNearestSpot(query, spotType, matchColor);
@@ -356,6 +358,8 @@ public class Spindexer extends SubsystemBase {
     public void spin(double power) {
         turner.setRunMode(CRServoEx2.RunMode.RawPower);
         turner.set(power);
+        turner2.setRunMode(CRServoEx2.RunMode.RawPower);
+        turner2.set(power);
     }
 
     public boolean isAtAngle(Angle angle) {
@@ -364,12 +368,12 @@ public class Spindexer extends SubsystemBase {
 
     public boolean isAtAngle(Angle angle, Angle finishedThreshold) {
         return currentAngle.sub(angle).abs().toDegrees()
-                < finishedThreshold.abs().toDegrees();
+                < atPointThreshold.abs().toDegrees();
     }
 
     public boolean isAtSpot(SpindexerSpot spot, SpotType spotType) {
         return currentAngle.smallestAbsDifferenceDegrees(spot.getSpotAngle(spotType)).toDegrees()
-                < finishedThreshold.abs().toDegrees();
+                < atPointThreshold.abs().toDegrees();
     }
     public void removeBall(int spot) {
         ballColors[spot] = BallColor.NONE;
@@ -381,6 +385,12 @@ public class Spindexer extends SubsystemBase {
             turner.set(angle.toDegrees());
         } else {
             turner.set(currentAngle.add(angle).sign() * shootRawPower); // Careful signs work out
+        }
+        turner2.setRunMode(runMode);
+        if (runMode == CRServoEx2.RunMode.OptimizedPositionalControl) {
+            turner2.set(angle.toDegrees());
+        } else {
+            turner2.set(currentAngle.add(angle).sign() * shootRawPower); // Careful signs work out
         }
     }
 

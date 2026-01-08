@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.motorTesting.WheelControl;
-import org.firstinspires.ftc.teamcode.commands.ServoController;
+import org.firstinspires.ftc.teamcode.commands.misc.ServoController;
 
 
 @TeleOp

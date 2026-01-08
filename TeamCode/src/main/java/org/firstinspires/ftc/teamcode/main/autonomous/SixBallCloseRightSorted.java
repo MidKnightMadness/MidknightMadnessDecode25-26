@@ -16,12 +16,12 @@ import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 
-import org.firstinspires.ftc.teamcode.commands.AutoIntakeCommand;
-import org.firstinspires.ftc.teamcode.commands.IntakeTimeCommand;
-import org.firstinspires.ftc.teamcode.commands.MotifWriteCommand;
-import org.firstinspires.ftc.teamcode.commands.SchedulePathTo;
+import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommand;
+import org.firstinspires.ftc.teamcode.commands.intake.IntakeTimeCommand;
+import org.firstinspires.ftc.teamcode.commands.readwrite.MotifWriteCommand;
+import org.firstinspires.ftc.teamcode.commands.pathing.SchedulePathTo;
 import org.firstinspires.ftc.teamcode.commands.ShootSeqCommand;
-import org.firstinspires.ftc.teamcode.commands.SpindexerGotoSpot;
+import org.firstinspires.ftc.teamcode.commands.spindexer.SpindexerGotoSpot;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
@@ -196,7 +196,7 @@ public class SixBallCloseRightSorted extends BaseAuto {
                                         CRServoEx2.RunMode.OptimizedPositionalControl, 0),
                                 new WaitCommand(thirdBallWaitTime)
                         ),
-                        new InstantCommand(() -> shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Close))
+                        new InstantCommand(() -> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true))
                 ),
                 new InstantCommand(() -> {
                     shooter.stopFlywheels();
@@ -239,7 +239,7 @@ public class SixBallCloseRightSorted extends BaseAuto {
                             CRServoEx2.RunMode.OptimizedPositionalControl, 0),
                         new WaitCommand(thirdBallWaitTime)
                     ),
-                    new InstantCommand(() -> shooter.setFlywheelsPower(TwoWheelShooter.ShootDist.Close))
+                    new InstantCommand(() -> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true))
                 ),
                 new InstantCommand(() -> {
                     shooter.stopFlywheels();
@@ -405,7 +405,7 @@ public class SixBallCloseRightSorted extends BaseAuto {
     private SequentialCommandGroup shootHardcode() {
         if (motifPattern == MotifEnums.Motif.PPG) {
             return new SequentialCommandGroup(
-                    new InstantCommand(() -> shooter.setFlywheelsPowerVoltage(TwoWheelShooter.ShootDist.Close)),
+                    new InstantCommand(() -> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true)),
                     new WaitCommand(2500),
                     new InstantCommand(() -> spindexer.spin(-0.3)),
                     new WaitCommand(1400),
@@ -414,7 +414,7 @@ public class SixBallCloseRightSorted extends BaseAuto {
         } else if (motifPattern == MotifEnums.Motif.PGP) {
             return new SequentialCommandGroup(
                     new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT2, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0).withTimeout(1500),
-                    new InstantCommand(() -> shooter.setFlywheelsPowerVoltage(TwoWheelShooter.ShootDist.Close)),
+                    new InstantCommand(() -> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true)),
                     new WaitCommand(2500),
                     new InstantCommand(() -> spindexer.spin(-0.3)),
                     new WaitCommand(1400),
@@ -422,7 +422,7 @@ public class SixBallCloseRightSorted extends BaseAuto {
             );
         } else {
             return new SequentialCommandGroup(
-                    new InstantCommand(() -> shooter.setFlywheelsPowerVoltage(TwoWheelShooter.ShootDist.Close)),
+                    new InstantCommand(() -> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true)),
                     new WaitCommand(2500),
                     new InstantCommand(() -> spindexer.spin(0.3)),
                     new WaitCommand(1400),

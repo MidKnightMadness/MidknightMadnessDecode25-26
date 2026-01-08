@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.commands;
+package org.firstinspires.ftc.teamcode.commands.spindexer;
 
 import com.pedropathing.follower.Follower;
 import com.seattlesolvers.solverslib.command.InstantCommand;
@@ -52,7 +52,7 @@ public class SpindexerShootContinuous extends SequentialCommandGroup {
     public void initialize() {
         if (useShooter) {
             addCommands(
-                new InstantCommand(() -> shooter.setFlywheelsPower(follower.getPose(), shootSide)),
+                new InstantCommand(() -> shooter.setFlywheelStaticLUT(follower.getPose(), shootSide, false)),
                 new WaitCommand(1000)
             );
         }

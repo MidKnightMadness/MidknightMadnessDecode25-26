@@ -43,23 +43,24 @@ public class ConstantsBot {
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 0.5, 1);
 
     //competition
-    public static PinpointConstants pinpointLocalizerConstants = new PinpointConstants()
-            .forwardPodY(115.39/25.4)
-            .strafePodX(-173.57/25.4)
+    public static PinpointConstants pinpointLocalizer1Constants = new PinpointConstants()
+            .forwardPodY(115.39 / 25.4)
+            .strafePodX(-173.57 / 25.4)
             .distanceUnit(DistanceUnit.INCH)
-            .hardwareMapName(ConfigNames.pinpoint)
+            .hardwareMapName(ConfigNames.pinpoint1)
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
             .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
             .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
-    public static PinpointConstants customPinpointLocalizerConstants = new PinpointConstants()
-            .forwardPodY(115/25.4)
-            .strafePodX(-173.7/25.4)
+    public static PinpointConstants pinpointLocalizer2Constants = new PinpointConstants()
+            .forwardPodY(115.39 / 25.4)//TODO: ADD VALUE
+            .strafePodX(-173.57 / 25.4)//TODO: ADD VALUE
             .distanceUnit(DistanceUnit.INCH)
-            .hardwareMapName(ConfigNames.pinpoint)
+            .hardwareMapName(ConfigNames.pinpoint2)
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
             .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
             .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED);
+
 
     public static KalmanPinpointAprilConstants mergedLocalizerConstants = new KalmanPinpointAprilConstants()
             .setIMUName(ConfigNames.imu)
@@ -67,7 +68,7 @@ public class ConstantsBot {
             .setLeftPipelineNum(0)
             .setRightPipelineNum(2)
             .setStartPipeline(2)
-            .setPinpointHardwareConfig(ConfigNames.pinpoint)
+            .setPinpointHardwareConfig(ConfigNames.pinpoint1)
             .setQ(0.01)
             .setR(2)
             .setMotifTrue(true)
@@ -99,14 +100,16 @@ public class ConstantsBot {
     }
     public static Follower createPinpointFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(followerConstants, hardwareMap)
-                .pinpointLocalizer(pinpointLocalizerConstants)
+                .pinpointLocalizer(pinpointLocalizer1Constants)
                 .mecanumDrivetrain(driveConstants)
                 .pathConstraints(pathConstraints)
                 .build();
     }
-    public static Follower createPinpointFollowerCustom(HardwareMap hardwareMap, Pose startPose) {
+
+    //TODO: Modify so it allows to odo pods and avg both
+    public static Follower createDoublePinpointFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(followerConstants, hardwareMap)
-                .pinpointLocalizerCustom(customPinpointLocalizerConstants, startPose)
+                .doublePinpointLocalizer(pinpointLocalizer1Constants, pinpointLocalizer2Constants)
                 .mecanumDrivetrain(driveConstants)
                 .pathConstraints(pathConstraints)
                 .build();

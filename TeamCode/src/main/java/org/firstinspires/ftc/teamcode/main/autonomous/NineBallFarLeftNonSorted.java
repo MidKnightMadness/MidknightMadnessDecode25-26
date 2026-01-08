@@ -11,15 +11,14 @@ import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
-import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 
-import org.firstinspires.ftc.teamcode.commands.AutoIntakeCommand;
-import org.firstinspires.ftc.teamcode.commands.IntakeTimeCommand;
-import org.firstinspires.ftc.teamcode.commands.MotifWriteCommand;
-import org.firstinspires.ftc.teamcode.commands.SchedulePathTo;
+import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommand;
+import org.firstinspires.ftc.teamcode.commands.intake.IntakeTimeCommand;
+import org.firstinspires.ftc.teamcode.commands.readwrite.MotifWriteCommand;
+import org.firstinspires.ftc.teamcode.commands.pathing.SchedulePathTo;
 import org.firstinspires.ftc.teamcode.commands.ShootSeqCommand;
-import org.firstinspires.ftc.teamcode.commands.SpindexerGotoSpot;
+import org.firstinspires.ftc.teamcode.commands.spindexer.SpindexerGotoSpot;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
@@ -178,7 +177,7 @@ public class NineBallFarLeftNonSorted extends BaseAuto {
 //                ),
                 new WaitCommand(1500),
                 new ParallelCommandGroup(
-                        new InstantCommand(()-> shooter.setFlywheelsPowerVoltage(TwoWheelShooter.ShootDist.Far)),
+                        new InstantCommand(()-> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Far, true)),
                         new SequentialCommandGroup(
                                 getToShootCommand(1, 500),
                                 new WaitCommand(500),
@@ -203,7 +202,7 @@ public class NineBallFarLeftNonSorted extends BaseAuto {
 //                getToShootCommand(2, 0),
                 new WaitCommand(200),
                 new ParallelCommandGroup(
-                        new InstantCommand(()-> shooter.setFlywheelsPowerVoltage(TwoWheelShooter.ShootDist.Far)),
+                        new InstantCommand(()-> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Far, true)),
                         new SequentialCommandGroup(
                                 getToShootCommand(2, 500),
                                 new WaitCommand(500),
@@ -230,7 +229,7 @@ public class NineBallFarLeftNonSorted extends BaseAuto {
 //                getToShootCommand(2, 0),
                 new WaitCommand(200),
                 new ParallelCommandGroup(
-                        new InstantCommand(()-> shooter.setFlywheelsPowerVoltage(TwoWheelShooter.ShootDist.Far)),
+                        new InstantCommand(()-> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Far, true)),
                         new SequentialCommandGroup(
                                 getToShootCommand(2, 500),
                                 new WaitCommand(500),

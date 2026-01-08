@@ -4,6 +4,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.teamcode.util.ConfigNames;
+
 //
 public class WheelControl {
     public DcMotorEx BR;
@@ -15,13 +17,13 @@ public class WheelControl {
     public double rf = 0;
 
     public WheelControl(HardwareMap hardwareMap) {
-        this.BR = hardwareMap.get(DcMotorEx.class, "BR");
+        this.BR = hardwareMap.get(DcMotorEx.class, ConfigNames.BR);
         this.BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        this.FR = hardwareMap.get(DcMotorEx.class, "FR");
+        this.FR = hardwareMap.get(DcMotorEx.class, ConfigNames.FR);
         this.FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        this.BL = hardwareMap.get(DcMotorEx.class, "BL");
+        this.BL = hardwareMap.get(DcMotorEx.class, ConfigNames.BL);
         this.BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        this.FL = hardwareMap.get(DcMotorEx.class, "FL");
+        this.FL = hardwareMap.get(DcMotorEx.class, ConfigNames.FL);
         this.FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         this.BL.setDirection(DcMotorEx.Direction.REVERSE);

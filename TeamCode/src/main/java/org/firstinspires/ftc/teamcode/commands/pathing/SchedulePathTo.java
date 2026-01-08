@@ -1,11 +1,9 @@
-package org.firstinspires.ftc.teamcode.commands;
+package org.firstinspires.ftc.teamcode.commands.pathing;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
-import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
@@ -13,6 +11,7 @@ public class SchedulePathTo extends SequentialCommandGroup {
     Follower follower;
     Pose targetPose;
     Pose startPose;
+    Pose controlPose;
     double headingConstraint;
     double timeOutConstraint;
     double translationalConstraint;
@@ -58,6 +57,8 @@ public class SchedulePathTo extends SequentialCommandGroup {
         this.tValue = tValue;
     }
 
+
+
     FollowPathCommand followCommand;
 
     public SchedulePathTo setMaxPower(double maxPower){
@@ -90,6 +91,8 @@ public class SchedulePathTo extends SequentialCommandGroup {
                     .setTranslationalConstraint(translationalConstraint)
                     .build();
         }
+
+
 
         if(maxPowerUse) {
             followCommand = new FollowPathCommand(follower, pathChain, false ).setGlobalMaxPower(maxPower);
