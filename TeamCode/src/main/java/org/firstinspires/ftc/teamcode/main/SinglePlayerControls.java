@@ -135,7 +135,8 @@ public class SinglePlayerControls extends CommandOpMode {
         startPose = roboPose != null ? roboPose : startPose;
 
 
-        follower = ConstantsBot.createPinpointFollowerCustom(hardwareMap, startPose);
+        follower = ConstantsBot.createPinpointFollower(hardwareMap);
+        follower.setPose(startPose);
         intake = new Intake(hardwareMap, intakeRunMode);
         if(intakeRunMode == Intake.RunMode.VelocityControl){
             intake.setPid(pidIntakeGains[0], pidIntakeGains[1], pidIntakeGains[2]);

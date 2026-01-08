@@ -187,7 +187,7 @@ public class MainTeleOp extends CommandOpMode {
 
         currentShootDist = (startPose.getY() > 20) ? TwoWheelShooter.ShootDist.Close : TwoWheelShooter.ShootDist.Far;
 
-        follower = ConstantsBot.createPinpointFollowerCustom(hardwareMap, new Pose(0, 0, 0));
+        follower = ConstantsBot.createPinpointFollower(hardwareMap);
         follower.setPose(startPose);
         currentPose = startPose;
 

@@ -99,7 +99,7 @@ public class IntakeAutoTest extends CommandOpMode {
         initializeMechanisms();
 
 
-        follower = ConstantsBot.createPinpointFollowerCustom(hardwareMap, new Pose(0, 0, 0));
+        follower = ConstantsBot.createPinpointFollower(hardwareMap);
         follower.setPose(intakeOnePose);
 
         dashboard = FtcDashboard.getInstance();

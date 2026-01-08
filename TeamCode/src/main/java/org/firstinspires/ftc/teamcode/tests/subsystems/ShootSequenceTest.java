@@ -50,11 +50,11 @@ public class ShootSequenceTest extends CommandOpMode {
     @Override
     public void initialize() {
         super.reset();
-        follower = ConstantsBot.createPinpointFollowerCustom(hardwareMap, new Pose(0, 0, 0));
+        follower = ConstantsBot.createPinpointFollower(hardwareMap);
         follower.setPose(startPose);
-        CommandScheduler.getInstance().setBulkReading(
-                hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
-        );
+//        CommandScheduler.getInstance().setBulkReading(
+//                hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
+//        );
         spindexer.setBallColors(ballColors);
         SpindexerSpot[] spots = spindexer.getOptimalSequence(motif);
 

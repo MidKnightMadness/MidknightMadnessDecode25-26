@@ -18,6 +18,7 @@ public class DriveNoLocalizer extends OpMode {
     WheelControl wheelControl;
     TelemetryManager telemetryM;
     GraphManager graphM;
+    public static double currSpeed = 1;
 
     @Override
     public void init() {
@@ -30,15 +31,12 @@ public class DriveNoLocalizer extends OpMode {
     }
 //    public static double maxSpeed = 0.8;
 //    public static double midSpeed = 0.5;
-    public static double currSpeed = 0.8;
-
-    public static double maxPower = 0.8;
     @Override
     public void start(){
     }
     @Override
     public void loop() {
-        wheelControl.drive_relative(-gamepad1.left_stick_y * currSpeed, gamepad1.left_stick_x * currSpeed, -gamepad1.right_stick_x * currSpeed, 0.8);
+        wheelControl.drive_relative(-gamepad1.left_stick_y, gamepad1.left_stick_x, -gamepad1.right_stick_x, currSpeed);
 //        follower.setTeleOpDrive(-gamepad1.left_stick_y * currSpeed, -gamepad1.left_stick_x * currSpeed, -gamepad1.right_stick_x * currSpeed, true);
 //
 //
