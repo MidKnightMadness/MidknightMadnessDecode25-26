@@ -10,6 +10,8 @@ import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
+import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.colors.ColorNormalizer;
@@ -25,12 +27,10 @@ public class ColorSensorTesting extends OpMode {
     // Left sensor values
     float lR, lG, lB, lA;
     String lDetected = "No reading yet";
-    String lDetectedBuffer = "No buffered reading yet";
 
     // Right sensor values
     float rR, rG, rB, rA;
     String rDetected = "No reading yet";
-    String rDetectedBuffer = "No buffered reading yet";
 
     // Hardware
     RevColorSensorV3 leftSensor;
@@ -39,13 +39,9 @@ public class ColorSensorTesting extends OpMode {
     // Button toggle for sampling
     ButtonToggle buttonToggle;
 
-    // Buffers for each sensor
-    ColorSensorBuffer lBufferRed, lBufferGreen, lBufferBlue;
-    ColorSensorBuffer rBufferRed, rBufferGreen, rBufferBlue;
-
-    // Normalizers
-//    ColorNormalizer lNorm;
-//    ColorNormalizer rNorm;
+//    // Buffers for each sensor
+//    ColorSensorBuffer hBufferLeft, sBufferLeft, vBufferLeft;
+//    ColorSensorBuffer hBufferRight, sBufferRight, vBufferRight;
 
     // Green ball thresholds
     public static float greenHMin = 180f,  greenHMax = 180f;
@@ -61,6 +57,7 @@ public class ColorSensorTesting extends OpMode {
 
     double leftDistance;
     double rightDistance;
+
     @Override
     public void init() {
 
@@ -71,108 +68,72 @@ public class ColorSensorTesting extends OpMode {
         leftSensor.enableLed(true);
         rightSensor.enableLed(true);
 
-//        lNorm = new ColorNormalizer(0, 0, 0);
-//        rNorm = new ColorNormalizer(0, 0, 0);
 
         // Rolling buffers
-        lBufferRed = new ColorSensorBuffer();
-        lBufferGreen = new ColorSensorBuffer();
-        lBufferBlue = new ColorSensorBuffer();
-
-        rBufferRed = new ColorSensorBuffer();
-        rBufferGreen = new ColorSensorBuffer();
-        rBufferBlue = new ColorSensorBuffer();
+//        hBufferLeft = new ColorSensorBuffer();
+//        sBufferLeft = new ColorSensorBuffer();
+//        vBufferLeft = new ColorSensorBuffer();
+//
+//        hBufferRight = new ColorSensorBuffer();
+//        sBufferRight = new ColorSensorBuffer();
+//        vBufferRight = new ColorSensorBuffer();
 
         buttonToggle = new ButtonToggle();
 
-        // Setup telemetry only once
-//        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
     }
 
     @Override
     public void loop() {
 
         if (buttonToggle.update(gamepad1.dpad_up)) {
+            getNormalizedRGBAs();
 
-            // LEFT SENSOR
-            lR = leftSensor.red();
-            lG = leftSensor.green();
-            lB = leftSensor.blue();
-            lA = leftSensor.alpha();
+            //updates distance
+            leftDistance = leftSensor.getDistance(DistanceUnit.CM);
+            rightDistance = rightSensor.getDistance(DistanceUnit.CM);
 
-            leftDistance = leftSensor.getDistance(DistanceUnit.INCH);
+
             colorLeft = new float[3];
-
-            RGBToHSV(
-                    leftSensor.red(),
-                    leftSensor.green(),
-                    leftSensor.blue(),
-                    colorLeft
-            );
-
-            lBufferRed.add(colorLeft[0]);
-            lBufferGreen.add(colorLeft[1]);
-            lBufferBlue.add(colorLeft[2]);
-
-            lDetected = detectBallColor(colorLeft[0], colorLeft[1], colorLeft[2]);
-            lDetectedBuffer = detectBallColor(
-                    lBufferRed.getAverage(),
-                    lBufferGreen.getAverage(),
-                    lBufferBlue.getAverage()
-            );
-
-            // RIGHT SENSOR
-            rR = rightSensor.red();
-            rG = rightSensor.green();
-            rB = rightSensor.blue();
-            rA = rightSensor.alpha();
-            rightDistance = rightSensor.getDistance(DistanceUnit.INCH);
-
             colorRight = new float[3];
 
+
             RGBToHSV(
-                    rightSensor.red(),
-                    rightSensor.green(),
-                    rightSensor.blue(),
-                    colorRight
+                    lR,  lG, lB, colorLeft
             );
 
-            rBufferRed.add(colorRight[0]);
-            rBufferGreen.add(colorRight[1]);
-            rBufferBlue.add(colorRight[2]);
+            RGBToHSV(
+                    rR,  rG,  rB, colorRight
+            );
 
+
+
+            lDetected = detectBallColor(colorLeft[0], colorLeft[1], colorLeft[2]);
             rDetected = detectBallColor(colorRight[0], colorRight[1], colorRight[2]);
 
-            rDetectedBuffer = detectBallColor(
-                    rBufferRed.getAverage(),
-                    rBufferGreen.getAverage(),
-                    rBufferBlue.getAverage()
-            );
         }
 
         // TELEMETRY
-        telemetry.addLine("=== LEFT Color Sensor ===");
-        telemetry.addData("Raw R/G/B", "%f / %f / %f", lR, lG, lB);
-        telemetry.addData("HSV", "%f / %f / %f",
-                colorLeft[0],colorLeft[1], colorLeft[2]);
-        telemetry.addData("Detected", lDetected);
-        telemetry.addData("Detected (Buffered)", lDetectedBuffer);
-        telemetry.addData("Distance", leftDistance);
-
-        telemetry.addLine("=== RIGHT Color Sensor ===");
-        telemetry.addData("Raw R/G/B", "%f / %f / %f", rR, rG, rB);
-        telemetry.addData("HSV", "%f / %f / %f",
-                colorRight[0],colorRight[1], colorRight[2]);
-        telemetry.addData("Detected", rDetected);
-        telemetry.addData("Detected (Buffered)", rDetectedBuffer);
-        telemetry.addData("Distance", rightDistance);
-
-        telemetry.update();
+        updateTelemetry();
     }
-    public static void RGBToHSV(int red, int green, int blue, float[] hsv) {
-        float r = red / 255f;
-        float g = green / 255f;
-        float b = blue / 255f;
+
+    public void getNormalizedRGBAs(){
+        NormalizedRGBA leftNormValues = leftSensor.getNormalizedColors();
+        lR = leftNormValues.red;
+        lG = leftNormValues.green;
+        lB = leftNormValues.blue;
+        lA = leftNormValues.alpha;
+
+        NormalizedRGBA rightNormValues = rightSensor.getNormalizedColors();
+        rR = rightNormValues.red;
+        rG = rightNormValues.green;
+        rB = rightNormValues.blue;
+        rA = rightNormValues.alpha;
+    }
+
+    public static void RGBToHSV(float red, float green, float blue, float[] hsv) {
+        float r = red;// /255
+        float g = green;// /255
+        float b = blue;// /255
 
         float max = Math.max(r, Math.max(g, b));
         float min = Math.min(r, Math.min(g, b));
@@ -200,6 +161,7 @@ public class ColorSensorTesting extends OpMode {
         hsv[2] = v;
     }
 
+    //TODO: NEED TO test whether hsv works better or the normalized colors
     private String detectBallColor(double h, double s, double v) {
         if (h >= greenHMin && h <= greenHMax &&
                 s >= greenSMin && s <= greenSMax &&
@@ -212,5 +174,23 @@ public class ColorSensorTesting extends OpMode {
             return "Purple Ball";
 
         return "Unknown Color";
+    }
+
+    public void updateTelemetry(){
+        telemetry.addLine("=== LEFT Color Sensor ===");
+        telemetry.addData("Norm R/G/B", "%f / %f / %f", lR, lG, lB);
+        telemetry.addData("HSV", "%f / %f / %f",
+                colorLeft[0], colorLeft[1], colorLeft[2]);
+        telemetry.addData("Detected", lDetected);
+        telemetry.addData("Distance(CM", leftDistance);
+
+        telemetry.addLine("=== RIGHT Color Sensor ===");
+        telemetry.addData("Raw R/G/B", "%f / %f / %f", rR, rG, rB);
+        telemetry.addData("HSV", "%f / %f / %f",
+                colorRight[0], colorRight[1], colorRight[2]);
+        telemetry.addData("Detected(CM)", rDetected);
+        telemetry.addData("Distance(CM)", rightDistance);
+
+        telemetry.update();
     }
 }
