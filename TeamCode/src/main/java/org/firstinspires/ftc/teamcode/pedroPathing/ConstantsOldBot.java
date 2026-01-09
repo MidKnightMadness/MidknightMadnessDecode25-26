@@ -43,7 +43,7 @@ public class ConstantsOldBot {
             .forwardPodY(-5.875)
             .strafePodX(1.50)
             .distanceUnit(DistanceUnit.INCH)
-            .hardwareMapName(ConfigNames.pinpoint)
+            .hardwareMapName(ConfigNames.pinpoint1)
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
             .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
             .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD);
@@ -53,7 +53,7 @@ public class ConstantsOldBot {
             .setLeftPipelineNum(0)
             .setRightPipelineNum(2)
             .setStartPipeline(2)
-            .setPinpointHardwareConfig(ConfigNames.pinpoint)
+            .setPinpointHardwareConfig(ConfigNames.pinpoint1)
             .setQ(0.01)
             .setR(2)
             .setMotifTrue(true)
