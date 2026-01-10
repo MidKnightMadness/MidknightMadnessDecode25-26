@@ -22,6 +22,12 @@ public class ConfigNames {
     public static String BL = "BL";
     public static String BR = "BR";
     public static String rampServo = "rampServo";
-    public static String intakeColorLeft = "intakeLeftColor";
-    public static String intakeColorRight = "intakeRightColor";
+    public static String camServo = "cameraServo";
+    public static String spindexerLights1 = "spinLight1";
+    public static String spindexerLights2 = "spinLight2";
+    public static String spindexerLights3 = "spinLight3";
+    public static String light4 = "light4";
+    public static String light5 = "light5";
+    public static String intakeColor1 = "intakeLeftColor";
+    public static String intakeColor2 = "intakeRightColor";
 }
