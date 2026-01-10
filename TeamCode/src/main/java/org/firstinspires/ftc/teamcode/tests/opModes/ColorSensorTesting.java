@@ -61,8 +61,8 @@ public class ColorSensorTesting extends OpMode {
     @Override
     public void init() {
 
-        leftSensor = hardwareMap.get(RevColorSensorV3.class, ConfigNames.intakeColorLeft);
-        rightSensor = hardwareMap.get(RevColorSensorV3.class, ConfigNames.intakeColorRight);
+        leftSensor = hardwareMap.get(RevColorSensorV3.class, ConfigNames.intakeColor1);
+        rightSensor = hardwareMap.get(RevColorSensorV3.class, ConfigNames.intakeColor2);
 
 
         leftSensor.enableLed(true);
