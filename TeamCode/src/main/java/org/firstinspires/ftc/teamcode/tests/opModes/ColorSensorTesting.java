@@ -49,7 +49,7 @@ public class ColorSensorTesting extends OpMode {
     public static float greenVMin = 0f, greenVMax = 1f;
 
     // Purple ball thresholds
-    public static float purpleHMin = 163f, purpleHMax = 235f;
+    public static float purpleHMin = 200f, purpleHMax = 235f;
     public static float purpleSMin = 0.33f, purpleSMax = 1f;
     public static float purpleVMin = 0f, purpleVMax = 1f;
     float[] colorLeft = new float[]{0, 0, 0};
