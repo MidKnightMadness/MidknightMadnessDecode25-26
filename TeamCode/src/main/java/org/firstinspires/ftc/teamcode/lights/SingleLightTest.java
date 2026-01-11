@@ -7,10 +7,10 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 @TeleOp
 public class SingleLightTest extends OpMode {
-    LightThing light1;
+    GobildaLightBlock light1;
     @Override
     public void init() {
-        light1 = new LightThing(hardwareMap.get(Servo.class, "light1"));
+        light1 = new GobildaLightBlock(hardwareMap.get(Servo.class, "light1"));
     }
 
     @Override

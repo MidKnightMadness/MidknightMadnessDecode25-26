@@ -31,10 +31,10 @@ public class ColorSensorTesting extends OpMode {
     // Right sensor values
     float rR, rG, rB, rA;
     String rDetected = "No reading yet";
-
     // Hardware
     RevColorSensorV3 leftSensor;
     RevColorSensorV3 rightSensor;
+    RevColorSensorV3 spotColorSensor;
 
     // Button toggle for sampling
     ButtonToggle buttonToggle;
@@ -63,10 +63,11 @@ public class ColorSensorTesting extends OpMode {
 
         leftSensor = hardwareMap.get(RevColorSensorV3.class, ConfigNames.intakeColor1);
         rightSensor = hardwareMap.get(RevColorSensorV3.class, ConfigNames.intakeColor2);
-
+        spotColorSensor = hardwareMap.get(RevColorSensorV3.class, ConfigNames.intakeColor3);
 
         leftSensor.enableLed(true);
         rightSensor.enableLed(true);
+        spotColorSensor.enableLed(true);
 
 
         // Rolling buffers
@@ -93,8 +94,10 @@ public class ColorSensorTesting extends OpMode {
             rightDistance = rightSensor.getDistance(DistanceUnit.CM);
 
 
+
             colorLeft = new float[3];
             colorRight = new float[3];
+
 
 
             RGBToHSV(

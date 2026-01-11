@@ -30,4 +30,5 @@ public class ConfigNames {
     public static String light5 = "light5";
     public static String intakeColor1 = "intakeLeftColor";
     public static String intakeColor2 = "intakeRightColor";
+    public static String intakeColor3 = "colorsensor3";
 }

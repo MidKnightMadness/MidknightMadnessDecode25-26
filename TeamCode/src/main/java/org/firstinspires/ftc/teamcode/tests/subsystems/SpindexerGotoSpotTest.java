@@ -30,12 +30,14 @@ public class SpindexerGotoSpotTest extends CommandOpMode {
 
     Button intakeSpot0Button, intakeSpot1Button, intakeSpot2Button;
     Button outakeSpot0Button, outakeSpot1Button, outakeSpot2Button;
+    Button nearestIntakeSpotButton;
     Spindexer spindexer;
     GamepadEx gp1;
     TelemetryManager telemetryM;
     GraphManager graphM;
     Timer timer;
     int targetSpot = 0;
+    int nearestIntakeSpot = 0;
 
     @Override
     public void initialize() {
@@ -52,10 +54,13 @@ public class SpindexerGotoSpotTest extends CommandOpMode {
         gp1 = new GamepadEx(gamepad1);
 
         intakeSpot0Button = gp1.getGamepadButton(GamepadKeys.Button.X);
-        intakeSpot1Button = gp1.getGamepadButton(GamepadKeys.Button.A);
+        intakeSpot1Button = gp1.getGamepadButton(GamepadKeys.Button.Y);
+        intakeSpot2Button = gp1.getGamepadButton(GamepadKeys.Button.B);
         outakeSpot0Button = gp1.getGamepadButton(GamepadKeys.Button.DPAD_LEFT);
         outakeSpot1Button = gp1.getGamepadButton(GamepadKeys.Button.DPAD_UP);
         outakeSpot2Button = gp1.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT);
+        nearestIntakeSpotButton = gp1.getGamepadButton(GamepadKeys.Button.A);
+
 
         intakeSpot0Button.whenPressed(new SequentialCommandGroup(
                 new InstantCommand(() -> targetSpot = 0),
@@ -65,6 +70,11 @@ public class SpindexerGotoSpotTest extends CommandOpMode {
                 new InstantCommand(() -> targetSpot = 1),
                 new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT1, SpotType.INTAKE, runMode, finishedTimeThreshold)
         ));
+        intakeSpot2Button.whenPressed(new SequentialCommandGroup(
+                new InstantCommand(() -> targetSpot = 2),
+                new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT2, SpotType.INTAKE, runMode, finishedTimeThreshold)
+        ));
+
         outakeSpot0Button.whenPressed(new SequentialCommandGroup(
                 new InstantCommand(() -> targetSpot = 0),
                 new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.OUTTAKE, runMode, finishedTimeThreshold)
@@ -78,6 +88,12 @@ public class SpindexerGotoSpotTest extends CommandOpMode {
                 new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT2, SpotType.OUTTAKE, runMode, finishedTimeThreshold)
         ));
 
+        nearestIntakeSpotButton.whenPressed((new SequentialCommandGroup(
+                        new InstantCommand(() -> nearestIntakeSpot = spindexer.getNearestSpot(spindexer.getCurrentAngle(), SpotType.INTAKE).getIndex()),
+                        new InstantCommand(() -> targetSpot = nearestIntakeSpot),
+                        new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex(nearestIntakeSpot), SpotType.INTAKE, runMode, finishedTimeThreshold
+        ))));
+
 
         register(spindexer);
     }
@@ -87,9 +103,6 @@ public class SpindexerGotoSpotTest extends CommandOpMode {
         gp1.readButtons();
         updateTelemetry();
         super.run();
-        if(gamepad1.b){
-            spindexer.goToSpot(SpindexerSpot.SPOT2, SpotType.INTAKE, runMode);
-        }
 
     }
 
@@ -114,7 +127,10 @@ public class SpindexerGotoSpotTest extends CommandOpMode {
         telemetry.addData("Spot farthest from current angle", spindexer.farthestFromAngle(spindexer.getCurrentAngle(), SpotType.OUTTAKE));
         telemetry.addData("Current Angle", spindexer.getCurrentAngle());
         telemetry.addData("Error", spindexer.getTurner().error);
+        telemetry.addData("Error2", spindexer.getTurner2().error);
         telemetry.addData("Revolutions", spindexer.getEncoder().getRevolutions());
+        telemetry.addData("Spindexer Target Power1", spindexer.getTurner().power);
+        telemetry.addData("Spindexer Target Power2", spindexer.getTurner2().power);
         telemetry.addData("Ball Colors", spindexer.getBallColors());
         telemetry.addData("Loop time (ms)", timer.getDeltaTime());
 

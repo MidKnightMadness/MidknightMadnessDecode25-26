@@ -81,6 +81,7 @@ public class AutoIntakeCommand extends CommandBase {
     public void end(boolean interrupted){
         intake.setDirectPower(0);
         spindexer.getTurner().getServo().setPower(0);
+        spindexer.getTurner2().getServo().setPower(0);
         swapSpots = false;
     }
 }
