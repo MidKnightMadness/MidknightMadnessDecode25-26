@@ -31,10 +31,15 @@ public class ColorSensorTesting extends OpMode {
     // Right sensor values
     float rR, rG, rB, rA;
     String rDetected = "No reading yet";
+
+    // Bottom sensor values
+    float bR, bG, bB, bA;
+    String bDetected = "No reading yet";
+
     // Hardware
     RevColorSensorV3 leftSensor;
     RevColorSensorV3 rightSensor;
-    RevColorSensorV3 spotColorSensor;
+    RevColorSensorV3 bottomSensor;
 
     // Button toggle for sampling
     ButtonToggle buttonToggle;
@@ -54,20 +59,23 @@ public class ColorSensorTesting extends OpMode {
     public static float purpleVMin = 0f, purpleVMax = 1f;
     float[] colorLeft = new float[]{0, 0, 0};
     float[] colorRight = new float[]{0, 0, 0};
+    float[] colorBottom = new float[]{0, 0, 0};
 
     double leftDistance;
     double rightDistance;
+    double bottomDistance;
 
     @Override
     public void init() {
 
         leftSensor = hardwareMap.get(RevColorSensorV3.class, ConfigNames.intakeColor1);
         rightSensor = hardwareMap.get(RevColorSensorV3.class, ConfigNames.intakeColor2);
-        spotColorSensor = hardwareMap.get(RevColorSensorV3.class, ConfigNames.intakeColor3);
+        bottomSensor = hardwareMap.get(RevColorSensorV3.class, ConfigNames.bottomColor);
+
 
         leftSensor.enableLed(true);
         rightSensor.enableLed(true);
-        spotColorSensor.enableLed(true);
+        bottomSensor.enableLed(true);
 
 
         // Rolling buffers
@@ -92,12 +100,12 @@ public class ColorSensorTesting extends OpMode {
             //updates distance
             leftDistance = leftSensor.getDistance(DistanceUnit.CM);
             rightDistance = rightSensor.getDistance(DistanceUnit.CM);
-
+            bottomDistance = rightSensor.getDistance(DistanceUnit.CM);
 
 
             colorLeft = new float[3];
             colorRight = new float[3];
-
+            colorBottom = new float[3];
 
 
             RGBToHSV(
@@ -107,11 +115,15 @@ public class ColorSensorTesting extends OpMode {
             RGBToHSV(
                     rR,  rG,  rB, colorRight
             );
+            RGBToHSV(
+                    bR,  bG,  bB, colorBottom
+            );
 
 
 
             lDetected = detectBallColor(colorLeft[0], colorLeft[1], colorLeft[2]);
             rDetected = detectBallColor(colorRight[0], colorRight[1], colorRight[2]);
+            bDetected = detectBallColor(colorBottom[0], colorBottom[1], colorBottom[2]);
 
         }
 
@@ -131,6 +143,12 @@ public class ColorSensorTesting extends OpMode {
         rG = rightNormValues.green;
         rB = rightNormValues.blue;
         rA = rightNormValues.alpha;
+
+        NormalizedRGBA bottomNormValues = bottomSensor.getNormalizedColors();
+        bR = bottomNormValues.red;
+        bG = bottomNormValues.green;
+        bB = bottomNormValues.blue;
+        bA = bottomNormValues.alpha;
     }
 
     public static void RGBToHSV(float red, float green, float blue, float[] hsv) {
@@ -193,6 +211,13 @@ public class ColorSensorTesting extends OpMode {
                 colorRight[0], colorRight[1], colorRight[2]);
         telemetry.addData("Detected(CM)", rDetected);
         telemetry.addData("Distance(CM)", rightDistance);
+
+        telemetry.addLine("=== BOTTOM Color Sensor ===");
+        telemetry.addData("Raw R/G/B", "%f / %f / %f", bR, bG, bB);
+        telemetry.addData("HSV", "%f / %f / %f",
+                colorBottom[0], colorBottom[1], colorBottom[2]);
+        telemetry.addData("Detected(CM)", bDetected);
+        telemetry.addData("Distance(CM)", bottomDistance);
 
         telemetry.update();
     }

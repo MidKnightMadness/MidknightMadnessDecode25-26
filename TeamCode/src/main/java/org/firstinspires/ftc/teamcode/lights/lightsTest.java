@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 @TeleOp
 public class lightsTest extends OpMode {
-    GobildaLightBlock light1;
+    GobildaLightBlock light1;//ffff
     GobildaLightBlock light2;
     GobildaLightBlock light3;
     BallColor[] list;
