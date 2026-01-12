@@ -41,19 +41,16 @@ public class SpindexerGotoSpot extends CommandBase {
 
     @Override
     public boolean isFinished() {
+        spindexer.goToSpot(spot, spotType, runMode);
         boolean atSpot = spindexer.isAtSpot(spot, spotType);
         if (atSpot) {
+            spindexer.getTurner().setRunMode(CRServoEx2.RunMode.RawPower);
+            spindexer.getTurner().getServo().setPower(0);
+            spindexer.getTurner2().setRunMode(CRServoEx2.RunMode.RawPower);
+            spindexer.getTurner2().getServo().setPower(0);
             if (runMode == CRServoEx2.RunMode.RawPower) {
                 runMode = CRServoEx2.RunMode.OptimizedPositionalControl;
             }
-
-
-//            if (!wasFinished) finishedTimer.restart();
-//            if (finishedTimer.getTime() > finishedTimeThreshold) {
-//                spindexer.getTurner().stop();
-//                return true;
-//            }
-//        }
         }
         wasFinished = atSpot;
         return atSpot;
@@ -61,7 +58,9 @@ public class SpindexerGotoSpot extends CommandBase {
 
     @Override
     public void end(boolean interrupted){
-//        spindexer.getTurner().setRunMode(CRServoEx2.RunMode.RawPower);
+        spindexer.getTurner().setRunMode(CRServoEx2.RunMode.RawPower);
         spindexer.getTurner().getServo().setPower(0);
+        spindexer.getTurner2().setRunMode(CRServoEx2.RunMode.RawPower);
+        spindexer.getTurner2().getServo().setPower(0);
     }
 }

@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.colors;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.hardware.BallDetector;
@@ -9,6 +10,7 @@ import org.firstinspires.ftc.teamcode.hardware.BallDetector;
 import java.util.ArrayList;
 
 @Config
+@Disabled
 @Configurable
 public class ColorBuffer {
     int purpleCount = 0;

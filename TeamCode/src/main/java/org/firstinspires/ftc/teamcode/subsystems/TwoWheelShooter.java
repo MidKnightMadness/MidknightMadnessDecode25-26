@@ -5,6 +5,7 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.Vector;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
@@ -21,6 +22,8 @@ import java.util.Map;
 @Configurable
 @Config
 public class TwoWheelShooter extends SubsystemBase {
+
+
     public enum RunMode {
         RawPower,
         VelocityControl
@@ -34,7 +37,7 @@ public class TwoWheelShooter extends SubsystemBase {
     //DEFAULT GAINS
     public static double[] pidBotGains = new double[]{0.0004, 0, 0.00001};
     public static double[] kBotGains = new double[]{0, 0.00005, 0};
-    public static double[] pidTopGains = new double[]{0.0004, 0, 0.00001};
+    public static double[] pidTopGains = new double[]{0.0004, 0.00005, 0.00001};
     public static double[] kTopGains = new double[]{0.02, 0.00005, 0};
 
     public static boolean useAggressiveRecovery = true;
@@ -67,8 +70,8 @@ public class TwoWheelShooter extends SubsystemBase {
     public static boolean lowMotorDirForward = true;
     public static boolean highMotorDirForward = true;
     public static double topVelocityOffset = 500;
-    double predictedTopVel = 0;
-    double predictedBotVel = 0;
+    double predictedTopVel = 1500;
+    double predictedBotVel = 1500;
 
     public static double topRecoveryFactor = 1.18;//TUNE
     public static double botRecoveryFactor = 1.17;//TUNE
@@ -83,7 +86,7 @@ public class TwoWheelShooter extends SubsystemBase {
 
 //    public static double[] closeTargetVelocities = new double[] {1800, 1900};
     public static double[] closeTargetVelocities = new double[] {1600, 1750};
-    public static double[] farTargetVelocities = new double[]{2300, 2500};
+    public static double[] farTargetVelocities = new double[]{2400, 2000};
 //    public static double[] closeTargetPowers = new double[]{0.85, 1};
 //
 //    public static double[] farTargetPowers = new double[]{0.95, 1};
@@ -97,6 +100,7 @@ public class TwoWheelShooter extends SubsystemBase {
     public static double velMovingThreshold = 2;//in per sec
 
 
+
     public double getTargetVoltage(){
         return targetVoltage;
     }
@@ -104,6 +108,11 @@ public class TwoWheelShooter extends SubsystemBase {
     public TwoWheelShooter(HardwareMap hardwareMap, RunMode runMode) {
         low = new MotorEx(hardwareMap, ConfigNames.lowFlywheelMotor);
         high = new MotorEx(hardwareMap, ConfigNames.highFlywheelMotor);
+        //low.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        //high.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        low.motorEx.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        high.motorEx.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
         this.map = hardwareMap;
         setRunMode(runMode);
 
@@ -122,6 +131,10 @@ public class TwoWheelShooter extends SubsystemBase {
         resetDefaultGains();
     }
 
+    public void resetEncoders() {
+        low.stopAndResetEncoder();
+        high.stopAndResetEncoder();
+    }
     public void resetDefaultGains(){
         low.setVeloCoefficients(pidBotGains[0], pidBotGains[1], pidBotGains[2]);
         low.setFeedforwardCoefficients(kBotGains[0], kBotGains[1], kBotGains[2]);
@@ -252,6 +265,8 @@ public class TwoWheelShooter extends SubsystemBase {
 
         botVel *= ratio * currBotFactor;
         topVel *= ratio * currTopFactor;
+        predictedBotVel = botVel;
+        predictedTopVel = topVel;
         setCustomPower(botVel, topVel);
     }
 

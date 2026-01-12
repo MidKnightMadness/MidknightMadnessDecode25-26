@@ -11,6 +11,7 @@ public class IncrementalEncoder extends EncoderBase<IncrementalEncoder> {
     private final DcMotor encoder;
     private final double cpr;
 
+
     private int lastPosition;
     private double lastTimeStamp, veloEstimate, dpp, accel, lastVelo;
 
@@ -22,6 +23,8 @@ public class IncrementalEncoder extends EncoderBase<IncrementalEncoder> {
      */
     public IncrementalEncoder(HardwareMap hwMap, String id, double countsPerRevolution, AngleUnit angleUnit) {
         this(hwMap.get(DcMotor.class, id), countsPerRevolution, angleUnit);
+       // encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //THIS IS WHAT IS LIKELY CAUSING ERROR
     }
 
     /**

@@ -5,6 +5,7 @@ import android.graphics.Color;
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
@@ -18,31 +19,24 @@ import java.util.Map;
 
 @Config
 @Configurable
-public class BallDetector extends ColorDetector<BallColor> {
+public class BallDetector {
     private final RevColorSensorV3 colorSensor;
 
     public static Threshold[] greenThreshold = new Threshold[] {
             //normalized rgb out of magnitudes
             new Threshold(150f, 162f),//hsv
             new Threshold(0.5f, 1f),
-            new Threshold(0f, 1f)
+            new Threshold(90f, 255f)
     };
 
     public static Threshold[] purpleThreshold = new Threshold[] {
-            new Threshold(163f, 235f),//hsv
+            new Threshold(200f, 235f),//hsv
             new Threshold(0.33f, 1f),
-            new Threshold(0f, 1)
+            new Threshold(95f, 255f)
     };
     public NormalizedRGBA normalizedRGBA;
     public float[] hsv;
     public BallDetector(HardwareMap hardwareMap, String deviceName) {
-        super(
-                Map.of(
-                        BallColor.GREEN, greenThreshold,
-                        BallColor.PURPLE, purpleThreshold
-                ),
-                BallColor.NONE
-        );
         colorSensor = hardwareMap.get(RevColorSensorV3.class, deviceName);
         colorSensor.enableLed(true);
     }
@@ -77,7 +71,7 @@ public class BallDetector extends ColorDetector<BallColor> {
         hsv[1] = s;
         hsv[2] = v;
     }
-    @Override
+
     public float[] readRawColor() {
         float[] color = new float[3];
 
