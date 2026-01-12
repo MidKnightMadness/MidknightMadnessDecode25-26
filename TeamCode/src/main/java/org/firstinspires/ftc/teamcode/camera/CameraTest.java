@@ -45,5 +45,6 @@ public class CameraTest extends OpMode {
             double y = detection.getTargetYDegrees(); // Where it is (up-down)
             telemetry.addData(className, "at (" + x + ", " + y + ") degrees");
         }
+        telemetry.update();
     }
 }
