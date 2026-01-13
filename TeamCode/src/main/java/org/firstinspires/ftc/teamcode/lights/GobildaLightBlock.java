@@ -24,22 +24,23 @@ public class GobildaLightBlock {
         lightControl = servo;
         lastColor = BallColor.NONE;
     }
+    //for spindexer
     public void setColor(BallColor color){
-        if(color.equals(lastColor)){
-            return;
-        }
-        lastColor = color;
+//        if(color.equals(lastColor)){
+//            return;
+//        }
+//        lastColor = color;
         if(color.equals(BallColor.PURPLE)){
-            lightControl.setPosition(0.700);//i dont actually know the values ima just put random stuff until i can test
-        }
-        else if(color.equals(BallColor.GREEN)){
-            lightControl.setPosition(0.500);
-        }
-        else{
+            setColor(Color.VIOLET);
+        } else if(color.equals(BallColor.GREEN)){
+            setColor(Color.GREEN);
+        } else if(color.equals(BallColor.UNKNOWN)){
+            setColor(Color.ORANGE);
+        } else{
             lightControl.setPosition(0);
         }
     }
-
+    //anything else
     public void setColor(Color color){
         if(color.equals(Color.RED)){
             lightControl.setPosition(0.277);

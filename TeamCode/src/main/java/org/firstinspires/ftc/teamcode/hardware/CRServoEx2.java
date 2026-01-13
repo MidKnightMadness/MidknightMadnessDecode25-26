@@ -12,13 +12,7 @@ import com.seattlesolvers.solverslib.util.MathUtils;
 
 import org.firstinspires.ftc.teamcode.R;
 
-/**
- * An extended wrapper class for CRServos with more features
- * such as integration with absolute analog encoders for Axon servos
- * and their absolute encoders and power caching to reduce loop times.
- *
- * @author Saket
- */
+//custom cr servo for SPINDEXER. Sets minimum power to overcome wheel if error is too large
 public class CRServoEx2<E extends Encoder> extends CRServo {
     private E encoder;
     private double cachingTolerance = 0.0001;
@@ -28,6 +22,8 @@ public class CRServoEx2<E extends Encoder> extends CRServo {
     public double power = 0;
     public double positivePowerCount = 0;
     public double setCount = 0;
+    double minPowerOvercome = 0.3;
+    double minErrorThreshold = 30;//degrees
     /**
      * The mode in which the CR servo should behave.
      */
@@ -68,6 +64,16 @@ public class CRServoEx2<E extends Encoder> extends CRServo {
         this.runmode = RunMode.RawPower;
     }
 
+    public void setMinPowerOvercome(double minPower){
+        this.minPowerOvercome = minPower;
+    }
+    public double getMinPowerOvercome(){
+        return minPowerOvercome;
+    }
+
+    public void setMinErrorThreshold(double minThreshold){
+        this.minErrorThreshold = minThreshold;
+    }
     public CRServoEx2<E> setReversed(boolean reversed) {
         if (reversed) {
             this.getServo().setDirection(DcMotorSimple.Direction.REVERSE);
@@ -153,6 +159,36 @@ public class CRServoEx2<E extends Encoder> extends CRServo {
             double power = pidf.calculate(0, error);
             this.error = error;
             this.power = power;
+
+            if (power > 0) {
+                positivePowerCount++;
+            }
+            crServo.setPower(power);
+
+//            crServo.setPower(clamp(power, - 0.8, 0.8));//clamp to make sure not setting to too fast
+        } else {
+            this.power = output;
+            crServo.setPower(output);
+        }
+    }
+
+
+    public void set(double output, boolean nearWheel) {
+        setCount++;
+        if (runmode == RunMode.OptimizedPositionalControl) {
+            if (encoder == null) {
+                throw new IllegalStateException("Must have absolute encoder and PIDF coefficients for CR Servo to be in positional control");
+            }
+
+            double error = MathUtils.normalizeAngle(output - encoder.getAngle(), false, encoder.getAngleUnit());
+
+            double power = pidf.calculate(0, error);
+            if(nearWheel){
+                power = Math.signum(error) * Math.max(Math.abs(power), minPowerOvercome);
+            }
+            this.error = error;
+            this.power = power;
+
             if (power > 0) {
                 positivePowerCount++;
             }

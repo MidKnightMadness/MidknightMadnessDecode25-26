@@ -10,6 +10,7 @@ import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 
@@ -40,6 +41,7 @@ public class ColorSensorTesting extends OpMode {
     RevColorSensorV3 leftSensor;
     RevColorSensorV3 rightSensor;
     RevColorSensorV3 bottomSensor;
+    DistanceSensor distSensor;
 
     // Button toggle for sampling
     ButtonToggle buttonToggle;
@@ -71,7 +73,7 @@ public class ColorSensorTesting extends OpMode {
         leftSensor = hardwareMap.get(RevColorSensorV3.class, ConfigNames.intakeColor1);
         rightSensor = hardwareMap.get(RevColorSensorV3.class, ConfigNames.intakeColor2);
         bottomSensor = hardwareMap.get(RevColorSensorV3.class, ConfigNames.bottomColor);
-
+        distSensor = hardwareMap.get(DistanceSensor.class, ConfigNames.intakeDist1);
 
         leftSensor.enableLed(true);
         rightSensor.enableLed(true);
@@ -198,6 +200,7 @@ public class ColorSensorTesting extends OpMode {
     }
 
     public void updateTelemetry(){
+        telemetry.addData("Distance", distSensor.getDistance(DistanceUnit.INCH));
         telemetry.addLine("=== LEFT Color Sensor ===");
         telemetry.addData("Norm R/G/B", "%f / %f / %f", lR, lG, lB);
         telemetry.addData("HSV", "%f / %f / %f",

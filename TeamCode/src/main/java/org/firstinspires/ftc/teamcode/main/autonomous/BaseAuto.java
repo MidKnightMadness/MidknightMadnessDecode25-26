@@ -63,7 +63,6 @@ public abstract class BaseAuto extends CommandOpMode {
 //        CommandScheduler.getInstance().setBulkReading(
 //                hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
 //        );
-
         CommandScheduler.getInstance().cancelAll();
         super.reset();
 
@@ -85,7 +84,6 @@ public abstract class BaseAuto extends CommandOpMode {
         setupVision();
         if(preMotifSequence() != null) {
             schedule(preMotifSequence());
-
         }
 
     }

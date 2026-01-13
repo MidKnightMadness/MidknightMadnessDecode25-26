@@ -40,7 +40,7 @@ public class TwoWheelShooter extends SubsystemBase {
     public static double[] pidTopGains = new double[]{0.0004, 0.00005, 0.00001};
     public static double[] kTopGains = new double[]{0.02, 0.00005, 0};
 
-    public static boolean useAggressiveRecovery = true;
+    public static boolean useAggressiveRecovery = false;
     boolean inRecoveryMode = false;
     //AGGRESSIVE GAINS: FOR RECOVERY
     public static double[] pidBotAggressiveGains = new double[]{0.0008, 0, 0.00005};
@@ -108,8 +108,8 @@ public class TwoWheelShooter extends SubsystemBase {
     public TwoWheelShooter(HardwareMap hardwareMap, RunMode runMode) {
         low = new MotorEx(hardwareMap, ConfigNames.lowFlywheelMotor);
         high = new MotorEx(hardwareMap, ConfigNames.highFlywheelMotor);
-        //low.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-        //high.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        low.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        high.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         low.motorEx.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         high.motorEx.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
@@ -328,13 +328,15 @@ public class TwoWheelShooter extends SubsystemBase {
     }
 
 
-    public void triggerBallShot(){//every time ball is shot
+    public void triggerBallShot(boolean recover){//every time ball is shot
         if(useAggressiveRecovery){
             setAggressiveGains();
         }
         //override curr recovery if it is in one
-        currBotFactor = botRecoveryFactor;
-        currTopFactor = topRecoveryFactor;
+        if(recover) {
+            currBotFactor = botRecoveryFactor;
+            currTopFactor = topRecoveryFactor;
+        }
         recoveryStartTime = System.currentTimeMillis();
 
         if(!inRecoveryMode) {
@@ -343,6 +345,13 @@ public class TwoWheelShooter extends SubsystemBase {
         else{//trying to recover and shoot another ball
             recoveryEndTime = System.currentTimeMillis() + recoveryBoostTime * 1.2;
         }
+
+        inRecoveryMode = true;
+    }
+
+    public void simpleTrigger(){
+        recoveryStartTime = System.currentTimeMillis();
+        recoveryEndTime = System.currentTimeMillis() + recoveryBoostTime;
     }
 
     public double getTopRecoveryFactor(){
