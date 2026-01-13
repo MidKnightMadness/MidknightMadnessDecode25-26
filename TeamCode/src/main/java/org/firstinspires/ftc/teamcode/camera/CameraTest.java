@@ -7,9 +7,10 @@ import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.LLStatus;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import java.util.List;
-
+@TeleOp
 public class CameraTest extends OpMode {
     Limelight3A limelight;
     LLResult result;
@@ -18,15 +19,15 @@ public class CameraTest extends OpMode {
     @Override
     public void init() {
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        limelight.setPollRateHz(100);
+        limelight.setPollRateHz(400); //default 100
         limelight.start();
         limelight.pipelineSwitch(0);
-
     }
 
     @Override
     public void loop() {
         result = limelight.getLatestResult();
+        /*
         if (result != null && result.isValid()) {
             double tx = result.getTx(); // How far left or right the target is (degrees)
             double ty = result.getTy(); // How far up or down the target is (degrees)
@@ -38,12 +39,17 @@ public class CameraTest extends OpMode {
         } else {
             telemetry.addData("Limelight", "No Targets");
         }
+
+         */
         detections = result.getDetectorResults();
         for (LLResultTypes.DetectorResult detection : detections) {
             String className = detection.getClassName(); // What was detected
             double x = detection.getTargetXDegrees(); // Where it is (left-right)
             double y = detection.getTargetYDegrees(); // Where it is (up-down)
             telemetry.addData(className, "at (" + x + ", " + y + ") degrees");
+        }
+        if(detections.isEmpty()){
+            telemetry.addData("Limelight", "No Detection");
         }
         telemetry.update();
     }
