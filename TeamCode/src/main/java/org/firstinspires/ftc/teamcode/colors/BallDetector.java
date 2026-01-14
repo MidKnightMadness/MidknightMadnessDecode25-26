@@ -24,15 +24,15 @@ public class BallDetector {
 
     public static Threshold[] greenThreshold = new Threshold[] {
             //normalized rgb out of magnitudes
-            new Threshold(150f, 162f),//hsv
+            new Threshold(150f, 180f),//hsv
             new Threshold(0.5f, 1f),
-            new Threshold(90f, 255f)
+            new Threshold(100f, 255f)
     };
 
     public static Threshold[] purpleThreshold = new Threshold[] {
             new Threshold(200f, 235f),//hsv
             new Threshold(0.33f, 1f),
-            new Threshold(95f, 255f)
+            new Threshold(100f, 255f)
     };
     public NormalizedRGBA normalizedRGBA;
     public float[] hsv;

@@ -21,12 +21,13 @@ public class AutoIntakeCommand extends CommandBase {
 
     boolean swapSpots = false;
     double timeout_MS;
-
-    public static double[] betweenBallThresholds = new double[]{0, 2000, 4000};
-
     Timer timer;
     double startTime;
-    int currNumBall = 0;
+    public int currNumBall = 0;
+    boolean ballJustDetected;
+    public double ballDetectionTime;
+    public static double waitSettle = 2000;
+    public double time;
     public AutoIntakeCommand(Spindexer spindexer, Intake intake, double power, double timeOutMS){
         this.spindexer = spindexer;
         this.intake = intake;
@@ -41,23 +42,28 @@ public class AutoIntakeCommand extends CommandBase {
     public void initialize(){
         timer.restart();
         startTime = timer.getTime();
-        currNumBall = spindexer.getNearestSpot(spindexer.getCurrentAngle(), SpotType.INTAKE).getIndex();
+
     }
 
 
     @Override
     public void execute(){
         intake.setDirectPower(power);
-        spindexer.updateBallColors();
-        boolean detectedBall = spindexer.updateProximity();
+
+        time = timer.getTime();
 
         //need to have a ball there and be at the spot for it to move on
-        SpindexerSpot empty = spindexer.getNearestEmptyIntakeSpot();
-        if(empty == null || currNumBall == -1){
-            return;
-        }
-        if(spindexer.isAtSpot(SpindexerSpot.fromIndex(currNumBall), SpotType.INTAKE) && (detectedBall || spindexer.getBallColors()[currNumBall] != BallColor.NONE)){
-            currNumBall  = empty.getIndex();
+
+        if(spindexer.isAtSpot(SpindexerSpot.fromIndex(currNumBall), SpotType.INTAKE) && (spindexer.getBallColors()[currNumBall] != BallColor.NONE)){
+//            spindexer.getTurner().getServo().setPower(0);
+//            spindexer.getTurner2().getServo().setPower(0);
+//            if(!ballJustDetected) {
+//                ballJustDetected = true;
+//            }
+            if(time - ballDetectionTime >= waitSettle) {
+                currNumBall = (currNumBall - 1) % 3;
+                ballDetectionTime = time;
+            }
         }
 
         //need to call continually
@@ -66,10 +72,14 @@ public class AutoIntakeCommand extends CommandBase {
         }
 
 
+
     }
 
     @Override
     public boolean isFinished(){
+        if(currNumBall != -1) {
+            spindexer.goToSpot(SpindexerSpot.fromIndex(currNumBall), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
+        }
         if(timer.getTime() - startTime >= timeout_MS || spindexer.allOccuppiedBallColors()){
             intake.setDirectPower(0);
             return true;
