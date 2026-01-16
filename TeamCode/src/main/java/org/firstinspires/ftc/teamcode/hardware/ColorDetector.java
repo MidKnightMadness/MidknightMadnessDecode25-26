@@ -5,9 +5,9 @@ import org.firstinspires.ftc.teamcode.colors.Threshold;
 import java.util.Map;
 
 public abstract class ColorDetector<T> {
+    //a class that can only be inherited and uses generic type T
     protected Map<T, Threshold[]> thresholds;
     protected T defaultValue;
-
     public ColorDetector(Map<T, Threshold[]> thresholds, T defaultColor) {
         this.thresholds = thresholds;
         this.defaultValue = defaultColor;

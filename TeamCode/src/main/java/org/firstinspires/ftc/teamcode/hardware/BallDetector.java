@@ -30,6 +30,7 @@ public class BallDetector extends ColorDetector<BallColor> {
                         new Threshold(0f, 1f),
                         new Threshold(0f, 1)
         };
+        //consturctor
         public BallDetector(HardwareMap hardwareMap, String deviceName) {
                 super(
                         Map.of(
@@ -41,7 +42,7 @@ public class BallDetector extends ColorDetector<BallColor> {
                 colorSensor = hardwareMap.get(RevColorSensorV3.class, deviceName);
                 colorSensor.enableLed(true);
         }
-
+        //converts rgb to hsv
         public static void RGBToHSV(int red, int green, int blue, float[] hsv) {
                 float r = red / 255f;
                 float g = green / 255f;
@@ -72,14 +73,15 @@ public class BallDetector extends ColorDetector<BallColor> {
                 hsv[1] = s;
                 hsv[2] = v;
         }
+        //gets the color
         @Override
         public float[] readRawColor() {
                 float[] color = new float[3];
-
+                //puts colors into a color array
                 color[0] = colorSensor.red();
                 color[1] = colorSensor.green();
                 color[2] = colorSensor.blue();
-
+                //converts all colors to hsv
                 RGBToHSV(
                         colorSensor.red(),
                         colorSensor.green(),
@@ -88,7 +90,7 @@ public class BallDetector extends ColorDetector<BallColor> {
                 );
                 return color;
         }
-
+        //gets distance
         public double getProximity() {
             return colorSensor.getDistance(DistanceUnit.INCH);
         }

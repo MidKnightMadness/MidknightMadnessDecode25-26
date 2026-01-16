@@ -8,6 +8,9 @@ import com.qualcomm.hardware.limelightvision.LLStatus;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Servo;
+
+import org.firstinspires.ftc.teamcode.hardware.setServoCam;
 
 import java.util.List;
 @TeleOp
@@ -15,6 +18,7 @@ public class CameraTest extends OpMode {
     Limelight3A limelight;
     LLResult result;
     List<LLResultTypes.DetectorResult> detections;
+    Servo cam;
 
     @Override
     public void init() {
@@ -22,6 +26,7 @@ public class CameraTest extends OpMode {
         limelight.setPollRateHz(400); //default 100
         limelight.start();
         limelight.pipelineSwitch(0);
+        cam = hardwareMap.get(Servo.class, "camServo");
     }
 
     @Override
@@ -52,5 +57,17 @@ public class CameraTest extends OpMode {
             telemetry.addData("Limelight", "No Detection");
         }
         telemetry.update();
+        if(gamepad1.aWasPressed()){
+            setServoCam.setCam(cam, 0.5);
+        }
+        if(gamepad1.bWasPressed()){
+            setServoCam.setCam(cam, 1);
+        }
+        if(gamepad1.yWasPressed()){
+            setServoCam.setCam(cam, 0.25);
+        }
+        if(gamepad1.xWasPressed()){
+            setServoCam.setCam(cam, 0);
+        }
     }
 }
