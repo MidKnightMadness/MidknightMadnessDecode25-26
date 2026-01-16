@@ -4,5 +4,5 @@ public enum BallColor {
     GREEN,
     PURPLE,
     NONE,
-    UNKNOWN
+    UNKNOWN //why is there a "none" and an "unknown"
 }

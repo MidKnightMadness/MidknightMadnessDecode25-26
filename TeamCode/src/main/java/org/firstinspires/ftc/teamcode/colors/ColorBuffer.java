@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.hardware.BallDetector;
 
 import java.util.ArrayList;
-
+// HSV conversions, buffer conversions, normalizer conversions, classifier conversions?
 @Config
 @Disabled
 @Configurable
