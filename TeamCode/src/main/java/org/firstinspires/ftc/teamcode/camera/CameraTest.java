@@ -15,12 +15,14 @@ import org.firstinspires.ftc.teamcode.hardware.setServoCam;
 import java.util.List;
 @TeleOp
 public class CameraTest extends OpMode {
+    //defining the variables
     Limelight3A limelight;
     LLResult result;
     List<LLResultTypes.DetectorResult> detections;
     Servo cam;
 
     @Override
+    // declaring the variables and limelight stuff
     public void init() {
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         limelight.setPollRateHz(400); //default 100
@@ -31,21 +33,9 @@ public class CameraTest extends OpMode {
 
     @Override
     public void loop() {
+        //gets the result from limelight
         result = limelight.getLatestResult();
-        /*
-        if (result != null && result.isValid()) {
-            double tx = result.getTx(); // How far left or right the target is (degrees)
-            double ty = result.getTy(); // How far up or down the target is (degrees)
-            double ta = result.getTa(); // How big the target looks (0%-100% of the image)
-
-            telemetry.addData("Target X", tx);
-            telemetry.addData("Target Y", ty);
-            telemetry.addData("Target Area", ta);
-        } else {
-            telemetry.addData("Limelight", "No Targets");
-        }
-
-         */
+        //for each ball detected, print at what degrees found
         detections = result.getDetectorResults();
         for (LLResultTypes.DetectorResult detection : detections) {
             String className = detection.getClassName(); // What was detected
@@ -56,7 +46,8 @@ public class CameraTest extends OpMode {
         if(detections.isEmpty()){
             telemetry.addData("Limelight", "No Detection");
         }
-        telemetry.update();
+
+        //servo setting stuff
         if(gamepad1.aWasPressed()){
             setServoCam.setCam(cam, 0.5);
         }
@@ -69,5 +60,6 @@ public class CameraTest extends OpMode {
         if(gamepad1.xWasPressed()){
             setServoCam.setCam(cam, 0);
         }
+        telemetry.update();
     }
 }
