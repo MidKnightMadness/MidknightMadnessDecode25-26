@@ -49,24 +49,24 @@ import java.util.Map;
 
 @Config
 @Configurable
-@Autonomous(name = "9 Far Right Sort", group = "Competition")
-public class NineBackRightSort extends BaseAuto {
+@Autonomous(name = "9 Far Left Sort", group = "Competition")
+public class NineBackLeftSort extends BaseAuto {
     int startPipeline = 1;
-    public static Pose startPose = new Pose(88, 8, Math.toRadians(90));
-    public static Pose shootPose = new Pose(84, 17, Math.toRadians(247));
-    public static Pose forwardPose = new Pose(88, 12, Math.toRadians(90));
-    public static Pose parkPose = new Pose(86, 38, Math.toRadians(0));
-    public static Pose openGatePose = new Pose(136, 76, Math.toRadians(180));
-    public static Pose intakeOnePose = new Pose(100.5, 84, Math.toRadians(0));
-    public static Pose intakeTwoPose = new Pose(100.5, 58, Math.toRadians(0));
-    public static Pose intakeThreePose = new Pose(100.5, 36, Math.toRadians(0));
-    public static Pose intakeOneEnd = new Pose(125, 84, Math.toRadians(0));
-    public static Pose intakeTwoEnd= new Pose(125, 58, Math.toRadians(0));
-    public static Pose intakeThreeEnd = new Pose(132, 36, Math.toRadians(0));
+    public static Pose startPose = new Pose(56, 8, Math.toRadians(90));
+    public static Pose shootPose = new Pose(60, 17, Math.toRadians(293));
+    public static Pose forwardPose = new Pose(56, 12, Math.toRadians(90));
+    public static Pose parkPose = new Pose(58, 38, Math.toRadians(180));
+    public static Pose openGatePose = new Pose(8, 76, Math.toRadians(180));
+    public static Pose intakeOnePose = new Pose(43.5, 84, Math.toRadians(180));
+    public static Pose intakeTwoPose = new Pose(43.5, 58, Math.toRadians(180));
+    public static Pose intakeThreePose = new Pose(43.5, 36, Math.toRadians(180));
+    public static Pose intakeOneEnd = new Pose(19, 84, Math.toRadians(180));
+    public static Pose intakeTwoEnd= new Pose(19, 58, Math.toRadians(180));
+    public static Pose intakeThreeEnd = new Pose(12, 36, Math.toRadians(180));
     MotifEnums.Motif motifPattern = MotifEnums.Motif.NONE;
     MotifWriteCommand motifCommand = null;
 
-    ShootSide shootSide = ShootSide.RIGHT;
+    ShootSide shootSide = ShootSide.LEFT;
     Pose currentPose;
 
     Command firstPath;
@@ -76,10 +76,9 @@ public class NineBackRightSort extends BaseAuto {
 
     public static long fourthWaitTime = 500;
 
-    public static double pathDistThresholdMin = 0;
-    public static double headingError = Math.toRadians(2);
-    public static double timeOutConstraint = 100;
-    public static double velConstraint = 0;
+//    public static double pathDistThresholdMin = 1.5;
+//    public static double headingError = Math.toRadians(2);
+//    public static double timeOutConstraint = 1000;
 
     //TODO: TRY VELOCITY CONSTRAINT
     public static TwoWheelShooter.RunMode shooterRunMode = TwoWheelShooter.RunMode.VelocityControl;
@@ -198,11 +197,11 @@ public class NineBackRightSort extends BaseAuto {
     protected void buildPaths(){
         toShootPresets = new Path(new BezierLine(forwardPose, shootPose));
         toShootPresets.setLinearHeadingInterpolation(forwardPose.getHeading(), shootPose.getHeading());
-        setConstraints(toShootPresets);
+//        setConstraints(toShootPresets);
 
         toIntakeThree = new Path(new BezierLine(shootPose, intakeThreePose));
         toIntakeThree.setLinearHeadingInterpolation(shootPose.getHeading(), intakeThreePose.getHeading());
-        setConstraints(toIntakeThree);
+//        setConstraints(toIntakeThree);
 
 //        toIntakeEndThree = new Path(new BezierLine(intakeThreePose, intakeThreeEnd));
 //        toIntakeEndThree.setLinearHeadingInterpolation(intakeThreePose.getHeading(), intakeThreeEnd.getHeading());
@@ -214,7 +213,7 @@ public class NineBackRightSort extends BaseAuto {
 
         toIntakeTwo = new Path(new BezierLine(shootPose, intakeTwoPose));
         toIntakeTwo.setLinearHeadingInterpolation(shootPose.getHeading(), intakeTwoPose.getHeading());
-        setConstraints(toIntakeTwo);
+//        setConstraints(toIntakeTwo);
 
 //        toIntakeEndTwo = new Path(new BezierLine(intakeTwoPose, intakeTwoEnd));
 //        toIntakeEndTwo.setLinearHeadingInterpolation(intakeTwoPose.getHeading(), intakeTwoEnd.getHeading());
@@ -226,7 +225,7 @@ public class NineBackRightSort extends BaseAuto {
 
         toIntakeOne = new Path(new BezierLine(shootPose, intakeOnePose));
         toIntakeOne.setLinearHeadingInterpolation(shootPose.getHeading(), intakeOnePose.getHeading());
-        setConstraints(toIntakeOne);
+//        setConstraints(toIntakeOne);
 
 //   /     setConstraints(toIntakeEndOne);
 
@@ -236,23 +235,16 @@ public class NineBackRightSort extends BaseAuto {
 
         toPark = new Path(new BezierLine(shootPose, parkPose));
         toPark.setLinearHeadingInterpolation(shootPose.getHeading(), parkPose.getHeading());
-        setConstraints(toPark);
+//        setConstraints(toPark);
 
 
     }
 
-    private void setConstraints(Path path){
-        if(timeOutConstraint != 0) {
-            path.setTimeoutConstraint(timeOutConstraint);
-        }
-        if(pathDistThresholdMin != 0) {
-            path.setTranslationalConstraint(pathDistThresholdMin);
-        }
-        if(headingError != 0) {
-            path.setHeadingConstraint(headingError);
-        }
-    }
-
+//    private void setConstraints(Path path){
+//        path.setTimeoutConstraint(timeOutConstraint);
+//        path.setTranslationalConstraint(pathDistThresholdMin);
+//        path.setHeadingConstraint(headingError);
+//    }
 
     @Override
     protected boolean isVisionComplete(){
@@ -308,8 +300,8 @@ public class NineBackRightSort extends BaseAuto {
 //                intakeLineOne(),
 //                shoot(3),
                 new ParallelCommandGroup(
-                    new InstantCommand(()-> currSpindexerGotoSpot = 0),
-                    park()
+                        new InstantCommand(()-> currSpindexerGotoSpot = 0),
+                        park()
                 )
         );
     }
@@ -359,24 +351,24 @@ public class NineBackRightSort extends BaseAuto {
         }
     }
     protected Command intakeLineOne(){
-        return
+        return new SequentialCommandGroup(
                 //new InstantCommand(()-> currSpindexerGotoSpot = 0),
-                intake(1, 0);
-
+                intake(1, 0)
+        );
     }
 
     protected Command intakeLineTwo(){
-        return
+        return new SequentialCommandGroup(
 //                new InstantCommand(()-> currSpindexerGotoSpot = 0),
-                intake(2, 0);
-
+                intake(2, 0)
+        );
     }
 
     protected Command intakeLineThree(){
-        return
+        return new SequentialCommandGroup(
 //                new InstantCommand(()-> currSpindexerGotoSpot = 0),
-                intake(3, 0);
-
+                intake(3, 0)
+        );
     }
     protected Command shoot(int shootNum){
         return new SequentialCommandGroup(
@@ -393,9 +385,9 @@ public class NineBackRightSort extends BaseAuto {
                         )
                 ),
                 new ParallelCommandGroup(
-                    new InstantCommand(()-> shooter.stopFlywheels()),
-                    new InstantCommand(() -> spindexer.getTurner2().getServo().setPower(0)),
-                    new InstantCommand(() -> spindexer.getTurner().getServo().setPower(0))
+                        new InstantCommand(()-> shooter.stopFlywheels()),
+                        new InstantCommand(() -> spindexer.getTurner2().getServo().setPower(0)),
+                        new InstantCommand(() -> spindexer.getTurner().getServo().setPower(0))
                 ),
 //                new InstantCommand(() -> spindexer.getTurner().setRunMode(CRServoEx2.RunMode.OptimizedPositionalControl)),
 //                new InstantCommand(() -> spindexer.getTurner2().setRunMode(CRServoEx2.RunMode.OptimizedPositionalControl)),
@@ -434,22 +426,22 @@ public class NineBackRightSort extends BaseAuto {
                                 //new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex(2), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 500),
                                 new WaitCommand(thirdWaitTime)
                         ),
-                driveToIntakeEnd(targetSpot)
+                        driveToIntakeEnd(targetSpot)
                 ).withTimeout(4500),
                 new ParallelCommandGroup(
-                    new InstantCommand(() -> intake.setDirectPower(0)),
-                    setSpindexerCorrect(targetSpot)
+                        new InstantCommand(() -> intake.setDirectPower(0)),
+                        setSpindexerCorrect(targetSpot)
                 )
-          );
+        );
     }
 
     protected SchedulePathTo driveToIntakeEnd(int spot){
         if(spot == 3) {
-            return new SchedulePathTo(follower, intakeThreePose, intakeThreeEnd).setMaxPower(0.3).setHeadingConstraint(headingError).setTimeoutConstraint(timeOutConstraint).setVel(velConstraint);
+            return new SchedulePathTo(follower, intakeThreePose, intakeThreeEnd).setMaxPower(0.3);
         } else if(spot == 2){
-            return new SchedulePathTo(follower, intakeTwoPose, intakeTwoEnd).setMaxPower(0.3).setHeadingConstraint(headingError).setTimeoutConstraint(timeOutConstraint).setVel(velConstraint);
+            return new SchedulePathTo(follower, intakeTwoPose, intakeTwoEnd).setMaxPower(0.3);
         } else {
-            return new SchedulePathTo(follower, intakeOnePose, intakeOneEnd).setMaxPower(0.3).setHeadingConstraint(headingError).setTimeoutConstraint(timeOutConstraint).setVel(velConstraint);
+            return new SchedulePathTo(follower, intakeOnePose, intakeOneEnd).setMaxPower(0.3);
         }
     }
 
@@ -477,7 +469,7 @@ public class NineBackRightSort extends BaseAuto {
         } else{
             currPose = intakeOneEnd;
         }
-        return new SchedulePathTo(follower, currPose, shootPose).setMaxPower(1.0).setHeadingConstraint(headingError).setTimeoutConstraint(timeOutConstraint).setVel(velConstraint);
+        return new SchedulePathTo(follower, currPose, shootPose).setMaxPower(1.0);
     }
 
 

@@ -115,9 +115,9 @@ public class Spindexer extends SubsystemBase {
 
 //        if (useDistanceSensor || useColorSensors) updateBalalColors();
         //update color sensor balls manually
-        if(ballColors != null) {
-            ballColorsPrev = ballColors.clone();
-        }
+//        if(ballColors != null) {
+//            ballColorsPrev = ballColors.clone();
+//        }
      //   checkHitBottomFlywheel();
     }
 

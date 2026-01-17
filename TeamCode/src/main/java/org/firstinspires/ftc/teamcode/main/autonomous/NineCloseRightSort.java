@@ -46,8 +46,11 @@ public class NineCloseRightSort extends BaseAuto {
     public static Pose motifDetectionPose = new Pose(87, 94, Math.toRadians(120));
     public static Pose shootPose = new Pose(87, 95, Math.toRadians(225));
     public static Pose parkPose = new Pose(85, 109, Math.toRadians(0));
+
     public static Pose openGatePose = new Pose(128, 69, Math.toRadians(0));
+
     public static Pose intakeOnePose = new Pose(100, 84, Math.toRadians(0));
+    public static Pose intakeOneIntermediate = new Pose(87, 95, Math.toRadians(0));
     public static Pose intakeTwoPose = new Pose(100, 60, Math.toRadians(0));
     public static Pose intakeThreePose = new Pose(100, 36, Math.toRadians(0));
     public static Pose intakeOneEnd = new Pose(125, 84, Math.toRadians(0));
@@ -61,15 +64,10 @@ public class NineCloseRightSort extends BaseAuto {
 
     Command firstPath;
     public static long firstWaitTime = 700;
-    public static long secondWaitTime = 325;
-    public static long thirdWaitTime = 150;//250 old
-
+    public static long secondWaitTime = 500;
+    public static long thirdWaitTime = 500;//250 old
     public static long fourthWaitTime = 500;
 
-    public static double pathDistThresholdMin = 1.5;
-    public static double headingError = Math.toRadians(2);
-    public static double timeOutConstraint = 200;
-    public static double xChangeIntake = 25;
     public static int[] shootArray = new int[]{2, 1, 0};
 
     public static TwoWheelShooter.RunMode shooterRunMode = TwoWheelShooter.RunMode.VelocityControl;
@@ -78,7 +76,7 @@ public class NineCloseRightSort extends BaseAuto {
     SpindexerSpot[] spots;
 
     ShootSeqCommand seqShootCommand;
-    public static TwoWheelShooter.ShootDist shootDist = TwoWheelShooter.ShootDist.Far;
+    public static TwoWheelShooter.ShootDist shootDist = TwoWheelShooter.ShootDist.Close;
     public static boolean voltageCompensation = true;
     public static boolean useLUT = false;
     Path toMotifDetection;
@@ -94,13 +92,14 @@ public class NineCloseRightSort extends BaseAuto {
     Path toShootThree;
     Path toPark;
     Path toGate;
-    public static boolean rawPowerOn = true;
+    public static boolean rawPowerOn = false;
     public static long shootOnTime = 4500;
 
     @Override
     protected Pose getStartPose(){
         return startPose;
     }
+
 
     @Override
     protected void setupVision(){
@@ -126,16 +125,15 @@ public class NineCloseRightSort extends BaseAuto {
 //        toShootPresets.setLinearHeadingInterpolation(motifDetectionPose.getHeading(), shootPose.getHeading());
 //        setConstraints(toShootPresets);
 
-        toIntakeOne = new Path(new BezierLine(shootPose, intakeOnePose));
-        toIntakeOne.setLinearHeadingInterpolation(shootPose.getHeading(), intakeOnePose.getHeading());
+
 //        setConstraints(toIntakeOne);
 
-        toIntakeEndOne = new Path(new BezierLine(intakeOnePose, intakeOneEnd));
-        toIntakeEndOne.setLinearHeadingInterpolation(intakeOnePose.getHeading(), intakeOneEnd.getHeading());
+//        toIntakeEndOne = new Path(new BezierLine(intakeOnePose, intakeOneEnd));
+//        toIntakeEndOne.setLinearHeadingInterpolation(intakeOnePose.getHeading(), intakeOneEnd.getHeading());
 //        setConstraints(toIntakeEndOne);
 
-        toGate = new Path(new BezierLine(intakeOneEnd, openGatePose));
-        toGate.setLinearHeadingInterpolation(intakeOneEnd.getHeading(), openGatePose.getHeading());
+//        toGate = new Path(new BezierLine(intakeOneEnd, openGatePose));
+//        toGate.setLinearHeadingInterpolation(intakeOneEnd.getHeading(), openGatePose.getHeading());
 //        setConstraints(toGate);
 
 //        toShootOne = new Path(new BezierLine(openGatePose, shootPose));
@@ -146,8 +144,8 @@ public class NineCloseRightSort extends BaseAuto {
         toIntakeTwo.setLinearHeadingInterpolation(shootPose.getHeading(), intakeTwoPose.getHeading());
 //        setConstraints(toIntakeTwo);
 
-        toIntakeEndTwo = new Path(new BezierLine(intakeTwoPose, intakeTwoEnd));
-        toIntakeEndTwo.setLinearHeadingInterpolation(intakeTwoPose.getHeading(), intakeTwoEnd.getHeading());
+//        toIntakeEndTwo = new Path(new BezierLine(intakeTwoPose, intakeTwoEnd));
+//        toIntakeEndTwo.setLinearHeadingInterpolation(intakeTwoPose.getHeading(), intakeTwoEnd.getHeading());
 //        setConstraints(toIntakeEndTwo);
 //
 //        toShootTwo = new Path(new BezierLine(intakeTwoEndPose, shootPose));
@@ -155,11 +153,11 @@ public class NineCloseRightSort extends BaseAuto {
 //        setConstraints(toShootTwo);
 
         toIntakeThree = new Path(new BezierLine(shootPose, intakeThreePose));
-//        toIntakeThree.setLinearHeadingInterpolation(shootPose.getHeading(), intakeThreePose.getHeading());
+        toIntakeThree.setLinearHeadingInterpolation(shootPose.getHeading(), intakeThreePose.getHeading());
 //        setConstraints(toIntakeThree);
 
-        toIntakeEndThree = new Path(new BezierLine(intakeThreePose, intakeThreeEnd));
-        toIntakeEndThree.setLinearHeadingInterpolation(intakeThreePose.getHeading(), intakeThreeEnd.getHeading());
+//        toIntakeEndThree = new Path(new BezierLine(intakeThreePose, intakeThreeEnd));
+//        toIntakeEndThree.setLinearHeadingInterpolation(intakeThreePose.getHeading(), intakeThreeEnd.getHeading());
 //        setConstraints(toIntakeEndThree);
 
 //        toShootThree = new Path(new BezierLine(intakeThreeEndPose, shootPose));
@@ -189,11 +187,12 @@ public class NineCloseRightSort extends BaseAuto {
         }
         return false;
     }
-    public static long waitTime = 500;
+
     AutoIntakeCommand autoIntakeCommand;
     boolean autoStart = false;
     int currSpindexerGotoSpot = -1;
-    public static double spindexerSpeed = 0.15;
+    public static double spindexerSpeed = -0.20;
+    public static double headingThreshold = Math.toRadians(2);
 
     @Override
     protected Command preMotifSequence(){
@@ -222,26 +221,28 @@ public class NineCloseRightSort extends BaseAuto {
     @Override
     protected Command postMotifSequence(){
         limelight.stop();
+        limelight.shutdown();
         //temporarily turn it off to hand to localizer
         return new SequentialCommandGroup(
                 setSpindexerCorrect(0),
                 shoot(0),
+
                 getToLineNum(1),
                 intakeLineOne(),
-                shoot(1)
+                shoot(3),
 //                openGate()
 
-//                getToLineNum(2),
-//                intakeLineTwo(),
-//                shoot(2),
+                getToLineNum(2),
+                intakeLineTwo(),
+                shoot(2),
 //
 //                getToLineNum(3),
 //                intakeLineThree(),
 //                shoot(3)
-//                new ParallelCommandGroup(
-//                    new InstantCommand(()-> currSpindexerGotoSpot = 0),
-//                    park()
-//                )
+                new ParallelCommandGroup(
+                    new InstantCommand(()-> currSpindexerGotoSpot = 0),
+                    park()
+                )
 
         );
 
@@ -271,8 +272,8 @@ public class NineCloseRightSort extends BaseAuto {
             return new ConditionalCommand(
                     new InstantCommand(),
                     new ConditionalCommand(
-                            new InstantCommand(() -> currSpindexerGotoSpot = 2),
                             new InstantCommand(() -> currSpindexerGotoSpot = 1),
+                            new InstantCommand(() -> currSpindexerGotoSpot = 0),
                             () -> motifPattern == MotifEnums.Motif.PGP
                     ),
                     () -> motifPattern == MotifEnums.Motif.PPG
@@ -282,17 +283,18 @@ public class NineCloseRightSort extends BaseAuto {
             return new ConditionalCommand(
                     new InstantCommand(),
                     new ConditionalCommand(
+                            new InstantCommand(() -> currSpindexerGotoSpot = 0),
                             new InstantCommand(() -> currSpindexerGotoSpot = 1),
-                            new InstantCommand(() -> currSpindexerGotoSpot = 2),
                             () -> motifPattern == MotifEnums.Motif.PPG
                     ),
                     () -> motifPattern == MotifEnums.Motif.PGP
             );
         }
     }
+
     protected Command intakeLineOne(){
         return new SequentialCommandGroup(
-                new InstantCommand(()-> currSpindexerGotoSpot = 0),
+//                new InstantCommand(()-> currSpindexerGotoSpot = 0),
                 intake(1, 0)
         );
     }
@@ -320,7 +322,7 @@ public class NineCloseRightSort extends BaseAuto {
                                 new InstantCommand(() -> currSpindexerGotoSpot = -1),
 //                                new InstantCommand(() -> spindexer.getTurner().setRunMode(CRServoEx2.RunMode.RawPower)),
 //                                new InstantCommand(() -> spindexer.getTurner2().setRunMode(CRServoEx2.RunMode.RawPower)),
-                                new WaitCommand(500),
+                                new WaitCommand(3000),
                                 new InstantCommand(() -> spindexer.spin(1 * spindexerSpeed))
                         )
                 ),
@@ -372,21 +374,12 @@ public class NineCloseRightSort extends BaseAuto {
     }
 
     protected SchedulePathTo driveToIntakeEnd(int spot){
-//        Path path;
-//        if(spot == 3){
-//            path = toIntakeEndThree;
-//        } else if(spot == 2){
-//            path = toIntakeEndTwo;
-//        } else{
-//            path = toIntakeEndOne;
-//        }
-
         if(spot == 3) {
-            return new SchedulePathTo(follower, intakeThreePose, intakeThreeEnd).setMaxPower(0.3);
+            return new SchedulePathTo(follower, intakeThreePose, intakeThreeEnd, headingThreshold).setMaxPower(0.3);
         } else if(spot == 2){
-            return new SchedulePathTo(follower, intakeTwoPose, intakeTwoEnd).setMaxPower(0.3);
+            return new SchedulePathTo(follower, intakeTwoPose, intakeTwoEnd, headingThreshold).setMaxPower(0.3);
         } else {
-            return new SchedulePathTo(follower, intakeOnePose, intakeOneEnd).setMaxPower(0.3);
+            return new SchedulePathTo(follower, intakeOnePose, intakeOneEnd, headingThreshold).setMaxPower(0.3);
         }
 
 
@@ -396,13 +389,23 @@ public class NineCloseRightSort extends BaseAuto {
         return new FollowPathCommand(follower, toPark, true, 1.0);
     }
 
-    protected FollowPathCommand getToLineNum(int lineNum){
-        FollowPathCommand command = null;
-        if(lineNum == 3) command = new FollowPathCommand(follower, toIntakeThree, true);
-        else if(lineNum == 2) command = new FollowPathCommand(follower, toIntakeTwo, true);
-        else command = new FollowPathCommand(follower, toIntakeOne, true);
-
-        return command;
+    protected SequentialCommandGroup getToLineNum(int lineNum){
+        SequentialCommandGroup command = null;
+        if(lineNum == 3){
+            return new SequentialCommandGroup(
+                new FollowPathCommand(follower, toIntakeThree, true)
+            );
+        }
+        if(lineNum == 2){
+            return new SequentialCommandGroup(
+                    new FollowPathCommand(follower, toIntakeTwo, true)
+            );
+        }
+        else {
+            return new SequentialCommandGroup(
+                    new SchedulePathTo(follower, follower.getPose(), intakeOnePose)
+            );
+        }
     }
 
     protected SchedulePathTo getToShootCommand(int num){
@@ -416,7 +419,7 @@ public class NineCloseRightSort extends BaseAuto {
         } else{
             currPose = intakeOneEnd;
         }
-        return new SchedulePathTo(follower, currPose, shootPose).setMaxPower(1.0);
+        return new SchedulePathTo(follower, currPose, shootPose, headingThreshold).setMaxPower(1.0);
     }
 
 
@@ -438,7 +441,7 @@ public class NineCloseRightSort extends BaseAuto {
         telemetry.addData("Start Ball Color 1", startBallColors[1]);
         telemetry.addData("Start Ball Color 2", startBallColors[2]);
 
-        telemetry.addData("New Ball Detected", spindexer.newBallDetected());
+//        telemetry.addData("New Ball Detected", spindexer.newBallDetected());
 
         telemetry.addData("Motif", motifPattern);
         if(spindexer.getBallColors() != null) {
@@ -446,32 +449,16 @@ public class NineCloseRightSort extends BaseAuto {
             telemetry.addData("Spindexer Ball Color 1", spindexer.getBallColors()[1]);
             telemetry.addData("Spindexer Ball Color 2", spindexer.getBallColors()[2]);
         }
-        if(spots != null) {
-            telemetry.addData("Spindexer Optimal Sequence 0", spots[0]);
-            telemetry.addData("Spindexer Optimal Sequence 1", spots[1]);
-            telemetry.addData("Spindexer Optimal Sequence 2", spots[2]);
-        }
-        telemetry.addData("All Occupied", spindexer.allOccuppiedBallColors());
-
-        addToTelemGraph("Pose X", currentPose.getX());
-        addToTelemGraph("Pose Y", currentPose.getY());
-        addToTelemGraph("Pose Heading", currentPose.getHeading());
-        addToTelemGraph("Follower T Value", follower.getCurrentTValue());
-        addToTelemGraph("Follower Velocity X", follower.getVelocity().getXComponent());
-        addToTelemGraph("Follower Velocity Y", follower.getVelocity().getYComponent());
-        addToTelemGraph("Follower Velocity Mag", follower.getVelocity().getMagnitude());
-        addToAllTelemGraph("Follower Velocity Heading", follower.getVelocity().getTheta());
-        addToAllTelemGraph("Follower Translational Error", follower.getDriveError());
-        addToAllTelemGraph("Follower Heading Error", follower.getHeadingError());
-        addToTelemGraph("Follower Max Vel Constraint", follower.getConstraints().getVelocityConstraint());
-        addToTelemGraph("Follower T Constraint", follower.getConstraints().getTValueConstraint());
-
+//        if(spots != null) {
+//            telemetry.addData("Spindexer Optimal Sequence 0", spots[0]);
+//            telemetry.addData("Spindexer Optimal Sequence 1", spots[1]);
+//            telemetry.addData("Spindexer Optimal Sequence 2", spots[2]);
+//        }
+//        telemetry.addData("All Occupied", spindexer.allOccuppiedBallColors());
+//
         //Shooter
         if(shooter != null){
-            addToAllTelemGraph("Shooter Low Flywheel Power", shooter.low.get());
-            addToAllTelemGraph("Shooter High Flywheel Power", shooter.high.get());
-            addToAllTelemGraph("Shooter Low Flywheel Vel", shooter.low.getVelocity());
-            addToAllTelemGraph("Shooter High Flywheel Vel", shooter.high.getVelocity());
+
             telemetry.addData("Shooter Low Vel", shooter.low.getVelocity());
             telemetry.addData("Shooter High Vel", shooter.high.getVelocity());
             telemetry.addData("Shooter Dir RunMode", shooter.runMode);
@@ -483,38 +470,24 @@ public class NineCloseRightSort extends BaseAuto {
         //Spindexer
         if(spindexer != null){
             telemetry.addData("Spindexer Current Angle", spindexer.getCurrentAngle().toDegrees());
-            telemetry.addData("Balls Left", spindexer.getBallCount());
+//            telemetry.addData("Balls Left", spindexer.getBallCount());
             telemetry.addData("Spindexer Ball Colors Spot", spindexer.getBallColors());
         }
 
-        //Intake
-        if(intake != null){
-            addToAllTelemGraph("Intake Power", intake.getMotor().get());
-            addToAllTelemGraph("Intake Velocity", intake.getMotorVelocity());
-        }
-
         //Motif
-        addBooleanToTelem("Motif Busy", !isVisionComplete());
-        if(motifCommand != null){
-            addStringToTelem("Motif Timer", String.valueOf(motifCommand.getTime()));
-        }
-        addStringToTelem("Motif Pattern", String.valueOf(motifPattern));
-
-        //First Path
-        if(firstPath != null){
-            addBooleanToTelem("First Path Busy", !firstPath.isFinished());
-        }
+        telemetryManager.addData("Motif Pattern", motifPattern);
 
         telemetry.addData("Spindexer Get Curr Angle", spindexer.getCurrentAngle());
 //
 
         telemetry.update();
-        graphManager.update();
-        telemetryManager.update();
-        if(dashboard!= null) {
-            dashboard.sendTelemetryPacket(dashboardPacket);
-        }
+//        graphManager.update();
+//        telemetryManager.update();
+//        if(dashboard!= null) {
+//            dashboard.sendTelemetryPacket(dashboardPacket);
+//        }
     }
+
 
 
 

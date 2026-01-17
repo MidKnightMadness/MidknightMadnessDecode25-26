@@ -11,18 +11,22 @@ public class SchedulePathTo extends SequentialCommandGroup {
     Follower follower;
     Pose targetPose;
     Pose startPose;
-    Pose controlPose;
     double headingConstraint;
     double timeOutConstraint;
     double translationalConstraint;
     boolean maxPowerUse = false;
-    boolean tValueUse = false;
-    double tValue;
+    double vel;
     double maxPower = 0;
     public SchedulePathTo(Follower follower, Pose startPose, Pose targetPose){
         this.follower = follower;
         this.startPose = startPose;
         this.targetPose = targetPose;
+    }
+    public SchedulePathTo(Follower follower, Pose startPose, Pose endPose, double headingConstraint){
+        this.follower = follower;
+        this.startPose = startPose;
+        this.targetPose = endPose;
+        this.headingConstraint = headingConstraint;
     }
     public SchedulePathTo(Follower follower, Pose startPose, Pose targetPose, double headingConstraint, double timeOutConstraint, double translationalConstraint){
         this.follower = follower;
@@ -32,15 +36,14 @@ public class SchedulePathTo extends SequentialCommandGroup {
         this.timeOutConstraint = timeOutConstraint;
         this.translationalConstraint = translationalConstraint;
     }
-    public SchedulePathTo(Follower follower, Pose startPose, Pose targetPose, double headingConstraint, double timeOutConstraint, double translationalConstraint, double tValue){
+    public SchedulePathTo(Follower follower, Pose startPose, Pose targetPose, double headingConstraint, double timeOutConstraint, double translationalConstraint, double velConstraint){
         this.follower = follower;
         this.startPose = startPose;
         this.targetPose = targetPose;
         this.headingConstraint = headingConstraint;
         this.timeOutConstraint = timeOutConstraint;
         this.translationalConstraint = translationalConstraint;
-        this.tValueUse = true;
-        this.tValue = tValue;
+        this.vel = velConstraint;
     }
 
     public SchedulePathTo(Follower follower, Pose targetPose, double headingConstraint, double timeOutConstraint, double translationalConstraint){
@@ -49,22 +52,11 @@ public class SchedulePathTo extends SequentialCommandGroup {
         this.headingConstraint = headingConstraint;
         this.timeOutConstraint = timeOutConstraint;
         this.translationalConstraint = translationalConstraint;
-        this.startPose = null;
     }
     public SchedulePathTo(Follower follower, Pose targetPose){
         this.follower = follower;
         this.targetPose = targetPose;
         this.startPose = follower.getPose();
-    }
-    public SchedulePathTo(Follower follower, Pose targetPose, double headingConstraint, double timeOutConstraint, double translationalConstraint, double tValue){
-        this.follower = follower;
-        this.startPose = null;
-        this.targetPose = targetPose;
-        this.headingConstraint = headingConstraint;
-        this.timeOutConstraint = timeOutConstraint;
-        this.translationalConstraint = translationalConstraint;
-        this.tValueUse = true;
-        this.tValue = tValue;
     }
 
     FollowPathCommand followCommand;
@@ -74,29 +66,65 @@ public class SchedulePathTo extends SequentialCommandGroup {
         maxPowerUse = true;
         return this;
     }
+
+    public SchedulePathTo setHeadingConstraint(double headingConstraint){
+        this.headingConstraint = headingConstraint;
+        return this;
+    }
+    public SchedulePathTo setTimeoutConstraint(double timeOut){
+        this.timeOutConstraint = timeOut;
+        return this;
+    }
+    public SchedulePathTo setTranslationalError(double translationalError){
+        this.translationalConstraint = translationalError;
+        return this;
+    }
+    public SchedulePathTo setVel(double velConstraint){
+        this.vel = velConstraint;
+        return this;
+    }
+
     @Override
     public void initialize(){
         //follower.update();
         Pose currentPose = startPose == null ? follower.getPose() : startPose;
 
         PathChain pathChain;
-        if(tValueUse){
+        if(headingConstraint != 0 && timeOutConstraint != 0 && translationalConstraint != 0 && vel != 0){
             pathChain = follower.pathBuilder()
                     .addPath(new BezierLine(currentPose, targetPose))
                     .setLinearHeadingInterpolation(currentPose.getHeading(), targetPose.getHeading())
                     .setHeadingConstraint(headingConstraint)
                     .setTimeoutConstraint(timeOutConstraint)
                     .setTranslationalConstraint(translationalConstraint)
-                    .setTValueConstraint(tValue)
+                    .setVelocityConstraint(vel)
                     .build();
         }
-        else {
+        else if(headingConstraint != 0 && timeOutConstraint != 0 && translationalConstraint != 0 ){
             pathChain = follower.pathBuilder()
                     .addPath(new BezierLine(currentPose, targetPose))
                     .setLinearHeadingInterpolation(currentPose.getHeading(), targetPose.getHeading())
-//                    .setHeadingConstraint(headingConstraint)
-//                    .setTimeoutConstraint(timeOutConstraint)
-//                    .setTranslationalConstraint(translationalConstraint)
+                    .setHeadingConstraint(headingConstraint)
+                    .setTimeoutConstraint(timeOutConstraint)
+                    .setTranslationalConstraint(translationalConstraint)
+                    .build();
+        } else if(headingConstraint != 0 && timeOutConstraint != 0){
+            pathChain = follower.pathBuilder()
+                    .addPath(new BezierLine(currentPose, targetPose))
+                    .setLinearHeadingInterpolation(currentPose.getHeading(), targetPose.getHeading())
+                    .setHeadingConstraint(headingConstraint)
+                    .setTimeoutConstraint(timeOutConstraint)
+                    .build();
+        } else if(headingConstraint != 0){
+                pathChain = follower.pathBuilder()
+                        .addPath(new BezierLine(currentPose, targetPose))
+                        .setLinearHeadingInterpolation(currentPose.getHeading(), targetPose.getHeading())
+                        .setHeadingConstraint(headingConstraint)
+                        .build();
+        } else{
+            pathChain = follower.pathBuilder()
+                    .addPath(new BezierLine(currentPose, targetPose))
+                    .setLinearHeadingInterpolation(currentPose.getHeading(), targetPose.getHeading())
                     .build();
         }
 

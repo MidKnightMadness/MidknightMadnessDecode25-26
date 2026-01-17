@@ -75,12 +75,12 @@ public abstract class BaseAuto extends CommandOpMode {
         startPose = getStartPose();
         follower = ConstantsBot.createPinpointFollower(hardwareMap);
         follower.setPose(startPose);
-
-        dashboard = FtcDashboard.getInstance();
-        dashboardPacket = new TelemetryPacket();
-
-        telemetryManager = PanelsTelemetry.INSTANCE.getTelemetry();
-        graphManager = PanelsGraph.INSTANCE.getManager();
+//
+//        dashboard = FtcDashboard.getInstance();
+//        dashboardPacket = new TelemetryPacket();
+//
+//        telemetryManager = PanelsTelemetry.INSTANCE.getTelemetry();
+//        graphManager = PanelsGraph.INSTANCE.getManager();
         buildPaths();
         setupVision();
         preMotifSeq = preMotifSequence();
@@ -141,11 +141,15 @@ public abstract class BaseAuto extends CommandOpMode {
     public void writeValues() {
         if(gameTimer.getTime() >= maxTimeMs && !stopEnd) {
             CommandScheduler.getInstance().cancelAll();
+            writeMotif();
             schedule(new ParallelCommandGroup(
                     new PoseWriteCommand(follower.getPose(), maxWritePoseTimeMs),
                     new SideWriteCommand(getSide(), maxSideWriteTimeMs)));
             stopEnd = true;
         }
+    }
+
+    public void writeMotif(){
     }
 
 //    public Command goToIntakeLine(){

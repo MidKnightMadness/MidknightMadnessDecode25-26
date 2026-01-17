@@ -54,8 +54,6 @@ public class AutoIntakeCommand extends CommandBase {
         intake.setDirectPower(power);
 
 
-
-
         if (!atSpot && spindexer.isAtSpotDetection(SpindexerSpot.fromIndex(currNumBall), SpotType.INTAKE) && (spindexer.getBallColors()[currNumBall] != BallColor.NONE)) {
             atSpot = true;
             ballDetectionTime = timer.getTime();
