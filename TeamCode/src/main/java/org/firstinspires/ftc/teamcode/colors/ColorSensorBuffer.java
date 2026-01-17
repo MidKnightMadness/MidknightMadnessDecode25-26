@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.colors;
 
+
 import java.util.LinkedList;
 
 public class ColorSensorBuffer {
@@ -8,7 +9,7 @@ public class ColorSensorBuffer {
     private final LinkedList<Double> buffer = new LinkedList<>();
     private double sum = 0;
 
-    /** Add a new value to the rolling buffer */
+    /** Add a new value to the rolling buffer */ //least chatgpt generated comment
     public void add(double value) {
         buffer.add(value);
         sum += value;
