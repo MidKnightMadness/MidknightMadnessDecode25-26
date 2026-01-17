@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 
 @Configurable
 @Config
-public class AutoIntakeCommand extends CommandBase {
+public class AutoIntakeCommand2 extends CommandBase {
     private Spindexer spindexer;
     private Intake intake;
     private double power;
@@ -29,7 +29,7 @@ public class AutoIntakeCommand extends CommandBase {
     double waitSettle = 0;
     public double time;
     boolean start = false;
-    public AutoIntakeCommand(Spindexer spindexer, Intake intake, double power, double timeOutMS, double inBetweenTime){
+    public AutoIntakeCommand2(Spindexer spindexer, Intake intake, double power, double timeOutMS, double inBetweenTime){
         this.spindexer = spindexer;
         this.intake = intake;
         this.power = power;
@@ -46,35 +46,58 @@ public class AutoIntakeCommand extends CommandBase {
         startTime = timer.getTime();
     }
 
-    boolean atSpot = false;
 
+    boolean atSpot = false;
     @Override
     public void execute(){
         spindexer.updateBallSpot(currNumBall);
         intake.setDirectPower(power);
 
+        time = timer.getTime();
 
+        //need to have a ball there and be at the spot for it to move on
 
-
-        if (!atSpot && spindexer.isAtSpotDetection(SpindexerSpot.fromIndex(currNumBall), SpotType.INTAKE) && (spindexer.getBallColors()[currNumBall] != BallColor.NONE)) {
+        boolean spotCheck =  spindexer.isAtSpotDetection(SpindexerSpot.fromIndex(currNumBall), SpotType.INTAKE);
+        boolean colorCheck = spindexer.getBallColors()[currNumBall] != BallColor.NONE;
+        if (!atSpot && spotCheck && colorCheck) {
             atSpot = true;
             ballDetectionTime = timer.getTime();
         }
 
+
+
+
         time = timer.getTime();
+        if(atSpot){
+            intake.setDirectPower(1.0);
+        } else{
+            intake.setDirectPower(0);
+        }
         if (atSpot && time - ballDetectionTime >= waitSettle) {
             currNumBall = (currNumBall + 1) % 3;
             atSpot = false;
+        } else{
+            intake.setDirectPower(0);
         }
 
 
         spindexer.goToSpot(SpindexerSpot.fromIndex(currNumBall), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
 
+
+
+
+        //need to call continually
+        if(currNumBall != -1) {
+            spindexer.goToSpot(SpindexerSpot.fromIndex(currNumBall), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
+        }
+
     }
 
     @Override
     public boolean isFinished(){
-      //  spindexer.goToSpot(SpindexerSpot.fromIndex(currNumBall), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
+//        if(currNumBall != -1) {
+//            spindexer.goToSpot(SpindexerSpot.fromIndex(currNumBall), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
+//        }
 
         if(timer.getTime() - startTime >= timeout_MS || spindexer.allOccuppiedBallColors()){
             return true;
@@ -85,8 +108,8 @@ public class AutoIntakeCommand extends CommandBase {
     @Override
     public void end(boolean interrupted){
         intake.setDirectPower(0);
-//        spindexer.getTurner().getServo().setPower(0);
-//        spindexer.getTurner2().getServo().setPower(0);
+        spindexer.getTurner().getServo().setPower(0);
+        spindexer.getTurner2().getServo().setPower(0);
         swapSpots = false;
     }
 }

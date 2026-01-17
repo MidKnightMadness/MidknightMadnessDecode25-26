@@ -19,6 +19,11 @@ public class SchedulePathTo extends SequentialCommandGroup {
     boolean tValueUse = false;
     double tValue;
     double maxPower = 0;
+    public SchedulePathTo(Follower follower, Pose startPose, Pose targetPose){
+        this.follower = follower;
+        this.startPose = startPose;
+        this.targetPose = targetPose;
+    }
     public SchedulePathTo(Follower follower, Pose startPose, Pose targetPose, double headingConstraint, double timeOutConstraint, double translationalConstraint){
         this.follower = follower;
         this.startPose = startPose;
@@ -46,6 +51,11 @@ public class SchedulePathTo extends SequentialCommandGroup {
         this.translationalConstraint = translationalConstraint;
         this.startPose = null;
     }
+    public SchedulePathTo(Follower follower, Pose targetPose){
+        this.follower = follower;
+        this.targetPose = targetPose;
+        this.startPose = follower.getPose();
+    }
     public SchedulePathTo(Follower follower, Pose targetPose, double headingConstraint, double timeOutConstraint, double translationalConstraint, double tValue){
         this.follower = follower;
         this.startPose = null;
@@ -57,8 +67,6 @@ public class SchedulePathTo extends SequentialCommandGroup {
         this.tValue = tValue;
     }
 
-
-
     FollowPathCommand followCommand;
 
     public SchedulePathTo setMaxPower(double maxPower){
@@ -68,7 +76,7 @@ public class SchedulePathTo extends SequentialCommandGroup {
     }
     @Override
     public void initialize(){
-        follower.update();
+        //follower.update();
         Pose currentPose = startPose == null ? follower.getPose() : startPose;
 
         PathChain pathChain;
@@ -82,23 +90,21 @@ public class SchedulePathTo extends SequentialCommandGroup {
                     .setTValueConstraint(tValue)
                     .build();
         }
-        else{
+        else {
             pathChain = follower.pathBuilder()
                     .addPath(new BezierLine(currentPose, targetPose))
                     .setLinearHeadingInterpolation(currentPose.getHeading(), targetPose.getHeading())
-                    .setHeadingConstraint(headingConstraint)
-                    .setTimeoutConstraint(timeOutConstraint)
-                    .setTranslationalConstraint(translationalConstraint)
+//                    .setHeadingConstraint(headingConstraint)
+//                    .setTimeoutConstraint(timeOutConstraint)
+//                    .setTranslationalConstraint(translationalConstraint)
                     .build();
         }
 
-
-
         if(maxPowerUse) {
-            followCommand = new FollowPathCommand(follower, pathChain, false ).setGlobalMaxPower(maxPower);
+            followCommand = new FollowPathCommand(follower, pathChain, true).setGlobalMaxPower(maxPower);
         }
         else{
-            followCommand = new FollowPathCommand(follower, pathChain, false);
+            followCommand = new FollowPathCommand(follower, pathChain, true);
         }
         addCommands(followCommand);
         super.initialize();

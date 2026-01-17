@@ -44,7 +44,7 @@ public abstract class BaseAuto extends CommandOpMode {
     FtcDashboard dashboard;
     TelemetryPacket dashboardPacket;
 
-    public static double maxTimeMs = 20500;
+    public static double maxTimeMs = 29500;
     public static double maxWritePoseTimeMs = 200;
     public static double maxSideWriteTimeMs = 200;
     public static double[] pidBotGainsShooter = new double[]{0.0004, 0.00001, 0.00001};
@@ -56,6 +56,7 @@ public abstract class BaseAuto extends CommandOpMode {
     ShootSide side;
     boolean postMotif = false;
     boolean gameTimerStarted = false;
+    Command preMotifSeq;
 
     @Override
     public void initialize() {
@@ -82,11 +83,13 @@ public abstract class BaseAuto extends CommandOpMode {
         graphManager = PanelsGraph.INSTANCE.getManager();
         buildPaths();
         setupVision();
-        if(preMotifSequence() != null) {
-            schedule(preMotifSequence());
+        preMotifSeq = preMotifSequence();
+        if(preMotifSeq != null) {
+            schedule(preMotifSeq);
         }
 
     }
+
 
 
 
@@ -112,9 +115,11 @@ public abstract class BaseAuto extends CommandOpMode {
         }
         update();
         if(!prevVisionComplete && isVisionComplete()){
-            if(postMotifSequence() != null) {
+//            if(postMotifSequence() != null) {
+            preMotifSeq.cancel();
+            follower.breakFollowing();
                 schedule(postMotifSequence());
-            }
+//            }
             prevVisionComplete = true;
         }
 
@@ -134,7 +139,7 @@ public abstract class BaseAuto extends CommandOpMode {
 
     }
     public void writeValues() {
-        if(gameTimer.getTime() >= maxTimeMs & !stopEnd) {
+        if(gameTimer.getTime() >= maxTimeMs && !stopEnd) {
             CommandScheduler.getInstance().cancelAll();
             schedule(new ParallelCommandGroup(
                     new PoseWriteCommand(follower.getPose(), maxWritePoseTimeMs),

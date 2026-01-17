@@ -20,6 +20,7 @@ import com.pedropathing.telemetry.SelectableOpMode;
 import com.pedropathing.util.*;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.seattlesolvers.solverslib.command.WaitCommand;
 
 import org.firstinspires.ftc.teamcode.util.PanelsDrawing;
 
@@ -32,11 +33,13 @@ import java.util.List;
  * @author Baron Henderson - 20077 The Indubitables
  * @version 1.0, 6/26/2025
  */
+
+
 @Configurable
 @TeleOp(name = "Tuning", group = "Pedro Pathing")
 public class Tuning extends SelectableOpMode {
     public static Follower follower;
-
+    public static long UPDATE_WAIT = 50;
     @IgnoreConfigurable
     static PoseHistory poseHistory;
 
@@ -773,6 +776,11 @@ class TranslationalTuner extends OpMode {
             }
         }
 
+        try{
+            Thread.sleep(Tuning.UPDATE_WAIT);
+        } catch(Exception e ){
+        }
+
         telemetryM.debug("Push the robot laterally to test the Translational PIDF(s).");
         telemetryM.addData("PIDF", follower.constants.coefficientsTranslationalPIDF);
         telemetryM.addData("Pose", follower.getPose());
@@ -791,6 +799,8 @@ class TranslationalTuner extends OpMode {
  * @author Harrison Womack - 10158 Scott's Bots
  * @version 1.0, 3/12/2024
  */
+
+@Configurable
 class HeadingTuner extends OpMode {
     public static double DISTANCE = 40;
     private boolean forward = true;
@@ -843,6 +853,10 @@ class HeadingTuner extends OpMode {
                 forward = true;
                 follower.followPath(forwards);
             }
+        }
+        try{
+            Thread.sleep(Tuning.UPDATE_WAIT);
+        } catch(Exception e ){
         }
 
         telemetryM.debug("Turn the robot manually to test the Heading PIDF(s).");
@@ -922,6 +936,11 @@ class DriveTuner extends OpMode {
             }
         }
 
+        try{
+            Thread.sleep(Tuning.UPDATE_WAIT);
+        } catch(Exception e ){
+        }
+
         telemetryM.debug("Driving forward?: " + forward);
         telemetryM.update(telemetry);
     }
@@ -982,6 +1001,11 @@ class Line extends OpMode {
                 forward = true;
                 follower.followPath(forwards);
             }
+        }
+
+        try{
+            Thread.sleep(Tuning.UPDATE_WAIT);
+        } catch(Exception e ){
         }
 
         telemetryM.debug("Driving Forward?: " + forward);

@@ -32,4 +32,5 @@ public class ConfigNames {
     public static String intakeColor2 = "intakeRightColor";
     public static String bottomColor = "colorsensor3";
     public static String intakeDist1 = "distSensor";
+    public static String intakeDist2 = "dist2";
 }

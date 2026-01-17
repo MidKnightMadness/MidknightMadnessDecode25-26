@@ -7,6 +7,7 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
@@ -36,24 +37,27 @@ import java.util.Arrays;
 
 @Config
 @Configurable
-@Autonomous(name = "3 Close Right", group = "Competition")
-public class ThreeBallCloseRightAuto extends BaseAuto {
+@Disabled
+@Autonomous(name = "3 Close Left", group = "Competition")
+public class ThreeCloseLeftAuto extends BaseAuto {
     public static double motifDetectionTimeMs = 3000;
     int startPipeline = 1;
-    public static Pose startPose = new Pose(118, 130, Math.toRadians(40));
-    public static Pose motifDetectionPose = new Pose(87, 94, Math.toRadians(100));
-    public static Pose shootPose = new Pose(87, 94, Math.toRadians(230));
-    public static Pose parkPose = new Pose(114, 94, Math.toRadians(210));
+    public static Pose  startPose = new Pose(144 - 118, 130, Math.toRadians(135));
+    public static Pose  motifDetectionPose = new Pose(144 -87, 94, Math.toRadians(80));
+    public static Pose  shootPose = new Pose(144 - 87, 94, Math.toRadians(310));
+    public static Pose parkPose = new Pose(144 - 114, 94, Math.toRadians(330));
+
     public static Pose openGatePose = new Pose(136, 76, Math.toRadians(180));
-    public static Pose intakeOnePose = new Pose(100, 84, Math.toRadians(0));
-    public static Pose intakeTwoPose = new Pose(100, 60, Math.toRadians(0));
-    public static Pose intakeThreePose = new Pose(100, 36, Math.toRadians(0));
+    public static Pose intakeOnePose = new Pose(110, 84, Math.toRadians(0));
+    public static Pose intakeTwoPose = new Pose(110, 60, Math.toRadians(0));
+    public static Pose intakeThreePose = new Pose(110, 36, Math.toRadians(0));
+
     public static double intakeDistForward = 14;
     PathChain toMotifPath;
     MotifEnums.Motif motifPattern = MotifEnums.Motif.NONE;
     MotifWriteCommand motifCommand = null;
 
-    ShootSide shootSide = ShootSide.RIGHT;
+    ShootSide shootSide = ShootSide.LEFT;
     Pose currentPose;
 
     Command firstPath;
@@ -136,7 +140,7 @@ public class ThreeBallCloseRightAuto extends BaseAuto {
     @Override
     protected void initializeMechanisms() {
         limelight = hardwareMap.get(Limelight3A.class, ConfigNames.limelight);
-        spindexer = new Spindexer(hardwareMap, false).setBallColors(startBallColors).initAngle();
+        spindexer = new Spindexer(hardwareMap, false, false).setBallColors(startBallColors).initAngle();
 
         shooter = new TwoWheelShooter(hardwareMap, shooterRunMode);
 //        shooter.setRunMode(TwoWheelShooter.RunMode.RawPower);
@@ -147,6 +151,7 @@ public class ThreeBallCloseRightAuto extends BaseAuto {
             shooter.high.setVeloCoefficients(pidTopGainsShooter[0], pidTopGainsShooter[1], pidTopGainsShooter[2]);
             shooter.low.setFeedforwardCoefficients(kBotGainsShooter[0], kBotGainsShooter[1], kBotGainsShooter[2]);
             shooter.high.setFeedforwardCoefficients(kTopGainsShooter[0], kTopGainsShooter[1], kTopGainsShooter[2]);
+
         }
     }
 
@@ -262,10 +267,9 @@ public class ThreeBallCloseRightAuto extends BaseAuto {
                 new SequentialCommandGroup(
                         new WaitCommand(1000),
                         new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 1) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
-                        new InstantCommand(() -> spindexer.getTurner().setPIDFTOUse(spindexer.intakeTurnerCoeff)),
+                        //new InstantCommand(() -> spindexer.getTurner().setPIDFTOUse(spindexer.intakeTurnerCoeff)),
                         new WaitCommand(1000),
                         new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 2) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
-                        new InstantCommand(() -> spindexer.getTurner().setPIDFTOUse(spindexer.outtakeTurnerCoeff)),
                         new WaitCommand(1000),
                         new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 2) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0)
                 ),

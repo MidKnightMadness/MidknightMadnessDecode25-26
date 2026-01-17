@@ -7,6 +7,7 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
@@ -33,8 +34,9 @@ import java.util.Arrays;
 
 @Config
 @Configurable
+@Disabled
 @Autonomous(name = "3 Back Left", group = "Competition")
-public class ThreeBallBackLeftAuto extends BaseAuto {
+public class ThreeBackLeftAuto extends BaseAuto {
     public static double motifDetectionTimeMs = 3000;
     int startPipeline = 1;
     public static Pose startPose = new Pose(144-88, 8,  Math.toRadians(90));
@@ -139,7 +141,7 @@ public class ThreeBallBackLeftAuto extends BaseAuto {
     @Override
     protected void initializeMechanisms() {
         limelight = hardwareMap.get(Limelight3A.class, ConfigNames.limelight);
-        spindexer = new Spindexer(hardwareMap, false).setBallColors(startBallColors);
+        spindexer = new Spindexer(hardwareMap, false, false).setBallColors(startBallColors);
 
         shooter = new TwoWheelShooter(hardwareMap, shooterRunMode);
 //        shooter.setRunMode(TwoWheelShooter.RunMode.RawPower);

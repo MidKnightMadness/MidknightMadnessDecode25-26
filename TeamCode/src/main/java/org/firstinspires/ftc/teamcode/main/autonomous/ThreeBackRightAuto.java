@@ -6,6 +6,7 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
@@ -32,8 +33,9 @@ import org.firstinspires.ftc.teamcode.game.ShootSide;
 
 @Config
 @Configurable
+@Disabled
 @Autonomous(name = "3 Back Right NonSorted", group = "Competition")
-public class ThreeBallBackRightAuto extends BaseAuto {
+public class ThreeBackRightAuto extends BaseAuto {
     public static double motifDetectionTimeMs = 3000;
     int startPipeline = 1;
     public static Pose startPose = new Pose(88, 8, Math.toRadians(270));
@@ -143,7 +145,7 @@ public class ThreeBallBackRightAuto extends BaseAuto {
     @Override
     protected void initializeMechanisms() {
         limelight = hardwareMap.get(Limelight3A.class, ConfigNames.limelight);
-        spindexer = new Spindexer(hardwareMap, false).setBallColors(startBallColors).initAngle();
+        spindexer = new Spindexer(hardwareMap, false, false).setBallColors(startBallColors).initAngle();
 
         shooter = new TwoWheelShooter(hardwareMap, shooterRunMode);
 //        shooter.setRunMode(TwoWheelShooter.RunMode.RawPower);

@@ -58,9 +58,9 @@ public class SpindexerGotoSpot extends CommandBase {
 
     @Override
     public void end(boolean interrupted){
-//        spindexer.getTurner().setRunMode(CRServoEx2.RunMode.RawPower);
-//        spindexer.getTurner().getServo().setPower(0);
-//        spindexer.getTurner2().setRunMode(CRServoEx2.RunMode.RawPower);
-//        spindexer.getTurner2().getServo().setPower(0);
+        spindexer.getTurner().setRunMode(CRServoEx2.RunMode.RawPower);
+        spindexer.getTurner().getServo().setPower(0);
+        spindexer.getTurner2().setRunMode(CRServoEx2.RunMode.RawPower);
+        spindexer.getTurner2().getServo().setPower(0);
     }
 }
