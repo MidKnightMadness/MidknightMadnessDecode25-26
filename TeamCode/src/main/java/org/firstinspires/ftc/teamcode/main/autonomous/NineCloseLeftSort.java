@@ -95,6 +95,10 @@ public class NineCloseLeftSort extends BaseAuto {
     public static boolean rawPowerOn = false;
     public static long shootOnTime = 4500;
 
+    public static double pathDistThresholdMin = 0;
+    public static double headingError = Math.toRadians(2);
+    public static double timeOutConstraint = 100;
+    public static double velConstraint = 0;
     @Override
     protected Pose getStartPose(){
         return startPose;
@@ -119,7 +123,7 @@ public class NineCloseLeftSort extends BaseAuto {
 
         toMotifDetection = new Path(new BezierLine(startPose, motifDetectionPose));
         toMotifDetection.setLinearHeadingInterpolation(startPose.getHeading(), motifDetectionPose.getHeading());
-//        setConstraints(toMotifDetection);
+        setConstraints(toMotifDetection);
 
 //        toShootPresets = new Path(new BezierLine(motifDetectionPose, shootPose));
 //        toShootPresets.setLinearHeadingInterpolation(motifDetectionPose.getHeading(), shootPose.getHeading());
@@ -127,6 +131,11 @@ public class NineCloseLeftSort extends BaseAuto {
 
 
 //        setConstraints(toIntakeOne);
+
+
+        toIntakeOne = new Path(new BezierLine(shootPose, intakeOnePose));
+        toIntakeTwo.setLinearHeadingInterpolation(shootPose.getHeading(), intakeOnePose.getHeading(), 0.8);
+        setConstraints(toIntakeOne);
 
 //        toIntakeEndOne = new Path(new BezierLine(intakeOnePose, intakeOneEnd));
 //        toIntakeEndOne.setLinearHeadingInterpolation(intakeOnePose.getHeading(), intakeOneEnd.getHeading());
@@ -142,7 +151,7 @@ public class NineCloseLeftSort extends BaseAuto {
 
         toIntakeTwo = new Path(new BezierLine(shootPose, intakeTwoPose));
         toIntakeTwo.setLinearHeadingInterpolation(shootPose.getHeading(), intakeTwoPose.getHeading());
-//        setConstraints(toIntakeTwo);
+        setConstraints(toIntakeTwo);
 
 //        toIntakeEndTwo = new Path(new BezierLine(intakeTwoPose, intakeTwoEnd));
 //        toIntakeEndTwo.setLinearHeadingInterpolation(intakeTwoPose.getHeading(), intakeTwoEnd.getHeading());
@@ -154,7 +163,7 @@ public class NineCloseLeftSort extends BaseAuto {
 
         toIntakeThree = new Path(new BezierLine(shootPose, intakeThreePose));
         toIntakeThree.setLinearHeadingInterpolation(shootPose.getHeading(), intakeThreePose.getHeading());
-//        setConstraints(toIntakeThree);
+        setConstraints(toIntakeThree);
 
 //        toIntakeEndThree = new Path(new BezierLine(intakeThreePose, intakeThreeEnd));
 //        toIntakeEndThree.setLinearHeadingInterpolation(intakeThreePose.getHeading(), intakeThreeEnd.getHeading());
@@ -166,14 +175,24 @@ public class NineCloseLeftSort extends BaseAuto {
 
         toPark = new Path(new BezierLine(shootPose, parkPose));
         toPark.setLinearHeadingInterpolation(shootPose.getHeading(), parkPose.getHeading());
-//        setConstraints(toPark);
+        setConstraints(toPark);
 
     }
-//    private void setConstraints(Path path){
-//        path.setTimeoutConstraint(timeOutConstraint);
-//        path.setTranslationalConstraint(pathDistThresholdMin);
-//        path.setHeadingConstraint(headingError);
-//    }
+
+    private void setConstraints(Path path){
+        if(timeOutConstraint != 0) {
+            path.setTimeoutConstraint(timeOutConstraint);
+        }
+        if(pathDistThresholdMin != 0) {
+            path.setTranslationalConstraint(pathDistThresholdMin);
+        }
+        if(headingError != 0) {
+            path.setHeadingConstraint(headingError);
+        }
+        if(velConstraint != 0){
+            path.setVelocityConstraint(velConstraint);
+        }
+    }
 
 
 
@@ -402,7 +421,7 @@ public class NineCloseLeftSort extends BaseAuto {
         }
         else {
             return new SequentialCommandGroup(
-                    new SchedulePathTo(follower, follower.getPose(), intakeOnePose)
+                    new FollowPathCommand(follower, toIntakeOne, true)
             );
         }
     }
@@ -474,7 +493,7 @@ public class NineCloseLeftSort extends BaseAuto {
         }
 
         //Motif
-        telemetryManager.addData("Motif Pattern", motifPattern);
+//        telemetryManager.addData("Motif Pattern", motifPattern);
 
         telemetry.addData("Spindexer Get Curr Angle", spindexer.getCurrentAngle());
 //

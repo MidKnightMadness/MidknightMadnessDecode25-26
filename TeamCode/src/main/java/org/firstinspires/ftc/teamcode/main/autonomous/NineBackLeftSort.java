@@ -53,7 +53,7 @@ import java.util.Map;
 public class NineBackLeftSort extends BaseAuto {
     int startPipeline = 1;
     public static Pose startPose = new Pose(56, 8, Math.toRadians(90));
-    public static Pose shootPose = new Pose(60, 17, Math.toRadians(293));
+    public static Pose shootPose = new Pose(60, 17, Math.toRadians(295));
     public static Pose forwardPose = new Pose(56, 12, Math.toRadians(90));
     public static Pose parkPose = new Pose(58, 38, Math.toRadians(180));
     public static Pose openGatePose = new Pose(8, 76, Math.toRadians(180));
@@ -75,13 +75,17 @@ public class NineBackLeftSort extends BaseAuto {
     public static long thirdWaitTime = 500;//250 old
 
     public static long fourthWaitTime = 500;
+    public static double pathDistThresholdMin = 0;
+    public static double headingError = 0;
+    public static double timeOutConstraint = 0;
+    public static double velConstraint = 0;
 
 //    public static double pathDistThresholdMin = 1.5;
 //    public static double headingError = Math.toRadians(2);
 //    public static double timeOutConstraint = 1000;
 
     //TODO: TRY VELOCITY CONSTRAINT
-    public static TwoWheelShooter.RunMode shooterRunMode = TwoWheelShooter.RunMode.VelocityControl;
+    public static TwoWheelShooter.RunMode shooterRunMode = TwoWheelShooter.RunMode.RawPower;
 
     private final BallColor[] startBallColors = new BallColor[] {BallColor.PURPLE, BallColor.PURPLE, BallColor.GREEN};
     SpindexerSpot[] spots;
@@ -133,7 +137,7 @@ public class NineBackLeftSort extends BaseAuto {
     public static boolean useDistanceSensor = false;
     public static double inBetweenTime = 100;
     public static boolean rawPowerOn = false;
-    public static long shootOnTime = 4500;
+    public static long shootOnTime = 5000;
     int aprilTagID = 0;
     @Override
     public void initialize_loop(){
@@ -197,11 +201,11 @@ public class NineBackLeftSort extends BaseAuto {
     protected void buildPaths(){
         toShootPresets = new Path(new BezierLine(forwardPose, shootPose));
         toShootPresets.setLinearHeadingInterpolation(forwardPose.getHeading(), shootPose.getHeading());
-//        setConstraints(toShootPresets);
+        setConstraints(toShootPresets);
 
         toIntakeThree = new Path(new BezierLine(shootPose, intakeThreePose));
         toIntakeThree.setLinearHeadingInterpolation(shootPose.getHeading(), intakeThreePose.getHeading());
-//        setConstraints(toIntakeThree);
+        setConstraints(toIntakeThree);
 
 //        toIntakeEndThree = new Path(new BezierLine(intakeThreePose, intakeThreeEnd));
 //        toIntakeEndThree.setLinearHeadingInterpolation(intakeThreePose.getHeading(), intakeThreeEnd.getHeading());
@@ -213,7 +217,7 @@ public class NineBackLeftSort extends BaseAuto {
 
         toIntakeTwo = new Path(new BezierLine(shootPose, intakeTwoPose));
         toIntakeTwo.setLinearHeadingInterpolation(shootPose.getHeading(), intakeTwoPose.getHeading());
-//        setConstraints(toIntakeTwo);
+        setConstraints(toIntakeTwo);
 
 //        toIntakeEndTwo = new Path(new BezierLine(intakeTwoPose, intakeTwoEnd));
 //        toIntakeEndTwo.setLinearHeadingInterpolation(intakeTwoPose.getHeading(), intakeTwoEnd.getHeading());
@@ -225,7 +229,7 @@ public class NineBackLeftSort extends BaseAuto {
 
         toIntakeOne = new Path(new BezierLine(shootPose, intakeOnePose));
         toIntakeOne.setLinearHeadingInterpolation(shootPose.getHeading(), intakeOnePose.getHeading());
-//        setConstraints(toIntakeOne);
+        setConstraints(toIntakeOne);
 
 //   /     setConstraints(toIntakeEndOne);
 
@@ -235,16 +239,25 @@ public class NineBackLeftSort extends BaseAuto {
 
         toPark = new Path(new BezierLine(shootPose, parkPose));
         toPark.setLinearHeadingInterpolation(shootPose.getHeading(), parkPose.getHeading());
-//        setConstraints(toPark);
+        setConstraints(toPark);
 
 
     }
 
-//    private void setConstraints(Path path){
-//        path.setTimeoutConstraint(timeOutConstraint);
-//        path.setTranslationalConstraint(pathDistThresholdMin);
-//        path.setHeadingConstraint(headingError);
-//    }
+    private void setConstraints(Path path){
+        if(timeOutConstraint != 0) {
+            path.setTimeoutConstraint(timeOutConstraint);
+        }
+        if(pathDistThresholdMin != 0) {
+            path.setTranslationalConstraint(pathDistThresholdMin);
+        }
+        if(headingError != 0) {
+            path.setHeadingConstraint(headingError);
+        }
+        if(velConstraint != 0){
+            path.setVelocityConstraint(velConstraint);
+        }
+    }
 
     @Override
     protected boolean isVisionComplete(){
@@ -254,7 +267,7 @@ public class NineBackLeftSort extends BaseAuto {
     AutoIntakeCommand autoIntakeCommand;
     boolean autoStart = false;
     int currSpindexerGotoSpot = -1;
-    public static double spindexerSpeed = -0.20;
+    public static double spindexerSpeed = -0.10;
 
     @Override
     protected Command preMotifSequence(){
@@ -288,6 +301,7 @@ public class NineBackLeftSort extends BaseAuto {
         return new SequentialCommandGroup(
 //                driveForward(),
                 setSpindexerCorrect(0),
+                new WaitCommand(1000),
                 shoot(0),
 
                 getToLineNum(3),
@@ -380,7 +394,7 @@ public class NineBackLeftSort extends BaseAuto {
                                 new InstantCommand(() -> currSpindexerGotoSpot = -1),
 //                                new InstantCommand(() -> spindexer.getTurner().setRunMode(CRServoEx2.RunMode.RawPower)),
 //                                new InstantCommand(() -> spindexer.getTurner2().setRunMode(CRServoEx2.RunMode.RawPower)),
-                                new WaitCommand(500),
+                                new WaitCommand(1000),
                                 new InstantCommand(() -> spindexer.spin(1 * spindexerSpeed))
                         )
                 ),
@@ -525,7 +539,7 @@ public class NineBackLeftSort extends BaseAuto {
         }
 
         //Motif
-        telemetryManager.addData("Motif Pattern", motifPattern);
+//        telemetryManager.addData("Motif Pattern", motifPattern);
 
         telemetry.addData("Spindexer Get Curr Angle", spindexer.getCurrentAngle());
 //

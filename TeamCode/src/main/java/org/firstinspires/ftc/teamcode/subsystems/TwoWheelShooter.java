@@ -85,10 +85,10 @@ public class TwoWheelShooter extends SubsystemBase {
 
 //    public static double[] closeTargetVelocities = new double[] {1800, 1900};
     public static double[] closeTargetVelocities = new double[] {1600, 1750};
-    public static double[] farTargetVelocities = new double[]{2300, 1900};
+    public static double[] farTargetVelocities = new double[]{2200, 1800};
     public static double[] closeTargetPowers = new double[]{0.85, 0.9};
 
-    public static double[] farTargetPowers = new double[]{0.95, 0.9};
+    public static double[] farTargetPowers = new double[]{0.9, 0.85};
 
     double currVolt = 0;
     HardwareMap map;

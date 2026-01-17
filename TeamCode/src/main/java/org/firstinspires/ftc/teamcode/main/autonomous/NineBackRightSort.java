@@ -77,12 +77,12 @@ public class NineBackRightSort extends BaseAuto {
     public static long fourthWaitTime = 500;
 
     public static double pathDistThresholdMin = 0;
-    public static double headingError = Math.toRadians(2);
-    public static double timeOutConstraint = 100;
+    public static double headingError = 0;
+    public static double timeOutConstraint = 0;
     public static double velConstraint = 0;
 
     //TODO: TRY VELOCITY CONSTRAINT
-    public static TwoWheelShooter.RunMode shooterRunMode = TwoWheelShooter.RunMode.VelocityControl;
+    public static TwoWheelShooter.RunMode shooterRunMode = TwoWheelShooter.RunMode.RawPower;
 
     private final BallColor[] startBallColors = new BallColor[] {BallColor.PURPLE, BallColor.PURPLE, BallColor.GREEN};
     SpindexerSpot[] spots;
@@ -134,7 +134,7 @@ public class NineBackRightSort extends BaseAuto {
     public static boolean useDistanceSensor = false;
     public static double inBetweenTime = 100;
     public static boolean rawPowerOn = false;
-    public static long shootOnTime = 4500;
+    public static long shootOnTime = 5000;
     int aprilTagID = 0;
     @Override
     public void initialize_loop(){
@@ -251,6 +251,9 @@ public class NineBackRightSort extends BaseAuto {
         if(headingError != 0) {
             path.setHeadingConstraint(headingError);
         }
+        if(velConstraint != 0){
+            path.setVelocityConstraint(velConstraint);
+        }
     }
 
 
@@ -262,7 +265,7 @@ public class NineBackRightSort extends BaseAuto {
     AutoIntakeCommand autoIntakeCommand;
     boolean autoStart = false;
     int currSpindexerGotoSpot = -1;
-    public static double spindexerSpeed = -0.20;
+    public static double spindexerSpeed = -0.10;
 
     @Override
     protected Command preMotifSequence(){
@@ -296,6 +299,7 @@ public class NineBackRightSort extends BaseAuto {
         return new SequentialCommandGroup(
 //                driveForward(),
                 setSpindexerCorrect(0),
+                new WaitCommand(1000),
                 shoot(0),
 
                 getToLineNum(3),
@@ -457,11 +461,17 @@ public class NineBackRightSort extends BaseAuto {
         return new FollowPathCommand(follower, toPark, true, 1.0);
     }
 
-    protected FollowPathCommand getToLineNum(int lineNum){
+    protected Command getToLineNum(int lineNum){
         FollowPathCommand command = null;
-        if(lineNum == 3) command = new FollowPathCommand(follower, toIntakeThree, true);
-        else if(lineNum == 2) command = new FollowPathCommand(follower, toIntakeTwo, true);
-        else command = new FollowPathCommand(follower, toIntakeOne, true);
+        if(lineNum == 3){
+            command = new FollowPathCommand(follower, toIntakeThree, true);
+        }
+        else if(lineNum == 2) {
+            command = new FollowPathCommand(follower, toIntakeTwo, true);
+        }
+        else {
+            command = new FollowPathCommand(follower, toIntakeOne, true);
+        }
 
         return command;
     }
@@ -533,7 +543,7 @@ public class NineBackRightSort extends BaseAuto {
         }
 
         //Motif
-        telemetryManager.addData("Motif Pattern", motifPattern);
+        //telemetryManager.addData("Motif Pattern", motifPattern);
 
         telemetry.addData("Spindexer Get Curr Angle", spindexer.getCurrentAngle());
 //

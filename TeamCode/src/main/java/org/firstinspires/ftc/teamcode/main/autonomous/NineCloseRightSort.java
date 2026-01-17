@@ -94,6 +94,10 @@ public class NineCloseRightSort extends BaseAuto {
     Path toGate;
     public static boolean rawPowerOn = false;
     public static long shootOnTime = 4500;
+    public static double pathDistThresholdMin = 0;
+    public static double headingError = Math.toRadians(2);
+    public static double timeOutConstraint = 100;
+    public static double velConstraint = 0;
 
     @Override
     protected Pose getStartPose(){
@@ -119,7 +123,7 @@ public class NineCloseRightSort extends BaseAuto {
 
         toMotifDetection = new Path(new BezierLine(startPose, motifDetectionPose));
         toMotifDetection.setLinearHeadingInterpolation(startPose.getHeading(), motifDetectionPose.getHeading());
-//        setConstraints(toMotifDetection);
+        setConstraints(toMotifDetection);
 
 //        toShootPresets = new Path(new BezierLine(motifDetectionPose, shootPose));
 //        toShootPresets.setLinearHeadingInterpolation(motifDetectionPose.getHeading(), shootPose.getHeading());
@@ -128,9 +132,11 @@ public class NineCloseRightSort extends BaseAuto {
 
 //        setConstraints(toIntakeOne);
 
+        toIntakeOne = new Path(new BezierLine(shootPose, intakeOnePose));
+        toIntakeOne.setLinearHeadingInterpolation(shootPose.getHeading(), intakeOnePose.getHeading(), 0.8);
 //        toIntakeEndOne = new Path(new BezierLine(intakeOnePose, intakeOneEnd));
 //        toIntakeEndOne.setLinearHeadingInterpolation(intakeOnePose.getHeading(), intakeOneEnd.getHeading());
-//        setConstraints(toIntakeEndOne);
+        setConstraints(toIntakeEndOne);
 
 //        toGate = new Path(new BezierLine(intakeOneEnd, openGatePose));
 //        toGate.setLinearHeadingInterpolation(intakeOneEnd.getHeading(), openGatePose.getHeading());
@@ -142,7 +148,7 @@ public class NineCloseRightSort extends BaseAuto {
 
         toIntakeTwo = new Path(new BezierLine(shootPose, intakeTwoPose));
         toIntakeTwo.setLinearHeadingInterpolation(shootPose.getHeading(), intakeTwoPose.getHeading());
-//        setConstraints(toIntakeTwo);
+        setConstraints(toIntakeTwo);
 
 //        toIntakeEndTwo = new Path(new BezierLine(intakeTwoPose, intakeTwoEnd));
 //        toIntakeEndTwo.setLinearHeadingInterpolation(intakeTwoPose.getHeading(), intakeTwoEnd.getHeading());
@@ -154,7 +160,7 @@ public class NineCloseRightSort extends BaseAuto {
 
         toIntakeThree = new Path(new BezierLine(shootPose, intakeThreePose));
         toIntakeThree.setLinearHeadingInterpolation(shootPose.getHeading(), intakeThreePose.getHeading());
-//        setConstraints(toIntakeThree);
+        setConstraints(toIntakeThree);
 
 //        toIntakeEndThree = new Path(new BezierLine(intakeThreePose, intakeThreeEnd));
 //        toIntakeEndThree.setLinearHeadingInterpolation(intakeThreePose.getHeading(), intakeThreeEnd.getHeading());
@@ -166,15 +172,23 @@ public class NineCloseRightSort extends BaseAuto {
 
         toPark = new Path(new BezierLine(shootPose, parkPose));
         toPark.setLinearHeadingInterpolation(shootPose.getHeading(), parkPose.getHeading());
-//        setConstraints(toPark);
+        setConstraints(toPark);
 
     }
-//    private void setConstraints(Path path){
-//        path.setTimeoutConstraint(timeOutConstraint);
-//        path.setTranslationalConstraint(pathDistThresholdMin);
-//        path.setHeadingConstraint(headingError);
-//    }
-
+    private void setConstraints(Path path){
+        if(timeOutConstraint != 0) {
+            path.setTimeoutConstraint(timeOutConstraint);
+        }
+        if(pathDistThresholdMin != 0) {
+            path.setTranslationalConstraint(pathDistThresholdMin);
+        }
+        if(headingError != 0) {
+            path.setHeadingConstraint(headingError);
+        }
+        if(velConstraint != 0){
+            path.setVelocityConstraint(velConstraint);
+        }
+    }
 
 
     @Override
@@ -403,7 +417,7 @@ public class NineCloseRightSort extends BaseAuto {
         }
         else {
             return new SequentialCommandGroup(
-                    new SchedulePathTo(follower, follower.getPose(), intakeOnePose)
+                    new FollowPathCommand(follower, toIntakeOne, true)
             );
         }
     }
