@@ -12,6 +12,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.hardware.setServoCam;
 
+import java.util.ArrayList;
+
 import java.util.List;
 @TeleOp
 public class CameraTest extends OpMode {
@@ -20,6 +22,14 @@ public class CameraTest extends OpMode {
     List<LLResultTypes.DetectorResult> detections;
     Servo cam;
 
+    ArrayList<Double> coordX;
+    ArrayList<Double> coordY;
+    ArrayList<Double> distances;
+    double min;
+    int index;
+    double closeX;
+    double closeY;
+
     @Override
     public void init() {
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
@@ -27,6 +37,13 @@ public class CameraTest extends OpMode {
         limelight.start();
         limelight.pipelineSwitch(0);
         cam = hardwareMap.get(Servo.class, "camServo");
+        coordX = new ArrayList<>();
+        coordY = new ArrayList<>();
+        distances = new ArrayList<>();
+        min = 0;
+        index = 0;
+        closeX = 0;
+        closeY = 0;
     }
 
     @Override
@@ -47,27 +64,44 @@ public class CameraTest extends OpMode {
 
          */
         detections = result.getDetectorResults();
-        for (LLResultTypes.DetectorResult detection : detections) {
-            String className = detection.getClassName(); // What was detected
-            double x = detection.getTargetXDegrees(); // Where it is (left-right)
-            double y = detection.getTargetYDegrees(); // Where it is (up-down)
-            telemetry.addData(className, "at (" + x + ", " + y + ") degrees");
+
         }
         if(detections.isEmpty()){
             telemetry.addData("Limelight", "No Detection");
+            telemetry.update();
         }
-        telemetry.update();
-        if(gamepad1.aWasPressed()){
-            setServoCam.setCam(cam, 0.5);
+        else{
+            for (LLResultTypes.DetectorResult detection : detections) {
+                String className = detection.getClassName(); // What was detected
+                double x = detection.getTargetXDegrees(); // Where it is (left-right)
+                double y = detection.getTargetYDegrees(); // Where it is (up-down)
+                telemetry.addData(className, "at (" + x + ", " + y + ") degrees");
+                //run it through homography, not made yet
+                //telemetry.addData(className, "at (" + coordinateX + ", " + coordinateY + ") coordinates");
+                //coordX.add(coordinateX);
+                //coordY.add(coordinateY);
+            }
+            for (int i = 0; i < detections.size(); i++) {
+                distances.add(distance(coordX.get(i), coordY.get(i)));
+            }
+            min = distances.get(0);
+            for (int i = 0; i < distances.size(); i++) {
+                if (distances.get(i) < min) {
+                    min = distances.get(i);
+                    index = i;
+                }
+            }
+            closeX = coordX.get(index);
+            closeY = coordY.get(index);
+
+            telemetry.update();
+            coordX.clear();
+            coordY.clear();
+            distances.clear();
         }
-        if(gamepad1.bWasPressed()){
-            setServoCam.setCam(cam, 1);
-        }
-        if(gamepad1.yWasPressed()){
-            setServoCam.setCam(cam, 0.25);
-        }
-        if(gamepad1.xWasPressed()){
-            setServoCam.setCam(cam, 0);
-        }
+    }
+
+    private static double distance(double x, double y){
+        return Math.sqrt(x*x+y*y);
     }
 }

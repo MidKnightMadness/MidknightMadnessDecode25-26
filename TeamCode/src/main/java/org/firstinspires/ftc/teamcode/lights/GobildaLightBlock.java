@@ -20,7 +20,7 @@ public class GobildaLightBlock {
     }
     Servo lightControl;
     BallColor lastColor;
-    public GobildaLightBlock(Servo servo){
+    public GobildaLightBlock(Servo servo){//consturctor
         lightControl = servo;
         lastColor = BallColor.NONE;
     }
@@ -69,4 +69,3 @@ public class GobildaLightBlock {
         }
     }
 }
-//7 works as color

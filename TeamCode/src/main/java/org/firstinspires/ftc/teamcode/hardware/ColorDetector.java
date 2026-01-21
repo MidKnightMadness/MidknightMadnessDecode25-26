@@ -12,9 +12,9 @@ public abstract class ColorDetector<T> {
         this.thresholds = thresholds;
         this.defaultValue = defaultColor;
     }
-
+//abstract method to get color
     public abstract float[] readRawColor();
-
+    //gets the color
     public T readColor() {
         float[] color = readRawColor();
 
