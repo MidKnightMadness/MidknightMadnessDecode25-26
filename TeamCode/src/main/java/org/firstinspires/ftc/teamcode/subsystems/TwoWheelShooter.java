@@ -5,15 +5,18 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.Vector;
-import com.qualcomm.robotcore.hardware.DcMotor;
+
+
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
-import com.seattlesolvers.solverslib.hardware.motors.Motor;
-import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
+
+
 import com.seattlesolvers.solverslib.util.InterpLUT;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
+import org.firstinspires.ftc.teamcode.hardware.Motor;
+import org.firstinspires.ftc.teamcode.hardware.MotorEx;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 
@@ -34,13 +37,15 @@ public class TwoWheelShooter extends SubsystemBase {
     }
 
     //DEFAULT GAINS
-    public static double[] pidBotGains = new double[]{0.0004, 0, 0.00001};
-    public static double[] kBotGains = new double[]{0, 0.00005, 0};
+//    public static double[] pidBotGains = new double[]{0.0004, 0, 0.00001};
+   //public static double[] kBotGains = new double[]{0, 0.00005, 0};///change -> 0.00005 to 0.0004 mybe
+    public static double[] kBotGains = new double[]{120, 0.00035, 0};
     public static double[] pidTopGains = new double[]{0.0005, 0, 0.00001};
+    public static double[] pidBotGains = new double[]{0.00006, 0.00003, 0};
     public static double[] kTopGains = new double[]{0.02, 0.00005, 0};
 
     public static boolean useAggressiveRecovery = false;
-    boolean inRecoveryMode = false;
+    public boolean inRecoveryMode = false;
     //AGGRESSIVE GAINS: FOR RECOVERY
     public static double[] pidBotAggressiveGains = new double[]{0.0008, 0, 0.00005};
     public static double[] pidTopAggressiveGains = new double[]{0.0008, 0, 0.00005};
@@ -67,13 +72,15 @@ public class TwoWheelShooter extends SubsystemBase {
     public static double gearRatio = 3;
 
     public static boolean lowMotorDirForward = true;
-    public static boolean highMotorDirForward = true;
+    public static boolean highMotorDirForward = false;
     public static double topVelocityOffset = 0;
     double predictedTopVel = 1500;
     double predictedBotVel = 1500;
+    double predictedTopPower = 0.8;
+    double predictedBotPower = 0.8;
 
-    public static double topRecoveryFactor = 1.18;//TUNE
-    public static double botRecoveryFactor = 1.17;//TUNE
+    public static double topRecoveryFactor = 1.1;//TUNE
+    public static double botRecoveryFactor = 1.1;//TUNE
     double currTopFactor = 1;
     double currBotFactor = 1;
     public static double recoveryBoostTime = 1000;
@@ -86,8 +93,7 @@ public class TwoWheelShooter extends SubsystemBase {
 //    public static double[] closeTargetVelocities = new double[] {1800, 1900};
     public static double[] closeTargetVelocities = new double[] {1600, 1750};
     public static double[] farTargetVelocities = new double[]{2200, 1800};
-    public static double[] closeTargetPowers = new double[]{0.85, 0.9};
-
+    public static double[] closeTargetPowers = new double[]{0.7, 0.8};
     public static double[] farTargetPowers = new double[]{0.9, 0.85};
 
     double currVolt = 0;
@@ -95,8 +101,10 @@ public class TwoWheelShooter extends SubsystemBase {
     public static double kBotShootMovingFactor = 1;
     public static double kTopShootMovingFactor = 1;
     public static double velBotTolerance = 100;
-    public static double velTopTolerance = 150;
+    public static double velTopTolerance = 100;
     public static double velMovingThreshold = 2;//in per sec
+    double topMultiplier = 0;
+    double botMultiplier = 0;
 
 
 
@@ -267,11 +275,19 @@ public class TwoWheelShooter extends SubsystemBase {
         botVel -= kBotShootMovingFactor * vParallel;
         topVel -= kTopShootMovingFactor * vParallel;
 
-        botVel *= ratio * currBotFactor;
-        topVel *= ratio * currTopFactor;
-        predictedBotVel = botVel;
-        predictedTopVel = topVel;
-        setCustomPower(botVel, topVel);
+        topMultiplier = ratio * currTopFactor;
+        botMultiplier = ratio * currBotFactor;
+
+        if(runMode == RunMode.VelocityControl) {
+            predictedBotVel = botVel;
+            predictedTopVel = topVel;
+        } else{
+            predictedBotPower = botVel;
+            predictedTopPower = topVel;
+        }
+
+        low.set(botVel, botMultiplier);
+        high.set(topVel, topMultiplier);
     }
 
     //set flywheel by distance -> static, not moving, lut use

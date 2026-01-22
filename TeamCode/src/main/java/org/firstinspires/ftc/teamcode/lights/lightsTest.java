@@ -22,7 +22,7 @@ public class lightsTest extends OpMode {
         light1 = new GobildaLightBlock(hardwareMap.get(Servo.class, "light1"));
         light2 = new GobildaLightBlock(hardwareMap.get(Servo.class, "light2"));
         light3 = new GobildaLightBlock(hardwareMap.get(Servo.class, "light3"));
-        spindexer = new Spindexer(hardwareMap, false, false, new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE});
+        spindexer = new Spindexer(hardwareMap, false, new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE});
         spindexer.initAngle();
     }
 

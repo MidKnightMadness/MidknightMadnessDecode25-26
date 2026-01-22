@@ -53,7 +53,7 @@ public class ConstantsBot {
             .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
     public static PinpointConstants pinpointLocalizer2Constants = new PinpointConstants()
-            .forwardPodY(115.39 / 25.4)//TODO: ADD VALUE
+            .forwardPodY(116.11 / 25.4)//TODO: ADD VALUE
             .strafePodX(-173.57 / 25.4)//TODO: ADD VALUE
             .distanceUnit(DistanceUnit.INCH)
             .hardwareMapName(ConfigNames.pinpoint2)
@@ -101,6 +101,20 @@ public class ConstantsBot {
     public static Follower createPinpointFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(followerConstants, hardwareMap)
                 .pinpointLocalizer(pinpointLocalizer1Constants)
+                .mecanumDrivetrain(driveConstants)
+                .pathConstraints(pathConstraints)
+                .build();
+    }
+    public static Follower createPinpointFollower1(HardwareMap hardwareMap) {
+        return new FollowerBuilder(followerConstants, hardwareMap)
+                .pinpointLocalizer(pinpointLocalizer1Constants)
+                .mecanumDrivetrain(driveConstants)
+                .pathConstraints(pathConstraints)
+                .build();
+    }
+    public static Follower createPinpointFollower2(HardwareMap hardwareMap) {
+        return new FollowerBuilder(followerConstants, hardwareMap)
+                .pinpointLocalizer(pinpointLocalizer2Constants)
                 .mecanumDrivetrain(driveConstants)
                 .pathConstraints(pathConstraints)
                 .build();
