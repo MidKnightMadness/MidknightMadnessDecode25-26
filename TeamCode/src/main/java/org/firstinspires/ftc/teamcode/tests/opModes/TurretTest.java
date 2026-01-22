@@ -4,10 +4,11 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
-@TeleOp(name = "Encoder Test")
-public class EncoderTest extends OpMode {
+@TeleOp(name = "Turret Test")
+public class TurretTest extends OpMode {
 
     DcMotor turretMotor;
 
@@ -47,7 +48,7 @@ public class EncoderTest extends OpMode {
         turretMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         turretMotor.setPower(MOTOR_POWER);
 
-        aprilTagWebcam.init(hardwareMap, telemetry);
+        aprilTagWebcam.init(hardwareMap, ConfigNames.arducam, telemetry);
 
         telemetry.addData("Status", "Initialized");
     }

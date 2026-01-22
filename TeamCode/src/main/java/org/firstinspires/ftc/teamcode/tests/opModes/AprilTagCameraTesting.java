@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 @Autonomous(name = "AprilTag Camera Test")
@@ -17,7 +18,7 @@ public class AprilTagCameraTesting extends OpMode {
 
     @Override
     public void init() {
-        aprilTagWebcam.init(hardwareMap, telemetry);
+        aprilTagWebcam.init(hardwareMap, ConfigNames.arducam, telemetry);
         telemetry.addData("Status", "Initialized");
     }
 
