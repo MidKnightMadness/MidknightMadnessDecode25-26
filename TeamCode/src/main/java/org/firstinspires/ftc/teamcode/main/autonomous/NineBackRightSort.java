@@ -17,6 +17,7 @@ import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.ConditionalCommand;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
+import com.seattlesolvers.solverslib.command.ParallelDeadlineGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
@@ -130,11 +131,10 @@ public class NineBackRightSort extends BaseAuto {
     FileWriter fileWriter;
     File file;
     boolean finishedWritingMotif = false;
-    public static boolean useColorSensor = false;
     public static boolean useDistanceSensor = false;
     public static double inBetweenTime = 100;
     public static boolean rawPowerOn = false;
-    public static long shootOnTime = 5000;
+    public static long shootOnTime = 3000;
     int aprilTagID = 0;
     @Override
     public void initialize_loop(){
@@ -280,7 +280,7 @@ public class NineBackRightSort extends BaseAuto {
     }
     @Override
     protected void initializeMechanisms() {
-        spindexer = new Spindexer(hardwareMap, useColorSensor, useDistanceSensor).setBallColors(startBallColors).initAngle();
+        spindexer = new Spindexer(hardwareMap, useDistanceSensor).setBallColors(startBallColors).initAngle();
 //        spindexer.getTurner2().setRunMode(CRServoEx2.RunMode.OptimizedPositionalControl);
 //        spindexer.getTurner().setRunMode(CRServoEx2.RunMode.OptimizedPositionalControl);
         shooter = new TwoWheelShooter(hardwareMap, shooterRunMode);
@@ -384,17 +384,16 @@ public class NineBackRightSort extends BaseAuto {
     }
     protected Command shoot(int shootNum){
         return new SequentialCommandGroup(
-                new WaitCommand(1000),
-                new ParallelCommandGroup(
-                        new ShootUpdateCommand(spindexer, shooter, follower, shootSide, useLUT, voltageCompensation, shootDist, rawPowerOn).withTimeout(shootOnTime),
+                new ParallelDeadlineGroup(
                         new SequentialCommandGroup(
                                 getToShootCommand(shootNum),
                                 new InstantCommand(() -> currSpindexerGotoSpot = -1),
 //                                new InstantCommand(() -> spindexer.getTurner().setRunMode(CRServoEx2.RunMode.RawPower)),
 //                                new InstantCommand(() -> spindexer.getTurner2().setRunMode(CRServoEx2.RunMode.RawPower)),
-                                new WaitCommand(500),
-                                new InstantCommand(() -> spindexer.spin(1 * spindexerSpeed))
-                        )
+                                new InstantCommand(() -> spindexer.spin(1 * spindexerSpeed)),
+                                new WaitCommand(shootOnTime)
+                        ),
+                        new ShootUpdateCommand(spindexer, shooter, follower, shootSide, useLUT, voltageCompensation, shootDist, rawPowerOn)
                 ),
                 new ParallelCommandGroup(
                     new InstantCommand(()-> shooter.stopFlywheels()),
@@ -438,7 +437,7 @@ public class NineBackRightSort extends BaseAuto {
                                 //new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex(2), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 500),
                                 new WaitCommand(thirdWaitTime)
                         ),
-                driveToIntakeEnd(targetSpot)
+                        driveToIntakeEnd(targetSpot)
                 ).withTimeout(4500),
                 new ParallelCommandGroup(
                     new InstantCommand(() -> intake.setDirectPower(0)),
@@ -491,6 +490,7 @@ public class NineBackRightSort extends BaseAuto {
     }
 
 
+    @Override
     protected void updateTelemetry(){
         // Update pose & follower
         follower.update();
@@ -529,6 +529,8 @@ public class NineBackRightSort extends BaseAuto {
 
             telemetry.addData("Shooter Low Vel", shooter.low.getVelocity());
             telemetry.addData("Shooter High Vel", shooter.high.getVelocity());
+            telemetry.addData("Shooter Low Vel", shooter.low.getCorrectedVelocity());
+            telemetry.addData("Shooter High Vel", shooter.high.getCorrectedVelocity());
             telemetry.addData("Shooter Dir RunMode", shooter.runMode);
             telemetry.addData("Shooter RunMode", shooterRunMode);
             telemetry.addData("Shooter Low RunMode", shooter.low.motorEx.getMode());
@@ -542,10 +544,9 @@ public class NineBackRightSort extends BaseAuto {
             telemetry.addData("Spindexer Ball Colors Spot", spindexer.getBallColors());
         }
 
-        //Motif
-        //telemetryManager.addData("Motif Pattern", motifPattern);
 
-        telemetry.addData("Spindexer Get Curr Angle", spindexer.getCurrentAngle());
+
+
 //
 
         telemetry.update();

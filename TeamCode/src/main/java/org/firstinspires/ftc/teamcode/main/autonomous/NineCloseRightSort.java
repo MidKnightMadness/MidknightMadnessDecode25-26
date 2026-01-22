@@ -226,7 +226,7 @@ public class NineCloseRightSort extends BaseAuto {
     }
     @Override
     protected void initializeMechanisms() {
-        spindexer = new Spindexer(hardwareMap, false, false).setBallColors(startBallColors).initAngle();
+        spindexer = new Spindexer(hardwareMap, false).setBallColors(startBallColors).initAngle();
         shooter = new TwoWheelShooter(hardwareMap, shooterRunMode);
         intake = new Intake(hardwareMap, Intake.RunMode.RawPower);
         register(intake, shooter, spindexer);

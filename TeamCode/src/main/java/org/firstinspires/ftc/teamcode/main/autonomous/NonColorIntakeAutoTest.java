@@ -117,7 +117,7 @@ public class NonColorIntakeAutoTest extends CommandOpMode {
 
     private void initializeMechanisms() {
         limelight = hardwareMap.get(Limelight3A.class, ConfigNames.limelight);
-        spindexer = new Spindexer(hardwareMap, false, false).setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE}).initAngle();
+        spindexer = new Spindexer(hardwareMap, false).setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE}).initAngle();
 
         shooter = new TwoWheelShooter(hardwareMap, shooterRunMode);
 //        shooter.setRunMode(TwoWheelShooter.RunMode.RawPower);

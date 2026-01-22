@@ -35,7 +35,7 @@ public class SpindexerShootContinuousTest extends CommandOpMode {
                 hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
         );
 
-        spindexer = new Spindexer(hardwareMap, false, false);
+        spindexer = new Spindexer(hardwareMap, false);
 
         timer = new Timer();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();

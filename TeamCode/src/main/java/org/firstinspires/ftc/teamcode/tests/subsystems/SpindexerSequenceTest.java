@@ -49,7 +49,7 @@ public class SpindexerSequenceTest extends CommandOpMode {
         timer = new Timer();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         graphM = PanelsGraph.INSTANCE.getManager();
-        spindexer = new Spindexer(hardwareMap, false, false);
+        spindexer = new Spindexer(hardwareMap, false);
         spindexer.initAngle(); // would put this later but oh well
         gp1 = new GamepadEx(gamepad1);
 

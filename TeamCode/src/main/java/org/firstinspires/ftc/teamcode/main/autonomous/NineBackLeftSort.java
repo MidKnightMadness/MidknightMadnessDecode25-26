@@ -133,7 +133,6 @@ public class NineBackLeftSort extends BaseAuto {
     FileWriter fileWriter;
     File file;
     boolean finishedWritingMotif = false;
-    public static boolean useColorSensor = false;
     public static boolean useDistanceSensor = false;
     public static double inBetweenTime = 100;
     public static boolean rawPowerOn = false;
@@ -282,7 +281,7 @@ public class NineBackLeftSort extends BaseAuto {
     }
     @Override
     protected void initializeMechanisms() {
-        spindexer = new Spindexer(hardwareMap, useColorSensor, useDistanceSensor).setBallColors(startBallColors).initAngle();
+        spindexer = new Spindexer(hardwareMap, useDistanceSensor).setBallColors(startBallColors).initAngle();
 //        spindexer.getTurner2().setRunMode(CRServoEx2.RunMode.OptimizedPositionalControl);
 //        spindexer.getTurner().setRunMode(CRServoEx2.RunMode.OptimizedPositionalControl);
         shooter = new TwoWheelShooter(hardwareMap, shooterRunMode);
@@ -307,6 +306,7 @@ public class NineBackLeftSort extends BaseAuto {
                 getToLineNum(3),
                 intakeLineThree(),
                 shoot(1),
+
                 getToLineNum(2),
                 intakeLineTwo(),
                 shoot(2),
@@ -486,7 +486,7 @@ public class NineBackLeftSort extends BaseAuto {
         return new SchedulePathTo(follower, currPose, shootPose).setMaxPower(1.0);
     }
 
-
+    @Override
     protected void updateTelemetry(){
         // Update pose & follower
         follower.update();

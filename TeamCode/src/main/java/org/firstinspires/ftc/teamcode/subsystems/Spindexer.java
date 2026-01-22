@@ -61,24 +61,25 @@ public class Spindexer extends SubsystemBase {
     BallColor newBallType = null;
 
     double overcomeWheelPower = 0.3;
-    boolean useDistanceSensor = true;
+//    boolean useDistanceSensor = false;
     double dist = 0;
     public DistanceSensor distanceSensor;
     public DistanceSensor distanceSensor2;
     double dist2 = 0;
+    boolean useDistanceSensor = false;
     public static double minDetectDistance = 6;//inch
     public Spindexer(HardwareMap hardwareMap) {
-        this(hardwareMap, false, false);
+        this(hardwareMap, false);
     }
     public void setMode(CRServoEx2.RunMode spindexerRunMode) {
         turner.setRunMode(spindexerRunMode);
         turner2.setRunMode(spindexerRunMode);
     }
-    public Spindexer(HardwareMap hardwareMap, boolean useColorSensors, boolean useDistanceSensors) {
-        this(hardwareMap, useColorSensors, useDistanceSensors, null);
+    public Spindexer(HardwareMap hardwareMap, boolean useDistanceSensors) {
+        this(hardwareMap, useDistanceSensors, null);
     }
 
-    public Spindexer(HardwareMap hardwareMap, boolean useColorSensors, boolean useDistanceSensors, BallColor[] ballColors) {
+    public Spindexer(HardwareMap hardwareMap, boolean useDistanceSensors, BallColor[] ballColors) {
         IncrementalEncoder turnerEncoder = new IncrementalEncoder(
                 hardwareMap, ConfigNames.turnerEncoder, 8192, AngleUnit.DEGREES
         ).setReversed(true);
@@ -90,19 +91,13 @@ public class Spindexer extends SubsystemBase {
                 hardwareMap, ConfigNames.turner2,
                 turnerEncoder, CRServoEx2.RunMode.OptimizedPositionalControl
         ).setPIDFTOUse(outtakeTurnerCoeff).setReversed(true);
-        this.useColorSensors = useColorSensors;
+//        this.useColorSensors = useColorSensors;
         this.useDistanceSensor = useDistanceSensors;
-        if (useColorSensors) {
-            ballDetectors = new BallDetector[] {
-                    new BallDetector(hardwareMap, ConfigNames.intakeColor1),
-                    new BallDetector(hardwareMap, ConfigNames.bottomColor),
-//                    new BallDetector(hardwareMap, ConfigNames.bottomColor)
-            };
-        }
-        if(useDistanceSensor){
-            distanceSensor = hardwareMap.get(DistanceSensor.class, ConfigNames.intakeDist1);
-            distanceSensor2 = hardwareMap.get(DistanceSensor.class, ConfigNames.intakeDist2);
-        }
+
+//        if(useDistanceSensor){
+//            distanceSensor = hardwareMap.get(DistanceSensor.class, ConfigNames.intakeDist1);
+//            distanceSensor2 = hardwareMap.get(DistanceSensor.class, ConfigNames.intakeDist2);
+//        }
 
         if(ballColors!= null){
             setBallColors(ballColors);
@@ -254,22 +249,22 @@ public class Spindexer extends SubsystemBase {
         boolean distCheck = dist <= minDetectDistance || dist2 <= minDetectDistance;
 
         if(distCheck) {
-            if(useColorSensors) {
-                color1 = ballDetectors[0].getColor();
-                color2 = ballDetectors[1].getColor();
-            } else {
-                color1 = BallColor.NONE;
-                color2 = BallColor.NONE;
-            }
-
-
-            if (color1 == BallColor.PURPLE || color2 == BallColor.PURPLE) {
-                ballColors[spot.getIndex()] = BallColor.PURPLE;
-            } else if (color1 == BallColor.GREEN || color2 == BallColor.GREEN) {
-                ballColors[spot.getIndex()] = BallColor.GREEN;
-            } else {
+//            if(useColorSensors) {
+//                color1 = ballDetectors[0].getColor();
+//                color2 = ballDetectors[1].getColor();
+//            } else {
+//                color1 = BallColor.NONE;
+//                color2 = BallColor.NONE;
+//            }
+//
+//
+//            if (color1 == BallColor.PURPLE || color2 == BallColor.PURPLE) {
+//                ballColors[spot.getIndex()] = BallColor.PURPLE;
+//            } else if (color1 == BallColor.GREEN || color2 == BallColor.GREEN) {
+//                ballColors[spot.getIndex()] = BallColor.GREEN;
+//            } else {
                 ballColors[spot.getIndex()] =  BallColor.UNKNOWN;
-            }
+//            }
         }
 
     }

@@ -145,7 +145,7 @@ public class NineBallFarLeftNonSorted extends BaseAuto {
     @Override
     protected void initializeMechanisms() {
         limelight = hardwareMap.get(Limelight3A.class, ConfigNames.limelight);
-        spindexer = new Spindexer(hardwareMap, false, false).setBallColors(startBallColors).initAngle();
+        spindexer = new Spindexer(hardwareMap, false).setBallColors(startBallColors).initAngle();
 
         shooter = new TwoWheelShooter(hardwareMap, shooterRunMode);
 //        shooter.setRunMode(TwoWheelShooter.RunMode.RawPower);

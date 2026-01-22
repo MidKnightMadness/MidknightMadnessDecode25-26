@@ -116,7 +116,7 @@ public class ColorIntakeAutoTest extends CommandOpMode {
         path.setHeadingConstraint(headingError);
     }
     private void initializeMechanisms() {
-        spindexer = new Spindexer(hardwareMap, useColor, useDistance).setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE}).initAngle();
+        spindexer = new Spindexer(hardwareMap, useDistance).setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE}).initAngle();
         intake = new Intake(hardwareMap, Intake.RunMode.RawPower);
         register(spindexer, intake);
     }

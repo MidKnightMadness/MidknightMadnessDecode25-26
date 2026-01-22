@@ -136,7 +136,6 @@ public class ThreeBackRightAuto extends BaseAuto {
     FileWriter fileWriter;
     File file;
     boolean finishedWritingMotif = false;
-    public static boolean useColorSensor = false;
     public static boolean useDistanceSensor = false;
     public static double inBetweenTime = 100;
     public static boolean rawPowerOn = false;
@@ -276,7 +275,7 @@ public class ThreeBackRightAuto extends BaseAuto {
     }
     @Override
     protected void initializeMechanisms() {
-        spindexer = new Spindexer(hardwareMap, useColorSensor, useDistanceSensor).setBallColors(startBallColors).initAngle();
+        spindexer = new Spindexer(hardwareMap, useDistanceSensor).setBallColors(startBallColors).initAngle();
 //        spindexer.getTurner2().setRunMode(CRServoEx2.RunMode.OptimizedPositionalControl);
 //        spindexer.getTurner().setRunMode(CRServoEx2.RunMode.OptimizedPositionalControl);
         shooter = new TwoWheelShooter(hardwareMap, shooterRunMode);

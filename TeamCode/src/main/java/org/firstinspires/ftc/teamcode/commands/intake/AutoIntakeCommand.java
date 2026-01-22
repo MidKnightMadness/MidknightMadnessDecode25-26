@@ -50,7 +50,7 @@ public class AutoIntakeCommand extends CommandBase {
 
     @Override
     public void execute(){
-        spindexer.updateBallSpot(currNumBall);
+//        spindexer.updateBallSpot(currNumBall);
         intake.setDirectPower(power);
 
 

@@ -37,7 +37,7 @@ public class SpindexerRotateRelativeTest extends CommandOpMode {
                 hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
         );
 
-        spindexer = new Spindexer(hardwareMap, false, false).initAngle();
+        spindexer = new Spindexer(hardwareMap, false).initAngle();
 
         timer = new Timer();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();

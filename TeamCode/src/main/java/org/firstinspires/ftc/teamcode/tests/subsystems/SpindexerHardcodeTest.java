@@ -44,7 +44,7 @@ public class SpindexerHardcodeTest extends CommandOpMode {
                 hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
         );
 
-        spindexer = new Spindexer(hardwareMap, false, false);
+        spindexer = new Spindexer(hardwareMap, false);
         shooter = new TwoWheelShooter(hardwareMap, TwoWheelShooter.RunMode.RawPower);
 
         timer = new Timer();

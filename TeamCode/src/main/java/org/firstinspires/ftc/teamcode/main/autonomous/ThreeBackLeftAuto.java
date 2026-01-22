@@ -141,7 +141,7 @@ public class ThreeBackLeftAuto extends BaseAuto {
     @Override
     protected void initializeMechanisms() {
         limelight = hardwareMap.get(Limelight3A.class, ConfigNames.limelight);
-        spindexer = new Spindexer(hardwareMap, false, false).setBallColors(startBallColors);
+        spindexer = new Spindexer(hardwareMap, false).setBallColors(startBallColors);
 
         shooter = new TwoWheelShooter(hardwareMap, shooterRunMode);
 //        shooter.setRunMode(TwoWheelShooter.RunMode.RawPower);
