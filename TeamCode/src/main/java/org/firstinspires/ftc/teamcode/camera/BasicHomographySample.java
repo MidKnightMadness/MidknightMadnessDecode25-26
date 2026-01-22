@@ -13,7 +13,8 @@ import org.opencv.core.Point;
 /**
  * BasicHomographySample demonstrates using a homography transformation
  * with a Limelight camera to convert camera coordinates to robot-relative coordinates.
- */ //nice chatgpt allen (i know where u live)
+ */ //nice chatgpt allen (i know where u live)(nuh uh)
+    //this was not chatgpt its copied from mset cuttlefish homography guide ok
 @TeleOp(name = "BasicHomographySample", group = "Linear OpMode")
 public class BasicHomographySample extends LinearOpMode {
 

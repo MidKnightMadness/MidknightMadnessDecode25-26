@@ -65,10 +65,16 @@ public class CameraTest extends OpMode {
          */
         detections = result.getDetectorResults();
 
-        }
-        if(detections.isEmpty()){
+
+        if(detections.isEmpty()|| result == null){
             telemetry.addData("Limelight", "No Detection");
             telemetry.update();
+            coordX.clear();
+            coordY.clear();
+            distances.clear();
+            index = 0;
+            closeX = 0;
+            closeY = 0;
         }
         else{
             for (LLResultTypes.DetectorResult detection : detections) {
@@ -93,15 +99,31 @@ public class CameraTest extends OpMode {
             }
             closeX = coordX.get(index);
             closeY = coordY.get(index);
+            telemetry.addData("CloseX: ", closeX);
+            telemetry.addData("CloseY: ", closeY);
 
             telemetry.update();
+            index = 0;
             coordX.clear();
             coordY.clear();
             distances.clear();
         }
     }
-
     private static double distance(double x, double y){
         return Math.sqrt(x*x+y*y);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
