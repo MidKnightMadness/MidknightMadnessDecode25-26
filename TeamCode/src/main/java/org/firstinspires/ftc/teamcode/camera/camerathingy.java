@@ -51,7 +51,7 @@ public class camerathingy extends OpMode {
         double W = H[2][0] * x + H[2][1] * y + H[2][2];
 
         double x_robot = X_prime / W / PPI + hOffset;
-        double y_robot = Y_prime / W / PPI + hOffset;
+        double y_robot = Y_prime / W / PPI + vOffset;
 
         coordinateX = x_robot;
         coordinateY = y_robot;
