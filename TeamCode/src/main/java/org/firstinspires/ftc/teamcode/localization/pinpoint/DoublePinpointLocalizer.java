@@ -108,7 +108,7 @@ public class DoublePinpointLocalizer implements Localizer {
         );
 
 
-        totalHeading = (pinpoint1Localizer.getTotalHeading() + pinpoint2Localizer.getTotalHeading()) / 2;
+        totalHeading += (pinpoint1Localizer.getTotalHeading() + pinpoint2Localizer.getTotalHeading()) / 2;
         previousHeading = currentPose.getHeading();
     }
 

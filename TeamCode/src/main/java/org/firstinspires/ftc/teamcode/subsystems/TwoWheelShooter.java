@@ -5,15 +5,18 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.Vector;
-import com.qualcomm.robotcore.hardware.DcMotor;
+
+
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
-import com.seattlesolvers.solverslib.hardware.motors.Motor;
-import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
+
+
 import com.seattlesolvers.solverslib.util.InterpLUT;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
+import org.firstinspires.ftc.teamcode.hardware.Motor;
+import org.firstinspires.ftc.teamcode.hardware.MotorEx;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 
@@ -22,7 +25,6 @@ import java.util.Map;
 @Configurable
 @Config
 public class TwoWheelShooter extends SubsystemBase {
-
 
     public enum RunMode {
         RawPower,
@@ -35,13 +37,15 @@ public class TwoWheelShooter extends SubsystemBase {
     }
 
     //DEFAULT GAINS
-    public static double[] pidBotGains = new double[]{0.0004, 0, 0.00001};
-    public static double[] kBotGains = new double[]{0, 0.00005, 0};
-    public static double[] pidTopGains = new double[]{0.0004, 0.00005, 0.00001};
+//    public static double[] pidBotGains = new double[]{0.0004, 0, 0.00001};
+   //public static double[] kBotGains = new double[]{0, 0.00005, 0};///change -> 0.00005 to 0.0004 mybe
+    public static double[] kBotGains = new double[]{120, 0.00035, 0};
+    public static double[] pidTopGains = new double[]{0.0005, 0, 0.00001};
+    public static double[] pidBotGains = new double[]{0.00006, 0.00003, 0};
     public static double[] kTopGains = new double[]{0.02, 0.00005, 0};
 
     public static boolean useAggressiveRecovery = false;
-    boolean inRecoveryMode = false;
+    public boolean inRecoveryMode = false;
     //AGGRESSIVE GAINS: FOR RECOVERY
     public static double[] pidBotAggressiveGains = new double[]{0.0008, 0, 0.00005};
     public static double[] pidTopAggressiveGains = new double[]{0.0008, 0, 0.00005};
@@ -68,13 +72,15 @@ public class TwoWheelShooter extends SubsystemBase {
     public static double gearRatio = 3;
 
     public static boolean lowMotorDirForward = true;
-    public static boolean highMotorDirForward = true;
-    public static double topVelocityOffset = 500;
+    public static boolean highMotorDirForward = false;
+    public static double topVelocityOffset = 0;
     double predictedTopVel = 1500;
     double predictedBotVel = 1500;
+    double predictedTopPower = 0.8;
+    double predictedBotPower = 0.8;
 
-    public static double topRecoveryFactor = 1.18;//TUNE
-    public static double botRecoveryFactor = 1.17;//TUNE
+    public static double topRecoveryFactor = 1.1;//TUNE
+    public static double botRecoveryFactor = 1.1;//TUNE
     double currTopFactor = 1;
     double currBotFactor = 1;
     public static double recoveryBoostTime = 1000;
@@ -86,10 +92,9 @@ public class TwoWheelShooter extends SubsystemBase {
 
 //    public static double[] closeTargetVelocities = new double[] {1800, 1900};
     public static double[] closeTargetVelocities = new double[] {1600, 1750};
-    public static double[] farTargetVelocities = new double[]{2400, 2000};
-//    public static double[] closeTargetPowers = new double[]{0.85, 1};
-//
-//    public static double[] farTargetPowers = new double[]{0.95, 1};
+    public static double[] farTargetVelocities = new double[]{2200, 1800};
+    public static double[] closeTargetPowers = new double[]{0.7, 0.8};
+    public static double[] farTargetPowers = new double[]{0.9, 0.85};
 
     double currVolt = 0;
     HardwareMap map;
@@ -98,6 +103,8 @@ public class TwoWheelShooter extends SubsystemBase {
     public static double velBotTolerance = 100;
     public static double velTopTolerance = 100;
     public static double velMovingThreshold = 2;//in per sec
+    double topMultiplier = 0;
+    double botMultiplier = 0;
 
 
 
@@ -110,21 +117,21 @@ public class TwoWheelShooter extends SubsystemBase {
         high = new MotorEx(hardwareMap, ConfigNames.highFlywheelMotor);
         low.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         high.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-        low.motorEx.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        high.motorEx.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        low.motorEx.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//        high.motorEx.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         this.map = hardwareMap;
         setRunMode(runMode);
 
-        distToLowVel = new InterpLUT();
-        distToHighVel = new InterpLUT();
-        for (int i = 0; i < dist.length; i++) {
-            distToLowVel.add(dist[i], bottomVel[i]);
-            distToHighVel.add(dist[i], topVel[i]);
-        }
-
-        distToLowVel.createLUT();
-        distToHighVel.createLUT();
+//        distToLowVel = new InterpLUT();
+//        distToHighVel = new InterpLUT();
+//        for (int i = 0; i < dist.length; i++) {
+//            distToLowVel.add(dist[i], bottomVel[i]);
+//            distToHighVel.add(dist[i], topVel[i]);
+//        }
+//
+//        distToLowVel.createLUT();
+//        distToHighVel.createLUT();
 
         low.motor.setDirection(lowMotorDirForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);
         high.motor.setDirection(highMotorDirForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);
@@ -181,16 +188,16 @@ public class TwoWheelShooter extends SubsystemBase {
 
     //thresholds whether robot is currently moving
     public void setFlywheelPresets(ShootDist shootDist, Follower follower, ShootSide shootSide,  boolean voltageUse){
-        Vector robotVelocity = follower.getVelocity();
-        boolean isMoving = true;
-        if(robotVelocity.getMagnitude() <= velMovingThreshold){
-            isMoving = false;
-        }
-        if(!isMoving){
+//        Vector robotVelocity = follower.getVelocity();
+//        boolean isMoving = true;
+//        if(robotVelocity.getMagnitude() <= velMovingThreshold){
+//            isMoving = false;
+//        }
+//        if(!isMoving){
             setFlywheelStaticPresets(shootDist, voltageUse);
-        } else{
-            setFlywheelMovingPresets(follower.getPose(), shootDist, shootSide, robotVelocity, voltageUse);
-        }
+//        } else{
+//            setFlywheelMovingPresets(follower.getPose(), shootDist, shootSide, robotVelocity, voltageUse);
+//        }
     }
 
     //thresholds whether robot is currently moving
@@ -200,11 +207,11 @@ public class TwoWheelShooter extends SubsystemBase {
         if(robotVelocity.getMagnitude() <= velMovingThreshold){
             isMoving = false;
         }
-        if(!isMoving){
+//        if(!isMoving){
             setFlywheelMovingLUT(follower.getPose(), shootSide, robotVelocity, voltageUse);
-        } else{
-            setFlywheelMovingLUT(follower.getPose(), shootSide, robotVelocity, voltageUse);
-        }
+//        } else{
+//            setFlywheelStaticLUT(follower.getPose(), shootSide, voltageUse);
+//        }
     }
 
 
@@ -246,7 +253,7 @@ public class TwoWheelShooter extends SubsystemBase {
         updateRecoveryState();
         currVolt = map.voltageSensor.iterator().next().getVoltage();
         double ratio = voltageUse ? (targetVoltage / currVolt) : 1;
-        ratio = Math.min(ratio, 1.25);
+        ratio = Math.min(ratio, 1.35);
 
         double botVel, topVel;
         if(useLUT){
@@ -255,7 +262,12 @@ public class TwoWheelShooter extends SubsystemBase {
             if(runMode != RunMode.VelocityControl) setRunMode(RunMode.VelocityControl);
         }
         else{
-            double[] preset = (shootDist == ShootDist.Close) ? closeTargetVelocities : farTargetVelocities;
+            double[] preset;
+            if(runMode == RunMode.VelocityControl){
+                preset = (shootDist == ShootDist.Close) ? closeTargetVelocities : farTargetVelocities;
+            } else{
+                preset = (shootDist == ShootDist.Close) ? closeTargetPowers : farTargetPowers;
+            }
             botVel = preset[0];
             topVel = preset[1];
         }
@@ -263,11 +275,19 @@ public class TwoWheelShooter extends SubsystemBase {
         botVel -= kBotShootMovingFactor * vParallel;
         topVel -= kTopShootMovingFactor * vParallel;
 
-        botVel *= ratio * currBotFactor;
-        topVel *= ratio * currTopFactor;
-        predictedBotVel = botVel;
-        predictedTopVel = topVel;
-        setCustomPower(botVel, topVel);
+        topMultiplier = ratio * currTopFactor;
+        botMultiplier = ratio * currBotFactor;
+
+        if(runMode == RunMode.VelocityControl) {
+            predictedBotVel = botVel;
+            predictedTopVel = topVel;
+        } else{
+            predictedBotPower = botVel;
+            predictedTopPower = topVel;
+        }
+
+        low.set(botVel, botMultiplier);
+        high.set(topVel, topMultiplier);
     }
 
     //set flywheel by distance -> static, not moving, lut use
@@ -378,11 +398,16 @@ public class TwoWheelShooter extends SubsystemBase {
             high.set(highPower + topVelocityOffset);//account for belted motor
         }
         else {
-            low.set(lowPower / low.ACHIEVABLE_MAX_TICKS_PER_SECOND);
-            high.set(highPower / high.ACHIEVABLE_MAX_TICKS_PER_SECOND);
+            low.set(lowPower);
+            high.set(highPower);
         }
     }
 
+
+    public void setRawPower(double lowPower, double highPower){
+        low.set(lowPower);
+        high.set(highPower);
+    }
 
     public void resetRecoveryFactors(){
         currBotFactor = 1;

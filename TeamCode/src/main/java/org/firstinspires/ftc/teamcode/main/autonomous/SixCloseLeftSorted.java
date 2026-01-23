@@ -7,6 +7,7 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
@@ -35,8 +36,9 @@ import org.firstinspires.ftc.teamcode.game.ShootSide;
 
 @Config
 @Configurable
+@Disabled
 @Autonomous(name = "6 Close Left", group = "Competition")
-public class SixBallCloseLeftSorted extends BaseAuto {
+public class SixCloseLeftSorted extends BaseAuto {
     public static double motifDetectionTimeMs = 3000;
     int startPipeline = 1;
     public static Pose startPose = new Pose(144 - 118, 130, Math.toRadians(320));

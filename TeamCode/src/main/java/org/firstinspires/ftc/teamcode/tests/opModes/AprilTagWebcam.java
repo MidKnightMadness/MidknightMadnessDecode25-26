@@ -22,7 +22,7 @@ public class AprilTagWebcam {
     private List<org.firstinspires.ftc.vision.apriltag.AprilTagDetection> detectedTags = new ArrayList<>();
     private Telemetry telemetry;
 
-    public void init(HardwareMap hwMap, Telemetry telemetry) {
+    public void init(HardwareMap hwMap, String s, Telemetry telemetry) {
         this.telemetry = telemetry;
 
         aprilTagProcessor = new AprilTagProcessor.Builder()
@@ -34,7 +34,7 @@ public class AprilTagWebcam {
                 .build();                                           // problems
 
         VisionPortal.Builder builder = new VisionPortal.Builder();
-        builder.setCamera(hwMap.get(WebcamName.class, "Webcam 1"));
+        builder.setCamera(hwMap.get(WebcamName.class, s));
         builder.setCameraResolution(new Size(1280, 720));
         builder.enableLiveView(true);
         builder.addProcessor(aprilTagProcessor); // change depending on limelight vs other camera,

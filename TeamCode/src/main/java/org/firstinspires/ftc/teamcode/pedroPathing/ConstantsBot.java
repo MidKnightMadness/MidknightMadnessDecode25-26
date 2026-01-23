@@ -23,22 +23,22 @@ public class ConstantsBot {
     public static boolean motifIsBusy = true;
     public static GoBildaPinpointDriver.DeviceStatus deviceStatus = GoBildaPinpointDriver.DeviceStatus.FAULT_BAD_READ;
     public static FollowerConstants followerConstants = new FollowerConstants()
-            .forwardZeroPowerAcceleration(-57)//TUNED
-            .lateralZeroPowerAcceleration(-85)//TUNED
+            .forwardZeroPowerAcceleration(-39)//TUNED
+            .lateralZeroPowerAcceleration(-70)//TUNED
             // Translational PIDF
             .translationalPIDFSwitch(4)
-            .translationalPIDFCoefficients(new PIDFCoefficients(0.1, 0, 0.04, 0))
-            .secondaryTranslationalPIDFCoefficients(new PIDFCoefficients(0.1, 0, 0.04, 0.03))
+            .translationalPIDFCoefficients(new PIDFCoefficients(0.05, 0, 0, 0))
+            .secondaryTranslationalPIDFCoefficients(new PIDFCoefficients(0.05, 0, 0, 0.03))
             // Heading PIDF
-            .headingPIDFCoefficients(new PIDFCoefficients(2, 0, 0.02, 0.02))
-            .secondaryHeadingPIDFCoefficients(new PIDFCoefficients(1.5, 0, 0.01, 0.02))
+            .headingPIDFCoefficients(new PIDFCoefficients(1, 0, 0.02, 0.02))
+            .secondaryHeadingPIDFCoefficients(new PIDFCoefficients(1.5, 0, 0.01, 0.03))
             // Drive PIDF
             .drivePIDFSwitch(15)
             .useSecondaryDrivePIDF(true)
-            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.01, 0, 0.003, 0.6, 0.02))
-            .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(0.015, 0, 0.005, 0.6, 0.03))
-            .centripetalScaling(0.0005)
-            .mass(15.5);
+            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.01, 0, 0, 0.6, 0.01))
+            .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(0.015, 0, 0, 0.6, 0.01))
+            .mass(29.1 * 0.454)
+            .centripetalScaling(0.0005);
 
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 0.5, 1);
 
@@ -53,7 +53,7 @@ public class ConstantsBot {
             .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
     public static PinpointConstants pinpointLocalizer2Constants = new PinpointConstants()
-            .forwardPodY(115.39 / 25.4)//TODO: ADD VALUE
+            .forwardPodY(116.11 / 25.4)//TODO: ADD VALUE
             .strafePodX(-173.57 / 25.4)//TODO: ADD VALUE
             .distanceUnit(DistanceUnit.INCH)
             .hardwareMapName(ConfigNames.pinpoint2)
@@ -82,7 +82,7 @@ public class ConstantsBot {
     public static MecanumConstants driveConstants = new MecanumConstants()
             .maxPower(1)
             .xVelocity(68.2)
-            .yVelocity(50.0)
+            .yVelocity(53.4)
             .rightFrontMotorName(ConfigNames.FR)
             .rightRearMotorName(ConfigNames.BR)
             .leftRearMotorName(ConfigNames.BL)
@@ -101,6 +101,20 @@ public class ConstantsBot {
     public static Follower createPinpointFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(followerConstants, hardwareMap)
                 .pinpointLocalizer(pinpointLocalizer1Constants)
+                .mecanumDrivetrain(driveConstants)
+                .pathConstraints(pathConstraints)
+                .build();
+    }
+    public static Follower createPinpointFollower1(HardwareMap hardwareMap) {
+        return new FollowerBuilder(followerConstants, hardwareMap)
+                .pinpointLocalizer(pinpointLocalizer1Constants)
+                .mecanumDrivetrain(driveConstants)
+                .pathConstraints(pathConstraints)
+                .build();
+    }
+    public static Follower createPinpointFollower2(HardwareMap hardwareMap) {
+        return new FollowerBuilder(followerConstants, hardwareMap)
+                .pinpointLocalizer(pinpointLocalizer2Constants)
                 .mecanumDrivetrain(driveConstants)
                 .pathConstraints(pathConstraints)
                 .build();

@@ -41,10 +41,10 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 @Config
 @Configurable
 @Autonomous(name = "Intake Auto Test", group = "Competititon")
-public class IntakeAutoTest extends CommandOpMode {
-    public static long firstWaitTime = 700;
-    public static long secondWaitTime = 200;
-    public static long thirdWaitTime = 150;//250 old
+public class NonColorIntakeAutoTest extends CommandOpMode {
+    public static long firstWaitTime = 300;//700
+    public static long secondWaitTime = 200;//500
+    public static long thirdWaitTime = 200;//500
 
     public static long fourthWaitTime = 500;
     public static double pathDistThresholdMin = 0.5;
@@ -130,14 +130,18 @@ public class IntakeAutoTest extends CommandOpMode {
 
     }
 
+
+    int currSpindexerSpot = 0;
+
     @Override
     public void run(){
         super.run();
 
         if(!started){
-            schedule(intake(1, 0));
+            schedule(intake(1));
             started = true;
         }
+        spindexer.goToSpot(SpindexerSpot.fromIndex(currSpindexerSpot), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
 
         //   if(postMotifSequence().isFinished()){
 //            if(goToIntakeLine()!= null){
@@ -150,29 +154,20 @@ public class IntakeAutoTest extends CommandOpMode {
     }
 
 
-    protected Command intake(int targetSpot, int initialSpindexerIntakeSpot){
+    protected Command intake(int targetSpot){
 //        autoIntakeCommand = new AutoIntakeCommand(spindexer, intake, intakePower, intakeTime);
         return new SequentialCommandGroup(
                 new ParallelCommandGroup(
-                new InstantCommand(() -> intake.setDirectPower(1.0)),
-                new SequentialCommandGroup(
-                        new WaitCommand(firstWaitTime),
-                        new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 1) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
-                        // new InstantCommand(() -> spindexer.getTurner().setPIDFTOUse(spindexer.intakeTurnerCoeff)),
-                        new WaitCommand(secondWaitTime),
-//                            new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 2) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
-//                            new InstantCommand(() -> spindexer.getTurner().setPIDFTOUse(spindexer.outtakeTurnerCoeff)),
-//                            new WaitCommand(thirdWaitTime),
-//                            new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 2) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0)
-                        new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0.6)),//rotate manually for the last one
-                        new WaitCommand(thirdWaitTime),
-                        new InstantCommand(()-> spindexer.setAngleTolerance(Angle.fromDegrees(10))),
-                        new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 2) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
-                        new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0)),
-                        new WaitCommand(fourthWaitTime)
+                        new InstantCommand(() -> intake.setDirectPower(1.0)),
+                        new SequentialCommandGroup(
+                                new WaitCommand(firstWaitTime),
+                                new InstantCommand(() -> currSpindexerSpot = 1),
+                                new WaitCommand(secondWaitTime),
+                                new InstantCommand(() -> currSpindexerSpot = 2),
+                                new WaitCommand(thirdWaitTime)
+                        ),
+                        driveToIntakeEnd(targetSpot)
                 ),
-                driveToIntakeEnd(targetSpot)
-            ),
                 new InstantCommand(()-> intake.stopPower())
         );
 
@@ -186,16 +181,18 @@ public class IntakeAutoTest extends CommandOpMode {
         follower.update();
         return new SequentialCommandGroup(
                 new SchedulePathTo(follower, new Pose(intakePose.getX() + xChangeIntake, intakePose.getY(), intakePose.getHeading()), headingError, timeOutConstraint, pathDistThresholdMin)
-                        .setMaxPower(0.3)
+                        .setMaxPower(1.0)
         );
     }
 
     protected void updateTelemetry(){
         // Update pose & follower
         follower.update();
-        double currentTime = gameTimer.getTime();
+//        double currentTime = gameTimer.getTime();
 
         // Follower
+        telemetry.addData("Curr Spot", currSpindexerSpot);
+        telemetry.addData("Update Rate", 1000.0 / gameTimer.getDeltaTime());
         telemetry.addData("Current Follower Pose", follower.getPose().getPose());
         telemetry.addData("Follower Velocity", follower.getVelocity());
 //        telemetry.addData("Start Ball Color 0", startBallColors[0]);
@@ -255,8 +252,8 @@ public class IntakeAutoTest extends CommandOpMode {
         }
 
         //Time
-        telemetry.addData("Auto Elapsed Time", currentTime);
-        telemetry.addData("Update Rate", 1 / gameTimer.getDeltaTime());
+//        telemetry.addData("Auto Elapsed Time", currentTime);
+//        telemetry.addData("Update Rate", 1 / gameTimer.getDeltaTime());
 
 
         telemetry.addData("Spindexer Get Curr Angle", spindexer.getCurrentAngle());

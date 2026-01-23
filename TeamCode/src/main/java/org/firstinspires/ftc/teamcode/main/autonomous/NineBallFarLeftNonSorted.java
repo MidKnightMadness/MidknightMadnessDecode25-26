@@ -33,6 +33,7 @@ import org.firstinspires.ftc.teamcode.game.ShootSide;
 
 @Config
 @Configurable
+
 @Autonomous(name = "9 Far Left NonSorted", group = "Competition")
 public class NineBallFarLeftNonSorted extends BaseAuto {
     public static double motifDetectionTimeMs = 3000;

@@ -23,7 +23,7 @@ public class CRServoEx2<E extends Encoder> extends CRServo {
     public double power = 0;
     public double positivePowerCount = 0;
     public double setCount = 0;
-    double minPowerOvercome = 0.3;
+    double minPowerOvercome = 0.5;
     double minErrorThreshold = 30;//degrees
     /**
      * The mode in which the CR servo should behave.
@@ -183,8 +183,9 @@ public class CRServoEx2<E extends Encoder> extends CRServo {
 
             double error = MathUtils.normalizeAngle(output - encoder.getAngle(), false, encoder.getAngleUnit());
 
-            double power = pidf.calculate(0, error);
-            if(nearWheel){
+            double sqrtError = Math.sqrt(Math.abs(error));
+            double power = pidf.calculate(0, sqrtError);
+            if(Math.abs(error) > 50 && Math.abs(error) < 70){
                 power = Math.signum(error) * Math.max(Math.abs(power), minPowerOvercome);
             }
             this.error = error;

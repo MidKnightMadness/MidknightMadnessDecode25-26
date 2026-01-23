@@ -12,6 +12,7 @@ import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.button.Button;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
+import com.seattlesolvers.solverslib.hardware.motors.Motor;
 
 import org.firstinspires.ftc.teamcode.commands.spindexer.SpindexerGotoSpot;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
@@ -63,36 +64,37 @@ public class SpindexerGotoSpotTest extends CommandOpMode {
 
 
         intakeSpot0Button.whenPressed(new SequentialCommandGroup(
-                new InstantCommand(() -> targetSpot = 0),
-                new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, runMode, finishedTimeThreshold)
+                new InstantCommand(() -> targetSpot = 0)
+            //    new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, runMode, finishedTimeThreshold)
         ));
         intakeSpot1Button.whenPressed(new SequentialCommandGroup(
-                new InstantCommand(() -> targetSpot = 1),
-                new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT1, SpotType.INTAKE, runMode, finishedTimeThreshold)
+                new InstantCommand(() -> targetSpot = 1)
+             //   new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT1, SpotType.INTAKE, runMode, finishedTimeThreshold)
         ));
         intakeSpot2Button.whenPressed(new SequentialCommandGroup(
-                new InstantCommand(() -> targetSpot = 2),
-                new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT2, SpotType.INTAKE, runMode, finishedTimeThreshold)
+                new InstantCommand(() -> targetSpot = 2)
+              //  new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT2, SpotType.INTAKE, runMode, finishedTimeThreshold)
         ));
 
         outakeSpot0Button.whenPressed(new SequentialCommandGroup(
-                new InstantCommand(() -> targetSpot = 0),
-                new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.OUTTAKE, runMode, finishedTimeThreshold)
+                new InstantCommand(() -> targetSpot = 0)
+            //    new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.OUTTAKE, runMode, finishedTimeThreshold)
         ));
         outakeSpot1Button.whenPressed(new SequentialCommandGroup(
-                new InstantCommand(() -> targetSpot = 1),
-                new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT1, SpotType.OUTTAKE, runMode, finishedTimeThreshold)
+                new InstantCommand(() -> targetSpot = 1)
+             //   new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT1, SpotType.OUTTAKE, runMode, finishedTimeThreshold)
         ));
         outakeSpot2Button.whenPressed(new SequentialCommandGroup(
-                new InstantCommand(() -> targetSpot = 2),
-                new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT2, SpotType.OUTTAKE, runMode, finishedTimeThreshold)
+                new InstantCommand(() -> targetSpot = 2)
+              //  new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT2, SpotType.OUTTAKE, runMode, finishedTimeThreshold)
         ));
 
         nearestIntakeSpotButton.whenPressed((new SequentialCommandGroup(
                         new InstantCommand(() -> nearestIntakeSpot = spindexer.getNearestSpot(spindexer.getCurrentAngle(), SpotType.INTAKE).getIndex()),
-                        new InstantCommand(() -> targetSpot = nearestIntakeSpot),
-                        new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex(nearestIntakeSpot), SpotType.INTAKE, runMode, finishedTimeThreshold
-        ))));
+                        new InstantCommand(() -> targetSpot = nearestIntakeSpot)
+               //         new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex(nearestIntakeSpot), SpotType.INTAKE, runMode, finishedTimeThreshold
+        )));
+
 
 
         register(spindexer);
@@ -104,6 +106,13 @@ public class SpindexerGotoSpotTest extends CommandOpMode {
         updateTelemetry();
         super.run();
 
+        if(targetSpot != -1){
+            spindexer.goToSpotOptimized(SpindexerSpot.fromIndex(targetSpot), SpotType.INTAKE);
+        }
+
+        try {
+            Thread.sleep(50);
+        } catch( Exception e) { }
     }
 
     public void addDataTelemetryGraph(String key, Number value) {
