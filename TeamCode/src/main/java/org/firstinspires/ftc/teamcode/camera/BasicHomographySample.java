@@ -32,9 +32,9 @@ public class BasicHomographySample extends LinearOpMode {
 
     // Homography transformation matrix
     private final double[][] H = {
-            {4.158013, 5.076947, -1146.668632},
-            {-1.674058, 8.920382, -450.058258},
-            {-0.000171, 0.003455, 1.000000}
+            {5.828680, 1.841763, -3515.724491},
+            {0.052028, 13.011093, -4470.243506},
+            {0.000090, 0.003892, 1.000000}
     };
 
     // Pixels Per Inch on calibration image
