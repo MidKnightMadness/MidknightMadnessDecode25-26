@@ -15,33 +15,34 @@ import org.firstinspires.ftc.teamcode.hardware.setServoCam;
 import java.util.ArrayList;
 
 import java.util.List;
+
 @TeleOp
 public class camerathingy extends OpMode {
     Limelight3A limelight;
     LLResult result;
     List<LLResultTypes.DetectorResult> detections;
-    Servo cam;
     double minX;
     double minY;
     double minD;
     double coordinateX;
     double coordinateY;
-    private static final double horizontalFOV = 100;
-    private static final double verticalFOV = 100;
-    private static final double camWidth = 100;
-    private static final double camHeight = 100;
-    private static final double PPI = 100;
-    private static final double hOffset = 100;
-    private static final double vOffset = 100;
+    private static final double horizontalFOV = 54.5;
+    private static final double verticalFOV = 42;
+    private static final double camWidth = 1280;
+    private static final double camHeight = 960;
+    private static final double PPI = 96;
+    private static final double hOffset = 0;
+    private static final double vOffset = 0;
     private final double[][] H = {
             {5.828680, 1.841763, -3515.724491},
             {0.052028, 13.011093, -4470.243506},
             {0.000090, 0.003892, 1.000000}
     };
 
-    private static double distance(double x, double y){
-        return Math.sqrt(x*x+y*y);
+    private static double distance(double x, double y) {
+        return Math.sqrt(x * x + y * y);
     }
+
     private void processHomography(double x_degrees, double y_degrees) {
         double x = (x_degrees / horizontalFOV) * camWidth + (camWidth / 2.0);
         double y = (y_degrees / verticalFOV) * camHeight + (camHeight / 2.0);
@@ -63,10 +64,9 @@ public class camerathingy extends OpMode {
         limelight.setPollRateHz(400); //default 100
         limelight.start();
         limelight.pipelineSwitch(0);
-        cam = hardwareMap.get(Servo.class, "camServo");
-        minX = 1000000000;
-        minY = 1000000000;
-        minD = 1000000000;
+        minX = Double.MAX_VALUE;
+        minY = Double.MAX_VALUE;
+        minD = Double.MAX_VALUE;
     }
 
     @Override
@@ -89,21 +89,19 @@ public class camerathingy extends OpMode {
         detections = result.getDetectorResults();
 
 
-        if(detections.isEmpty()|| result == null){
+        if (detections.isEmpty() || result == null) {
             telemetry.addData("Limelight", "No Detection");
             telemetry.update();
-        }
-        else {
+        } else {
             for (LLResultTypes.DetectorResult detection : detections) {
                 String className = detection.getClassName(); // What was detected
                 double x = detection.getTargetXDegrees(); // Where it is (left-right)
                 double y = detection.getTargetYDegrees(); // Where it is (up-down)
-                telemetry.addData(className, "at (" + x + ", " + y + ") degrees");
-                //run it through homography, done
+                //run it through homographyhgfghjkjhgfghjhgfd
                 //telemetry.addData(className, "at (" + coordinateX + ", " + coordinateY + ") coordinates");
                 processHomography(x, y);
-                telemetry.addData(className, "at (" + coordinateX + ", " + coordinateY + ") coordinates");
-                if(distance(coordinateX, coordinateY) < minD) {
+                telemetry.addData(className, "at (" + coordinateX + ", " + coordinateY + ") coordinates. Distance: " + distance(coordinateX, coordinateY));
+                if (distance(coordinateX, coordinateY) < minD) {
                     minX = coordinateX;
                     minY = coordinateY;
                     minD = distance(coordinateX, coordinateY);

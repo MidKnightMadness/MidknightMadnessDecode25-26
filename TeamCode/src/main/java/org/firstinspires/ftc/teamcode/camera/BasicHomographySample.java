@@ -20,11 +20,11 @@ public class BasicHomographySample extends LinearOpMode {
 
     // Offset constants in inches
     public static double HORIZONTAL_OFFSET = 0;
-    public static double VERTICAL_OFFSET = 24;
+    public static double VERTICAL_OFFSET = 0;
 
     // Camera resolution constants
-    public static double CAMERA_WIDTH = 640.0;
-    public static double CAMERA_HEIGHT = 480.0;
+    public static double CAMERA_WIDTH = 1280;
+    public static double CAMERA_HEIGHT = 960;
 
     // Camera field of view constants in degrees
     public static double HORIZONTAL_FOV = 54.5;
