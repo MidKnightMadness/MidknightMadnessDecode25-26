@@ -114,9 +114,9 @@ public class camerathingy extends OpMode {
             telemetry.update();
 
         }
-        }
     }
-    
+}
+
 
 
 
