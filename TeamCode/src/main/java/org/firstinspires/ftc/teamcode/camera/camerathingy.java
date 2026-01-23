@@ -109,7 +109,7 @@ public class camerathingy extends OpMode {
                     minD = distance(coordinateX, coordinateY);
                 }
             }
-            telemetry.addData("Closest ball: ", "(" + coordinateX + ", " + coordinateY + ')';
+            telemetry.addData("Closest ball: ", "(" + minX + ", " + minY + ")" + "distance: " + minD);
 
             telemetry.update();
 
