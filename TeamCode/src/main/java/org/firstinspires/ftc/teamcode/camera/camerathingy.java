@@ -42,10 +42,6 @@ public class camerathingy extends OpMode {
             {0.052028, 13.011093, -4470.243506},
             {0.000090, 0.003892, 1.000000}
     };
-    ArrayList<Double> xBuffer;
-    ArrayList<Double> yBuffer;
-    double totalX;
-    double totalY;
 
     private static double distance(double x, double y) {
         return Math.sqrt(x * x + y * y);
@@ -75,10 +71,6 @@ public class camerathingy extends OpMode {
         minX = Double.MAX_VALUE;
         minY = Double.MAX_VALUE;
         minD = Double.MAX_VALUE;
-        xBuffer = new ArrayList<>();
-        yBuffer = new ArrayList<>();
-        totalX = 0;
-        totalY = 0;
     }
 
     @Override
@@ -112,27 +104,7 @@ public class camerathingy extends OpMode {
                 //run it through homographyhgfghjkjhgfghjhgfd
                 //telemetry.addData(className, "at (" + coordinateX + ", " + coordinateY + ") coordinates");
                 processHomography(x, y);
-                xBuffer.add(coordinateX);
-                totalX = 0;
-                if(xBuffer.size() > 3){
-                    for(double item : xBuffer){
-                        totalX = totalX + item;
-                    }
-                    totalX = totalX/3;
-                    coordinateX = totalX;
-                    xBuffer.clear();
-                }
-                yBuffer.add(coordinateY);
-                totalY = 0;
-                    for(double item : yBuffer){
-                        totalY = totalY + item;
-                    }
-                    totalY = totalY/3;
-                    coordinateY = totalY;
-                    yBuffer.clear();
-                }
-
-                telemetry.addData("Ball found", "at (" + coordinateX + ", " + coordinateY + ") coordinates. Distance: " + distance(coordinateX, coordinateY));
+                telemetry.addData(className, "at (" + coordinateX + ", " + coordinateY + ") coordinates. Distance: " + distance(coordinateX, coordinateY));
                 if (distance(coordinateX, coordinateY) < minD) {
                     minX = coordinateX;
                     minY = coordinateY;
@@ -145,8 +117,8 @@ public class camerathingy extends OpMode {
             minY = Double.MAX_VALUE;
             telemetry.update();
 
+        }
     }
-
 }
 
 
