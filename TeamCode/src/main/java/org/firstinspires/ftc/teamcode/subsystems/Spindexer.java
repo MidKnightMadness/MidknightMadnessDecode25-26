@@ -26,8 +26,8 @@ public class Spindexer extends SubsystemBase {
     //Ball sensors(two) facing each other right in the intake before it goes into the spindexer
     //public static double intakeSpinPower = 0.3;
     public static double shootRawPower = 1;
-    public static PIDFCoefficients outtakeTurnerCoeff = new PIDFCoefficients(0.002, 0.001, 0.0002, 0.003);
-    public static PIDFCoefficients intakeTurnerCoeff = new PIDFCoefficients(0.002, 0.001, 0.0002, 0.003);
+    public static PIDFCoefficients outtakeTurnerCoeff = new PIDFCoefficients(0.004, 0.002, 0.03, 0.00006);
+    public static PIDFCoefficients intakeTurnerCoeff = new PIDFCoefficients(0.004, 0.002, 0.03, 0.00006);
 
     //COLOR STUFF
     public BallColor color1 = null;
@@ -48,7 +48,7 @@ public class Spindexer extends SubsystemBase {
     private static final int NUM_SPOTS = 3;
     boolean useColorSensors;
     CRServoEx2<IncrementalEncoder> turner;
-    CRServoEx2<IncrementalEncoder> turner2;
+//    CRServoEx2<IncrementalEncoder> turner2;
     public BallDetector[] ballDetectors;
     Angle currentAngle;
     BallColor[] ballColors;
@@ -73,7 +73,7 @@ public class Spindexer extends SubsystemBase {
     }
     public void setMode(CRServoEx2.RunMode spindexerRunMode) {
         turner.setRunMode(spindexerRunMode);
-        turner2.setRunMode(spindexerRunMode);
+//        turner2.setRunMode(spindexerRunMode);
     }
     public Spindexer(HardwareMap hardwareMap, boolean useDistanceSensors) {
         this(hardwareMap, useDistanceSensors, null);
@@ -86,11 +86,11 @@ public class Spindexer extends SubsystemBase {
         turner = new CRServoEx2<>(
                 hardwareMap, ConfigNames.turner,
                 turnerEncoder, CRServoEx2.RunMode.OptimizedPositionalControl
-        ).setPIDFTOUse(outtakeTurnerCoeff).setReversed(true);//default pid is intake
-        turner2 =  new CRServoEx2<>(
-                hardwareMap, ConfigNames.turner2,
-                turnerEncoder, CRServoEx2.RunMode.OptimizedPositionalControl
-        ).setPIDFTOUse(outtakeTurnerCoeff).setReversed(true);
+        ).setPIDFTOUse(outtakeTurnerCoeff);//default pid is intake
+//        turner2 =  new CRServoEx2<>(
+//                hardwareMap, ConfigNames.turner2,
+//                turnerEncoder, CRServoEx2.RunMode.OptimizedPositionalControl
+//        ).setPIDFTOUse(outtakeTurnerCoeff).setReversed(true);
 //        this.useColorSensors = useColorSensors;
         this.useDistanceSensor = useDistanceSensors;
 
@@ -129,7 +129,7 @@ public class Spindexer extends SubsystemBase {
     // angle is relative to spot 0, so take negative
     public Spindexer initAngle(Angle angle) {
         turner.getEncoder().setAngle(angle.toDegrees());
-        turner2.getEncoder().setAngle(angle.toDegrees());
+//        turner2.getEncoder().setAngle(angle.toDegrees());
         currentAngle = angle;
         return this;
     }
@@ -138,9 +138,9 @@ public class Spindexer extends SubsystemBase {
         return turner;
     }
 
-    public CRServoEx2<IncrementalEncoder> getTurner2() {
-        return turner2;
-    }
+//    public CRServoEx2<IncrementalEncoder> getTurner2() {
+//        return turner2;
+//    }
 
 
     public IncrementalEncoder getEncoder() {
@@ -449,8 +449,8 @@ public class Spindexer extends SubsystemBase {
     public void spin(double power) {
         turner.setRunMode(CRServoEx2.RunMode.RawPower);
         turner.set(power);
-        turner2.setRunMode(CRServoEx2.RunMode.RawPower);
-        turner2.set(power);
+//        turner2.setRunMode(CRServoEx2.RunMode.RawPower);
+//        turner2.set(power);
     }
 
     public boolean isAtAngle(Angle angle) {
@@ -476,13 +476,13 @@ public class Spindexer extends SubsystemBase {
 
     public void goToAngle(Angle angle, CRServoEx2.RunMode runMode) {
         turner.setRunMode(runMode);
-        turner2.setRunMode(runMode);
+//        turner2.setRunMode(runMode);
         if (runMode == CRServoEx2.RunMode.OptimizedPositionalControl) {
             turner.set(angle.toDegrees());
-            turner2.set(angle.toDegrees());
+//            turner2.set(angle.toDegrees());
         } else {
             turner.set(currentAngle.add(angle).sign() * shootRawPower);
-            turner2.set(currentAngle.add(angle).sign() * shootRawPower);// Careful signs work out
+//            turner2.set(currentAngle.add(angle).sign() * shootRawPower);// Careful signs work out
         }
 
     }
@@ -493,12 +493,12 @@ public class Spindexer extends SubsystemBase {
         } else {
             turner.set(currentAngle.add(angle).sign() * shootRawPower); // Careful signs work out
         }
-        turner2.setRunMode(runMode);
-        if (runMode == CRServoEx2.RunMode.OptimizedPositionalControl) {
-            turner2.set(angle.toDegrees(), nearWheel);
-        } else {
-            turner2.set(currentAngle.add(angle).sign() * shootRawPower); // Careful signs work out
-        }
+//        turner2.setRunMode(runMode);
+//        if (runMode == CRServoEx2.RunMode.OptimizedPositionalControl) {
+//            turner2.set(angle.toDegrees(), nearWheel);
+//        } else {
+//            turner2.set(currentAngle.add(angle).sign() * shootRawPower); // Careful signs work out
+//        }
     }
     public void goToAngleOptimized(Angle angle) {
         if (turner.getRunmode() == CRServoEx2.RunMode.OptimizedPositionalControl) {
@@ -506,11 +506,11 @@ public class Spindexer extends SubsystemBase {
         } else {
             turner.set(currentAngle.add(angle).sign() * shootRawPower); // Careful signs work out
         }
-        if (turner2.getRunmode() == CRServoEx2.RunMode.OptimizedPositionalControl) {
-            turner2.set(angle.toDegrees(), nearWheel);
-        } else {
-            turner2.set(currentAngle.add(angle).sign() * shootRawPower); // Careful signs work out
-        }
+//        if (turner2.getRunmode() == CRServoEx2.RunMode.OptimizedPositionalControl) {
+//            turner2.set(angle.toDegrees(), nearWheel);
+//        } else {
+//            turner2.set(currentAngle.add(angle).sign() * shootRawPower); // Careful signs work out
+//        }
     }
 
     public void goToSpot(SpindexerSpot spot, SpotType spotType, CRServoEx2.RunMode runMode) {

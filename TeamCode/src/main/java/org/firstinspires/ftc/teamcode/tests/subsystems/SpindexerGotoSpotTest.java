@@ -136,10 +136,10 @@ public class SpindexerGotoSpotTest extends CommandOpMode {
         telemetry.addData("Spot farthest from current angle", spindexer.farthestFromAngle(spindexer.getCurrentAngle(), SpotType.OUTTAKE));
         telemetry.addData("Current Angle", spindexer.getCurrentAngle());
         telemetry.addData("Error", spindexer.getTurner().error);
-        telemetry.addData("Error2", spindexer.getTurner2().error);
+       // telemetry.addData("Error2", spindexer.getTurner2().error);
         telemetry.addData("Revolutions", spindexer.getEncoder().getRevolutions());
         telemetry.addData("Spindexer Target Power1", spindexer.getTurner().power);
-        telemetry.addData("Spindexer Target Power2", spindexer.getTurner2().power);
+       // telemetry.addData("Spindexer Target Power2", spindexer.getTurner2().power);
         telemetry.addData("Ball Colors", spindexer.getBallColors());
         telemetry.addData("Loop time (ms)", timer.getDeltaTime());
 

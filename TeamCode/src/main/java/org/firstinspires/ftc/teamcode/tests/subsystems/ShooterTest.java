@@ -14,6 +14,7 @@ import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
 import org.firstinspires.ftc.teamcode.game.SpotType;
 import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
+import org.firstinspires.ftc.teamcode.subsystems.PushUpServo;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
 import org.firstinspires.ftc.teamcode.util.Timer;
@@ -58,7 +59,8 @@ public class ShooterTest extends OpMode {
     double shooterHighVel = 0;
     double shooterHighCorrVel = 0;
     double shooterHighPower = 0;
-    public static boolean useBulkMode = false;
+    public static boolean useBulkMode = true;
+    PushUpServo pushUpServo;
     @Override
     public void init() {
         if(useBulkMode){
@@ -70,11 +72,12 @@ public class ShooterTest extends OpMode {
                     hardwareMap, LynxModule.BulkCachingMode.OFF // Scheduler will clean cache for you
             );
         }
+        pushUpServo = new PushUpServo(hardwareMap);
         shooter = new TwoWheelShooter(hardwareMap, shooterRunMode);
         spindexer = new Spindexer(hardwareMap, useDistanceSensor, new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE}).initAngle();
         spindexer.setMode(spindexerRunMode);
         spindexerServo = spindexer.getTurner().getServo();
-        spindexerServo2 = spindexer.getTurner2().getServo();
+       // spindexerServo2 = spindexer.getTurner2().getServo();
         gameTimer = new Timer();
         FtcDashboard dashboard = FtcDashboard.getInstance();
         dashboardTelemetry = dashboard.getTelemetry();
@@ -110,6 +113,13 @@ public class ShooterTest extends OpMode {
         }
         spindexer.updateShootOn(shootOn);
 
+
+        if(gamepad2.aWasPressed()){
+            pushUpServo.setDown();
+        }
+        if(gamepad2.bWasPressed()){
+            pushUpServo.setUp();
+        }
 
         if(!shootOn){
             return;

@@ -5,26 +5,22 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
-import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.ConditionalCommand;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
-import com.seattlesolvers.solverslib.command.ParallelDeadlineGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 
-import org.firstinspires.ftc.teamcode.commands.ShootUpdateCommand;
+import org.firstinspires.ftc.teamcode.commands.shooter.ShootUpdateCommand;
 import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommand;
-import org.firstinspires.ftc.teamcode.commands.intake.IntakeTimeCommand;
 import org.firstinspires.ftc.teamcode.commands.readwrite.MotifWriteCommand;
 import org.firstinspires.ftc.teamcode.commands.pathing.SchedulePathTo;
 import org.firstinspires.ftc.teamcode.commands.ShootSeqCommand;
-import org.firstinspires.ftc.teamcode.commands.spindexer.SpindexerGotoSpot;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
@@ -346,7 +342,7 @@ public class NineCloseLeftSort extends BaseAuto {
                 ),
                 new ParallelCommandGroup(
                         new InstantCommand(()-> shooter.stopFlywheels()),
-                        new InstantCommand(() -> spindexer.getTurner2().getServo().setPower(0)),
+                       // new InstantCommand(() -> spindexer.getTurner2().getServo().setPower(0)),
                         new InstantCommand(() -> spindexer.getTurner().getServo().setPower(0))
                 ),
 //                new InstantCommand(() -> spindexer.getTurner().setRunMode(CRServoEx2.RunMode.OptimizedPositionalControl)),

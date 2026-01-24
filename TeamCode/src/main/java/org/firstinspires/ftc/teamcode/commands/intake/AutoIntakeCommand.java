@@ -20,7 +20,6 @@ public class AutoIntakeCommand extends CommandBase {
     private double power;
 
     boolean swapSpots = false;
-    double timeout_MS;
     Timer timer;
     double startTime;
     public int currNumBall = 0;
@@ -29,12 +28,11 @@ public class AutoIntakeCommand extends CommandBase {
     double waitSettle = 0;
     public double time;
     boolean start = false;
-    public AutoIntakeCommand(Spindexer spindexer, Intake intake, double power, double timeOutMS, double inBetweenTime){
+    public AutoIntakeCommand(Spindexer spindexer, Intake intake, double power, double inBetweenTime){
         this.spindexer = spindexer;
         this.intake = intake;
         this.power = power;
-        this.timeout_MS = timeOutMS;
-        waitSettle = inBetweenTime;
+        this.waitSettle = inBetweenTime;
 
         timer = new Timer();
         addRequirements(intake, spindexer);
@@ -44,6 +42,7 @@ public class AutoIntakeCommand extends CommandBase {
     public void initialize(){
         timer.restart();
         startTime = timer.getTime();
+        intake.setDirectPower(power);
     }
 
     boolean atSpot = false;
@@ -51,8 +50,6 @@ public class AutoIntakeCommand extends CommandBase {
     @Override
     public void execute(){
 //        spindexer.updateBallSpot(currNumBall);
-        intake.setDirectPower(power);
-
 
         if (!atSpot && spindexer.isAtSpotDetection(SpindexerSpot.fromIndex(currNumBall), SpotType.INTAKE) && (spindexer.getBallColors()[currNumBall] != BallColor.NONE)) {
             atSpot = true;
@@ -74,7 +71,7 @@ public class AutoIntakeCommand extends CommandBase {
     public boolean isFinished(){
       //  spindexer.goToSpot(SpindexerSpot.fromIndex(currNumBall), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
 
-        if(timer.getTime() - startTime >= timeout_MS || spindexer.allOccuppiedBallColors()){
+        if(spindexer.allOccuppiedBallColors()){
             return true;
         }
         return false;

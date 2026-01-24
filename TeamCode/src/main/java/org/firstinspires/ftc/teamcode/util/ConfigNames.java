@@ -9,6 +9,7 @@ public class ConfigNames {
     public static String turner = "spindexerServo";
     public static String turner2 = "spindexerServo2";
     public static String turnerEncoder = "spindexerEncoder";
+    public static String pushUpServo = "pushUpServo";
     public static String imu = "imu";
     public static String pinpoint1 = "pinpoint1";
     public static String pinpoint2 = "pinpoint2";

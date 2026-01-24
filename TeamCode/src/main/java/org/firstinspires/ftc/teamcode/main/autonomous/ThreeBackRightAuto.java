@@ -12,7 +12,6 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.ConditionalCommand;
@@ -23,13 +22,10 @@ import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 
-import org.firstinspires.ftc.teamcode.commands.ShootUpdateCommand;
+import org.firstinspires.ftc.teamcode.commands.shooter.ShootUpdateCommand;
 import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommand;
-import org.firstinspires.ftc.teamcode.commands.intake.IntakeTimeCommand;
 import org.firstinspires.ftc.teamcode.commands.readwrite.MotifWriteCommand;
 import org.firstinspires.ftc.teamcode.commands.pathing.SchedulePathTo;
-import org.firstinspires.ftc.teamcode.commands.ShootSeqCommand;
-import org.firstinspires.ftc.teamcode.commands.spindexer.SpindexerGotoSpot;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
@@ -392,7 +388,7 @@ public class ThreeBackRightAuto extends BaseAuto {
                 ),
                 new ParallelCommandGroup(
                         new InstantCommand(()-> shooter.stopFlywheels()),
-                        new InstantCommand(() -> spindexer.getTurner2().getServo().setPower(0)),
+                        //new InstantCommand(() -> spindexer.getTurner2().getServo().setPower(0)),
                         new InstantCommand(() -> spindexer.getTurner().getServo().setPower(0))
                 ),
 //                new InstantCommand(() -> spindexer.getTurner().setRunMode(CRServoEx2.RunMode.OptimizedPositionalControl)),
