@@ -8,18 +8,18 @@ import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 @TeleOp
 public class lightsTest extends OpMode {
-    GobildaLightBlock light1;//ffff
+    GobildaLightBlock light1;//declaring the lights
     GobildaLightBlock light2;
     GobildaLightBlock light3;
-    BallColor[] list;
-    Spindexer spindexer;
-    BallColor[] setA = {BallColor.GREEN, BallColor.GREEN, BallColor.PURPLE};
+    BallColor[] list;//array of ball colors, each color goes to a light
+    Spindexer spindexer; //is the spindexer object
+    BallColor[] setA = {BallColor.GREEN, BallColor.GREEN, BallColor.PURPLE};//these set colors for testing
     BallColor[] setB = {BallColor.PURPLE, BallColor.GREEN, BallColor.PURPLE};
     BallColor[] setX = {BallColor.GREEN, BallColor.GREEN, BallColor.GREEN};
     BallColor[] setY = {BallColor.NONE, BallColor.NONE, BallColor.NONE};
     @Override
     public void init() {
-        light1 = new GobildaLightBlock(hardwareMap.get(Servo.class, "light1"));
+        light1 = new GobildaLightBlock(hardwareMap.get(Servo.class, "light1"));//initiating everything
         light2 = new GobildaLightBlock(hardwareMap.get(Servo.class, "light2"));
         light3 = new GobildaLightBlock(hardwareMap.get(Servo.class, "light3"));
         spindexer = new Spindexer(hardwareMap, false, new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE});
@@ -29,7 +29,7 @@ public class lightsTest extends OpMode {
     @Override
     public void loop() {
         if (gamepad1.aWasPressed()) {
-            spindexer.setBallColors(setA);
+            spindexer.setBallColors(setA);//getting colors from gamepad presses
         }
         if (gamepad1.bWasPressed()) {
             spindexer.setBallColors(setB);
@@ -45,7 +45,7 @@ public class lightsTest extends OpMode {
             return;
         }
 
-        if (list[0] == BallColor.GREEN) {
+        if (list[0] == BallColor.GREEN) {//setting colors to the lights
             light1.setColor(BallColor.GREEN);
         } else if (list[0] == BallColor.PURPLE) {
             light1.setColor(BallColor.PURPLE);

@@ -13,17 +13,18 @@ import org.opencv.core.Point;
 /**
  * BasicHomographySample demonstrates using a homography transformation
  * with a Limelight camera to convert camera coordinates to robot-relative coordinates.
- */ //nice chatgpt allen (i know where u live)
+ */ //nice chatgpt allen (i know where u live)(nuh uh)
+    //this was not chatgpt its copied from mset cuttlefish homography guide ok
 @TeleOp(name = "BasicHomographySample", group = "Linear OpMode")
 public class BasicHomographySample extends LinearOpMode {
 
     // Offset constants in inches
     public static double HORIZONTAL_OFFSET = 0;
-    public static double VERTICAL_OFFSET = 24;
+    public static double VERTICAL_OFFSET = 0;
 
     // Camera resolution constants
-    public static double CAMERA_WIDTH = 640.0;
-    public static double CAMERA_HEIGHT = 480.0;
+    public static double CAMERA_WIDTH = 1280;
+    public static double CAMERA_HEIGHT = 960;
 
     // Camera field of view constants in degrees
     public static double HORIZONTAL_FOV = 54.5;
@@ -31,9 +32,9 @@ public class BasicHomographySample extends LinearOpMode {
 
     // Homography transformation matrix
     private final double[][] H = {
-            {4.158013, 5.076947, -1146.668632},
-            {-1.674058, 8.920382, -450.058258},
-            {-0.000171, 0.003455, 1.000000}
+            {5.828680, 1.841763, -3515.724491},
+            {0.052028, 13.011093, -4470.243506},
+            {0.000090, 0.003892, 1.000000}
     };
 
     // Pixels Per Inch on calibration image

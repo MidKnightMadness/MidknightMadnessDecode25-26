@@ -14,6 +14,7 @@ import org.firstinspires.ftc.teamcode.R;
 
 //custom cr servo for SPINDEXER. Sets minimum power to overcome wheel if error is too large
 public class CRServoEx2<E extends Encoder> extends CRServo {
+    //declaring varables
     private E encoder;
     private double cachingTolerance = 0.0001;
     private PIDFController pidf;

@@ -13,6 +13,7 @@ public abstract class EncoderBase<T extends EncoderBase<T>> implements Encoder {
         return direction.getMultiplier();
     }
 
+    //sets the direction encoder is going
     @Override
     @SuppressWarnings("unchecked")
     public T setDirection(RotationDirection direction) {
@@ -26,14 +27,14 @@ public abstract class EncoderBase<T extends EncoderBase<T>> implements Encoder {
         direction = reversed ? RotationDirection.REVERSE : RotationDirection.FORWARD;
         return (T) this;
     }
-
+    //sets encoder value to 0
     @Override
     @SuppressWarnings("unchecked")
     public T zero() {
         this.setAngle(0);
         return (T) this;
     }
-
+    //gets direction
     @Override
     public RotationDirection getDirection() {
         return direction;
@@ -42,15 +43,15 @@ public abstract class EncoderBase<T extends EncoderBase<T>> implements Encoder {
     @Override
     public boolean getReversed() {
         return direction == RotationDirection.REVERSE;
-    }
+    }//gets whether its reversed
 
     @Override
     public AngleUnit getAngleUnit() {
         return angleUnit;
-    }
+    }//gets the angle
 
     @Override
     public void resetOffset() {
         this.offset = 0;
-    }
+    }//resets the offset
 }

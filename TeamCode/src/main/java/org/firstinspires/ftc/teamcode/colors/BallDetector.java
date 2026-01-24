@@ -22,26 +22,26 @@ import java.util.Map;
 public class BallDetector {
     private final RevColorSensorV3 colorSensor;
 
-    public static Threshold[] greenThreshold = new Threshold[] {
+    public static Threshold[] greenThreshold = new Threshold[] {//color limits of green ball
             //normalized rgb out of magnitudes
             new Threshold(150f, 180f),//hsv
             new Threshold(0.5f, 1f),
             new Threshold(100f, 255f)
     };
 
-    public static Threshold[] purpleThreshold = new Threshold[] {
+    public static Threshold[] purpleThreshold = new Threshold[] {//color limits of purple ball
             new Threshold(200f, 235f),//hsv
             new Threshold(0.33f, 1f),
             new Threshold(100f, 255f)
     };
-    public NormalizedRGBA normalizedRGBA;
+    public NormalizedRGBA normalizedRGBA;//define this
     public float[] hsv;
-    public BallDetector(HardwareMap hardwareMap, String deviceName) {
+    public BallDetector(HardwareMap hardwareMap, String deviceName) {//constructor
         colorSensor = hardwareMap.get(RevColorSensorV3.class, deviceName);
         colorSensor.enableLed(true);
     }
 
-    public static void RGBToHSV(int red, int green, int blue, float[] hsv) {
+    public static void RGBToHSV(int red, int green, int blue, float[] hsv) {//formula to convert from rgb into hsv
         float r = red;
         float g = green;
         float b = blue;
@@ -72,7 +72,7 @@ public class BallDetector {
         hsv[2] = v;
     }
 
-    public float[] readRawColor() {
+    public float[] readRawColor() {//gets hsv
         float[] color = new float[3];
 
         normalizedRGBA = colorSensor.getNormalizedColors();
@@ -89,12 +89,12 @@ public class BallDetector {
         return color;
     }
 
-    public BallColor getColor(){
+    public BallColor getColor(){//gets ball color of measured ball(pruple or green)
         hsv = readRawColor();
         return detectBallColor(hsv[0], hsv[1], hsv[2]);
     }
 
-    private BallColor detectBallColor(double h, double s, double v) {
+    private BallColor detectBallColor(double h, double s, double v) {//gets ball color of ball inputted in
         if (h >= greenThreshold[0].low && h <= greenThreshold[0].high &&
                 s >= greenThreshold[1].low && s <= greenThreshold[1].high &&
                 v >= greenThreshold[2].low && v <= greenThreshold[2].high)
@@ -109,5 +109,5 @@ public class BallDetector {
     }
     public double getProximity() {
         return colorSensor.getDistance(DistanceUnit.INCH);
-    }
+    }//gets distance
 }
