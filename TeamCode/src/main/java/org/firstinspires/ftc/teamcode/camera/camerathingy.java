@@ -145,8 +145,8 @@ public class camerathingy extends OpMode {
             minY = Double.MAX_VALUE;
             telemetry.update();
 
-        }
     }
+
 }
 
 
