@@ -471,11 +471,11 @@ public class ThreeBackRightAuto extends BaseAuto {
         if(num == 0){
             currPose = startPose;
         } else if(num == 1){
-            currPose = intakeThreeEnd;
+            currPose = intakeOneEnd;
         } else if(num == 2){
             currPose = intakeTwoEnd;
         } else{
-            currPose = intakeOneEnd;
+            currPose = intakeThreeEnd;
         }
         return new SchedulePathTo(follower, currPose, shootPose).setMaxPower(1.0).setHeadingConstraint(headingError).setTimeoutConstraint(timeOutConstraint).setVel(velConstraint);
     }

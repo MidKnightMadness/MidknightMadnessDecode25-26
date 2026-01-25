@@ -39,7 +39,7 @@ public class Spindexer extends SubsystemBase {
     public static Angle detectRange = Angle.fromDegrees(25); // How far off from the center of the spot that you detect. You don't want to trust measurements that are too off from the center
     public static Angle defaultFinishedThreshold = Angle.fromDegrees(5); // Threshold at which it's finished turning to a spot
     public static Angle finishedThreshold = Angle.fromDegrees(15);//changed from 20
-    public static Angle detectThreshold = Angle.fromDegrees(20);
+    public static Angle detectThreshold = Angle.fromDegrees(30);
     //0 degrees is facing intake
     //assuming layout at start is initialized as 0 from this position
     //  X X
@@ -64,7 +64,7 @@ public class Spindexer extends SubsystemBase {
 //    boolean useDistanceSensor = false;
     double dist = 0;
     public DistanceSensor distanceSensor;
-    public DistanceSensor distanceSensor2;
+//    public DistanceSensor distanceSensor2;
     double dist2 = 0;
     boolean useDistanceSensor = false;
     public static double minDetectDistance = 6;//inch
@@ -187,41 +187,42 @@ public class Spindexer extends SubsystemBase {
     }
     public boolean nearWheel = false;
 
-    public void updateBallSpot(int spotIndex){
+    public boolean updateBallSpot(int spotIndex){
         if(ballColors == null){
-            newBallType = null;
-            return;
+            return false;
         }
-        if(ballColors[spotIndex] != BallColor.NONE){//already has a color
-            newBallType = null;
-            return;//assume ball stays in position
+        if(ballColors[spotIndex] == BallColor.UNKNOWN){//already has a color
+            return true;//assume ball stays in position
         }
 
         if(!useDistanceSensor){
-            return;
+            return false;
         }
         dist = distanceSensor.getDistance(DistanceUnit.INCH);
-        dist2 = distanceSensor2.getDistance(DistanceUnit.INCH);
-        boolean distCheck = dist <= minDetectDistance || dist2 <= minDetectDistance;
+//        dist2 = distanceSensor2.getDistance(DistanceUnit.INCH);
+        boolean distCheck = dist <= minDetectDistance;
 
         if(distCheck) {
-            if(useColorSensors) {
-                color1 = ballDetectors[0].getColor();
-                color2 = ballDetectors[1].getColor();
-            } else {
-                color1 = BallColor.NONE;
-                color2 = BallColor.NONE;
-            }
+//            if(useColorSensors) {
+//                color1 = ballDetectors[0].getColor();
+//                color2 = ballDetectors[1].getColor();
+//            } else {
+//                color1 = BallColor.NONE;
+//                color2 = BallColor.NONE;
+//            }
 
 
-            if (color1 == BallColor.PURPLE || color2 == BallColor.PURPLE) {
-                ballColors[spotIndex] = BallColor.PURPLE;
-            } else if (color1 == BallColor.GREEN || color2 == BallColor.GREEN) {
-                ballColors[spotIndex] = BallColor.GREEN;
-            } else {
-                ballColors[spotIndex] =  BallColor.UNKNOWN;
-            }
+//            if (color1 == BallColor.PURPLE || color2 == BallColor.PURPLE) {
+//                ballColors[spotIndex] = BallColor.PURPLE;
+//            } else if (color1 == BallColor.GREEN || color2 == BallColor.GREEN) {
+//                ballColors[spotIndex] = BallColor.GREEN;
+//            } else {
+//                ballColors[spotIndex] =  BallColor.UNKNOWN;
+//            }
+            ballColors[spotIndex] = BallColor.UNKNOWN;
+            return true;
         }
+        return false;
     }
     public void updateBallColors() {
         SpindexerSpot spot = getNearestSpot(currentAngle, SpotType.INTAKE);
@@ -229,7 +230,7 @@ public class Spindexer extends SubsystemBase {
             newBallType = null;
             return;
         }
-        if(ballColors[spot.getIndex()] != BallColor.NONE){//already has a color
+        if(ballColors[spot.getIndex()] == BallColor.UNKNOWN){//already has a color
             newBallType = null;
             return;//assume ball stays in position
         }
@@ -244,9 +245,10 @@ public class Spindexer extends SubsystemBase {
         if(!useDistanceSensor){
             return;
         }
+
         dist = distanceSensor.getDistance(DistanceUnit.INCH);
-        dist2 = distanceSensor2.getDistance(DistanceUnit.INCH);
-        boolean distCheck = dist <= minDetectDistance || dist2 <= minDetectDistance;
+//        dist2 = distanceSensor2.getDistance(DistanceUnit.INCH);
+        boolean distCheck = dist <= minDetectDistance;
 
         if(distCheck) {
 //            if(useColorSensors) {

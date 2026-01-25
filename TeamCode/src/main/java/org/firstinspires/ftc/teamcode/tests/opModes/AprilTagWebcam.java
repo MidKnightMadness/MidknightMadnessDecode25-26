@@ -30,12 +30,14 @@ public class AprilTagWebcam {
                 .setDrawTagOutline(true)
                 .setDrawAxes(true)
                 .setDrawCubeProjection(true)
-                .setOutputUnits(DistanceUnit.CM, AngleUnit.DEGREES)//change distance unit if its causing
-                .build();                                           // problems
+                .setOutputUnits(DistanceUnit.CM, AngleUnit.DEGREES)
+                //calibrated values for monochrome one according to ftc discord
+//                .setLensIntrinsics(549.651, 549.651, 317.108, 236.644)
+                .build();
 
         VisionPortal.Builder builder = new VisionPortal.Builder();
         builder.setCamera(hwMap.get(WebcamName.class, s));
-        builder.setCameraResolution(new Size(1280, 800));
+        builder.setCameraResolution(new Size(640, 480));
 //        builder.setStreamFormat(VisionPortal.StreamFormat.YUY2);
         builder.enableLiveView(true);
         builder.addProcessor(aprilTagProcessor); // change depending on limelight vs other camera,

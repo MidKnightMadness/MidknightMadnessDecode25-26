@@ -60,12 +60,8 @@ public class NineBackRightSort extends BaseAuto {
     public static Pose intakeTwoEnd= new Pose(125, 58, Math.toRadians(0));
     public static Pose intakeThreeEnd = new Pose(132, 36, Math.toRadians(0));
     MotifEnums.Motif motifPattern = MotifEnums.Motif.NONE;
-    MotifWriteCommand motifCommand = null;
-
     ShootSide shootSide = ShootSide.RIGHT;
     Pose currentPose;
-
-    Command firstPath;
     public static long firstWaitTime = 700;
     public static long secondWaitTime = 500;
     public static long thirdWaitTime = 500;//250 old
@@ -98,19 +94,42 @@ public class NineBackRightSort extends BaseAuto {
     Path toShootThree;
     Path toPark;
 
+
     public void useLeftConstants(){
-        startPose = new Pose(88, 8, Math.toRadians(90));
-        shootPose = new Pose(84, 17, Math.toRadians(247));
-        forwardPose = new Pose(88, 12, Math.toRadians(90));
-        parkPose = new Pose(86, 38, Math.toRadians(0));
-        openGatePose = new Pose(136, 76, Math.toRadians(180));
-        intakeOnePose = new Pose(100.5, 84, Math.toRadians(0));
-        intakeTwoPose = new Pose(100.5, 58, Math.toRadians(0));
-        intakeThreePose = new Pose(100.5, 36, Math.toRadians(0));
-        intakeOneEnd = new Pose(125, 84, Math.toRadians(0));
-        intakeTwoEnd= new Pose(125, 58, Math.toRadians(0));
-        intakeThreeEnd = new Pose(132, 36, Math.toRadians(0));
+        if(getShootSide() == ShootSide.LEFT) {
+            startPose = applyLeft(startPose);
+            shootPose = applyLeft(shootPose);
+            forwardPose = applyLeft(forwardPose);
+            parkPose = applyLeft(parkPose);
+            openGatePose = applyLeft(openGatePose);
+            intakeOnePose = applyLeft(intakeOnePose);
+            intakeTwoPose = applyLeft(intakeTwoPose);
+            intakeThreePose = applyLeft(intakeThreePose);
+            intakeOneEnd = applyLeft(intakeOneEnd);
+            intakeTwoEnd = applyLeft(intakeTwoEnd);
+            intakeThreeEnd = applyLeft(intakeThreeEnd);
+            shootSide = ShootSide.LEFT;
+        }
     }
+
+    public Pose applyLeft(Pose pose){
+        return new Pose(144 - pose.getX(), pose.getY(), normAngle(Math.toRadians(Math.PI - pose.getHeading())));
+    }
+
+    public double normAngle(double angle){
+        while(angle < 0){
+            angle += Math.PI * 2;
+        } while(angle > 2 * Math.PI){
+            angle -= Math.PI * 2;
+        }
+        return angle;
+    }
+
+
+    public ShootSide getShootSide(){
+        return shootSide;
+    }
+
     @Override
     public Pose getStartPose(){
         return startPose;
@@ -128,6 +147,7 @@ public class NineBackRightSort extends BaseAuto {
         } catch (IOException e) {
             RobotLog.ee("Log", "Error instantiating file writer of file: " + e.getMessage());
         }
+        useLeftConstants();
     }
 
     @Override
@@ -247,8 +267,8 @@ public class NineBackRightSort extends BaseAuto {
         toPark.setLinearHeadingInterpolation(shootPose.getHeading(), parkPose.getHeading());
         setConstraints(toPark);
 
-
     }
+
 
     private void setConstraints(Path path){
         if(timeOutConstraint != 0) {
@@ -587,8 +607,6 @@ public class NineBackRightSort extends BaseAuto {
         telemetry.addData(s, o);
         telemetryManager.addData(s, o);
     }
-
-
 
 
 }

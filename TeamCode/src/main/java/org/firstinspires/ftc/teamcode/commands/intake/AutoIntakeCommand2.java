@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 
 @Configurable
 @Config
-public class AutoIntakeCommand extends CommandBase {
+public class AutoIntakeCommand2 extends CommandBase {
     private Spindexer spindexer;
     private Intake intake;
     private double power;
@@ -27,12 +27,13 @@ public class AutoIntakeCommand extends CommandBase {
     public double ballDetectionTime;
     double waitSettle = 0;
     public double time;
-    boolean start = false;
-    public AutoIntakeCommand(Spindexer spindexer, Intake intake, double power, double inBetweenTime){
+    boolean useDistanceSensor = true;
+    public AutoIntakeCommand2(Spindexer spindexer, Intake intake, double power, double inBetweenTime, boolean useDistanceSensor){
         this.spindexer = spindexer;
         this.intake = intake;
         this.power = power;
         this.waitSettle = inBetweenTime;
+        this.useDistanceSensor = useDistanceSensor;
 
         timer = new Timer();
         addRequirements(intake, spindexer);
@@ -42,15 +43,17 @@ public class AutoIntakeCommand extends CommandBase {
     public void initialize(){
         timer.restart();
         startTime = timer.getTime();
-        currNumBall = spindexer.getNearestSpot(spindexer.getCurrentAngle(), SpotType.INTAKE).getIndex();
         intake.setDirectPower(power);
+        currNumBall = spindexer.getNearestSpot(spindexer.getCurrentAngle(), SpotType.INTAKE).getIndex();
+
     }
 
     boolean atSpot = false;
 
+    boolean ballDetected = false;
     @Override
     public void execute(){
-//        spindexer.updateBallSpot(currNumBall);
+        ballDetected = spindexer.updateBallSpot(currNumBall);
 
         if (!atSpot && spindexer.isAtSpotDetection(SpindexerSpot.fromIndex(currNumBall), SpotType.INTAKE) && (spindexer.getBallColors()[currNumBall] != BallColor.NONE)) {
             atSpot = true;
@@ -58,7 +61,7 @@ public class AutoIntakeCommand extends CommandBase {
         }
 
         time = timer.getTime();
-        if (atSpot && time - ballDetectionTime >= waitSettle) {
+        if (atSpot && time - ballDetectionTime >= waitSettle && ballDetected) {
             currNumBall = (currNumBall + 1) % 3;
             atSpot = false;
         }
@@ -69,7 +72,7 @@ public class AutoIntakeCommand extends CommandBase {
 
     @Override
     public boolean isFinished(){
-      //  spindexer.goToSpot(SpindexerSpot.fromIndex(currNumBall), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
+        //  spindexer.goToSpot(SpindexerSpot.fromIndex(currNumBall), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
 
         if(spindexer.allOccuppiedBallColors()){
             return true;
