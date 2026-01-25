@@ -40,9 +40,9 @@ public class TwoWheelShooter extends SubsystemBase {
 //    public static double[] pidBotGains = new double[]{0.0004, 0, 0.00001};
    //public static double[] kBotGains = new double[]{0, 0.00005, 0};///change -> 0.00005 to 0.0004 mybe
     public static double[] kBotGains = new double[]{120, 0.00035, 0};
-    public static double[] pidTopGains = new double[]{0.0005, 0, 0.00001};
-    public static double[] pidBotGains = new double[]{0.00006, 0.00003, 0};
-    public static double[] kTopGains = new double[]{0.02, 0.00005, 0};
+    public static double[] pidTopGains = new double[]{0.00006, 0, 0.00001};
+    public static double[] pidBotGains = new double[]{0.00003, 0.0003, 0};
+    public static double[] kTopGains = new double[]{155, 0.0003, 0};
 
     public static boolean useAggressiveRecovery = false;
     public boolean inRecoveryMode = false;
@@ -72,7 +72,7 @@ public class TwoWheelShooter extends SubsystemBase {
     public static double gearRatio = 3;
 
     public static boolean lowMotorDirForward = true;
-    public static boolean highMotorDirForward = false;
+    public static boolean highMotorDirForward = true;
     public static double topVelocityOffset = 0;
     double predictedTopVel = 1500;
     double predictedBotVel = 1500;
@@ -92,7 +92,7 @@ public class TwoWheelShooter extends SubsystemBase {
 
 //    public static double[] closeTargetVelocities = new double[] {1800, 1900};
     public static double[] closeTargetVelocities = new double[] {1600, 1750};
-    public static double[] farTargetVelocities = new double[]{2200, 1800};
+    public static double[] farTargetVelocities = new double[]{2200, 2100};
     public static double[] closeTargetPowers = new double[]{0.7, 0.8};
     public static double[] farTargetPowers = new double[]{0.9, 0.85};
 
@@ -100,8 +100,8 @@ public class TwoWheelShooter extends SubsystemBase {
     HardwareMap map;
     public static double kBotShootMovingFactor = 1;
     public static double kTopShootMovingFactor = 1;
-    public static double velBotTolerance = 100;
-    public static double velTopTolerance = 100;
+    public static double velBotTolerance = 70;
+    public static double velTopTolerance = 70;
     public static double velMovingThreshold = 2;//in per sec
     double topMultiplier = 0;
     double botMultiplier = 0;
@@ -115,8 +115,8 @@ public class TwoWheelShooter extends SubsystemBase {
     public TwoWheelShooter(HardwareMap hardwareMap, RunMode runMode) {
         low = new MotorEx(hardwareMap, ConfigNames.lowFlywheelMotor);
         high = new MotorEx(hardwareMap, ConfigNames.highFlywheelMotor);
-        low.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-        high.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        low.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
+        high.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
 //        low.motorEx.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 //        high.motorEx.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
@@ -289,47 +289,6 @@ public class TwoWheelShooter extends SubsystemBase {
         low.set(botVel, botMultiplier);
         high.set(topVel, topMultiplier);
     }
-
-    //set flywheel by distance -> static, not moving, lut use
-    private void setFlywheel(double dist, ShootDist shootDist, boolean voltageUse, boolean useLUT, Pose robotPose, Vector velVector, ShootSide shootSide){
-        updateRecoveryState();
-        currVolt = map.voltageSensor.iterator().next().getVoltage();
-
-        double ratio = voltageUse ? (targetVoltage / currVolt) : 1;
-        ratio = Math.min(ratio, 1.25);
-
-        boolean isMoving = true;
-        if(velVector.getXComponent() <= velMovingThreshold && velVector.getYComponent() <= velMovingThreshold){
-            isMoving = false;
-        }
-        double botVel, topVel;
-        if(useLUT){
-            botVel = distToLowVel.get(dist);
-            topVel = distToHighVel.get(dist);
-            setRunMode(RunMode.VelocityControl);
-        } else{
-            double[] preset = (shootDist == ShootDist.Close) ? closeTargetVelocities : farTargetVelocities;
-            botVel = preset[0];
-            topVel = preset[1];
-        }
-
-        if(isMoving){
-            double distGoal = getDistance(robotPose, shootSide);
-            Pose targetPose = getShootPose(shootSide);
-            double dx = targetPose.getX() - robotPose.getX();
-            double dy = targetPose.getY() - robotPose.getY();
-
-            double vparallel = (velVector.getXComponent() * dx + velVector.getYComponent() * dy)
-                    / distGoal;
-            botVel -= kBotShootMovingFactor * vparallel;
-            topVel -= kTopShootMovingFactor * vparallel;
-        }
-        botVel *= ratio * currBotFactor;
-        topVel *= ratio * currTopFactor;
-        setCustomPower(botVel, topVel);
-
-    }
-
 
     public boolean readyToShoot(){
         return Math.abs(low.getVelocity() - predictedBotVel) <= velBotTolerance &&

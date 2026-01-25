@@ -32,9 +32,9 @@ import org.firstinspires.ftc.teamcode.util.PanelsDrawing;
 import org.firstinspires.ftc.teamcode.util.PoseBuffer;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
-@TeleOp(group = "Localization Comparison", name = "Drive")
 @Configurable
 @Config
+@TeleOp(group = "Localization Comparison", name = "Localization Comparison")
 public class LocalizationComparison extends OpMode{
 //    public static int currentPipeline = 2;
 //    private int previousPipeline = 2;
@@ -51,7 +51,7 @@ public class LocalizationComparison extends OpMode{
 //    PinpointLocalization pinpointLocalization;
 
 
-    public final static Pose startingPose = new Pose(72, 8, 0);
+    public final static Pose startingPose = new Pose(0, 0, 0);
 
 //    Pose3D mt1Pose;
 //    Pose3D mt2Pose;
@@ -112,7 +112,7 @@ public class LocalizationComparison extends OpMode{
 //
         doublePinpointPose = new Pose((pinpoint1Pose.getX() + pinpoint2Pose.getX()) / 2,
                 (pinpoint1Pose.getY() + pinpoint2Pose.getY()) / 2,
-                (wrap0to2PI(pinpoint1Pose.getHeading() + pinpoint2Pose.getHeading()/2))
+                wrap0to2PI((pinpoint1Pose.getHeading() + pinpoint2Pose.getHeading())/2)
         );
 
         followerPinpoint1.update();

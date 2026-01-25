@@ -107,7 +107,7 @@ public class ColorIntakeAutoTest extends CommandOpMode {
 
         path = new Path(new BezierLine(intakeOnePose, intakeOneEndPose));
         path.setLinearHeadingInterpolation(intakeOnePose.getHeading(), intakeOneEndPose.getHeading());
-        setConstraints(path);
+//        setConstraints(path);
     }
 
     private void setConstraints(Path path){
@@ -137,7 +137,7 @@ public class ColorIntakeAutoTest extends CommandOpMode {
 
 
     protected Command intake(){
-        autoIntakeCommand = new AutoIntakeCommand(spindexer, intake, intakePower, 8000, waitTime);
+        autoIntakeCommand = new AutoIntakeCommand(spindexer, intake, intakePower, waitTime);
         return new ParallelCommandGroup(
                 driveToIntakeEnd(),
                 autoIntakeCommand.withTimeout(5000)

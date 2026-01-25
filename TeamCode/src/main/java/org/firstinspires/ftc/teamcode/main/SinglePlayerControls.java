@@ -29,7 +29,7 @@ import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
 import org.firstinspires.ftc.teamcode.util.Angle;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.util.Timer;
-import org.firstinspires.ftc.teamcode.commands.ShootHardcode;
+import org.firstinspires.ftc.teamcode.commands.shooter.ShootHardcode;
 import java.io.File;
 import java.util.Map;
 

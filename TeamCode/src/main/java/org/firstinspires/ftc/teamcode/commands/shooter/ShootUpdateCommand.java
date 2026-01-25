@@ -1,13 +1,10 @@
-package org.firstinspires.ftc.teamcode.commands;
+package org.firstinspires.ftc.teamcode.commands.shooter;
 
 import com.pedropathing.follower.Follower;
-import com.qualcomm.robotcore.robocol.Command;
 import com.seattlesolvers.solverslib.command.CommandBase;
 
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
-import org.firstinspires.ftc.teamcode.game.SpotType;
-import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
 import org.firstinspires.ftc.teamcode.util.Timer;
@@ -88,6 +85,6 @@ public class ShootUpdateCommand extends CommandBase {
         shooter.stopFlywheels();
 //        spindexer.goToSpot(SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
         spindexer.getTurner().getServo().setPower(0);
-        spindexer.getTurner2().getServo().setPower(0);
+        //spindexer.getTurner2().getServo().setPower(0);
     }
 }

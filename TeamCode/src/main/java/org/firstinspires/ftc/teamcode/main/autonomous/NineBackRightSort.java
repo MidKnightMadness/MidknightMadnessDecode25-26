@@ -7,7 +7,6 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
-import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -23,13 +22,10 @@ import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 
-import org.firstinspires.ftc.teamcode.commands.ShootUpdateCommand;
+import org.firstinspires.ftc.teamcode.commands.shooter.ShootUpdateCommand;
 import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommand;
-import org.firstinspires.ftc.teamcode.commands.intake.IntakeTimeCommand;
 import org.firstinspires.ftc.teamcode.commands.readwrite.MotifWriteCommand;
 import org.firstinspires.ftc.teamcode.commands.pathing.SchedulePathTo;
-import org.firstinspires.ftc.teamcode.commands.ShootSeqCommand;
-import org.firstinspires.ftc.teamcode.commands.spindexer.SpindexerGotoSpot;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
@@ -40,7 +36,6 @@ import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
-import org.firstinspires.ftc.teamcode.util.Timer;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -102,13 +97,27 @@ public class NineBackRightSort extends BaseAuto {
     Path toIntakeEndOne;
     Path toShootThree;
     Path toPark;
+
+    public void useLeftConstants(){
+        startPose = new Pose(88, 8, Math.toRadians(90));
+        shootPose = new Pose(84, 17, Math.toRadians(247));
+        forwardPose = new Pose(88, 12, Math.toRadians(90));
+        parkPose = new Pose(86, 38, Math.toRadians(0));
+        openGatePose = new Pose(136, 76, Math.toRadians(180));
+        intakeOnePose = new Pose(100.5, 84, Math.toRadians(0));
+        intakeTwoPose = new Pose(100.5, 58, Math.toRadians(0));
+        intakeThreePose = new Pose(100.5, 36, Math.toRadians(0));
+        intakeOneEnd = new Pose(125, 84, Math.toRadians(0));
+        intakeTwoEnd= new Pose(125, 58, Math.toRadians(0));
+        intakeThreeEnd = new Pose(132, 36, Math.toRadians(0));
+    }
     @Override
-    protected Pose getStartPose(){
+    public Pose getStartPose(){
         return startPose;
     }
 
     @Override
-    protected void setupVision(){
+    public void setupVision(){
         limelight = hardwareMap.get(Limelight3A.class, ConfigNames.limelight);
         limelight.pipelineSwitch(startPipeline);
         limelight.start();
@@ -267,7 +276,7 @@ public class NineBackRightSort extends BaseAuto {
     int currSpindexerGotoSpot = -1;
     public static double spindexerSpeed = -0.10;
 
-    @Override
+     @Override
     protected Command preMotifSequence(){
         return new InstantCommand();
     }
@@ -397,7 +406,7 @@ public class NineBackRightSort extends BaseAuto {
                 ),
                 new ParallelCommandGroup(
                     new InstantCommand(()-> shooter.stopFlywheels()),
-                    new InstantCommand(() -> spindexer.getTurner2().getServo().setPower(0)),
+//                    new InstantCommand(() -> spindexer.getTurner2().getServo().setPower(0)),
                     new InstantCommand(() -> spindexer.getTurner().getServo().setPower(0))
                 ),
 //                new InstantCommand(() -> spindexer.getTurner().setRunMode(CRServoEx2.RunMode.OptimizedPositionalControl)),
