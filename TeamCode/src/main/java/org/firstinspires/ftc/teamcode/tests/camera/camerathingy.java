@@ -46,8 +46,7 @@ public class camerathingy extends OpMode {
     private static double distance(double x, double y) {
         return Math.sqrt(x * x + y * y);
     }
-
-    private void processHomography(double x_degrees, double y_degrees) {
+    private void processHomography(double x_degrees, double y_degrees) {//this takes degrees and sets coordinateX and Y to the homographied thing
         double x = (x_degrees / horizontalFOV) * camWidth + (camWidth / 2.0);
         double y = (y_degrees / verticalFOV) * camHeight + (camHeight / 2.0);
 
