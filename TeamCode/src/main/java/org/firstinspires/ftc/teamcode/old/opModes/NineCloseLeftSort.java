@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.main.autonomous;
+package org.firstinspires.ftc.teamcode.old.opModes;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
@@ -7,6 +7,7 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.ConditionalCommand;
 import com.seattlesolvers.solverslib.command.InstantCommand;
@@ -26,6 +27,7 @@ import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
 import org.firstinspires.ftc.teamcode.game.SpotType;
 import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
+import org.firstinspires.ftc.teamcode.main.autonomous.BaseAuto;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
@@ -34,6 +36,7 @@ import org.firstinspires.ftc.teamcode.game.ShootSide;
 
 @Config
 @Configurable
+@Disabled
 @Autonomous(name = "9 Close Left Sort", group = "Competition")
 public class NineCloseLeftSort extends BaseAuto {
     public static double motifDetectionTimeMs = 3000;

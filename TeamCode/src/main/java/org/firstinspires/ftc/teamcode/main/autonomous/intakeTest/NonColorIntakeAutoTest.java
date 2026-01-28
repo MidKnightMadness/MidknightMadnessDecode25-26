@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.main.autonomous;
+package org.firstinspires.ftc.teamcode.main.autonomous.intakeTest;
 
 
 
@@ -11,9 +11,7 @@ import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.Path;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.Command;
@@ -21,14 +19,10 @@ import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
-import com.seattlesolvers.solverslib.command.ParallelDeadlineGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
-import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
-import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommand;
 import org.firstinspires.ftc.teamcode.commands.pathing.SchedulePathTo;
-import org.firstinspires.ftc.teamcode.commands.spindexer.SpindexerGotoSpot;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
@@ -38,18 +32,23 @@ import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
-import org.firstinspires.ftc.teamcode.util.Angle;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
 
 @Config
 @Configurable
-@Autonomous(name = "Color Intake Auto Test", group = "Competition")
-public class ColorIntakeAutoTest extends CommandOpMode {
-    public static double pathDistThresholdMin = 1.5;
-    public static double headingError = Math.toRadians(2);
-    public static double timeOutConstraint = 100;
+@Autonomous(name = "Intake Auto Test", group = "Competititon")
+public class NonColorIntakeAutoTest extends CommandOpMode {
+    public static long firstWaitTime = 300;//700
+    public static long secondWaitTime = 200;//500
+    public static long thirdWaitTime = 200;//500
+
+    public static long fourthWaitTime = 500;
+    public static double pathDistThresholdMin = 0.5;
+    public static double headingError = 0.015;
+    public static double timeOutConstraint = 200;
+    public static double xChangeIntake = 27;
     Follower follower;
     Timer gameTimer;
     Pose startPose;
@@ -66,28 +65,29 @@ public class ColorIntakeAutoTest extends CommandOpMode {
     FtcDashboard dashboard;
     TelemetryPacket dashboardPacket;
 
+    public static double goToSpot1Time = 500;
+    public static double goToSpot2Time = 500;
+
     public static double maxTimeMs = 29500;
-    public static double waitTime = 200;
     public static double maxWritePoseTimeMs = 200;
     public static double maxSideWriteTimeMs = 200;
+    public static double[] pidBotGainsShooter = new double[]{0.0004, 0, 0.00001};
+    public static double[] kBotGainsShooter = new double[]{0, 0.00005, 0};
+    public static double[] pidTopGainsShooter = new double[]{0.0004, 0, 0.00001};
+    public static double[] kTopGainsShooter = new double[]{0.02, 0.00005, 0};
 
-    public static Pose intakeOnePose = new Pose(102, 84, Math.toRadians(0));
-    public static Pose intakeTwoPose = new Pose(102, 60, Math.toRadians(0));
-    public static Pose intakeThreePose = new Pose(102, 36, Math.toRadians(0));
-    public static Pose intakeOneEndPose = new Pose(125, 84, Math.toRadians(0));
-    public static Pose intakeTwoEndPose = new Pose(125, 60, Math.toRadians(0));
-    public static Pose intakeThreeEndPose = new Pose(125, 36, Math.toRadians(0));
+    boolean stopEnd = false;
+    ShootSide side;
+    boolean postMotif = false;
+    TwoWheelShooter.RunMode shooterRunMode = TwoWheelShooter.RunMode.VelocityControl;
+    public static Pose intakeOnePose = new Pose(100, 84, Math.toRadians(0));
+    public static Pose intakeTwoPose = new Pose(100, 60, Math.toRadians(0));
+    public static Pose intakeThreePose = new Pose(100, 36, Math.toRadians(0));
     boolean started = false;
-    public static double intakePower = 1.0;
-    AutoIntakeCommand autoIntakeCommand;
-    public static double drivePower = 0.3;
 
-    public static boolean useColor = false;
-    public static boolean useDistance = true;
-    public static int targetSpot = 1;
-    Path path;
     @Override
     public void initialize() {
+
         CommandScheduler.getInstance().cancelAll();
         super.reset();
 
@@ -95,6 +95,7 @@ public class ColorIntakeAutoTest extends CommandOpMode {
         gameTimer.restart();
 
         initializeMechanisms();
+
 
         follower = ConstantsBot.createPinpointFollower(hardwareMap);
         follower.setPose(intakeOnePose);
@@ -104,68 +105,114 @@ public class ColorIntakeAutoTest extends CommandOpMode {
 
         telemetryManager = PanelsTelemetry.INSTANCE.getTelemetry();
         graphManager = PanelsGraph.INSTANCE.getManager();
-
-        path = new Path(new BezierLine(intakeOnePose, intakeOneEndPose));
-        path.setLinearHeadingInterpolation(intakeOnePose.getHeading(), intakeOneEndPose.getHeading());
-//        setConstraints(path);
+//        buildPaths();
+//        setupVision();
+//        if(preMotifSequence() != null) {
+//            schedule(preMotifSequence());
+//
+//        }
     }
 
-    private void setConstraints(Path path){
-        path.setTimeoutConstraint(timeOutConstraint);
-        path.setTranslationalConstraint(pathDistThresholdMin);
-        path.setHeadingConstraint(headingError);
-    }
     private void initializeMechanisms() {
-        spindexer = new Spindexer(hardwareMap, useDistance).setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE}).initAngle();
+        limelight = hardwareMap.get(Limelight3A.class, ConfigNames.limelight);
+        spindexer = new Spindexer(hardwareMap, false).setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE}).initAngle();
+
+        shooter = new TwoWheelShooter(hardwareMap, shooterRunMode);
+//        shooter.setRunMode(TwoWheelShooter.RunMode.RawPower);
         intake = new Intake(hardwareMap, Intake.RunMode.RawPower);
-        register(spindexer, intake);
+
+        shooter.low.setVeloCoefficients(pidBotGainsShooter[0], pidBotGainsShooter[1], pidBotGainsShooter[2]);
+        shooter.high.setVeloCoefficients(pidTopGainsShooter[0], pidTopGainsShooter[1], pidTopGainsShooter[2]);
+        shooter.low.setFeedforwardCoefficients(kBotGainsShooter[0], kBotGainsShooter[1], kBotGainsShooter[2]);
+        shooter.high.setFeedforwardCoefficients(kTopGainsShooter[0], kTopGainsShooter[1], kTopGainsShooter[2]);
+
     }
+
+
+    int currSpindexerSpot = 0;
 
     @Override
     public void run(){
         super.run();
 
-        follower.update();
         if(!started){
-            schedule(intake());
+            schedule(intake(1));
             started = true;
         }
+        spindexer.goToSpot(SpindexerSpot.fromIndex(currSpindexerSpot), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
 
+        //   if(postMotifSequence().isFinished()){
+//            if(goToIntakeLine()!= null){
+//                schedule(goToIntakeLine());
+//            }
+        //    }
+//        if (timer.getTime() >= maxTimeMs) requestOpModeStop();
 
         updateTelemetry();
     }
 
 
-    protected Command intake(){
-        autoIntakeCommand = new AutoIntakeCommand(spindexer, intake, intakePower, waitTime);
-        return new ParallelCommandGroup(
-                driveToIntakeEnd(),
-                autoIntakeCommand.withTimeout(5000)
+    protected Command intake(int targetSpot){
+//        autoIntakeCommand = new AutoIntakeCommand(spindexer, intake, intakePower, intakeTime);
+        return new SequentialCommandGroup(
+                new ParallelCommandGroup(
+                        new InstantCommand(() -> intake.setDirectPower(1.0)),
+                        new SequentialCommandGroup(
+                                new WaitCommand(firstWaitTime),
+                                new InstantCommand(() -> currSpindexerSpot = 1),
+                                new WaitCommand(secondWaitTime),
+                                new InstantCommand(() -> currSpindexerSpot = 2),
+                                new WaitCommand(thirdWaitTime)
+                        ),
+                        driveToIntakeEnd(targetSpot)
+                ),
+                new InstantCommand(()-> intake.stopPower())
         );
+
+//        return intakePower(milliSec);
     }
 
 
-    protected FollowPathCommand driveToIntakeEnd(){
-        return new FollowPathCommand(follower, path, true).setGlobalMaxPower(drivePower);
+    protected SequentialCommandGroup driveToIntakeEnd(int spot){
+        Pose intakePose = (spot == 1) ? intakeOnePose : (spot == 2) ? intakeTwoPose : intakeThreePose;
+
+        follower.update();
+        return new SequentialCommandGroup(
+                new SchedulePathTo(follower, new Pose(intakePose.getX() + xChangeIntake, intakePose.getY(), intakePose.getHeading()), headingError, timeOutConstraint, pathDistThresholdMin)
+                        .setMaxPower(1.0)
+        );
     }
 
     protected void updateTelemetry(){
         // Update pose & follower
-
-        double currentTime = gameTimer.getTime();
+        follower.update();
+//        double currentTime = gameTimer.getTime();
 
         // Follower
-        telemetry.addData("Curr Spot", autoIntakeCommand.currNumBall);
+        telemetry.addData("Curr Spot", currSpindexerSpot);
+        telemetry.addData("Update Rate", 1000.0 / gameTimer.getDeltaTime());
         telemetry.addData("Current Follower Pose", follower.getPose().getPose());
         telemetry.addData("Follower Velocity", follower.getVelocity());
+//        telemetry.addData("Start Ball Color 0", startBallColors[0]);
+//        telemetry.addData("Start Ball Color 1", startBallColors[1]);
+//        telemetry.addData("Start Ball Color 2", startBallColors[2]);
 
         telemetry.addData("New Ball Detected", spindexer.newBallDetected());
+//        if(seqShootCommand != null) {
+//            telemetry.addData("Seq Test Farthest Moved", seqShootCommand.farthestMoved);
+//        }
 
+//        telemetry.addData("Motif", motifPattern);
         if(spindexer.getBallColors() != null) {
             telemetry.addData("Spindexer Ball Color 0", spindexer.getBallColors()[0]);
             telemetry.addData("Spindexer Ball Color 1", spindexer.getBallColors()[1]);
             telemetry.addData("Spindexer Ball Color 2", spindexer.getBallColors()[2]);
         }
+//        if(spots != null) {
+//            telemetry.addData("Spindexer Optimal Sequence 0", spots[0]);
+//            telemetry.addData("Spindexer Optimal Sequence 1", spots[1]);
+//            telemetry.addData("Spindexer Optimal Sequence 2", spots[2]);
+//        }
         telemetry.addData("All Occupied", spindexer.allOccuppiedBallColors());
 
         telemetry.addData("Pose X", follower.getPose().getX());
@@ -181,6 +228,13 @@ public class ColorIntakeAutoTest extends CommandOpMode {
         telemetry.addData("Follower Max Vel Constraint", follower.getConstraints().getVelocityConstraint());
         telemetry.addData("Follower T Constraint", follower.getConstraints().getTValueConstraint());
 
+        //Shooter
+        if(shooter != null){
+            telemetry.addData("Shooter Dir RunMode", shooter.runMode);
+            telemetry.addData("Shooter RunMode", shooterRunMode);
+            telemetry.addData("Shooter Low RunMode", shooter.low.motorEx.getMode());
+            telemetry.addData("Shooter High RunMode", shooter.low.motorEx.getMode());
+        }
 
         //Spindexer
         if(spindexer != null){
@@ -196,8 +250,8 @@ public class ColorIntakeAutoTest extends CommandOpMode {
         }
 
         //Time
-        telemetry.addData("Auto Elapsed Time", currentTime);
-        telemetry.addData("Update Rate", 1 / gameTimer.getDeltaTime());
+//        telemetry.addData("Auto Elapsed Time", currentTime);
+//        telemetry.addData("Update Rate", 1 / gameTimer.getDeltaTime());
 
 
         telemetry.addData("Spindexer Get Curr Angle", spindexer.getCurrentAngle());

@@ -100,8 +100,8 @@ public class TwoWheelShooter extends SubsystemBase {
     HardwareMap map;
     public static double kBotShootMovingFactor = 1;
     public static double kTopShootMovingFactor = 1;
-    public static double velBotTolerance = 70;
-    public static double velTopTolerance = 70;
+    public static double velBotTolerance = 100;
+    public static double velTopTolerance = 100;
     public static double velMovingThreshold = 2;//in per sec
     double topMultiplier = 0;
     double botMultiplier = 0;

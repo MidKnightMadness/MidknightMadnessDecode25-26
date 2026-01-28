@@ -25,6 +25,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.localization.kalmanFilter.KalmanPinpointAprilConstants;
 import org.firstinspires.ftc.teamcode.localization.kalmanFilter.KalmanPinpointAprilLocalizer;
 import org.firstinspires.ftc.teamcode.localization.pinpoint.DoublePinpointLocalizer;
+import org.firstinspires.ftc.teamcode.localization.pinpoint.PinpointLocalizerCustom;
 
 
 /** This is the FollowerBuilder.
@@ -58,6 +59,10 @@ public class FollowerBuilder {
         return setLocalizer(new OTOSLocalizer(hardwareMap, lConstants));
     }
 
+
+    public FollowerBuilder pinpointCustomLocalizer(PinpointConstants lConstants) {
+        return setLocalizer(new PinpointLocalizerCustom(hardwareMap, lConstants));
+    }
 
     public FollowerBuilder pinpointLocalizer(PinpointConstants lConstants) {
         return setLocalizer(new com.pedropathing.ftc.localization.localizers.PinpointLocalizer(hardwareMap, lConstants));

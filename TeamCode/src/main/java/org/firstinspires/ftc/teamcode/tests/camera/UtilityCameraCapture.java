@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.camera;/*
+package org.firstinspires.ftc.teamcode.tests.camera;/*
  * Copyright (c) 2023 FIRST
  *
  * All rights reserved.
