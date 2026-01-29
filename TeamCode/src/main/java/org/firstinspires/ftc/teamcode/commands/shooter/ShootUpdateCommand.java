@@ -67,9 +67,9 @@ public class ShootUpdateCommand extends CommandBase {
         if(rawPower){
             shooter.setRawPower(1, 1);
         } else if (useLUT) {
-            shooter.setFlywheelStaticLUT(follower.getPose(), shootSide, voltageUse);
+            shooter.setFlywheelStaticLUT(follower.getPose(), shootSide, voltageUse, 0);
         } else {
-            shooter.setFlywheelStaticPresets(shootDist, voltageUse);
+            shooter.setFlywheelStaticPresets(shootDist, voltageUse, 0);
         }
 
 

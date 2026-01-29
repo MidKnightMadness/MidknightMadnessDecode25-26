@@ -96,6 +96,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 
+import org.firstinspires.ftc.teamcode.util.ConfigNames;
+
 @TeleOp(name="Ranger Proximity Sensor Test (Digital)", group="Test")
 @Configurable
 public class RangerDistanceSensorTest extends LinearOpMode {
@@ -108,7 +110,7 @@ public class RangerDistanceSensorTest extends LinearOpMode {
         boolean digitalFound = true;
 
         try {
-            rangerDetect = hardwareMap.get(DigitalChannel.class, "rangerDetect");
+            rangerDetect = hardwareMap.get(DigitalChannel.class, ConfigNames.intakeDist1);
             rangerDetect.setMode(DigitalChannel.Mode.INPUT);
         } catch (Exception e) {
             rangerDetect = null;

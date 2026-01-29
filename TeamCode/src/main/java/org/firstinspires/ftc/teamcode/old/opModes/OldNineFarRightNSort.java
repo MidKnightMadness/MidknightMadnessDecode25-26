@@ -180,7 +180,7 @@ public class OldNineFarRightNSort extends BaseAuto {
 //                ),
                 new WaitCommand(500),
                 new ParallelCommandGroup(
-                        new InstantCommand(()-> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Far, true)),
+                        new InstantCommand(()-> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Far, true, 0)),
                         new SequentialCommandGroup(
                                 getToShootCommand(1, 500),
                                 new WaitCommand(500),
@@ -205,7 +205,7 @@ public class OldNineFarRightNSort extends BaseAuto {
 //                getToShootCommand(2, 0),
                 new WaitCommand(200),
                 new ParallelCommandGroup(
-                        new InstantCommand(()-> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Far, true)),
+                        new InstantCommand(()-> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Far, true, 0)),
                         new SequentialCommandGroup(
                                 getToShootCommand(2, 500),
                                 new WaitCommand(500),
@@ -232,7 +232,7 @@ public class OldNineFarRightNSort extends BaseAuto {
 //                getToShootCommand(2, 0),
                 new WaitCommand(200),
                 new ParallelCommandGroup(
-                        new InstantCommand(()-> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Far, true)),
+                        new InstantCommand(()-> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Far, true, 0)),
                         new SequentialCommandGroup(
                                 getToShootCommand(2, 500),
                                 new WaitCommand(500),

@@ -52,7 +52,7 @@ public class SpindexerShootContinuous extends SequentialCommandGroup {
     public void initialize() {
         if (useShooter) {
             addCommands(
-                new InstantCommand(() -> shooter.setFlywheelStaticLUT(follower.getPose(), shootSide, false)),
+                new InstantCommand(() -> shooter.setFlywheelStaticLUT(follower.getPose(), shootSide, false, 0)),
                 new WaitCommand(1000)
             );
         }

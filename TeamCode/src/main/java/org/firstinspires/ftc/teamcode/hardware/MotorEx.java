@@ -58,11 +58,12 @@ public class MotorEx extends Motor {
     }
 
     @Override
-    public void set(double output) {
+    public void set(double output, double currVoltage) {
         if (runmode == RunMode.VelocityControl) {
             double speed = bufferFraction * output * ACHIEVABLE_MAX_TICKS_PER_SECOND;
-            double velocity = veloController.calculate(getCorrectedVelocity(), speed) + feedforward.calculate(speed, getAcceleration());
-            setPower(velocity / ACHIEVABLE_MAX_TICKS_PER_SECOND);
+            double velocity = veloController.calculate(getCorrectedVelocity(), speed) + feedforward.calculate(speed, getAcceleration(), currVoltage);
+//            setPower(velocity / ACHIEVABLE_MAX_TICKS_PER_SECOND);
+            setPower(feedforward.calculate(output, getAcceleration(), currVoltage));
         } else if (runmode == RunMode.PositionControl) {
             double error = positionController.calculate(encoder.getPosition());
             setPower(output * error);
@@ -71,10 +72,15 @@ public class MotorEx extends Motor {
         }
     }
 
-    public void set(double output, double multiplier) {
+    // default 12.5V
+    public void set(double output) {
+        set(output, SimpleMotorFeedforward.REFERENCE_VOLTAGE);
+    }
+
+    public void set(double output, double multiplier, double currVoltage) {
         if (runmode == RunMode.VelocityControl) {
             double speed = bufferFraction * output * ACHIEVABLE_MAX_TICKS_PER_SECOND;
-            double velocity = veloController.calculate(getCorrectedVelocity(), speed) + feedforward.calculate(speed, getAcceleration());
+            double velocity = veloController.calculate(getCorrectedVelocity(), speed) + feedforward.calculate(speed, getAcceleration(), currVoltage);
             setPower(velocity / ACHIEVABLE_MAX_TICKS_PER_SECOND * multiplier);
         } else if (runmode == RunMode.PositionControl) {
             double error = positionController.calculate(encoder.getPosition());
@@ -88,8 +94,8 @@ public class MotorEx extends Motor {
     /**
      * @param velocity the velocity in ticks per second
      */
-    public void setVelocity(double velocity) {
-        set(velocity / ACHIEVABLE_MAX_TICKS_PER_SECOND);
+    public void setVelocity(double velocity, double currVoltage) {
+        set(velocity / ACHIEVABLE_MAX_TICKS_PER_SECOND, currVoltage);
     }
 
     /**
@@ -98,8 +104,8 @@ public class MotorEx extends Motor {
      * @param velocity  the angular rate
      * @param angleUnit radians or degrees
      */
-    public void setVelocity(double velocity, AngleUnit angleUnit) {
-        setVelocity(getCPR() * AngleUnit.RADIANS.fromUnit(angleUnit, velocity) / (2 * Math.PI));
+    public void setVelocity(double velocity, AngleUnit angleUnit, double currVoltage) {
+        setVelocity(getCPR() * AngleUnit.RADIANS.fromUnit(angleUnit, velocity) / (2 * Math.PI), currVoltage);
     }
 
     /**

@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 import com.seattlesolvers.solverslib.controller.PController;
 import com.seattlesolvers.solverslib.controller.PIDController;
-import com.seattlesolvers.solverslib.controller.wpilibcontroller.SimpleMotorFeedforward;
+
 import com.seattlesolvers.solverslib.hardware.HardwareDevice;
 
 import java.util.function.Supplier;
@@ -290,10 +290,10 @@ public class Motor implements HardwareDevice {
      *
      * @param output The percentage of power to set. Value should be between -1.0 and 1.0.
      */
-    public void set(double output) {
+    public void set(double output, double currVoltage) {
         if (runmode == RunMode.VelocityControl) {
             double speed = bufferFraction * output * ACHIEVABLE_MAX_TICKS_PER_SECOND;
-            double velocity = veloController.calculate(getVelocity(), speed) + feedforward.calculate(speed, encoder.getAcceleration());
+            double velocity = veloController.calculate(getVelocity(), speed) + feedforward.calculate(speed, encoder.getAcceleration(), currVoltage);
             motor.setPower(velocity / ACHIEVABLE_MAX_TICKS_PER_SECOND);
         } else if (runmode == RunMode.PositionControl) {
             double error = positionController.calculate(getDistance());
@@ -448,24 +448,11 @@ public class Motor implements HardwareDevice {
         return motor.getPower();
     }
 
-    /**
-     * Sets the target position for the motor to the desired target.
-     * Once {@link #set(double)} is called, the motor will attempt to move in the direction
-     * of said target.
-     *
-     * @param target the target position in ticks
-     */
+
+
     public void setTargetPosition(int target) {
         setTargetDistance(target * encoder.dpp);
-    }
-
-    /**
-     * Sets the target distance for the motor to the desired target.
-     * Once {@link #set(double)} is called, the motor will attempt to move in the direction
-     * of said target.
-     *
-     * @param target the target position in units of distance
-     */
+     }
     public void setTargetDistance(double target) {
         targetIsSet = true;
         positionController.setSetPoint(target);

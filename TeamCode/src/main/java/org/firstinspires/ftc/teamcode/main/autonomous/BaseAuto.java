@@ -72,7 +72,6 @@ public class BaseAuto extends CommandOpMode {
 
         gameTimer = new Timer();
 
-        initializeMechanisms();
 
 
         startPose = getStartPose();
@@ -86,6 +85,7 @@ public class BaseAuto extends CommandOpMode {
 //        graphManager = PanelsGraph.INSTANCE.getManager();
         buildPaths();
         setupVision();
+        initializeMechanisms();
         preMotifSeq = preMotifSequence();
         if(preMotifSeq != null) {
             schedule(preMotifSeq);

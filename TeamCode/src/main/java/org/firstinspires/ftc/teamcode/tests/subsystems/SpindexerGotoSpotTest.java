@@ -107,7 +107,7 @@ public class SpindexerGotoSpotTest extends CommandOpMode {
         super.run();
 
         if(targetSpot != -1){
-            spindexer.goToSpotOptimized(SpindexerSpot.fromIndex(targetSpot), SpotType.INTAKE);
+            spindexer.goToSpot(SpindexerSpot.fromIndex(targetSpot), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
         }
 
         try {

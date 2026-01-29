@@ -176,7 +176,7 @@ public class NineCloseLeftNonSorted extends BaseAuto {
 //                        new FlywheelShootTimed(shooter, follower, shootSide,  TwoWheelShooter.ShootDist.Close, false, 5000, false)
 //                ),
                 new ParallelCommandGroup(
-                        new InstantCommand(()-> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true)),
+                        new InstantCommand(()-> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true, 0)),
                         new SequentialCommandGroup(
                                 getToShootCommand(1, 1000),
                                 new WaitCommand(1000),
@@ -200,7 +200,7 @@ public class NineCloseLeftNonSorted extends BaseAuto {
 //                new ParallelCommandGroup(
 
                 new ParallelCommandGroup(
-                        new InstantCommand(()-> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true)),
+                        new InstantCommand(()-> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true, 0)),
                         new SequentialCommandGroup(
                                 getToShootCommand(2, 0),
                                 new WaitCommand(2000),
@@ -224,7 +224,7 @@ public class NineCloseLeftNonSorted extends BaseAuto {
                 setDefaultStartColors(),
 //                new ParallelCommandGroup(
                 new ParallelCommandGroup(
-                        new InstantCommand(()-> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true)),
+                        new InstantCommand(()-> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true, 0)),
                         new SequentialCommandGroup(
                                 getToShootCommand(2, 0),
                                 new WaitCommand(2000),

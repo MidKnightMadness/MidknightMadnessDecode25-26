@@ -55,7 +55,7 @@ import java.util.Map;
 @Configurable
 @Autonomous(name = "9 Far Right Sort", group = "Competition")
 public class NineBackRightSort extends BaseAuto {
-    int startPipeline = 1;
+    int objectDetectionPipeline = 3;
     public static Pose startPose = new Pose(88, 8, Math.toRadians(270));
     public static Pose shootPose = new Pose(84, 17, Math.toRadians(247));
     public static Pose forwardPose = new Pose(88, 12, Math.toRadians(90));
@@ -70,6 +70,7 @@ public class NineBackRightSort extends BaseAuto {
     public static Pose intakeCornerStartPose = new Pose(130, 17, Math.toRadians(0));
     public static Pose intakeCornerEndPose = new Pose(130, 11, Math.toRadians(0));
 
+    public static long driveIntakeEndTime = 5000;
 
 
     MotifEnums.Motif motifPattern = MotifEnums.Motif.NONE;
@@ -87,7 +88,7 @@ public class NineBackRightSort extends BaseAuto {
     public static double velConstraint = 0;
 
     //TODO: TRY VELOCITY CONSTRAINT
-    public static TwoWheelShooter.RunMode shooterRunMode = TwoWheelShooter.RunMode.RawPower;
+    public static TwoWheelShooter.RunMode shooterRunMode = TwoWheelShooter.RunMode.VelocityControl;
 
     private final BallColor[] startBallColors = new BallColor[] {BallColor.PURPLE, BallColor.PURPLE, BallColor.GREEN};
     SpindexerSpot[] spots;
@@ -135,7 +136,7 @@ public class NineBackRightSort extends BaseAuto {
     }
 
     public Pose applyLeft(Pose pose){
-        return new Pose(144 - pose.getX(), pose.getY(), normAngle(Math.toRadians(Math.PI - pose.getHeading())));
+        return new Pose(144 - pose.getX(), pose.getY(), normAngle((Math.PI - pose.getHeading())));
     }
 
     public double normAngle(double angle){
@@ -160,8 +161,9 @@ public class NineBackRightSort extends BaseAuto {
     @Override
     public void setupVision(){
         limelight = hardwareMap.get(Limelight3A.class, ConfigNames.limelight);
-        limelight.pipelineSwitch(startPipeline);
+        limelight.pipelineSwitch(objectDetectionPipeline);
         limelight.start();
+
         arducam = new AprilTagWebcam();
         arducam.init(hardwareMap, ConfigNames.arducam);
         file = createFile(fileName, directoryName);
@@ -353,7 +355,7 @@ public class NineBackRightSort extends BaseAuto {
     @Override
     public void update(){
          //override to park if not enough time
-         if(!scheduledPark && gameTimer.getTime() >= 27000){
+         if(gameTimer.getTime() >= 27000 && !scheduledPark){
              scheduledPark = true;
              CommandScheduler.getInstance().cancelAll();
              schedule(new ParallelCommandGroup(
@@ -381,7 +383,7 @@ public class NineBackRightSort extends BaseAuto {
         spindexer.updateShootOn(shootOn);
 
 
-        if(!shootOn || currSpindexerBallColors == null){
+        if(Math.abs(pushUpServo.getServo().getPosition() - pushUpServo.getMaxPos()) > 0.1 || currSpindexerBallColors == null){
             return;
         }
 
@@ -442,19 +444,18 @@ public class NineBackRightSort extends BaseAuto {
         //temporarily turn it off to hand to localizer
         return new SequentialCommandGroup(
 //                driveForward(),
-                setSpindexerCorrect(IntakeLine.CLOSE),//GPP so that G is on the right side
-                new WaitCommand(1000),
+                //GPP so that G is on the right side
                 shoot(),
 
-                getToLineNum(IntakeLine.FAR),
+//                getToLineNum(IntakeLine.FAR),
                 intake(IntakeLine.FAR),
                 shoot(),
 
-                getToLineNum(IntakeLine.CORNER),
+//                getToLineNum(IntakeLine.CORNER),
                 intake(IntakeLine.CORNER),
                 shoot(),
 
-                getToLineNum(IntakeLine.MID),
+//                getToLineNum(IntakeLine.MID),
                 intake(IntakeLine.MID),
                 shoot(),
 
@@ -520,6 +521,7 @@ public class NineBackRightSort extends BaseAuto {
                                 new InstantCommand(() -> spindexer.spin(1 * spindexerSpeed)),
                                 new WaitCommand(powerFlywheelTime)
                         ),
+                        setSpindexerCorrect(IntakeLine.CLOSE),
                         new InstantCommand(()-> pushUpServo.setUp()),
                         new ShootUpdateCommand(spindexer, shooter, follower, shootSide, useLUT, voltageCompensation, shootDist, rawPowerOn)
                 ),
@@ -539,7 +541,7 @@ public class NineBackRightSort extends BaseAuto {
 
     protected Command intake(IntakeLine lineNum){
 
-        Pose linePose = lineNum == IntakeLine.FAR ? intakeFarStartPose : lineNum == IntakeLine.MID ? intakeMidStartPose : lineNum == IntakeLine.CLOSE ? intakeCloseStartPose : intakeCornerStartPose;
+        Pose startLine = lineNum == IntakeLine.FAR ? intakeFarStartPose : lineNum == IntakeLine.MID ? intakeMidStartPose : lineNum == IntakeLine.CLOSE ? intakeCloseStartPose : intakeCornerStartPose;
 
          if(!useAutoIntake) {
              return new SequentialCommandGroup(
@@ -564,18 +566,13 @@ public class NineBackRightSort extends BaseAuto {
                      )
              );
          } else{
-             return new SequentialCommandGroup(
-                     new ParallelRaceGroup(
-                         new SequentialCommandGroup(
-                             new SchedulePathTo(follower, linePose).setMaxPower(1.0),
-                             new ParallelCommandGroup(
-                                 driveToIntakeEnd(lineNum)
-                             ).withTimeout(4500)
-                         ),
-                         new AutoIntakeCommand2(spindexer, intake, intakePower, inBetweenTime, useDistanceSensor)
-                    ),
-                 setSpindexerCorrect(lineNum)
-             );
+             return new ParallelDeadlineGroup(
+                 new AutoIntakeCommand2(spindexer, intake, intakePower, inBetweenTime, useDistanceSensor),
+                 new SequentialCommandGroup(
+                     new SchedulePathTo(follower, startLine).setMaxPower(1.0),
+                     driveToIntakeEnd(lineNum).withTimeout(driveIntakeEndTime)
+                 )
+            ).withTimeout(4500);
          }
     }
 

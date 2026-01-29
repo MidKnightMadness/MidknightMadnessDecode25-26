@@ -38,7 +38,7 @@ public class ShootHardcode extends SequentialCommandGroup {
         }
         addCommands(
                 new InstantCommand(() -> {
-                    shooter.setFlywheelStaticLUT(distToGoal, false);
+                    shooter.setFlywheelStaticLUT(distToGoal, false, 0);
                 }),
                 new SpindexerRawSequence(spindexer, sequence, SpotType.OUTTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
                 new InstantCommand(() -> spindexer.spin(momentum)),

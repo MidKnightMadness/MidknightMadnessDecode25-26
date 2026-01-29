@@ -12,6 +12,9 @@ import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
+
+@Config
+@Configurable
 public class AutoIntakeCommand2 extends CommandBase {
     private Spindexer spindexer;
     private Intake intake;
@@ -26,13 +29,14 @@ public class AutoIntakeCommand2 extends CommandBase {
     double waitSettle = 0;
     public double time;
     boolean useDistanceSensor = true;
-    double maxSwapTime1 = 1000;
-    double maxSwapTime2 = 1000;
+    double maxSwapTime1 = 500;
+    double maxSwapTime2 = 500;
     boolean atSpot = false;
 
     boolean ballDetected = false;
     boolean exitTime = false;
     int numBall = 1;
+    public static int addition = 1;
     boolean timeExit;
     public AutoIntakeCommand2(Spindexer spindexer, Intake intake, double power, double inBetweenTime, boolean useDistanceSensor){
         this.spindexer = spindexer;
@@ -65,25 +69,41 @@ public class AutoIntakeCommand2 extends CommandBase {
         startTime = timer.getTime();
         intake.setDirectPower(power);
         currNumSpot = spindexer.getNearestSpot(spindexer.getCurrentAngle(), SpotType.INTAKE).getIndex();
-
     }
 
+    boolean updateStartTime = false;
 
     @Override
     public void execute(){
-        ballDetected = spindexer.updateBallSpot(currNumSpot);
+//        ballDetected = spindexer.updateBallSpot(currNumSpot);
 
-        if (!atSpot && spindexer.isAtSpotDetection(SpindexerSpot.fromIndex(currNumSpot), SpotType.INTAKE) && (spindexer.getBallColors()[currNumSpot] != BallColor.NONE)) {
+
+
+        if (!atSpot && spindexer.isAtSpotDetection(SpindexerSpot.fromIndex(currNumSpot), SpotType.INTAKE)) {
             atSpot = true;
-            ballDetectionTime = timer.getTime();
+        }
+
+        if(atSpot){
+            ballDetected = spindexer.updateBallSpot(currNumSpot);
+            if(ballDetected && !updateStartTime) {
+                ballDetectionTime = timer.getTime();
+                updateStartTime = true;
+            }
         }
 
         time = timer.getTime();
         exitTime = timeExit && (numBall == 1) ? time - ballDetectionTime >= maxSwapTime1 : timeExit && (numBall == 2) ? time - ballDetectionTime >= maxSwapTime2 : false;
 
-        if (atSpot && ((time - ballDetectionTime >= waitSettle && ballDetected)) || exitTime) {
-            currNumSpot = (currNumSpot + 1) % 3;
+        if (ballDetected && ((time - ballDetectionTime >= waitSettle)) || exitTime) {
+            currNumSpot = (currNumSpot - 1);
+//        if (((time - ballDetectionTime >= waitSettle)) || exitTime) {
+            currNumSpot = (currNumSpot - 1);
+            if(currNumSpot < 0){
+                currNumSpot += 3;
+            }
             atSpot = false;
+            ballDetected = false;
+            updateStartTime = false;
             numBall++;
         }
 
@@ -95,7 +115,7 @@ public class AutoIntakeCommand2 extends CommandBase {
     public boolean isFinished(){
         //  spindexer.goToSpot(SpindexerSpot.fromIndex(currNumBall), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
 
-        if(spindexer.allOccuppiedBallColors()){
+        if(spindexer.allOccuppiedBallColors() || numBall == 4){
             return true;
         }
         return false;

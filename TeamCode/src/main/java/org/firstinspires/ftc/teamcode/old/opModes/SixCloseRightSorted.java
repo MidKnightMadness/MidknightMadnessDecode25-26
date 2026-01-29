@@ -199,7 +199,7 @@ public class SixCloseRightSorted extends BaseAuto {
                                         CRServoEx2.RunMode.OptimizedPositionalControl, 0),
                                 new WaitCommand(thirdBallWaitTime)
                         ),
-                        new InstantCommand(() -> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true))
+                        new InstantCommand(() -> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true, 0))
                 ),
                 new InstantCommand(() -> {
                     shooter.stopFlywheels();
@@ -242,7 +242,7 @@ public class SixCloseRightSorted extends BaseAuto {
                             CRServoEx2.RunMode.OptimizedPositionalControl, 0),
                         new WaitCommand(thirdBallWaitTime)
                     ),
-                    new InstantCommand(() -> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true))
+                    new InstantCommand(() -> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true, 0))
                 ),
                 new InstantCommand(() -> {
                     shooter.stopFlywheels();
@@ -408,7 +408,7 @@ public class SixCloseRightSorted extends BaseAuto {
     private SequentialCommandGroup shootHardcode() {
         if (motifPattern == MotifEnums.Motif.PPG) {
             return new SequentialCommandGroup(
-                    new InstantCommand(() -> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true)),
+                    new InstantCommand(() -> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true, 0)),
                     new WaitCommand(2500),
                     new InstantCommand(() -> spindexer.spin(-0.3)),
                     new WaitCommand(1400),
@@ -417,7 +417,7 @@ public class SixCloseRightSorted extends BaseAuto {
         } else if (motifPattern == MotifEnums.Motif.PGP) {
             return new SequentialCommandGroup(
                     new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT2, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0).withTimeout(1500),
-                    new InstantCommand(() -> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true)),
+                    new InstantCommand(() -> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true, 0)),
                     new WaitCommand(2500),
                     new InstantCommand(() -> spindexer.spin(-0.3)),
                     new WaitCommand(1400),
@@ -425,7 +425,7 @@ public class SixCloseRightSorted extends BaseAuto {
             );
         } else {
             return new SequentialCommandGroup(
-                    new InstantCommand(() -> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true)),
+                    new InstantCommand(() -> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true, 0)),
                     new WaitCommand(2500),
                     new InstantCommand(() -> spindexer.spin(0.3)),
                     new WaitCommand(1400),

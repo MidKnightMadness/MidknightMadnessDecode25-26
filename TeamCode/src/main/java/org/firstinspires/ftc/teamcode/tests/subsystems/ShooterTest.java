@@ -3,25 +3,22 @@ package org.firstinspires.ftc.teamcode.tests.subsystems;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
-import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
-import com.seattlesolvers.solverslib.command.CommandScheduler;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
 import org.firstinspires.ftc.teamcode.game.SpotType;
 import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
-import org.firstinspires.ftc.teamcode.subsystems.PushUpServo;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
 
 @TeleOp(name = "Shooter Test")
-@Config
 @Configurable
 public class ShooterTest extends OpMode {
     TwoWheelShooter shooter;
@@ -31,6 +28,7 @@ public class ShooterTest extends OpMode {
     CRServo spindexerServo;
     CRServo spindexerServo2;
     Telemetry dashboardTelemetry;
+    VoltageSensor voltageSensor;
 
 
     double maxTurnerSpeed = 1;
@@ -52,74 +50,44 @@ public class ShooterTest extends OpMode {
     int triggeredSpot = -1;
     boolean velAgressiveComp = false;
     Spindexer spindexer;
+    boolean useColorSensor = false;
     boolean useDistanceSensor = false;
-    double shooterLowVel = 0;
-    double shooterLowCorrVel = 0;
-    double shooterLowPower = 0;
-    double shooterHighVel = 0;
-    double shooterHighCorrVel = 0;
-    double shooterHighPower = 0;
-    public static boolean useBulkMode = true;
-    PushUpServo pushUpServo;
+    public static double customTopPower = 0;
+    public static double customBotPower = 0;
+
+
     @Override
     public void init() {
-        if(useBulkMode){
-            CommandScheduler.getInstance().setBulkReading(
-                    hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
-            );
-        } else{
-            CommandScheduler.getInstance().setBulkReading(
-                    hardwareMap, LynxModule.BulkCachingMode.OFF // Scheduler will clean cache for you
-            );
-        }
-        pushUpServo = new PushUpServo(hardwareMap);
         shooter = new TwoWheelShooter(hardwareMap, shooterRunMode);
         spindexer = new Spindexer(hardwareMap, useDistanceSensor, new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE}).initAngle();
         spindexer.setMode(spindexerRunMode);
         spindexerServo = spindexer.getTurner().getServo();
-       // spindexerServo2 = spindexer.getTurner2().getServo();
         gameTimer = new Timer();
         FtcDashboard dashboard = FtcDashboard.getInstance();
         dashboardTelemetry = dashboard.getTelemetry();
-        telemetry.setMsTransmissionInterval(250);
+
     }
 
     boolean recoveryOn = false;
-    double spindexerPower = 0;
-    double prevSpindexerPower;
+    double currVolt;
     @Override
     public void loop() {
-        spindexerPower = gamepad2.left_stick_y * currturnerSpeed * change;
-        if(!(spindexerPower < 0.02) && prevSpindexerPower != spindexerPower){
-            spindexerServo.setPower(spindexerPower);
-            spindexerServo2.setPower(spindexerPower);
-            prevSpindexerPower = spindexerPower;
-        }
+        currVolt = hardwareMap.voltageSensor.iterator().next().getVoltage();
+
+        spindexerServo.setPower(gamepad2.left_stick_y * currturnerSpeed * change);
+//        spindexerServo2.setPower(gamepad2.left_stick_y * currturnerSpeed * change);
 
         updateTelem();
         handleShooterInput();
 
-        shooterLowVel = shooter.low.getVelocity();
-        shooterLowPower = shooter.low.get();
-        shooterLowCorrVel = shooter.low.getCorrectedVelocity();
-        shooterHighVel = shooter.high.getVelocity();
-        shooterHighPower = shooter.high.get();
-        shooterHighCorrVel = shooter.high.getCorrectedVelocity();
 
-        if(shooterLowVel > 200  ||shooterLowPower > 0.1){
+        if(shooter.low.getVelocity() > 200  || shooter.low.motor.getPower() > 0.1){
             shootOn = true;
         } else{
             shootOn = false;
         }
         spindexer.updateShootOn(shootOn);
 
-
-        if(gamepad2.aWasPressed()){
-            pushUpServo.setDown();
-        }
-        if(gamepad2.bWasPressed()){
-            pushUpServo.setUp();
-        }
 
         if(!shootOn){
             return;
@@ -142,7 +110,6 @@ public class ShooterTest extends OpMode {
             triggeredSpot = -1;
             triggerBallShot = false;
         }
-
         if(!triggerBallShot && triggeredSpot != -1){
             shooter.triggerBallShot(recoveryOn);
             spindexer.removeBall(triggeredSpot);
@@ -193,15 +160,24 @@ public class ShooterTest extends OpMode {
 //                shooter.setFlywheelLUT(follower, shootSide, voltageCompensation);
 //            }
             shooter.resetDefaultGains();
-            shooter.setFlywheelStaticPresets(shootDist, voltageCompensation);
-        } else {
-            shooter.setCustomPower(customBotTargetVel, customTopTargetVel);
+            shooter.setFlywheelStaticPresets(shootDist, voltageCompensation, currVolt);
+        } else{
+            if(shooterRunMode == TwoWheelShooter.RunMode.VelocityControl) {
+                shooter.setCustomPower(customBotTargetVel, customTopTargetVel, currVolt);
+            } else{
+                shooter.setCustomPower(customBotPower, customTopPower, currVolt);
+            }
         }
     }
 
     private void updateTelem() {
-        telemetry.addData("update rate", 1000.0 / gameTimer.getDeltaTime());
+        telemetry.addData("update rate", (double) 1000.0 / gameTimer.getDeltaTime());
 
+
+        if (shooterRunMode == TwoWheelShooter.RunMode.RawPower) {
+            telemetry.addData("Top motor voltage", customTopPower * currVolt);
+            telemetry.addData("Bottom motor voltage", customTopPower * currVolt);
+        }
         telemetry.addData("Voltage Use", voltageCompensation);
         telemetry.addData("Use LUT", useLUT);
         telemetry.addData("Shoot Mode", shooterRunMode);
@@ -220,18 +196,18 @@ public class ShooterTest extends OpMode {
 
         telemetry.addLine("--------------------------------");
         telemetry.addData("Shooter Mode", shooterRunMode);
-        telemetry.addData("Shooter Top Power", shooterHighPower);
-        telemetry.addData("Shooter Bot Power", shooterLowPower);
-        telemetry.addData("Shooter Top Vel", shooterHighVel);
-        telemetry.addData("Shooter Bot Vel", shooterLowVel);
-        telemetry.addData("Corr Shooter Top", shooterHighCorrVel);
-        telemetry.addData("Corr Shooter Bot", shooterLowCorrVel);
+        telemetry.addData("Shooter Top Power", shooter.high.get());
+        telemetry.addData("Shooter Bot Power", shooter.low.get());
+        telemetry.addData("Shooter Top Vel", shooter.high.getVelocity());
+        telemetry.addData("Shooter Bot Vel", shooter.low.getVelocity());
+        telemetry.addData("Corr Shooter Top", shooter.high.getCorrectedVelocity());
+        telemetry.addData("Corr Shooter Bot", shooter.low.getCorrectedVelocity());
 
 
-        dashboardTelemetry.addData("Shooter Top Vel", shooterHighVel);
-        dashboardTelemetry.addData("Shooter Bot Vel", shooterLowVel);
-        dashboardTelemetry.addData("Corr Shooter Top", shooterHighCorrVel);
-        dashboardTelemetry.addData("Corr Shooter Bot", shooterLowCorrVel);dashboardTelemetry.addData("Shooter Corr Bot Vel", shooter.low.getCorrectedVelocity());
+        dashboardTelemetry.addData("Shoter Top Vel", shooter.high.getVelocity());
+        dashboardTelemetry.addData("Shoter Bot Vel", shooter.low.getVelocity());
+        dashboardTelemetry.addData("Shooter Corr Top Vel", shooter.high.getCorrectedVelocity());
+        dashboardTelemetry.addData("Shooter Corr Bot Vel", shooter.low.getCorrectedVelocity());
 
         telemetry.addLine("--------------------------------");
         telemetry.addData("Spindexer Mode", spindexerRunMode);
