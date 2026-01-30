@@ -333,7 +333,7 @@ public class NineCloseLeftSort extends BaseAuto {
         return new SequentialCommandGroup(
                 new WaitCommand(1000),
                 new ParallelCommandGroup(
-                        new ShootUpdateCommand(spindexer, shooter, follower, shootSide, useLUT, voltageCompensation, shootDist, rawPowerOn).withTimeout(shootOnTime),
+                        new ShootUpdateCommand(spindexer, shooter, follower, shootSide, useLUT, voltageCompensation, shootDist, rawPowerOn, hardwareMap).withTimeout(shootOnTime),
                         new SequentialCommandGroup(
                                 getToShootCommand(shootNum),
                                 new InstantCommand(() -> currSpindexerGotoSpot = -1),

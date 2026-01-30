@@ -74,6 +74,7 @@ public class BaseAuto extends CommandOpMode {
 
 
 
+
         startPose = getStartPose();
         follower = ConstantsBot.createPinpointFollower(hardwareMap);
         follower.setPose(startPose);
@@ -83,9 +84,10 @@ public class BaseAuto extends CommandOpMode {
 //
 //        telemetryManager = PanelsTelemetry.INSTANCE.getTelemetry();
 //        graphManager = PanelsGraph.INSTANCE.getManager();
+        initializeMechanisms();
         buildPaths();
         setupVision();
-        initializeMechanisms();
+
         preMotifSeq = preMotifSequence();
         if(preMotifSeq != null) {
             schedule(preMotifSeq);
@@ -119,16 +121,15 @@ public class BaseAuto extends CommandOpMode {
             gameTimerStarted = true;
         }
         update();
-        if(preMotifNull){
-            schedule(postMotifSequence());
-        }
-        else if(!prevVisionComplete && isVisionComplete()){
+        if(preMotifNull || (!prevVisionComplete && isVisionComplete())){
 //            if(postMotifSequence() != null) {
-            preMotifSeq.cancel();
-            follower.breakFollowing();
-                schedule(postMotifSequence());
-//            }
+            if(!preMotifNull) {
+                preMotifSeq.cancel();
+                follower.breakFollowing();
+            }
+            schedule(postMotifSequence());
             prevVisionComplete = true;
+            preMotifNull = false;
         }
 
      //   if(postMotifSequence().isFinished()){

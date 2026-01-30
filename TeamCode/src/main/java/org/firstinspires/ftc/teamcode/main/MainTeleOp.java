@@ -79,7 +79,7 @@ public class MainTeleOp extends CommandOpMode {
     String botYFileName = "competition/robot_y.txt";
     String botHeadingFileName = "competition/robot_heading.txt";
     String sideFileName = "competition/side.txt";
-    public static boolean recoveryOn = true;
+    public static boolean recoveryOn = false;
 
     double maxSpeed = 1.0;
     double midSpeed = 0.5;
@@ -418,7 +418,7 @@ public class MainTeleOp extends CommandOpMode {
 
 
 
-        currSpindexerBallColors = spindexer.getBallColors();
+//        currSpindexerBallColors = spindexer.getBallColors();
 
         //only triggers shot if spindexer in spot and bottom flywheel on
 
@@ -429,41 +429,38 @@ public class MainTeleOp extends CommandOpMode {
         }
 
 
-        if(shooter.low.getVelocity() > 200  || shooter.low.motor.getPower() > 0.1){
+        if(pushUpColor == GobildaLightBlock.Color.GREEN){
             shootOn = true;
         } else{
             shootOn = false;
         }
-        spindexer.updateShootOn(shootOn);
 
+        spindexer.updateShootOn(shootOn);
 
         if(!shootOn || currSpindexerBallColors == null){
             return;
         }
 
 
+
         if(!velAgressiveComp && spindexer.isAtSpot(SpindexerSpot.SPOT0, SpotType.OUTTAKE)){
             triggeredSpot = 0;
-            recentTriggeredSpot = triggeredSpot;
             velAgressiveComp = true;
         } else if(!velAgressiveComp && spindexer.isAtSpot(SpindexerSpot.SPOT1, SpotType.OUTTAKE)){
             triggeredSpot = 1;
-            recentTriggeredSpot = triggeredSpot;
             velAgressiveComp = true;
         } else if(!velAgressiveComp && spindexer.isAtSpot(SpindexerSpot.SPOT2, SpotType.OUTTAKE)){
             triggeredSpot = 2;
-            recentTriggeredSpot = triggeredSpot;
             velAgressiveComp = true;
         } else{
             triggeredSpot = -1;
             triggerBallShot = false;
         }
 
-
-
         if(!triggerBallShot && triggeredSpot != -1){
+            recentTriggeredSpot = triggeredSpot;
             shooter.triggerBallShot(recoveryOn);
-//            spindexer.removeBall(triggeredSpot);
+            spindexer.removeBall(triggeredSpot);
             triggerBallShot = true;
         }
 
@@ -756,7 +753,7 @@ public class MainTeleOp extends CommandOpMode {
 
         public void setBallColorsDefault () {
             if (gamepad2.leftStickButtonWasPressed()) {
-                spindexer.setBallColors(defaultBallColor);
+                spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE});
             }
         }
         private void driveRobot () {
@@ -865,7 +862,7 @@ public class MainTeleOp extends CommandOpMode {
         }
 
         private void pushUpCommands () {
-            if (activeSpindexerSpotIndex !=-1 || (gamepad2.aWasPressed() && pushUpColor != GobildaLightBlock.Color.ORANGE)) {
+            if (activeSpindexerSpotIndex !=-1 || (autoIntake && autoIntakeCommand.currNumSpot != -1) || (gamepad2.aWasPressed() && pushUpColor != GobildaLightBlock.Color.ORANGE)) {
                 pushUpServo.setDown();
             }
 //            if(gamepad1.aWasPressed()){
@@ -880,7 +877,6 @@ public class MainTeleOp extends CommandOpMode {
             }
         }
         private void spindexerCommands () {
-
             if (gamepad2.dpadLeftWasPressed() && !autoIntake) {
                 activeSpindexerSpotIndex = (goToSpotIntakeNum + 1) % 3;
                 goToSpotIntakeNum = activeSpindexerSpotIndex;
@@ -892,13 +888,14 @@ public class MainTeleOp extends CommandOpMode {
                 activeSpotType = SpotType.INTAKE;
                 autoSpindexer = true;
             } else if (gamepad2.dpadRightWasPressed() && !autoIntake) {
-                activeSpindexerSpotIndex = (goToSpotIntakeNum + 2) % 3;
+                activeSpindexerSpotIndex = (goToSpotIntakeNum - 1) % 3;
+                if(activeSpindexerSpotIndex < 0) activeSpindexerSpotIndex += 3;
                 goToSpotIntakeNum = activeSpindexerSpotIndex;
                 activeSpotType = SpotType.INTAKE;
                 autoSpindexer = true;
             }
 
-            if (autoSpindexer && activeSpotType != null && activeSpindexerSpotIndex != -1) {
+            if (!autoIntake && autoSpindexer && activeSpotType != null && activeSpindexerSpotIndex != -1) {
                 spindexer.goToSpot(SpindexerSpot.fromIndex(activeSpindexerSpotIndex), activeSpotType, CRServoEx2.RunMode.OptimizedPositionalControl);
             }
 

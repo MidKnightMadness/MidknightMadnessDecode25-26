@@ -515,7 +515,7 @@ public class NineCloseRightSort extends BaseAuto {
                                 new WaitCommand(powerFlywheelTime)
                         ),
                         new InstantCommand(()-> pushUpServo.setUp()),
-                        new ShootUpdateCommand(spindexer, shooter, follower, shootSide, useLUT, voltageCompensation, shootDist, rawPowerOn)
+                        new ShootUpdateCommand(spindexer, shooter, follower, shootSide, useLUT, voltageCompensation, shootDist, rawPowerOn, hardwareMap)
                 ),
                 new ParallelCommandGroup(
                         new InstantCommand(() -> currSpindexerGotoSpot = 0),

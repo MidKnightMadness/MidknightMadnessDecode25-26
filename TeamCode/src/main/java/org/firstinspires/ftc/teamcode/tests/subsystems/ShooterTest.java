@@ -186,8 +186,9 @@ public class ShooterTest extends OpMode {
 
         telemetry.addData("Shooter Top Factor", shooter.getCurrTopFactor());
         telemetry.addData("Shooter Bot Factor", shooter.getCurrBotFactor());
-        telemetry.addData("Multiplier Top", shooter.getCurrTopFactor() * shooter.getTargetVoltage() / shooter.getCurrVoltage());
-        telemetry.addData("Multiplier Bot", shooter.getCurrBotFactor() * shooter.getTargetVoltage() / shooter.getCurrVoltage());
+        telemetry.addData("Multiplier Top", shooter.getCurrTopFactor());
+        telemetry.addData("Multiplier Bot", shooter.getCurrBotFactor()
+        );
         telemetry.addData("Trigger Ball Shot", triggerBallShot);
         telemetry.addData("Recently Triggered Shot", recentTriggeredSpot);
         telemetry.addData("Ready to Shoot", shooter.readyToShoot());

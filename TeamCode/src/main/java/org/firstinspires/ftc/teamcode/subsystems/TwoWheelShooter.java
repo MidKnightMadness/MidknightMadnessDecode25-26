@@ -40,8 +40,8 @@ public class TwoWheelShooter extends SubsystemBase {
 //    public static double[] pidBotGains = new double[]{0.0004, 0, 0.00001};
    //public static double[] kBotGains = new double[]{0, 0.00005, 0};///change -> 0.00005 to 0.0004 mybe
     public static double[] kBotGains = new double[]{0.04057, 0.000363, 0};
-    public static double[] pidTopGains = new double[]{0.00006, 0, 0.00001};
-    public static double[] pidBotGains = new double[]{0.00003, 0.0003, 0};
+    public static double[] pidTopGains = new double[]{0.0012, 0, 0};
+    public static double[] pidBotGains = new double[]{0.0012, 0, 0};
     public static double[] kTopGains = new double[]{0.04386, 0.000346, 0};
 
     public static boolean useAggressiveRecovery = false;
@@ -92,7 +92,7 @@ public class TwoWheelShooter extends SubsystemBase {
 
 //    public static double[] closeTargetVelocities = new double[] {1800, 1900};
     public static double[] closeTargetVelocities = new double[] {1600, 1750};
-    public static double[] farTargetVelocities = new double[]{2200, 2100};
+    public static double[] farTargetVelocities = new double[]{1700, 2000};
     public static double[] closeTargetPowers = new double[]{0.7, 0.8};
     public static double[] farTargetPowers = new double[]{0.9, 0.85};
 
@@ -353,8 +353,8 @@ public class TwoWheelShooter extends SubsystemBase {
         predictedBotVel = lowPower;
         predictedTopVel = highPower;
         if(runMode == RunMode.VelocityControl){
-            low.set(lowPower, currVolt);
-            high.set(highPower + topVelocityOffset, currVolt);//account for belted motor
+            low.set(lowPower, 1, currVolt);
+            high.set(highPower + topVelocityOffset, 1, currVolt);//account for belted motor
         }
         else {
             low.set(lowPower);
@@ -385,7 +385,7 @@ public class TwoWheelShooter extends SubsystemBase {
     }
 
     public void stopFlywheels() {
-        low.motor.setPower(0);
-        high.motor.setPower(0);
+        low.motorEx.setPower(0);
+        high.motorEx.setPower(0);
     }
 }

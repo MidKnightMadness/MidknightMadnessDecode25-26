@@ -11,11 +11,11 @@ public class SchedulePathTo extends SequentialCommandGroup {
     Follower follower;
     Pose targetPose;
     Pose startPose;
-    double headingConstraint;
-    double timeOutConstraint;
-    double translationalConstraint;
+    double headingConstraint = 0;
+    double timeOutConstraint = 0;
+    double translationalConstraint = 0;
     boolean maxPowerUse = false;
-    double vel;
+    double vel = 0;
     double maxPower = 0;
     public SchedulePathTo(Follower follower, Pose startPose, Pose targetPose){
         this.follower = follower;
@@ -134,8 +134,10 @@ public class SchedulePathTo extends SequentialCommandGroup {
         else{
             followCommand = new FollowPathCommand(follower, pathChain, true);
         }
+
         addCommands(followCommand);
         super.initialize();
+
     }
 
     @Override
