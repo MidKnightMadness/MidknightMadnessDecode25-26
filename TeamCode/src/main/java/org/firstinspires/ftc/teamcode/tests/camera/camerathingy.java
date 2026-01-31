@@ -35,8 +35,8 @@ public class camerathingy extends OpMode {
     private static final double camWidth = 1280;
     private static final double camHeight = 960;
     private static final double PPI = 96;
-    private static final double hOffset = 0;
-    private static final double vOffset = 0;
+    private static double hOffset = -3.5;
+    private static double vOffset = 15;
     private final double[][] H = {
             {5.828680, 1.841763, -3515.724491},
             {0.052028, 13.011093, -4470.243506},
@@ -66,7 +66,7 @@ public class camerathingy extends OpMode {
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         limelight.setPollRateHz(400); //default 100
         limelight.start();
-        limelight.pipelineSwitch(0);
+        limelight.pipelineSwitch(3);
         minX = Double.MAX_VALUE;
         minY = Double.MAX_VALUE;
         minD = Double.MAX_VALUE;
@@ -118,6 +118,7 @@ public class camerathingy extends OpMode {
 
         }
     }
+
 }
 
 

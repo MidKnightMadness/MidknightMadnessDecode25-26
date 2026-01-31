@@ -112,6 +112,7 @@ public class CameraTest extends OpMode {
     private static double distance(double x, double y){
         return Math.sqrt(x*x+y*y);
     }
+
 }
 
 
