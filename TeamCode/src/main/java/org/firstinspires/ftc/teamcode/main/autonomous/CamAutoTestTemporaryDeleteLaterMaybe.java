@@ -29,6 +29,7 @@ public class CamAutoTestTemporaryDeleteLaterMaybe extends BaseAuto {
                 new ParallelRaceGroup(
                     new CamCommand(limelight, follower),                          // run camera
                     new WaitUntilCommand(() -> !CamCommand.finalBallList.isEmpty()) // wait for results
+                    //new RepeatCommand(strafe left and right) do this after testing if the auto actually works
                 ),
                 buildBallPathSequence()
         );
