@@ -40,13 +40,15 @@ public class AprilTagCameraTesting extends OpMode {
 
     double cameraYawGlobal;
     double headingError;
-    double rightAprilAngle = 38.565;//degrees
-    double leftAprilAngle = 90 + 38.565;
+    double rightAprilAngle = 180 + 38.565;//degrees
+    double leftAprilAngle = 360 - 38.565;
+    public static double offset = 13;
     Pose leftTarget = new Pose(0, 144, Math.toRadians(45));
     Pose rightTarget = new Pose(144, 144, Math.toRadians(-45));
     @Override
     public void init() {
-//        follower = ConstantsBot.createPinpointFollower(hardwareMap);
+        follower = ConstantsBot.createPinpointFollower(hardwareMap);
+        follower.setPose(new Pose(72, 8, Math.toRadians(90)));
 //        follower.startTeleopDrive();
 
         aprilTagWebcam = new AprilTagWebcam();
@@ -93,6 +95,7 @@ public class AprilTagCameraTesting extends OpMode {
             telemetry.addData("AprilTag " + TAG_ID, "Not Visible");
         }
 
+        follower.update();
         telemetry.addLine("------------------------------------");
         telemetry.addData("Auto Align", autoAlign);
         telemetry.addData("Target Heading", convertRadToDegrees(targetheading));
@@ -100,6 +103,7 @@ public class AprilTagCameraTesting extends OpMode {
         telemetry.addData("Turn Power", turnPower);
         telemetry.addData("Camera Yaw Global", cameraYawGlobal);
         telemetry.addData("Camera Yaw Rel", cameraYawRelative);
+        telemetry.addData("Follower Heading", convertRadToDegrees(follower.getPose().getHeading()));
         telemetry.addData("Tag", tag == null ? "NONE" : tag.id);
 
         setAlignTurnPower();
@@ -123,18 +127,17 @@ public class AprilTagCameraTesting extends OpMode {
 //            }
 
 //            if (prevHeadingError < Math.toRadians(20)) {
-                aprilTagWebcam.update();
-                if (shootSide == ShootSide.LEFT) {
-                    tag = aprilTagWebcam.getTagBySpecificId(20);
-                } else {
-                    tag = aprilTagWebcam.getTagBySpecificId(24);
-                }
-                if (tag != null) {
-                    cameraYawRelative = tag.ftcPose.yaw;
-                    cameraYawGlobal = cameraYawRelative + ((shootSide == ShootSide.LEFT) ? leftAprilAngle : rightAprilAngle);
-                }
-                   // headingError = getAngleError(outakePose, ((shootSide == ShootSide.LEFT) ? leftTarget : rightTarget), cameraYawGlobal);
-             //   }
+            if (shootSide == ShootSide.LEFT) {
+                tag = aprilTagWebcam.getTagBySpecificId(20);
+            } else {
+                tag = aprilTagWebcam.getTagBySpecificId(24);
+            }
+            if (tag != null) {
+                cameraYawRelative = -tag.ftcPose.pitch;
+                cameraYawGlobal = cameraYawRelative + ((shootSide == ShootSide.LEFT) ? leftAprilAngle : rightAprilAngle);
+            }
+            // headingError = getAngleError(outakePose, ((shootSide == ShootSide.LEFT) ? leftTarget : rightTarget), cameraYawGlobal);
+            //   }
 //            }
 //
 //            turnPower = calculateGamepadPID(prevHeadingError, headingError);

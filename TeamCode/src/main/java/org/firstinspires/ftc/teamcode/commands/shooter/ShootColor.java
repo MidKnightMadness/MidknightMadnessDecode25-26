@@ -25,7 +25,7 @@ public class ShootColor extends SequentialCommandGroup {
     ) {
         SpindexerSpot spot = spindexer.getNearestSpot(Angle.fromDegrees(0), SpotType.OUTTAKE);
         addCommands(
-                new InstantCommand(() -> shooter.setFlywheelStaticLUT(dist, false)),
+                new InstantCommand(() -> shooter.setFlywheelStaticLUT(dist, false, 0)),
                 new SpindexerGotoSpot(spindexer, spot, SpotType.OUTTAKE, runMode, finishedTimeThreshold),
                 new InstantCommand(shooter::stopFlywheels)
         );

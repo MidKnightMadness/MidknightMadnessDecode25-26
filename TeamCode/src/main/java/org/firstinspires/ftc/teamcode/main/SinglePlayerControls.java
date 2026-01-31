@@ -385,13 +385,13 @@ public class SinglePlayerControls extends CommandOpMode {
         botShooterPower = shooter.low.get();
 
         if(gamepad1.rightBumperWasPressed()){
-            shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true);
+            shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true, 0);
         }
         else if(gamepad1.right_trigger >= 0.5){
             shooter.stopFlywheels();
         }
         if(gamepad1.right_trigger > 0.2 && gamepad1.right_trigger < 0.5){
-            shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Far, true);
+            shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Far, true, 0);
         }
     }
     private void updateTelem() {

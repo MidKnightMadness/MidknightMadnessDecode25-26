@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.main.autonomous;
+package org.firstinspires.ftc.teamcode.old.opModes;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
@@ -28,6 +28,7 @@ import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
 import org.firstinspires.ftc.teamcode.game.SpotType;
 import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
+import org.firstinspires.ftc.teamcode.main.autonomous.BaseAuto;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
@@ -198,7 +199,7 @@ public class SixCloseRightSorted extends BaseAuto {
                                         CRServoEx2.RunMode.OptimizedPositionalControl, 0),
                                 new WaitCommand(thirdBallWaitTime)
                         ),
-                        new InstantCommand(() -> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true))
+                        new InstantCommand(() -> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true, 0))
                 ),
                 new InstantCommand(() -> {
                     shooter.stopFlywheels();
@@ -241,7 +242,7 @@ public class SixCloseRightSorted extends BaseAuto {
                             CRServoEx2.RunMode.OptimizedPositionalControl, 0),
                         new WaitCommand(thirdBallWaitTime)
                     ),
-                    new InstantCommand(() -> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true))
+                    new InstantCommand(() -> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true, 0))
                 ),
                 new InstantCommand(() -> {
                     shooter.stopFlywheels();
@@ -407,7 +408,7 @@ public class SixCloseRightSorted extends BaseAuto {
     private SequentialCommandGroup shootHardcode() {
         if (motifPattern == MotifEnums.Motif.PPG) {
             return new SequentialCommandGroup(
-                    new InstantCommand(() -> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true)),
+                    new InstantCommand(() -> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true, 0)),
                     new WaitCommand(2500),
                     new InstantCommand(() -> spindexer.spin(-0.3)),
                     new WaitCommand(1400),
@@ -416,7 +417,7 @@ public class SixCloseRightSorted extends BaseAuto {
         } else if (motifPattern == MotifEnums.Motif.PGP) {
             return new SequentialCommandGroup(
                     new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT2, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0).withTimeout(1500),
-                    new InstantCommand(() -> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true)),
+                    new InstantCommand(() -> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true, 0)),
                     new WaitCommand(2500),
                     new InstantCommand(() -> spindexer.spin(-0.3)),
                     new WaitCommand(1400),
@@ -424,7 +425,7 @@ public class SixCloseRightSorted extends BaseAuto {
             );
         } else {
             return new SequentialCommandGroup(
-                    new InstantCommand(() -> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true)),
+                    new InstantCommand(() -> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, true, 0)),
                     new WaitCommand(2500),
                     new InstantCommand(() -> spindexer.spin(0.3)),
                     new WaitCommand(1400),

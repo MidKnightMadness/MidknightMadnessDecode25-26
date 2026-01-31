@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.camera;
+package org.firstinspires.ftc.teamcode.tests.camera;
 
 import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
 

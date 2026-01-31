@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.ServoControllerEx;
-import com.seattlesolvers.solverslib.controller.PIDFController;
+
 import com.seattlesolvers.solverslib.hardware.motors.CRServo;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.util.MathUtils;
@@ -156,8 +156,14 @@ public class CRServoEx2<E extends Encoder> extends CRServo {
             }
 
             double error = MathUtils.normalizeAngle(output - encoder.getAngle(), false, encoder.getAngleUnit());
+            if (Math.abs(error) < 5) {
+                crServo.setPower(0);
+                return;
+            }
 
-            double power = pidf.calculate(0, error);
+            double sqrdError = error * error;
+
+            double power = pidf.calculate(0, sqrdError) * Math.signum(error);
             this.error = error;
             this.power = power;
 

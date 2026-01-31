@@ -42,6 +42,7 @@ public class AutoIntakeCommand extends CommandBase {
     public void initialize(){
         timer.restart();
         startTime = timer.getTime();
+        currNumBall = spindexer.getNearestSpot(spindexer.getCurrentAngle(), SpotType.INTAKE).getIndex();
         intake.setDirectPower(power);
     }
 
@@ -64,7 +65,6 @@ public class AutoIntakeCommand extends CommandBase {
 
 
         spindexer.goToSpot(SpindexerSpot.fromIndex(currNumBall), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
-
     }
 
     @Override

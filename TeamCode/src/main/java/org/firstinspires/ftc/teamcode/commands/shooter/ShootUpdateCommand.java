@@ -1,6 +1,9 @@
 package org.firstinspires.ftc.teamcode.commands.shooter;
 
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
+
 import com.pedropathing.follower.Follower;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.CommandBase;
 
 import org.firstinspires.ftc.teamcode.game.ShootSide;
@@ -40,11 +43,12 @@ public class ShootUpdateCommand extends CommandBase {
     boolean voltageUse = false;
     boolean useLUT = true;
     boolean rawPower;
+    HardwareMap hardwareMap;
     public int getCurrBallIndex(){
         return currBallIndex;
     }
 
-    public ShootUpdateCommand(Spindexer spindexer, TwoWheelShooter shooter, Follower follower, ShootSide shootSide, boolean lutUse, boolean voltageUse, TwoWheelShooter.ShootDist shootDist, boolean rawPower){
+    public ShootUpdateCommand(Spindexer spindexer, TwoWheelShooter shooter, Follower follower, ShootSide shootSide, boolean lutUse, boolean voltageUse, TwoWheelShooter.ShootDist shootDist, boolean rawPower, HardwareMap hardwareMap){
         this.spindexer = spindexer;
         this.shooter = shooter;
         this.follower = follower;
@@ -53,6 +57,7 @@ public class ShootUpdateCommand extends CommandBase {
         this.voltageUse = voltageUse;
         this.useLUT = lutUse;
         this.rawPower = rawPower;
+        this.hardwareMap = hardwareMap;
         addRequirements(spindexer, shooter);
         timer = new Timer();
     }
@@ -64,12 +69,13 @@ public class ShootUpdateCommand extends CommandBase {
 
     @Override
     public void execute(){
+        double currVolt =  hardwareMap.voltageSensor.iterator().next().getVoltage();
         if(rawPower){
             shooter.setRawPower(1, 1);
         } else if (useLUT) {
-            shooter.setFlywheelStaticLUT(follower.getPose(), shootSide, voltageUse);
+            shooter.setFlywheelStaticLUT(follower.getPose(), shootSide, voltageUse, currVolt);
         } else {
-            shooter.setFlywheelStaticPresets(shootDist, voltageUse);
+            shooter.setFlywheelStaticPresets(shootDist, voltageUse, currVolt);
         }
 
 

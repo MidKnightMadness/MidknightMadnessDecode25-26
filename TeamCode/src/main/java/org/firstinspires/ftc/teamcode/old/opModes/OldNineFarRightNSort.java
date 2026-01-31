@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.main.autonomous;
+package org.firstinspires.ftc.teamcode.old.opModes;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
@@ -6,6 +6,7 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
@@ -24,36 +25,37 @@ import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
 import org.firstinspires.ftc.teamcode.game.SpotType;
 import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
+import org.firstinspires.ftc.teamcode.main.autonomous.BaseAuto;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
-import org.firstinspires.ftc.teamcode.util.Angle;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 
 @Config
 @Configurable
-
-@Autonomous(name = "9 Far Left NonSorted", group = "Competition")
-public class NineBallFarLeftNonSorted extends BaseAuto {
+@Disabled
+@Deprecated
+@Autonomous(name = "Old 9 Far Right NonSorted", group = "Competition")
+public class OldNineFarRightNSort extends BaseAuto {
     public static double motifDetectionTimeMs = 3000;
     int startPipeline = 1;
-    public static Pose startPose = new Pose(144-88, 8, Math.toRadians(270));
+    public static Pose startPose = new Pose(88, 8, Math.toRadians(270));
     //    public static Pose motifDetectionPose = new Pose(87, 94, Math.toRadians(100));
-    public static Pose shootPose = new Pose(144-84, 17, Math.toRadians(270+270-246));
-    //    public static Pose forwardPose = new Pose(88, 14, Math.toRadians(180));
-    public static Pose secondShootPose = new Pose(144-84, 17, Math.toRadians(270+270-246));
-    public static Pose parkPose = new Pose(144-86, 38, Math.toRadians(180));
-    public static Pose openGatePose = new Pose(144-136, 76, Math.toRadians(180));
-    public static Pose intakeOnePose = new Pose(144-102, 84, Math.toRadians(180));
-    public static Pose intakeTwoPose = new Pose(144-102, 56, Math.toRadians(180));
-    public static Pose intakeThreePose = new Pose(144- 102, 36, Math.toRadians(180));
+    public static Pose shootPose = new Pose(84, 17, Math.toRadians(246));
+//    public static Pose forwardPose = new Pose(88, 14, Math.toRadians(180));
+    public static Pose secondShootPose = new Pose(84, 17, Math.toRadians(246));
+    public static Pose parkPose = new Pose(86, 38, Math.toRadians(0));
+    public static Pose openGatePose = new Pose(136, 76, Math.toRadians(180));
+    public static Pose intakeOnePose = new Pose(102, 84, Math.toRadians(0));
+    public static Pose intakeTwoPose = new Pose(102, 56, Math.toRadians(0));
+    public static Pose intakeThreePose = new Pose(102, 36, Math.toRadians(0));
     public static double intakeDistForward = 14;
     PathChain toMotifPath;
     MotifEnums.Motif motifPattern = MotifEnums.Motif.NONE;
     MotifWriteCommand motifCommand = null;
 
-    ShootSide shootSide = ShootSide.LEFT;
+    ShootSide shootSide = ShootSide.RIGHT;
     Pose currentPose;
 
     Command firstPath;
@@ -61,12 +63,12 @@ public class NineBallFarLeftNonSorted extends BaseAuto {
     public static long secondWaitTime = 200;
     public static long thirdWaitTime = 150;//250 old
 
-    public static long fourthWaitTime = 700;
+    public static long fourthWaitTime = 500;
 
-    public static double pathDistThresholdMin = 1.5;
+    public static double pathDistThresholdMin = 2;
     public static double headingError = Math.toRadians(2);
     public static double timeOutConstraint = 200;
-    public static double xChangeIntake = -25;
+    public static double xChangeIntake = 25;
     public static int[] shootArray = new int[]{2, 1, 0};
 
     public static TwoWheelShooter.RunMode shooterRunMode = TwoWheelShooter.RunMode.RawPower;
@@ -171,14 +173,14 @@ public class NineBallFarLeftNonSorted extends BaseAuto {
         limelight.stop();
         //temporarily turn it off to hand to localizer
         return new SequentialCommandGroup(
-                //new SchedulePathTo(follower, forwardPose, headingError, timeOutConstraint, pathDistThresholdMin),
+               //new SchedulePathTo(follower, forwardPose, headingError, timeOutConstraint, pathDistThresholdMin),
 //                getToShootCommand(1, 1000),
 //                new ParallelDeadlineGroup(
 //                        new FlywheelShootTimed(shooter, follower, shootSide,  TwoWheelShooter.ShootDist.Close, false, 5000, false)
 //                ),
-                new WaitCommand(1500),
+                new WaitCommand(500),
                 new ParallelCommandGroup(
-                        new InstantCommand(()-> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Far, true)),
+                        new InstantCommand(()-> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Far, true, 0)),
                         new SequentialCommandGroup(
                                 getToShootCommand(1, 500),
                                 new WaitCommand(500),
@@ -203,7 +205,7 @@ public class NineBallFarLeftNonSorted extends BaseAuto {
 //                getToShootCommand(2, 0),
                 new WaitCommand(200),
                 new ParallelCommandGroup(
-                        new InstantCommand(()-> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Far, true)),
+                        new InstantCommand(()-> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Far, true, 0)),
                         new SequentialCommandGroup(
                                 getToShootCommand(2, 500),
                                 new WaitCommand(500),
@@ -230,7 +232,7 @@ public class NineBallFarLeftNonSorted extends BaseAuto {
 //                getToShootCommand(2, 0),
                 new WaitCommand(200),
                 new ParallelCommandGroup(
-                        new InstantCommand(()-> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Far, true)),
+                        new InstantCommand(()-> shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Far, true, 0)),
                         new SequentialCommandGroup(
                                 getToShootCommand(2, 500),
                                 new WaitCommand(500),
@@ -239,14 +241,14 @@ public class NineBallFarLeftNonSorted extends BaseAuto {
                 ),
                 new WaitCommand(2000),
                 new InstantCommand(()-> shooter.stopFlywheels()),
-                new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0)),
-                //new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 1000),
-//                openGate(1000),
+                new InstantCommand(()->spindexer.getTurner().stop()),//                openGate(1000),
 ////
 //                line2Commands(),
 //                line3Commands(),
 
-                park(100)
+                park(100),
+                new SpindexerGotoSpot(spindexer, SpindexerSpot.SPOT0, SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 1000)
+
 //
 //               new InstantCommand(() -> spindexer.goTo(Angle.fromDegrees(0), CRServoEx2.RunMode.OptimizedPositionalControl))
 //
@@ -292,16 +294,16 @@ public class NineBallFarLeftNonSorted extends BaseAuto {
 //                            new InstantCommand(() -> spindexer.getTurner().setPIDFTOUse(spindexer.outtakeTurnerCoeff)),
 //                            new WaitCommand(thirdWaitTime),
 //                            new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 2) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0)
-                                new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0.6)),//rotate manually for the last one
-                                new WaitCommand(thirdWaitTime),
-                                new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0)),
-                                new InstantCommand(()-> spindexer.setAngleTolerance(Angle.fromDegrees(10))),
+//                                new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0.6)),//rotate manually for the last one
+//                                new WaitCommand(thirdWaitTime),
+//                                new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0)),
+//                                new InstantCommand(()-> spindexer.setAngleTolerance(Angle.fromDegrees(10))),
                                 new SpindexerGotoSpot(spindexer, SpindexerSpot.fromIndex((initialSpindexerIntakeSpot + 2) % 3), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl, 0),
                                 new WaitCommand(fourthWaitTime)
                         ),
                         driveToIntakeEnd(targetSpot)
-                ).withTimeout(3500),
-                new InstantCommand(()-> spindexer.setDefaultAngleTolerance()),
+                ).withTimeout(2500),
+//                new InstantCommand(()-> spindexer.setDefaultAngleTolerance()),
                 new InstantCommand(()-> intake.stopPower())
         );
 
@@ -320,7 +322,7 @@ public class NineBallFarLeftNonSorted extends BaseAuto {
         }
         else{
             return new SequentialCommandGroup(
-                    new SchedulePathTo(follower, new Pose(intakePose.getX() + xChangeIntake - 6, intakePose.getY(), intakePose.getHeading()), headingError, timeOutConstraint, pathDistThresholdMin)
+                    new SchedulePathTo(follower, new Pose(intakePose.getX() + xChangeIntake + 6, intakePose.getY(), intakePose.getHeading()), headingError, timeOutConstraint, pathDistThresholdMin)
                             .setMaxPower(0.3)
             );
         }

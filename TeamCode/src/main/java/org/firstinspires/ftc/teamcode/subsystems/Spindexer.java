@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
@@ -26,7 +27,7 @@ public class Spindexer extends SubsystemBase {
     //Ball sensors(two) facing each other right in the intake before it goes into the spindexer
     //public static double intakeSpinPower = 0.3;
     public static double shootRawPower = 1;
-    public static PIDFCoefficients outtakeTurnerCoeff = new PIDFCoefficients(0.004, 0.002, 0.03, 0.00006);
+    public static PIDFCoefficients outtakeTurnerCoeff = new PIDFCoefficients(0.00005, 0, 0.005, 0.08);
     public static PIDFCoefficients intakeTurnerCoeff = new PIDFCoefficients(0.004, 0.002, 0.03, 0.00006);
 
     //COLOR STUFF
@@ -39,7 +40,7 @@ public class Spindexer extends SubsystemBase {
     public static Angle detectRange = Angle.fromDegrees(25); // How far off from the center of the spot that you detect. You don't want to trust measurements that are too off from the center
     public static Angle defaultFinishedThreshold = Angle.fromDegrees(5); // Threshold at which it's finished turning to a spot
     public static Angle finishedThreshold = Angle.fromDegrees(15);//changed from 20
-    public static Angle detectThreshold = Angle.fromDegrees(20);
+    public static Angle detectThreshold = Angle.fromDegrees(10);
     //0 degrees is facing intake
     //assuming layout at start is initialized as 0 from this position
     //  X X
@@ -63,10 +64,11 @@ public class Spindexer extends SubsystemBase {
     double overcomeWheelPower = 0.3;
 //    boolean useDistanceSensor = false;
     double dist = 0;
-    public DistanceSensor distanceSensor;
-    public DistanceSensor distanceSensor2;
+    public DigitalChannel distanceSensor;
+//    public DistanceSensor distanceSensor2;
     double dist2 = 0;
     boolean useDistanceSensor = false;
+
     public static double minDetectDistance = 6;//inch
     public Spindexer(HardwareMap hardwareMap) {
         this(hardwareMap, false);
@@ -94,10 +96,10 @@ public class Spindexer extends SubsystemBase {
 //        this.useColorSensors = useColorSensors;
         this.useDistanceSensor = useDistanceSensors;
 
-//        if(useDistanceSensor){
-//            distanceSensor = hardwareMap.get(DistanceSensor.class, ConfigNames.intakeDist1);
-//            distanceSensor2 = hardwareMap.get(DistanceSensor.class, ConfigNames.intakeDist2);
-//        }
+        if(useDistanceSensor){
+            distanceSensor = hardwareMap.get(DigitalChannel.class, ConfigNames.intakeDist1);
+            distanceSensor.setMode(DigitalChannel.Mode.INPUT);
+        }
 
         if(ballColors!= null){
             setBallColors(ballColors);
@@ -166,12 +168,7 @@ public class Spindexer extends SubsystemBase {
         return works;
     }
     public Spindexer setBallColors(BallColor[] ballColors) {
-        if(ballColors != null && ballColors.length == 3){
-            this.ballColors = ballColors;
-        }
-        else{
-            this.ballColors = new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE};
-        }
+        this.ballColors = ballColors;
         return this;
     }
 
@@ -186,42 +183,40 @@ public class Spindexer extends SubsystemBase {
         return color2;
     }
     public boolean nearWheel = false;
+    public boolean distCheck = false;
 
-    public void updateBallSpot(int spotIndex){
-        if(ballColors == null){
-            newBallType = null;
-            return;
+    public boolean updateBallSpot(int spotIndex){
+        if(ballColors == null || !useDistanceSensor){
+            return false;
         }
-        if(ballColors[spotIndex] != BallColor.NONE){//already has a color
-            newBallType = null;
-            return;//assume ball stays in position
+        if(ballColors[spotIndex] == BallColor.UNKNOWN){//already has a color
+            return true;//assume ball stays in position
         }
 
-        if(!useDistanceSensor){
-            return;
-        }
-        dist = distanceSensor.getDistance(DistanceUnit.INCH);
-        dist2 = distanceSensor2.getDistance(DistanceUnit.INCH);
-        boolean distCheck = dist <= minDetectDistance || dist2 <= minDetectDistance;
+//        dist2 = distanceSensor2.getDistance(DistanceUnit.INCH);
+        distCheck = distanceSensor.getState();
 
         if(distCheck) {
-            if(useColorSensors) {
-                color1 = ballDetectors[0].getColor();
-                color2 = ballDetectors[1].getColor();
-            } else {
-                color1 = BallColor.NONE;
-                color2 = BallColor.NONE;
-            }
+//            if(useColorSensors) {
+//                color1 = ballDetectors[0].getColor();
+//                color2 = ballDetectors[1].getColor();
+//            } else {
+//                color1 = BallColor.NONE;
+//                color2 = BallColor.NONE;
+//            }
 
 
-            if (color1 == BallColor.PURPLE || color2 == BallColor.PURPLE) {
-                ballColors[spotIndex] = BallColor.PURPLE;
-            } else if (color1 == BallColor.GREEN || color2 == BallColor.GREEN) {
-                ballColors[spotIndex] = BallColor.GREEN;
-            } else {
-                ballColors[spotIndex] =  BallColor.UNKNOWN;
-            }
+//            if (color1 == BallColor.PURPLE || color2 == BallColor.PURPLE) {
+//                ballColors[spotIndex] = BallColor.PURPLE;
+//            } else if (color1 == BallColor.GREEN || color2 == BallColor.GREEN) {
+//                ballColors[spotIndex] = BallColor.GREEN;
+//            } else {
+//                ballColors[spotIndex] =  BallColor.UNKNOWN;
+//            }
+            ballColors[spotIndex] = BallColor.UNKNOWN;
+            return true;
         }
+        return false;
     }
     public void updateBallColors() {
         SpindexerSpot spot = getNearestSpot(currentAngle, SpotType.INTAKE);
@@ -229,7 +224,7 @@ public class Spindexer extends SubsystemBase {
             newBallType = null;
             return;
         }
-        if(ballColors[spot.getIndex()] != BallColor.NONE){//already has a color
+        if(ballColors[spot.getIndex()] == BallColor.UNKNOWN || !useDistanceSensor){//already has a color
             newBallType = null;
             return;//assume ball stays in position
         }
@@ -241,12 +236,9 @@ public class Spindexer extends SubsystemBase {
             return;
         }
 
-        if(!useDistanceSensor){
-            return;
-        }
-        dist = distanceSensor.getDistance(DistanceUnit.INCH);
-        dist2 = distanceSensor2.getDistance(DistanceUnit.INCH);
-        boolean distCheck = dist <= minDetectDistance || dist2 <= minDetectDistance;
+
+//        dist2 = distanceSensor2.getDistance(DistanceUnit.INCH);
+        boolean distCheck = distanceSensor.getState();
 
         if(distCheck) {
 //            if(useColorSensors) {

@@ -76,9 +76,9 @@ public class ShootSeqCommand extends CommandBase {
         if(powerFlywheel) {
             if (mapDistToShoot) {
                 follower.update();
-                shooter.setFlywheelStaticLUT(follower.getPose(), shootSide, false);
+                shooter.setFlywheelStaticLUT(follower.getPose(), shootSide, false, 0);
             } else {
-                shooter.setFlywheelStaticPresets(shootDist, false);
+                shooter.setFlywheelStaticPresets(shootDist, false, 0);
             }
         }
 

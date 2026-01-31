@@ -23,27 +23,29 @@ import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
+import org.firstinspires.ftc.teamcode.tests.opModes.AprilTagWebcam;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
 @Config
 @Configurable
-public abstract class BaseAuto extends CommandOpMode {
-    Follower follower;
-    Timer gameTimer;
+public class BaseAuto extends CommandOpMode {
+    protected Follower follower;
+    protected Timer gameTimer;
     Pose startPose;
 
-    Limelight3A limelight;
-    Spindexer spindexer;
-    TwoWheelShooter shooter;
-    Intake intake;
-    TelemetryManager telemetryManager;
-    GraphManager graphManager;
+    protected Limelight3A limelight;
+    protected Spindexer spindexer;
+    protected TwoWheelShooter shooter;
+    protected Intake intake;
+    protected TelemetryManager telemetryManager;
+    protected GraphManager graphManager;
     boolean prevVisionComplete = false;
     public static Pose leftTargetPose = new Pose(12, 132, 0);
     public static Pose rightTargetPose = new Pose(132, 132, 0);
-    FtcDashboard dashboard;
-    TelemetryPacket dashboardPacket;
+    protected FtcDashboard dashboard;
+    protected TelemetryPacket dashboardPacket;
 
+    protected AprilTagWebcam arducam;
     public static double maxTimeMs = 29500;
     public static double maxWritePoseTimeMs = 200;
     public static double maxSideWriteTimeMs = 200;
@@ -57,6 +59,7 @@ public abstract class BaseAuto extends CommandOpMode {
     boolean postMotif = false;
     boolean gameTimerStarted = false;
     Command preMotifSeq;
+    boolean preMotifNull = false;
 
     @Override
     public void initialize() {
@@ -69,7 +72,7 @@ public abstract class BaseAuto extends CommandOpMode {
 
         gameTimer = new Timer();
 
-        initializeMechanisms();
+
 
 
         startPose = getStartPose();
@@ -81,11 +84,15 @@ public abstract class BaseAuto extends CommandOpMode {
 //
 //        telemetryManager = PanelsTelemetry.INSTANCE.getTelemetry();
 //        graphManager = PanelsGraph.INSTANCE.getManager();
+        initializeMechanisms();
         buildPaths();
         setupVision();
+
         preMotifSeq = preMotifSequence();
         if(preMotifSeq != null) {
             schedule(preMotifSeq);
+        } else{
+            preMotifNull = true;
         }
 
     }
@@ -114,13 +121,15 @@ public abstract class BaseAuto extends CommandOpMode {
             gameTimerStarted = true;
         }
         update();
-        if(!prevVisionComplete && isVisionComplete()){
+        if(preMotifNull || (!prevVisionComplete && isVisionComplete())){
 //            if(postMotifSequence() != null) {
-            preMotifSeq.cancel();
-            follower.breakFollowing();
-                schedule(postMotifSequence());
-//            }
+            if(!preMotifNull) {
+                preMotifSeq.cancel();
+                follower.breakFollowing();
+            }
+            schedule(postMotifSequence());
             prevVisionComplete = true;
+            preMotifNull = false;
         }
 
      //   if(postMotifSequence().isFinished()){

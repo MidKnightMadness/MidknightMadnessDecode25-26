@@ -62,9 +62,7 @@ public class GobildaLightBlock {
             lightControl.setPosition(0.722);
         } else if(color.equals(Color.WHITE)){
             lightControl.setPosition(1.0);
-        }
-
-        else{
+        } else{
             lightControl.setPosition(0);
         }
     }
