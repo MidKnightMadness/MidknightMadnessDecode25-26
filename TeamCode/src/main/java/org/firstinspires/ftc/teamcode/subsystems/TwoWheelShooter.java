@@ -53,9 +53,10 @@ public class TwoWheelShooter extends SubsystemBase {
     InterpLUT distToLowVel;
     InterpLUT distToHighVel;
 
-    public static double[] dist= {58, 70.5, 88.6, 107};
-    public static double[] bottomVel = {2000, 1900, 1700, 2100}; // Ticks per second when 1:1 gear ratio
-    public static double[] topVel = {1850, 1950, 1950, 2150};
+    public static double[] dist= {60, 70, 80, 90, 100, 112, 128, 149.5, 156.0};//inches
+    public static double[] bottomVel = {1350, 1350, 1400, 1450, 1500, 1500, 1700, 1700, 1800};
+    //ticks in sec for 3: 1 direct driven gear ratios
+    public static double[] topVel = {1550, 1600, 1650, 1650, 1750, 1800, 1900, 2100, 2100};
 
 
     public final MotorEx low;
@@ -123,15 +124,15 @@ public class TwoWheelShooter extends SubsystemBase {
         this.map = hardwareMap;
         setRunMode(runMode);
 
-//        distToLowVel = new InterpLUT();
-//        distToHighVel = new InterpLUT();
-//        for (int i = 0; i < dist.length; i++) {
-//            distToLowVel.add(dist[i], bottomVel[i]);
-//            distToHighVel.add(dist[i], topVel[i]);
-//        }
-//
-//        distToLowVel.createLUT();
-//        distToHighVel.createLUT();
+        distToLowVel = new InterpLUT();
+        distToHighVel = new InterpLUT();
+        for (int i = 0; i < dist.length; i++) {
+            distToLowVel.add(dist[i], bottomVel[i]);
+            distToHighVel.add(dist[i], topVel[i]);
+        }
+
+        distToLowVel.createLUT();
+        distToHighVel.createLUT();
 
         low.motor.setDirection(lowMotorDirForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);
         high.motor.setDirection(highMotorDirForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);
@@ -202,15 +203,15 @@ public class TwoWheelShooter extends SubsystemBase {
 
     //thresholds whether robot is currently moving
     public void setFlywheelLUT(Follower follower, ShootSide shootSide, boolean voltageUse, double currVolt){
-        Vector robotVelocity = follower.getVelocity();
-        boolean isMoving = true;
-        if(robotVelocity.getMagnitude() <= velMovingThreshold){
-            isMoving = false;
-        }
+//        Vector robotVelocity = follower.getVelocity();
+//        boolean isMoving = true;
+//        if(robotVelocity.getMagnitude() <= velMovingThreshold){
+//            isMoving = false;
+//        }
 //        if(!isMoving){
-            setFlywheelMovingLUT(follower.getPose(), shootSide, robotVelocity, voltageUse, currVolt);
+//            setFlywheelMovingLUT(follower.getPose(), shootSide, robotVelocity, voltageUse, currVolt);
 //        } else{
-//            setFlywheelStaticLUT(follower.getPose(), shootSide, voltageUse);
+            setFlywheelStaticLUT(getDistance(follower.getPose(), shootSide), voltageUse, currVolt);
 //        }
     }
 
@@ -255,10 +256,19 @@ public class TwoWheelShooter extends SubsystemBase {
 //        ratio = Math.min(ratio, 1.35);
         double ratio = 1;
 
-        double botVel, topVel;
+        double botVelocity, topVelocity;
         if(useLUT){
-            botVel = distToLowVel.get(dist);
-            topVel = distToHighVel.get(dist);
+            if(dist > 156 ){
+                botVelocity = bottomVel[bottomVel.length - 1];
+                topVelocity = topVel[topVel.length - 1];
+            } else if(dist < 60) {
+                botVelocity = bottomVel[0];
+                topVelocity = topVel[0];
+            }
+            else {
+                botVelocity = distToLowVel.get(dist);
+                topVelocity = distToHighVel.get(dist);
+            }
             if(runMode != RunMode.VelocityControl) setRunMode(RunMode.VelocityControl);
         }
         else{
@@ -268,26 +278,26 @@ public class TwoWheelShooter extends SubsystemBase {
             } else{
                 preset = (shootDist == ShootDist.Close) ? closeTargetPowers : farTargetPowers;
             }
-            botVel = preset[0];
-            topVel = preset[1];
+            botVelocity = preset[0];
+            topVelocity = preset[1];
         }
 
-        botVel -= kBotShootMovingFactor * vParallel;
-        topVel -= kTopShootMovingFactor * vParallel;
+        botVelocity -= kBotShootMovingFactor * vParallel;
+        topVelocity -= kTopShootMovingFactor * vParallel;
 
         topMultiplier = ratio * currTopFactor;
         botMultiplier = ratio * currBotFactor;
 
         if(runMode == RunMode.VelocityControl) {
-            predictedBotVel = botVel;
-            predictedTopVel = topVel;
+            predictedBotVel = botVelocity;
+            predictedTopVel = topVelocity;
         } else{
-            predictedBotPower = botVel;
-            predictedTopPower = topVel;
+            predictedBotPower = botVelocity;
+            predictedTopPower = topVelocity;
         }
 
-        low.set(botVel, botMultiplier, currVolt);
-        high.set(topVel, topMultiplier, currVolt);
+        low.set(botVelocity, botMultiplier, currVolt);
+        high.set(topVelocity, topMultiplier, currVolt);
     }
 
     public boolean readyToShoot(){

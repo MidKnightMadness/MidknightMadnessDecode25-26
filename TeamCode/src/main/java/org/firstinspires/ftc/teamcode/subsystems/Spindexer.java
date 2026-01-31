@@ -171,6 +171,12 @@ public class Spindexer extends SubsystemBase {
         this.ballColors = ballColors;
         return this;
     }
+    public Spindexer setDefault(){
+        this.ballColors[0] = BallColor.NONE;
+        this.ballColors[1] = BallColor.NONE;
+        this.ballColors[2] = BallColor.NONE;
+        return this;
+    }
 
     public BallColor newBallDetected(){
         return newBallType;

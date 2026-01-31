@@ -558,7 +558,7 @@ public class CornerAutoCycle extends BaseAuto {
         } else{
             return new SequentialCommandGroup(
                     new ParallelCommandGroup(
-                            new AutoIntakeCommand2(spindexer, intake, intakePower, inBetweenTime, useDistanceSensor, maxTimeSwap1, maxTimeSwap2),
+                            new AutoIntakeCommand2(spindexer, intake, intakePower, inBetweenTime, useDistanceSensor, maxTimeSwap1, maxTimeSwap2, hardwareMap),
                             driveToIntakeEnd(targetSpot)
                     ).withTimeout(4500),
                     setSpindexerCorrect(targetSpot)
