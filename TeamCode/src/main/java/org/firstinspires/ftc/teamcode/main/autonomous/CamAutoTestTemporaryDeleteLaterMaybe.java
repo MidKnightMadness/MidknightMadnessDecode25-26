@@ -33,21 +33,10 @@ public class CamAutoTestTemporaryDeleteLaterMaybe extends BaseAuto {
 
     private Command buildBallPathSequence() {
         // Create a sequential command group
-        SequentialCommandGroup seq = new SequentialCommandGroup();
-
-        // Loop over the detected balls
-        for (Pose ballPose : CamCommand.finalBallList) {
-            // Each ball: move + intake in parallel
-            SchedulePathTo moveCommand = new SchedulePathTo(follower, ballPose).setMaxPower(0.5);
-            AutoIntakeCommand intakeCommand = new AutoIntakeCommand(spindexer, intake, 0.5, 0.5);
-
-            seq.addCommands(new ParallelCommandGroup(moveCommand, intakeCommand));
-        }
-
-        // Clear the list so it doesn’t get reused accidentally
-        CamCommand.finalBallList.clear();
-
-        return seq;
+        return new ParallelCommandGroup(
+            new AutoIntakeCommand(spindexer, intake, 0.5, 0.5),
+            new FollowPathCommand(follower, CamCommand.getList(follower))
+        );
     }
 
     @Override

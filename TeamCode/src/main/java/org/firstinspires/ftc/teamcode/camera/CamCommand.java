@@ -1,12 +1,13 @@
 package org.firstinspires.ftc.teamcode.camera;
 
 import com.pedropathing.follower.Follower;
-import com.pedropathing.ftc.FTCCoordinates;
+import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.Path;
+import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.CommandBase;
 
 import java.util.ArrayList;
@@ -129,4 +130,17 @@ public class CamCommand extends CommandBase {
         return minBall;
     }
 
+    public static PathChain getList(Follower follower){
+        ArrayList<Path> lineList = new ArrayList<>();
+        for(int i = 0; i < finalBallList.size()-1; i++){
+            if(i == 0){
+                lineList.add(new Path(new BezierLine(follower.getPose(), finalBallList.get(1))));
+            }
+            else{
+                lineList.add(new Path(new BezierLine(finalBallList.get(i), finalBallList.get(i+1))));
+            }
+        }
+        Path[] paths = lineList.toArray(new Path[0]);
+        return new PathChain(paths);
+    }
 }
