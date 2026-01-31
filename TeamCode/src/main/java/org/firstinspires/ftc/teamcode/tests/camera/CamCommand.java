@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.camera;
+package org.firstinspires.ftc.teamcode.tests.camera;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
