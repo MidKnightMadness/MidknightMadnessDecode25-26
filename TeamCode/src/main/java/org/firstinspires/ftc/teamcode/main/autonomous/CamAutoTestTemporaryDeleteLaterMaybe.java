@@ -27,7 +27,7 @@ public class CamAutoTestTemporaryDeleteLaterMaybe extends BaseAuto {
         return new SequentialCommandGroup(
                 new CamCommand(limelight, follower),                          // run camera
                 new WaitUntilCommand(() -> !CamCommand.finalBallList.isEmpty()), // wait for results
-                buildBallPathSequence()                                         // move & intake
+                buildBallPathSequence()
         );
     }
 
@@ -39,8 +39,7 @@ public class CamAutoTestTemporaryDeleteLaterMaybe extends BaseAuto {
         for (Pose ballPose : CamCommand.finalBallList) {
             // Each ball: move + intake in parallel
             SchedulePathTo moveCommand = new SchedulePathTo(follower, ballPose).setMaxPower(0.5);
-            AutoIntakeCommand intakeCommand = new AutoIntakeCommand(spindexer, intake, 0.5, 0.5)
-                    .withTimeout(1.5); // prevent it from running forever
+            AutoIntakeCommand intakeCommand = new AutoIntakeCommand(spindexer, intake, 0.5, 0.5);
 
             seq.addCommands(new ParallelCommandGroup(moveCommand, intakeCommand));
         }
@@ -54,6 +53,7 @@ public class CamAutoTestTemporaryDeleteLaterMaybe extends BaseAuto {
     @Override
     protected void initializeMechanisms() {
         intake = new Intake(hardwareMap, Intake.RunMode.RawPower);
+        spindexer = new Spindexer(hardwareMap, true);
     }
 
     @Override
