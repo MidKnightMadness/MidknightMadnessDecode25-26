@@ -556,20 +556,20 @@ public class NineBackLeftSort extends BaseAuto {
         telemetry.addLine(s + o);
     }
     public void addToTelemGraph(String s, Number o){
-        telemetryManager.addData(s, o);
-        graphManager.addData(s, o);
+//        telemetryManager.addData(s, o);
+//        graphManager.addData(s, o);
     }
     public void addToAllTelemGraph(String s, Number o){
-        telemetryManager.addData(s, o);
-        graphManager.addData(s, o);
-        telemetry.addData(s, o);
-        if(dashboard != null) {
-            dashboardPacket.put(s, o);
-        };
+//        telemetryManager.addData(s, o);
+//        graphManager.addData(s, o);
+//        telemetry.addData(s, o);
+//        if(dashboard != null) {
+//            dashboardPacket.put(s, o);
+//        };
     }
     public void addBooleanToTelem(String s, boolean o){
-        telemetry.addData(s, o);
-        telemetryManager.addData(s, o);
+//        telemetry.addData(s, o);
+//        telemetryManager.addData(s, o);
     }
 
 

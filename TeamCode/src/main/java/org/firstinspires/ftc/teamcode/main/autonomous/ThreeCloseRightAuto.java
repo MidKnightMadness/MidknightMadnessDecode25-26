@@ -144,12 +144,12 @@ public class ThreeCloseRightAuto extends BaseAuto {
 //        shooter.setRunMode(TwoWheelShooter.RunMode.RawPower);
         intake = new Intake(hardwareMap, Intake.RunMode.RawPower);
 
-        if(shooterRunMode == TwoWheelShooter.RunMode.VelocityControl) {
-            shooter.low.setVeloCoefficients(pidBotGainsShooter[0], pidBotGainsShooter[1], pidBotGainsShooter[2]);
-            shooter.high.setVeloCoefficients(pidTopGainsShooter[0], pidTopGainsShooter[1], pidTopGainsShooter[2]);
-            shooter.low.setFeedforwardCoefficients(kBotGainsShooter[0], kBotGainsShooter[1], kBotGainsShooter[2]);
-            shooter.high.setFeedforwardCoefficients(kTopGainsShooter[0], kTopGainsShooter[1], kTopGainsShooter[2]);
-        }
+//        if(shooterRunMode == TwoWheelShooter.RunMode.VelocityControl) {
+//            shooter.low.setVeloCoefficients(pidBotGainsShooter[0], pidBotGainsShooter[1], pidBotGainsShooter[2]);
+//            shooter.high.setVeloCoefficients(pidTopGainsShooter[0], pidTopGainsShooter[1], pidTopGainsShooter[2]);
+//            shooter.low.setFeedforwardCoefficients(kBotGainsShooter[0], kBotGainsShooter[1], kBotGainsShooter[2]);
+//            shooter.high.setFeedforwardCoefficients(kTopGainsShooter[0], kTopGainsShooter[1], kTopGainsShooter[2]);
+//        }
     }
 
 
@@ -391,26 +391,26 @@ public class ThreeCloseRightAuto extends BaseAuto {
             telemetry.addData("Spindexer Optimal Sequence 2", spots[2]);
         }
         telemetry.addData("All Occupied", spindexer.allOccuppiedBallColors());
-
-        addToTelemGraph("Pose X", currentPose.getX());
-        addToTelemGraph("Pose Y", currentPose.getY());
-        addToTelemGraph("Pose Heading", currentPose.getHeading());
-        addToTelemGraph("Follower T Value", follower.getCurrentTValue());
-        addToTelemGraph("Follower Velocity X", follower.getVelocity().getXComponent());
-        addToTelemGraph("Follower Velocity Y", follower.getVelocity().getYComponent());
-        addToTelemGraph("Follower Velocity Mag", follower.getVelocity().getMagnitude());
-        addToAllTelemGraph("Follower Velocity Heading", follower.getVelocity().getTheta());
-        addToAllTelemGraph("Follower Translational Error", follower.getDriveError());
-        addToAllTelemGraph("Follower Heading Error", follower.getHeadingError());
-        addToTelemGraph("Follower Max Vel Constraint", follower.getConstraints().getVelocityConstraint());
-        addToTelemGraph("Follower T Constraint", follower.getConstraints().getTValueConstraint());
+//
+//        addToTelemGraph("Pose X", currentPose.getX());
+//        addToTelemGraph("Pose Y", currentPose.getY());
+//        addToTelemGraph("Pose Heading", currentPose.getHeading());
+//        addToTelemGraph("Follower T Value", follower.getCurrentTValue());
+//        addToTelemGraph("Follower Velocity X", follower.getVelocity().getXComponent());
+//        addToTelemGraph("Follower Velocity Y", follower.getVelocity().getYComponent());
+//        addToTelemGraph("Follower Velocity Mag", follower.getVelocity().getMagnitude());
+//        addToAllTelemGraph("Follower Velocity Heading", follower.getVelocity().getTheta());
+//        addToAllTelemGraph("Follower Translational Error", follower.getDriveError());
+//        addToAllTelemGraph("Follower Heading Error", follower.getHeadingError());
+//        addToTelemGraph("Follower Max Vel Constraint", follower.getConstraints().getVelocityConstraint());
+//        addToTelemGraph("Follower T Constraint", follower.getConstraints().getTValueConstraint());
 
         //Shooter
         if(shooter != null){
-            addToAllTelemGraph("Shooter Low Flywheel Power", shooter.low.get());
-            addToAllTelemGraph("Shooter High Flywheel Power", shooter.high.get());
-            addToAllTelemGraph("Shooter Low Flywheel Vel", shooter.getPredictedBotVel());
-            addToAllTelemGraph("Shooter High Flywheel Vel", shooter.getPredictedTopVel());
+//            addToAllTelemGraph("Shooter Low Flywheel Power", shooter.low.get());
+//            addToAllTelemGraph("Shooter High Flywheel Power", shooter.high.get());
+//            addToAllTelemGraph("Shooter Low Flywheel Vel", shooter.getPredictedBotVel());
+//            addToAllTelemGraph("Shooter High Flywheel Vel", shooter.getPredictedTopVel());
             telemetry.addData("Shooter Dir RunMode", shooter.runMode);
             telemetry.addData("Shooter RunMode", shooterRunMode);
             telemetry.addData("Shooter Low RunMode", shooter.low.motorEx.getMode());
@@ -425,17 +425,17 @@ public class ThreeCloseRightAuto extends BaseAuto {
         }
 
         //Intake
-        if(intake != null){
-            addToAllTelemGraph("Intake Power", intake.getMotor().get());
-            addToAllTelemGraph("Intake Velocity", intake.getMotorVelocity());
-        }
+//        if(intake != null){
+//            addToAllTelemGraph("Intake Power", intake.getMotor().get());
+//            addToAllTelemGraph("Intake Velocity", intake.getMotorVelocity());
+//        }
 
         //Time
-        addToAllTelemGraph("Auto Elapsed Time", currentTime);
-        addToAllTelemGraph("Update Rate", 1 / gameTimer.getDeltaTime());
-
-        //Motif
-        addBooleanToTelem("Motif Busy", !isVisionComplete());
+//        addToAllTelemGraph("Auto Elapsed Time", currentTime);
+//        addToAllTelemGraph("Update Rate", 1 / gameTimer.getDeltaTime());
+//
+//        //Motif
+//        addBooleanToTelem("Motif Busy", !isVisionComplete());
         if(motifCommand != null){
             addStringToTelem("Motif Timer", String.valueOf(motifCommand.getTime()));
         }
@@ -443,7 +443,7 @@ public class ThreeCloseRightAuto extends BaseAuto {
 
         //First Path
         if(firstPath != null){
-            addBooleanToTelem("First Path Busy", !firstPath.isFinished());
+//            addBooleanToTelem("First Path Busy", !firstPath.isFinished());
         }
         if(seqShootCommand != null) {
             telemetry.addData("Spindexer Shoot CurrBallIndex", seqShootCommand.currBallIndex);
@@ -452,11 +452,11 @@ public class ThreeCloseRightAuto extends BaseAuto {
 //
 
         telemetry.update();
-        graphManager.update();
-        telemetryManager.update();
-        if(dashboard!= null) {
-            dashboard.sendTelemetryPacket(dashboardPacket);
-        }
+//        graphManager.update();
+//        telemetryManager.update();
+//        if(dashboard!= null) {
+//            dashboard.sendTelemetryPacket(dashboardPacket);
+//        }
     }
 
 
@@ -464,22 +464,22 @@ public class ThreeCloseRightAuto extends BaseAuto {
     public void addStringToTelem(String s, String o){
         telemetry.addLine(s + o);
     }
-    public void addToTelemGraph(String s, Number o){
-        telemetryManager.addData(s, o);
-        graphManager.addData(s, o);
-    }
-    public void addToAllTelemGraph(String s, Number o){
-        telemetryManager.addData(s, o);
-        graphManager.addData(s, o);
-        telemetry.addData(s, o);
-        if(dashboard != null) {
-            dashboardPacket.put(s, o);
-        };
-    }
-    public void addBooleanToTelem(String s, boolean o){
-        telemetry.addData(s, o);
-        telemetryManager.addData(s, o);
-    }
+//    public void addToTelemGraph(String s, Number o){
+//        telemetryManager.addData(s, o);
+//        graphManager.addData(s, o);
+//    }
+//    public void addToAllTelemGraph(String s, Number o){
+//        telemetryManager.addData(s, o);
+//        graphManager.addData(s, o);
+//        telemetry.addData(s, o);
+//        if(dashboard != null) {
+//            dashboardPacket.put(s, o);
+//        };
+//    }
+//    public void addBooleanToTelem(String s, boolean o){
+//        telemetry.addData(s, o);
+//        telemetryManager.addData(s, o);
+//    }
 
 
 

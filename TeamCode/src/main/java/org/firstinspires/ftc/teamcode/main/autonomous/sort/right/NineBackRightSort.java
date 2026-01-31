@@ -101,22 +101,22 @@ public class NineBackRightSort extends BaseAuto {
     public static boolean recoveryOn = true;
     public static boolean useLUT = false;
     public static boolean useBulkMode = true;
-    Path toShootPresets;
-    Path toIntakeLineFarStart;
-    Path toIntakeLineFarEnd;
-    Path toIntakeLineMidStart;
-    Path toIntakeLineMidEnd;
-    Path toIntakeLineCornerEnd;
-    Path toIntakeLineCornerStart;
-    Path toShootFromFar;
-    Path toShootFromMid;
-    Path toShootFromClose;
-    Path toShootFromCorner;
-    Path toIntakeLineCloseStart;
-    Path toIntakeLineCloseEnd;
+    PathChain toShootPresets;
+    PathChain toIntakeLineFarStart;
+    PathChain toIntakeLineFarEnd;
+    PathChain toIntakeLineMidStart;
+    PathChain toIntakeLineMidEnd;
+    PathChain toIntakeLineCornerEnd;
+    PathChain toIntakeLineCornerStart;
+    PathChain toShootFromFar;
+    PathChain toShootFromMid;
+    PathChain toShootFromClose;
+    PathChain toShootFromCorner;
+    PathChain toIntakeLineCloseStart;
+    PathChain toIntakeLineCloseEnd;
 
 
-    Path toPark;
+    PathChain toPark;
 
     AprilTagDetection tag21;
     AprilTagDetection tag22;
@@ -194,15 +194,14 @@ public class NineBackRightSort extends BaseAuto {
     FileWriter fileWriter;
     File file;
     boolean finishedWritingMotif = false;
-    public static boolean useDistanceSensor = true;
+    boolean useDistanceSensor = true;
     public static double inBetweenTime = 200;
     public static boolean rawPowerOn = false;
     public static long powerFlywheelTime = 1500;
     int aprilTagID = 0;
-    public static double intakeDrivePower = 0.3;
+    public static double intakeDrivePower = 0.5;
     int currSpindexerGotoSpot = -1;
     public static double spindexerSpeed = 0.7;
-    public static boolean useAutoIntake = true;
     public static double intakePower = 0.8;
 
     boolean velAgressiveComp = false;
@@ -214,7 +213,7 @@ public class NineBackRightSort extends BaseAuto {
     boolean scheduledPark = false;
     public static double maxTimeSwap1 = 1000;
     public static double maxTimeSwap2 = 1000;
-    public static long shootWaitTimePreset = 3000;
+    public static long shootWaitTimePreset = 2000;
     @Override
     public void initialize_loop(){
 //        LLResult result = limelight.getLatestResult();
@@ -321,10 +320,11 @@ public class NineBackRightSort extends BaseAuto {
 
     }
 
-    private Path buildPath(Pose startPose, Pose endPose){
-        Path path = new Path(new BezierLine(startPose, endPose));
-        path.setLinearHeadingInterpolation(startPose.getHeading(), endPose.getHeading());
-        setConstraints(path);
+    private PathChain buildPath(Pose startPose, Pose endPose){
+        PathChain path = follower.pathBuilder()
+                .addPath(new BezierLine(startPose, endPose))
+                .setLinearHeadingInterpolation(startPose.getHeading(), endPose.getHeading())
+                .build();
         return path;
     }
 
@@ -461,18 +461,17 @@ public class NineBackRightSort extends BaseAuto {
                 //GPP so that G is on the right side
                 shootPreset(shootWaitTimePreset),
 
-
                 intake(IntakeLine.FAR),
                 shootFromLines(IntakeLine.FAR, 1000),
 
 //                getToLineNum(IntakeLine.CORNER),
                 intakeCorner(),
                 shootFromLines(IntakeLine.CORNER, 1000),
-
+//
 //                getToLineNum(IntakeLine.MID),
                 intake(IntakeLine.MID),
                 shootFromLines(IntakeLine.MID, 1000),
-
+//
                 new ParallelCommandGroup(
                     new InstantCommand(()-> currSpindexerGotoSpot = 0),
                     park()
@@ -526,12 +525,13 @@ public class NineBackRightSort extends BaseAuto {
     }
     protected Command shootFromLines(IntakeLine lineNum, long waitTime){
         return new SequentialCommandGroup(
+                new InstantCommand(()-> intake.setDirectPower(0)),
                 new InstantCommand(() -> continueShoot = true),
                 new ParallelCommandGroup(
-                        getToShootCommandPreset(),
+                        getToShootCommand(lineNum),
                         new SequentialCommandGroup(
                                 setSpindexerCorrect(lineNum),
-                                new WaitCommand(1000),
+                                new WaitCommand(2000),
                                 new InstantCommand(()-> pushUpServo.setUp())
                         )
                 ),
@@ -556,7 +556,7 @@ public class NineBackRightSort extends BaseAuto {
                         getToShootCommandPreset(),
                         new SequentialCommandGroup(
                             setSpindexerCorrect(IntakeLine.CLOSE),
-                            new WaitCommand(1000),
+                            new WaitCommand(2000),
                             new InstantCommand(()-> pushUpServo.setUp())
                         )
                 ),
@@ -606,20 +606,21 @@ public class NineBackRightSort extends BaseAuto {
 //                     )
 //             );
 //         } else{
-             return new SequentialCommandGroup(
-                 new InstantCommand(() -> currSpindexerGotoSpot = -1),
+        return new SequentialCommandGroup(
+                new InstantCommand(() -> currSpindexerGotoSpot = -1),
 //                 new InstantCommand(()-> autoIntakeOn = true),
-                 new ParallelRaceGroup(
+                new ParallelRaceGroup(
 //                         autoIntakeCommand(),
-                         new AutoIntakeCommand3(spindexer, intake, intakePower, inBetweenTime, useDistanceSensor, hardwareMap),
-                         new SequentialCommandGroup(
-                                 getToLineNum(lineNum),
-                                 new WaitCommand(1000),
-                                 driveToIntakeEnd(lineNum).withTimeout(driveIntakeEndTime),
-                                 new WaitCommand(4000)
-                         )
-                 )
-             ).withTimeout(9500);
+                        new AutoIntakeCommand3(spindexer, intake, intakePower, inBetweenTime, useDistanceSensor, hardwareMap),
+                        new SequentialCommandGroup(
+                                getToLineNum(lineNum),
+                                new WaitCommand(1000),
+                                driveToIntakeEnd(lineNum).withTimeout(driveIntakeEndTime),
+                                new WaitCommand(4500)
+                        )
+                ),
+                new InstantCommand(()-> intake.setDirectPower(0))
+        );
 //         }
     }
     protected Command intakeCorner(){
@@ -633,26 +634,24 @@ public class NineBackRightSort extends BaseAuto {
                                 getToLineNum(IntakeLine.CORNER),
                                 new WaitCommand(1000),
                                 driveToIntakeEnd(IntakeLine.CORNER).withTimeout(driveIntakeEndTime),
-                                new WaitCommand(5500)
+                                new WaitCommand(6000)
                         )
                 )
         ).withTimeout(9500);
     }
-    private AutoIntakeCommand2 autoIntakeCommand(){
-        autoIntakeCommand = new AutoIntakeCommand2(spindexer, intake, intakePower, inBetweenTime, useDistanceSensor, hardwareMap);
-        return autoIntakeCommand;
-    }
 
     protected FollowPathCommand driveToIntakeEnd(IntakeLine lineNum){
-        Path path = lineNum == IntakeLine.FAR ? toIntakeLineFarEnd : lineNum == IntakeLine.MID ? toIntakeLineMidEnd : lineNum == IntakeLine.CORNER ? toIntakeLineCornerEnd : toIntakeLineCloseEnd;
-//        if(spot == 3) {
-//            return new SchedulePathTo(follower, intakeFarEndPose).setMaxPower(intakeDrivePower);
-//        } else if(spot == 2){
-//            return new SchedulePathTo(follower, intakeMidEndPose).setMaxPower(intakeDrivePower);
-//        } else {
-//            return new SchedulePathTo(follower, intakeCloseEndPose).setMaxPower(intakeDrivePower);
+         PathChain path = lineNum == IntakeLine.FAR ? toIntakeLineFarEnd : lineNum == IntakeLine.MID ? toIntakeLineMidEnd : lineNum == IntakeLine.CORNER ? toIntakeLineCornerEnd : toIntakeLineCloseEnd;
+//        if(lineNum == IntakeLine.FAR) {
+//            return new SchedulePathTo(follower, intakeFarStartPose, intakeFarEndPose).setMaxPower(0.3);
+//        } else if(lineNum == IntakeLine.MID){
+//            return new SchedulePathTo(follower, intakeMidStartPose, intakeMidEndPose).setMaxPower(0.3);
+//        } else if(lineNum == IntakeLine.CLOSE) {
+//            return new SchedulePathTo(follower, intakeCloseStartPose, intakeCloseEndPose).setMaxPower(0.3);
+//        } else{
+//            return new SchedulePathTo(follower, intakeCornerStartPose, intakeCornerEndPose).setMaxPower(0.3);
 //        }
-        return new FollowPathCommand(follower, path, 0.5);
+        return new FollowPathCommand(follower, path, true, intakeDrivePower);
     }
 
     protected Command park(){
@@ -660,32 +659,36 @@ public class NineBackRightSort extends BaseAuto {
     }
 
     protected Command getToLineNum(IntakeLine lineNum){
-//        FollowPathCommand command;
+//        Pose endPose;
 //        if(lineNum == IntakeLine.FAR){
-//            command = new FollowPathCommand(follower, toIntakeLineFar);
+//            endPose = intakeFarEndPose;
 //        }
-//        else if(lineNum == IntakeLine) {
-//            command = new FollowPathCommand(follower, toIntakeLineMid);
+//        else if(lineNum == IntakeLine.MID) {
+//            endPose = intakeMidEndPose;
 //        }
-//        else {
-//            command = new FollowPathCommand(follower, toIntakeLineClose);
+//        else if(lineNum == IntakeLine.CLOSE){
+//            endPose = intakeCloseEndPose;
+//        } else{
+//            endPose = intakeCornerEndPose;
 //        }
 
-//        Pose linePose = lineNum == IntakeLine.FAR ? intakeFarStartPose : lineNum == IntakeLine.MID ? intakeMidStartPose : lineNum == IntakeLine.CLOSE ? intakeCloseStartPose : intakeCornerStartPose;
-        Path path = lineNum == IntakeLine.FAR ? toIntakeLineFarStart : lineNum == IntakeLine.MID ? toIntakeLineMidStart : lineNum == IntakeLine.CORNER ? toIntakeLineCornerStart : toIntakeLineCloseStart;
+
+      //  Pose linePose = lineNum == IntakeLine.FAR ? intakeFarStartPose : lineNum == IntakeLine.MID ? intakeMidStartPose : lineNum == IntakeLine.CLOSE ? intakeCloseStartPose : intakeCornerStartPose;
+        PathChain path = lineNum == IntakeLine.FAR ? toIntakeLineFarStart : lineNum == IntakeLine.MID ? toIntakeLineMidStart : lineNum == IntakeLine.CORNER ? toIntakeLineCornerStart : toIntakeLineCloseStart;
 //        return new ParallelDeadlineGroup(
-                return new FollowPathCommand(follower, path, 1.0);
+                return new FollowPathCommand(follower, path, true, 1.0);
 //                new AutoIntakeCommand2(spindexer, intake, intakePower, inBetweenTime, useDistanceSensor, maxTimeSwap1, maxTimeSwap2)
 //        );
+//        return new SchedulePathTo(follower, currentPose, endPose).setMaxPower(0.3);
     }
 
     protected FollowPathCommand getToShootCommand(IntakeLine intakeLine){
-        Path path = intakeLine == IntakeLine.FAR ? toShootFromFar : intakeLine == IntakeLine.MID ? toShootFromMid : intakeLine == IntakeLine.CORNER ? toShootFromCorner : toShootFromClose;
-        return new FollowPathCommand(follower, path, 1.0);
+        PathChain path = intakeLine == IntakeLine.FAR ? toShootFromFar : intakeLine == IntakeLine.MID ? toShootFromMid : intakeLine == IntakeLine.CORNER ? toShootFromCorner : toShootFromClose;
+        return new FollowPathCommand(follower, path, true, 1.0);
     }
     protected FollowPathCommand getToShootCommandPreset(){
-        Path path = toShootPresets;
-        return new FollowPathCommand(follower, path, 1.0);
+        PathChain path = toShootPresets;
+        return new FollowPathCommand(follower, path, true, 1.0);
     }
 
 
@@ -758,26 +761,26 @@ public class NineBackRightSort extends BaseAuto {
     }
 
 
-
-    public void addStringToTelem(String s, String o){
-        telemetry.addLine(s + o);
-    }
-    public void addToTelemGraph(String s, Number o){
-        telemetryManager.addData(s, o);
-        graphManager.addData(s, o);
-    }
-    public void addToAllTelemGraph(String s, Number o){
-        telemetryManager.addData(s, o);
-        graphManager.addData(s, o);
-        telemetry.addData(s, o);
-        if(dashboard != null) {
-            dashboardPacket.put(s, o);
-        };
-    }
-    public void addBooleanToTelem(String s, boolean o){
-        telemetry.addData(s, o);
-        telemetryManager.addData(s, o);
-    }
+//
+//    public void addStringToTelem(String s, String o){
+//        telemetry.addLine(s + o);
+//    }
+//    public void addToTelemGraph(String s, Number o){
+//        telemetryManager.addData(s, o);
+//        graphManager.addData(s, o);
+//    }
+//    public void addToAllTelemGraph(String s, Number o){
+//        telemetryManager.addData(s, o);
+//        graphManager.addData(s, o);
+//        telemetry.addData(s, o);
+//        if(dashboard != null) {
+//            dashboardPacket.put(s, o);
+//        };
+//    }
+//    public void addBooleanToTelem(String s, boolean o){
+//        telemetry.addData(s, o);
+//        telemetryManager.addData(s, o);
+//    }
 
 
 }
