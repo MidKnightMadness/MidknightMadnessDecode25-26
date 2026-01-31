@@ -22,37 +22,41 @@ import org.firstinspires.ftc.teamcode.util.ConfigNames;
 
 @Autonomous(name = "Camtestautomaybe", group = "Test")
 public class CamAutoTestTemporaryDeleteLaterMaybe extends BaseAuto {
+    int limelightPipelineStart = 0;//CHANGE THIS
 
     @Override
     protected Command postMotifSequence() {
         return new SequentialCommandGroup(
                 new ParallelRaceGroup(
-                    new CamCommand(limelight, follower),                          // run camera
-                    new WaitUntilCommand(() -> !CamCommand.finalBallList.isEmpty()) // wait for results
+                    new CamCommand(limelight, follower),//looks for balls, updates finalballlist
+                    new WaitUntilCommand(() -> !CamCommand.finalBallList.isEmpty())//doesnt get past race group until cam finds things
                     //new RepeatCommand(strafe left and right) do this after testing if the auto actually works
                 ),
-                buildBallPathSequence()
+                buildBallPathSequence()//drive and intake the balls
         );
     }
 
     private Command buildBallPathSequence() {
-        // Create a sequential command group
         return new ParallelCommandGroup(
-            new AutoIntakeCommand(spindexer, intake, 0.5, 0.5),
-            new FollowPathCommand(follower, CamCommand.getList(follower))
+            new AutoIntakeCommand(spindexer, intake, 0.5, 0.5),//intake while moving yk
+            new FollowPathCommand(follower, CamCommand.getList(follower))//this gets patchain and stuff so its everything
         );
+    }
+    private Command strafeLeftRight(){
+        Pose botPose = follower.getPose();
+        Pose
     }
 
     @Override
     protected void initializeMechanisms() {
-        intake = new Intake(hardwareMap, Intake.RunMode.RawPower);
-        spindexer = new Spindexer(hardwareMap, true);
+        intake = new Intake(hardwareMap, Intake.RunMode.RawPower);//init intak
+        spindexer = new Spindexer(hardwareMap, true);//init spindexer
     }
 
     @Override
     protected void setupVision() {
-        limelight = hardwareMap.get(Limelight3A.class, ConfigNames.limelight);
-        limelight.pipelineSwitch(0);
+        limelight = hardwareMap.get(Limelight3A.class, ConfigNames.limelight);//init limelight
+        limelight.pipelineSwitch(limelightPipelineStart);
         limelight.start();
     }
     @Override
@@ -63,11 +67,11 @@ public class CamAutoTestTemporaryDeleteLaterMaybe extends BaseAuto {
             gameTimerStarted = true;
         }
         update();
-        if(!prevVisionComplete && isVisionComplete()){
+        if(!prevVisionComplete && isVisionComplete()){//will true
 //            if(postMotifSequence() != null) {
             preMotifSeq.cancel();
             follower.breakFollowing();
-            schedule(new CamCommand(limelight, follower));
+            schedule(new CamCommand(limelight, follower));//do it once and update finalballlist before, MAYBE DONT NEED
             schedule(postMotifSequence());
 //            }
             prevVisionComplete = true;

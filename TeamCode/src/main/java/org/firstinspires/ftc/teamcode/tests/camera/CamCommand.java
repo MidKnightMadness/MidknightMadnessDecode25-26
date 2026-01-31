@@ -69,7 +69,7 @@ public class CamCommand extends CommandBase {
     }
     private Pose coordRobotToField(Follower follower, Pose poseBall){
         Pose botPose = follower.getPose();
-        double hBallF = botPose.getHeading()-90+poseBall.getHeading();//it took me an hour to come up with this specific thing
+        double hBallF = botPose.getHeading()-90+poseBall.getHeading();
         double distance = distanceBot(poseBall);
 
         double x = Math.cos(hBallF) * distance;//from bot but in field
