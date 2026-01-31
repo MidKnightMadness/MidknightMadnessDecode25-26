@@ -8,6 +8,7 @@ import com.pedropathing.geometry.BezierLine;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
+import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitUntilCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
@@ -25,8 +26,10 @@ public class CamAutoTestTemporaryDeleteLaterMaybe extends BaseAuto {
     @Override
     protected Command postMotifSequence() {
         return new SequentialCommandGroup(
-                new CamCommand(limelight, follower),                          // run camera
-                new WaitUntilCommand(() -> !CamCommand.finalBallList.isEmpty()), // wait for results
+                new ParallelRaceGroup(
+                    new CamCommand(limelight, follower),                          // run camera
+                    new WaitUntilCommand(() -> !CamCommand.finalBallList.isEmpty()) // wait for results
+                ),
                 buildBallPathSequence()
         );
     }
