@@ -14,8 +14,8 @@ import java.util.List;
 
 public class CamCommand extends CommandBase {
 
-    public CamCommand(HardwareMap hardwareMap, Follower follower){
-        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+    public CamCommand(Limelight3A limelight, Follower follower){
+        this.limelight = limelight;
         this.follower = follower;
         ballList = new ArrayList<>();
         finalBallList = new ArrayList<>();
@@ -121,7 +121,8 @@ public class CamCommand extends CommandBase {
         }
     }
     @Override
-    public boolean isFinished(){
+    public boolean isFinished(){//manually do it in auto
+
         return false;
     }
     public Pose getMinBallPose(){

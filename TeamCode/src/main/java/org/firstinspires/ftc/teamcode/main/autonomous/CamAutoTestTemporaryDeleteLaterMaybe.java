@@ -1,70 +1,94 @@
 package org.firstinspires.ftc.teamcode.main.autonomous;
 
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
 import com.pedropathing.geometry.BezierLine;
 import com.seattlesolvers.solverslib.command.Command;
+import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
+import com.seattlesolvers.solverslib.command.WaitUntilCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
+import org.firstinspires.ftc.teamcode.camera.CamCommand;
+import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommand;
 import org.firstinspires.ftc.teamcode.commands.pathing.SchedulePathTo;
+import org.firstinspires.ftc.teamcode.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
+import org.firstinspires.ftc.teamcode.util.ConfigNames;
 
 @Autonomous(name = "Camtestautomaybe", group = "Test")
 public class CamAutoTestTemporaryDeleteLaterMaybe extends BaseAuto {
 
-    // Key positions
-    public static Pose startPose = new Pose(56, 8, Math.toRadians(90));
-    public static Pose shootPose = new Pose(60, 17, Math.toRadians(295));
-    public static Pose forwardPose = new Pose(56, 12, Math.toRadians(90));
-    public static Pose parkPose = new Pose(58, 38, Math.toRadians(180));
-
-    // Paths
-    Path toShootPresets;
-    Path toPark;
-
-    @Override
-    protected Pose getStartPose() {
-        return startPose;
-    }
-
-    @Override
-    protected void buildPaths() {
-        // Drive from start → shoot
-        toShootPresets = new Path(new BezierLine(forwardPose, shootPose));
-        toShootPresets.setLinearHeadingInterpolation(forwardPose.getHeading(), shootPose.getHeading());
-
-        // Drive from shoot → park
-        toPark = new Path(new BezierLine(shootPose, parkPose));
-        toPark.setLinearHeadingInterpolation(shootPose.getHeading(), parkPose.getHeading());
-    }
-
-    @Override
-    protected Command preMotifSequence() {
-        // Nothing yet
-        return null;
-    }
-
     @Override
     protected Command postMotifSequence() {
-        // Sequentially follow paths
         return new SequentialCommandGroup(
-                new InstantCommand(()-> ),
-                new ParallelCommandGroup(
-                    new SchedulePathTo(follower, shootPose),
-                    new AutoIntakeCommand(intake, spindexer, )
-                )
+                new CamCommand(limelight, follower),                          // run camera
+                new WaitUntilCommand(() -> !CamCommand.finalBallList.isEmpty()), // wait for results
+                buildBallPathSequence()                                         // move & intake
         );
+    }
+
+    private Command buildBallPathSequence() {
+        // Create a sequential command group
+        SequentialCommandGroup seq = new SequentialCommandGroup();
+
+        // Loop over the detected balls
+        for (Pose ballPose : CamCommand.finalBallList) {
+            // Each ball: move + intake in parallel
+            SchedulePathTo moveCommand = new SchedulePathTo(follower, ballPose).setMaxPower(0.5);
+            AutoIntakeCommand intakeCommand = new AutoIntakeCommand(spindexer, intake, 0.5, 0.5)
+                    .withTimeout(1.5); // prevent it from running forever
+
+            seq.addCommands(new ParallelCommandGroup(moveCommand, intakeCommand));
+        }
+
+        // Clear the list so it doesn’t get reused accidentally
+        CamCommand.finalBallList.clear();
+
+        return seq;
     }
 
     @Override
     protected void initializeMechanisms() {
-        // No shooter yet
+        intake = new Intake(hardwareMap, Intake.RunMode.RawPower);
     }
 
     @Override
     protected void setupVision() {
-        // No vision yet
+        limelight = hardwareMap.get(Limelight3A.class, ConfigNames.limelight);
+        limelight.pipelineSwitch(0);
+        limelight.start();
     }
+    @Override
+    public void run(){
+        super.run();
+        if(!gameTimerStarted){
+            gameTimer.restart();
+            gameTimerStarted = true;
+        }
+        update();
+        if(!prevVisionComplete && isVisionComplete()){
+//            if(postMotifSequence() != null) {
+            preMotifSeq.cancel();
+            follower.breakFollowing();
+            schedule(new CamCommand(limelight, follower));
+            schedule(postMotifSequence());
+//            }
+            prevVisionComplete = true;
+        }
+
+        //   if(postMotifSequence().isFinished()){
+//            if(goToIntakeLine()!= null){
+//                schedule(goToIntakeLine());
+//            }
+        //    }
+//        if (timer.getTime() >= maxTimeMs) requestOpModeStop();
+        writeValues();
+        updateTelemetry();
+    }
+
+
 }
