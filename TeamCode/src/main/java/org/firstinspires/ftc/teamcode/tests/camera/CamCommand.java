@@ -72,8 +72,8 @@ public class CamCommand extends CommandBase {
         double hBallF = botPose.getHeading()-90+poseBall.getHeading();
         double distance = distanceBot(poseBall);
 
-        double x = Math.cos(hBallF) * distance;//from bot but in field
-        double y = Math.sin(hBallF) * distance;
+        double x = Math.cos(Math.toRadians(hBallF)) * distance;//from bot but in field
+        double y = Math.sin(Math.toRadians(hBallF)) * distance;
 
         x += botPose.getX();
         y += botPose.getY();

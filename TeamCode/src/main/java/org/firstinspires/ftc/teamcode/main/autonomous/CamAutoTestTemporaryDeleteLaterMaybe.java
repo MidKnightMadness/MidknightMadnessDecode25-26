@@ -9,9 +9,10 @@ import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
+import com.seattlesolvers.solverslib.command.RepeatCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitUntilCommand;
-import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
+import org.firstinspires.ftc.teamcode.commands.FollowPathCommand;
 
 import org.firstinspires.ftc.teamcode.tests.camera.CamCommand;
 import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommand;
@@ -29,8 +30,8 @@ public class CamAutoTestTemporaryDeleteLaterMaybe extends BaseAuto {
         return new SequentialCommandGroup(
                 new ParallelRaceGroup(
                     new CamCommand(limelight, follower),//looks for balls, updates finalballlist
-                    new WaitUntilCommand(() -> !CamCommand.finalBallList.isEmpty())//doesnt get past race group until cam finds things
-                    //new RepeatCommand(strafe left and right) do this after testing if the auto actually works
+                    new WaitUntilCommand(() -> !CamCommand.finalBallList.isEmpty()), //doesnt get past race group until cam finds things
+                    new RepeatCommand(strafeLeftRight(8))
                 ),
                 buildBallPathSequence()//drive and intake the balls
         );
@@ -42,9 +43,21 @@ public class CamAutoTestTemporaryDeleteLaterMaybe extends BaseAuto {
             new FollowPathCommand(follower, CamCommand.getList(follower))//this gets patchain and stuff so its everything
         );
     }
-    private Command strafeLeftRight(){
+    private Command strafeLeftRight(double distance){
         Pose botPose = follower.getPose();
-        Pose
+
+        double leftX = -1 * distance * Math.cos(Math.toRadians(90-botPose.getHeading()));
+        double leftY = distance * Math.sin(Math.toRadians(90-botPose.getHeading()));
+        Pose leftPose = new Pose(leftX, leftY, botPose.getHeading());
+
+        double rightX = distance * Math.cos(Math.toRadians(90-botPose.getHeading()));
+        double rightY = -1 * distance * Math.sin(Math.toRadians(90-botPose.getHeading()));
+        Pose rightPose = new Pose(rightX, rightY, botPose.getHeading());
+
+        return new SequentialCommandGroup(
+                new FollowPathCommand(follower, leftPose, 0.5),
+                new FollowPathCommand(follower, rightPose, 0.5)
+        );
     }
 
     @Override
