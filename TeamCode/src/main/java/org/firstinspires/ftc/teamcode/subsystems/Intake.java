@@ -21,7 +21,7 @@ import java.util.Map;
 public class Intake extends SubsystemBase {
     MotorEx intakeMotor;
 
-    public static double reference_velocity = 12.5;
+    public static double reference_voltage = 12.5;
     public static boolean motorDirectionForward = true;
 
 
@@ -29,7 +29,7 @@ public class Intake extends SubsystemBase {
         VelocityControl, RawPower
     }
     RunMode runMode;
-    double motorGearRatio = 3;
+    double motorGearRatio = 5.31;
     public static Map<Double, Double> grToMultiplier = Map.of(
             3., 2.89,
             4., 3.61,
@@ -71,7 +71,7 @@ public class Intake extends SubsystemBase {
 
     public void setDirectPower(double power, double currVolt){
         double motorPower = Math.clampOutput(power, -1, 1);
-        intakeMotor.motor.setPower(motorPower * reference_velocity / currVolt);
+        intakeMotor.motor.setPower(motorPower * reference_voltage / currVolt);
     }
 
     public void setVelocity(double vel){

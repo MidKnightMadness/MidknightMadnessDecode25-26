@@ -53,8 +53,8 @@ public class ConstantsBot {
             .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
     public static PinpointConstants pinpointLocalizer2Constants = new PinpointConstants()
-            .forwardPodY(116.11 / 25.4)//TODO: ADD VALUE
-            .strafePodX(-173.57 / 25.4)//TODO: ADD VALUE
+            .forwardPodY(116.11 / 25.4)
+            .strafePodX(-173.57 / 25.4)
             .distanceUnit(DistanceUnit.INCH)
             .hardwareMapName(ConfigNames.pinpoint2)
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)

@@ -27,7 +27,7 @@ public class Spindexer extends SubsystemBase {
     //Ball sensors(two) facing each other right in the intake before it goes into the spindexer
     //public static double intakeSpinPower = 0.3;
     public static double shootRawPower = 1;
-    public static PIDFCoefficients outtakeTurnerCoeff = new PIDFCoefficients(0.00005, 0, 0.005, 0.08);
+    public static PIDFCoefficients outtakeTurnerCoeff = new PIDFCoefficients(0.00005, 0, 0.05, 0.08);
     public static PIDFCoefficients intakeTurnerCoeff = new PIDFCoefficients(0.004, 0.002, 0.03, 0.00006);
 
     //COLOR STUFF
@@ -95,6 +95,7 @@ public class Spindexer extends SubsystemBase {
 //        ).setPIDFTOUse(outtakeTurnerCoeff).setReversed(true);
 //        this.useColorSensors = useColorSensors;
         this.useDistanceSensor = useDistanceSensors;
+
 
         if(useDistanceSensor){
             distanceSensor = hardwareMap.get(DigitalChannel.class, ConfigNames.intakeDist1);

@@ -71,7 +71,7 @@ public class AutoIntakeCommand3 extends CommandBase {
     public void initialize(){
         timer.restart();
         startTime = timer.getTime();
-        currNumSpot = spindexer.getNearestSpot(spindexer.getCurrentAngle(), SpotType.INTAKE).getIndex();
+        currNumSpot = 0;
     }
 
     boolean updateStartTime = false;
@@ -124,7 +124,7 @@ public class AutoIntakeCommand3 extends CommandBase {
     public boolean isFinished(){
         //  spindexer.goToSpot(SpindexerSpot.fromIndex(currNumBall), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
 
-        if(spindexer.allOccuppiedBallColors() || numBall == 4){
+        if(spindexer.allOccuppiedBallColors()){
             return true;
         }
         return false;

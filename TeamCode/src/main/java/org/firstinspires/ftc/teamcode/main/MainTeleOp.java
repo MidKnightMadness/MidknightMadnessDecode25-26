@@ -603,7 +603,7 @@ public class MainTeleOp extends CommandOpMode {
 //            power = 0;
 //        }
 
-        if (Math.abs(filteredHeadingError) > Math.toRadians(1.5)) {
+        if (Math.abs(filteredHeadingError) > Math.toRadians(1.0)) {
             power += Math.signum(filteredHeadingError) * 0.04;
         } else{
             power = 0;
@@ -896,8 +896,11 @@ public class MainTeleOp extends CommandOpMode {
                 autoSpindexer = true;
             }
 
-            if ((autoIntake && autoIntakeCommand != null) || (autoSpindexer && activeSpotType != null && activeSpindexerSpotIndex != -1)) {
+            if(autoIntake && autoIntakeCommand != null){
                 activeSpindexerSpotIndex = autoIntakeCommand.getSpotCurrent();
+            }
+
+            if ((autoIntake && autoIntakeCommand != null) ||(autoSpindexer && activeSpotType != null && activeSpindexerSpotIndex != -1)) {
                 spindexer.goToSpot(SpindexerSpot.fromIndex(activeSpindexerSpotIndex), activeSpotType, CRServoEx2.RunMode.OptimizedPositionalControl);
             }
 
@@ -993,6 +996,7 @@ public class MainTeleOp extends CommandOpMode {
                 useLUT = true;
                 setCurrentShootDist(TwoWheelShooter.ShootDist.Far, currVolt);
             }
+
 
             if (gamepad2.optionsWasPressed()) {
                 shooterRunMode = shooterRunMode == TwoWheelShooter.RunMode.RawPower ? TwoWheelShooter.RunMode.VelocityControl : TwoWheelShooter.RunMode.RawPower;
