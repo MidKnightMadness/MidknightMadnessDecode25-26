@@ -91,56 +91,35 @@
 //}
 package org.firstinspires.ftc.teamcode.tests.opModes;
 
-import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 
+import org.firstinspires.ftc.teamcode.hardware.RangerMode;
+import org.firstinspires.ftc.teamcode.hardware.SwyftRanger;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 
 @TeleOp(name="Ranger Proximity Sensor Test (Digital)", group="Test")
-@Configurable
 public class RangerDistanceSensorTest extends LinearOpMode {
 
-    private DigitalChannel rangerDetect;
+    SwyftRanger ranger;
 
     @Override
-    public void runOpMode() throws InterruptedException {
-
-        boolean digitalFound = true;
-
-        try {
-            rangerDetect = hardwareMap.get(DigitalChannel.class, ConfigNames.intakeDist1);
-            rangerDetect.setMode(DigitalChannel.Mode.INPUT);
-        } catch (Exception e) {
-            rangerDetect = null;
-            digitalFound = false;
-        }
+    public void runOpMode() {
+        ranger = new SwyftRanger(hardwareMap, ConfigNames.intakeDist1, RangerMode.DEG15);
 
         telemetry.addLine("Initialized");
-        telemetry.addData("Digital Detect", digitalFound ? "OK" : "NOT FOUND");
         telemetry.update();
 
         waitForStart();
 
         while (opModeIsActive()) {
+            double distance = ranger.getDistance();
+            // telemetry.addData("Inch 15DEG 0-1 Mode: ", (ranger.getVoltage()*32.5)-2.6);
+            // telemetry.addData("Inch 20DEG 0-0 Mode: ", (ranger.getVoltage()*48.7)-4.9);
+            // telemetry.addData("Inch 27DEG 1-0 Mode: ", (ranger.getVoltage()*78.1)-10.2);
+            telemetry.addData("Distance", distance);
 
-            telemetry.clear();
-
-            if (rangerDetect != null) {
-
-                boolean objectDetected = rangerDetect.getState(); // usually active-low
-
-                telemetry.addData(
-                        "Object Detected",
-                        objectDetected ? "YES" : "NO"
-                );
-
-            } else {
-                telemetry.addLine("⚠ DIGITAL SENSOR NOT FOUND");
-            }
-
-            telemetry.addData("Runtime", "%.1f s", getRuntime());
             telemetry.update();
         }
     }
