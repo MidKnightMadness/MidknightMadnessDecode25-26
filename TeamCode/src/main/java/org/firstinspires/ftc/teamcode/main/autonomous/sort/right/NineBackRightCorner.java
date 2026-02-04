@@ -8,9 +8,6 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
-import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
-import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.RobotLog;
@@ -19,24 +16,21 @@ import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.ConditionalCommand;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
-import com.seattlesolvers.solverslib.command.ParallelDeadlineGroup;
 import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 
+import org.firstinspires.ftc.teamcode.commands.WaitUntilShootReadyCommand;
 import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommand2;
 import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommand3;
-import org.firstinspires.ftc.teamcode.commands.shooter.ShootUpdateCommand;
-import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommand;
 import org.firstinspires.ftc.teamcode.commands.pathing.SchedulePathTo;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
 import org.firstinspires.ftc.teamcode.game.SpotType;
 import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
-import org.firstinspires.ftc.teamcode.lights.GobildaLightBlock;
 import org.firstinspires.ftc.teamcode.main.autonomous.BaseAuto;
 import org.firstinspires.ftc.teamcode.main.autonomous.IntakeLine;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
@@ -51,30 +45,32 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 @Config
 @Configurable
 @Autonomous(name = "9 Far Right Sort", group = "Competition")
-public class NineBackRightSort extends BaseAuto {
+public class NineBackRightCorner extends BaseAuto {
     int objectDetectionPipeline = 3;
-    public static Pose startPose = new Pose(88, 8, Math.toRadians(270));
-    public static Pose shootPose = new Pose(84, 17, Math.toRadians(249));
+    public static Pose startPose = new Pose(86, 8.8, Math.toRadians(270));
+    public static Pose shootPose = new Pose(83, 17, Math.toRadians(249));
 //    public static double shootOffset = Math.toRadians(2);
 //public static Pose shootPose = new Pose(84, 17, Math.toRadians(247));
     public static Pose forwardPose = new Pose(88, 12, Math.toRadians(90));
     public static Pose parkPose = new Pose(86, 38, Math.toRadians(0));
     public static Pose openGatePose = new Pose(136, 76, Math.toRadians(180));
-    public static Pose intakeCloseStartPose = new Pose(100.5, 84, Math.toRadians(0));
-    public static Pose intakeCloseEndPose = new Pose(126, 84, Math.toRadians(0));
-    public static Pose intakeMidStartPose = new Pose(100.5, 58, Math.toRadians(0));
-    public static Pose intakeMidEndPose = new Pose(130, 58, Math.toRadians(0));
-    public static Pose intakeFarStartPose = new Pose(100.5, 34, Math.toRadians(0));
-    public static Pose intakeFarEndPose = new Pose(134, 34, Math.toRadians(0));
-    public static Pose intakeCornerStartPose = new Pose(125, 12, Math.toRadians(0));
-    public static Pose intakeCornerEndPose = new Pose(132, 12, Math.toRadians(0));
-    public static Pose intakeCornerEndPose2 = new Pose(132, 8, Math.toRadians(0));
+    public static Pose intakeCloseStartPose = new Pose(99.5, 84, Math.toRadians(0));
+    public static Pose intakeCloseEndPose = new Pose(125, 84, Math.toRadians(0));
+    public static Pose intakeMidStartPose = new Pose(99.5, 58, Math.toRadians(0));
+    public static Pose intakeMidEndPose = new Pose(129, 58, Math.toRadians(0));
+
+    public static Pose intakeFarStartPose = new Pose(99.5, 34, Math.toRadians(0));
+    public static Pose intakeFarEndPose = new Pose(135, 34, Math.toRadians(0));
+    public static Pose intakeCornerStartPose = new Pose(121, 12, Math.toRadians(0));
+    public static Pose intakeCornerEndPose = new Pose(129, 12, Math.toRadians(0));
+    public static Pose intakeCornerStartPose2 = new Pose(123, 6, Math.toRadians(0));
+    public static Pose intakeCornerEndPose2 = new Pose(129, 6, Math.toRadians(0));
+    public static Pose closeShootPose = new Pose(91.2, 84.6, Math.toRadians(230));
 
 
     public static long driveIntakeEndTime = 5000;
@@ -120,6 +116,11 @@ public class NineBackRightSort extends BaseAuto {
     PathChain toIntakeLineCloseEnd;
     PathChain toIntakeLineCornerBack;
     PathChain toIntakeLineCornerEnd2;
+    PathChain toShootCloseFromMid;
+
+    PathChain toShootCloseFromClose;
+
+    PathChain toShootCloseFromFar;
 
     PathChain toPark;
 
@@ -204,7 +205,7 @@ public class NineBackRightSort extends BaseAuto {
     boolean useDistanceSensor = true;
     public static double inBetweenTime = 200;
     public static boolean rawPowerOn = false;
-    public static long powerFlywheelTime = 1500;
+    public static long powerFlywheelTime = 1000;
     int aprilTagID = 0;
     public static long timeoutCorner = 100;
     public static double intakeDrivePower = 0.3;
@@ -222,8 +223,10 @@ public class NineBackRightSort extends BaseAuto {
     boolean scheduledPark = false;
     public static double maxTimeSwap1 = 1000;
     public static double maxTimeSwap2 = 1000;
-    public static long shootWaitTimePreset = 2000;
+    public static long maxWaitTillShoot = 3000;
     public static double cornerIntakePower = 1.0;
+    public static double lowFlywheelTol = 50;
+    public static double highFlywheelTol = 50;
     @Override
     public void initialize_loop(){
 //        LLResult result = limelight.getLatestResult();
@@ -310,8 +313,8 @@ public class NineBackRightSort extends BaseAuto {
 
         toIntakeLineCornerStart = buildPath(shootPose, intakeCornerStartPose);
         toIntakeLineCornerEnd = buildPathCorner(intakeCornerStartPose, intakeCornerEndPose);
-        toIntakeLineCornerBack = buildPathCorner(intakeCornerEndPose, intakeCornerStartPose);
-        toIntakeLineCornerEnd2 = buildPathCorner(intakeCornerStartPose, intakeCornerEndPose2);
+        toIntakeLineCornerBack = buildPathCorner(intakeCornerEndPose, intakeCornerStartPose2);
+        toIntakeLineCornerEnd2 = buildPathCorner(intakeCornerStartPose2, intakeCornerEndPose2);
 
         toShootFromCorner = buildPath(intakeCornerEndPose2, shootPose);
 
@@ -326,6 +329,9 @@ public class NineBackRightSort extends BaseAuto {
         toIntakeLineCloseEnd = buildPath(intakeCloseStartPose, intakeCloseEndPose);
 
         toShootFromClose = buildPath(intakeCloseEndPose, shootPose);
+        toShootCloseFromFar = buildPath(intakeFarEndPose, closeShootPose);
+        toShootCloseFromMid = buildPath(intakeMidEndPose, closeShootPose);
+        toShootCloseFromClose = buildPath(intakeFarEndPose, closeShootPose);
 
         toPark = buildPath(shootPose, parkPose);
 
@@ -490,67 +496,86 @@ public class NineBackRightSort extends BaseAuto {
         return new SequentialCommandGroup(
 //                driveForward(),
                 //GPP so that G is on the right side
-                shootPreset(shootWaitTimePreset),
-
-//                intake(IntakeLine.FAR),
-//                shootFromLines(IntakeLine.FAR, 1000),
+                shootPreset(maxWaitTillShoot),
 
                 intakeCorner(),
-                shootFromLines(IntakeLine.CORNER, 1000)
-//                intake(IntakeLine.MID),
-//                shootFromLines(IntakeLine.MID, 1000)
-////
-//                new ParallelCommandGroup(
-//                    new InstantCommand(()-> currSpindexerGotoSpot = 0),
-//                    park()
-//                )
+                shootFromLines(IntakeLine.CORNER, maxWaitTillShoot),
+
+                intake(IntakeLine.FAR),
+                shootFromLines(IntakeLine.FAR, maxWaitTillShoot),
+
+                intake(IntakeLine.MID),
+                shootClose(IntakeLine.MID, maxWaitTillShoot)
+
         );
     }
 
     protected Command setSpindexerCorrect(IntakeLine lineNum){
         if(lineNum == IntakeLine.CLOSE) {
             return new ConditionalCommand(
-                    new InstantCommand(),
+                    new InstantCommand(() -> currSpindexerGotoSpot = 0),
                     new ConditionalCommand(
                             new InstantCommand(() -> currSpindexerGotoSpot = 1),
                             new InstantCommand(() -> currSpindexerGotoSpot = 2),
-                            () -> motifPattern == MotifEnums.Motif.PGP
+                            () -> motifPattern == MotifEnums.Motif.PPG
                     ),
                     () -> motifPattern == MotifEnums.Motif.GPP
             );
         } else if(lineNum == IntakeLine.FAR){
             return new ConditionalCommand(
-                    new InstantCommand(),
+                    new InstantCommand(() -> currSpindexerGotoSpot = 1),
                     new ConditionalCommand(
-                            new InstantCommand(() -> currSpindexerGotoSpot = 1),
+                            new InstantCommand(() -> currSpindexerGotoSpot = 2),
                             new InstantCommand(() -> currSpindexerGotoSpot = 0),
                             () -> motifPattern == MotifEnums.Motif.PPG
                     ),
                     () -> motifPattern == MotifEnums.Motif.GPP
             );
-        }  else if(lineNum == IntakeLine.MID) {
+        }  else {//middle
             return new ConditionalCommand(
-                    new InstantCommand(),
+                    new InstantCommand(() -> currSpindexerGotoSpot = 2),
                     new ConditionalCommand(
-                            new InstantCommand(() -> currSpindexerGotoSpot = 1),
                             new InstantCommand(() -> currSpindexerGotoSpot = 0),
-                            () -> motifPattern == MotifEnums.Motif.PGP
-                    ),
-                    () -> motifPattern == MotifEnums.Motif.PPG
-            );
-        }
-        else{//lineNum == IntakeLIne.Corner which is the same as mid
-            return new ConditionalCommand(
-                    new InstantCommand(),
-                    new ConditionalCommand(
                             new InstantCommand(() -> currSpindexerGotoSpot = 1),
-                            new InstantCommand(() -> currSpindexerGotoSpot = 0),
-                            () -> motifPattern == MotifEnums.Motif.PGP
+                            () -> motifPattern == MotifEnums.Motif.PPG
                     ),
-                    () -> motifPattern == MotifEnums.Motif.PPG
+                    () -> motifPattern == MotifEnums.Motif.GPP
             );
         }
     }
+    protected FollowPathCommand getToShootCloseCommand(IntakeLine intakeLine){
+        PathChain path = intakeLine == IntakeLine.FAR ? toShootCloseFromFar : intakeLine == IntakeLine.MID ? toShootCloseFromMid : toShootCloseFromClose;
+        return new FollowPathCommand(follower, path, true, 1.0);
+    }
+    protected Command shootClose(IntakeLine lineNum, long waitTime){
+        return new SequentialCommandGroup(
+                new InstantCommand(()-> autoIntakeOn = false),
+                new InstantCommand(()-> intake.setDirectPower(0)),
+                new ParallelCommandGroup(
+                        getToShootCloseCommand(lineNum),
+                        new SequentialCommandGroup(
+                                new WaitCommand(500),
+                                setSpindexerCorrect(lineNum),
+                                new WaitCommand(500),
+                                new InstantCommand(() -> continueShoot = true),
+                                new InstantCommand(() -> shootDist = TwoWheelShooter.ShootDist.Close),
+                                new InstantCommand(()-> pushUpServo.setUp())
+                        )
+                ),
+                new InstantCommand(() -> currSpindexerGotoSpot = -1),
+                new WaitUntilShootReadyCommand(shooter, waitTime, lowFlywheelTol, highFlywheelTol),
+                new InstantCommand(() -> spindexer.spin(1 * spindexerSpeed)),
+                new WaitCommand(powerFlywheelTime),
+                new InstantCommand(() -> continueShoot = false),
+                new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0)),
+                new ParallelCommandGroup(
+                        new InstantCommand(() -> pushUpServo.setDown()),
+                        new InstantCommand(()-> spindexer.setDefault())
+                )
+        );
+    }
+
+
     protected Command shootFromLines(IntakeLine lineNum, long waitTime){
         return new SequentialCommandGroup(
                 new InstantCommand(()-> autoIntakeOn = false),
@@ -558,28 +583,23 @@ public class NineBackRightSort extends BaseAuto {
                 new ParallelCommandGroup(
                         getToShootCommand(lineNum),
                         new SequentialCommandGroup(
-                                new WaitCommand(1000),
+                                new WaitCommand(500),
                                 setSpindexerCorrect(lineNum),
-                                new WaitCommand(1000),
+                                new WaitCommand(500),
                                 new InstantCommand(() -> continueShoot = true),
                                 new InstantCommand(()-> pushUpServo.setUp())
                         )
                 ),
                 new InstantCommand(() -> currSpindexerGotoSpot = -1),
-//                                new InstantCommand(() -> spindexer.getTurner().setRunMode(CRServoEx2.RunMode.RawPower)),
-//                                new InstantCommand(() -> spindexer.getTurner2().setRunMode(CRServoEx2.RunMode.RawPower)),
-                new WaitCommand(waitTime),
-
-
+                new WaitUntilShootReadyCommand(shooter, waitTime, lowFlywheelTol, highFlywheelTol),
                 new InstantCommand(() -> spindexer.spin(1 * spindexerSpeed)),
                 new WaitCommand(powerFlywheelTime),
                 new InstantCommand(() -> continueShoot = false),
+                new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0)),
                 new ParallelCommandGroup(
-                    new InstantCommand(() -> currSpindexerGotoSpot = 0),
-                    new InstantCommand(() -> pushUpServo.setDown()),
-                    new InstantCommand(()-> spindexer.setDefault())
-                ),
-                new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0))
+                        new InstantCommand(() -> pushUpServo.setDown()),
+                        new InstantCommand(()-> spindexer.setDefault())
+                )
         );
     }
     protected Command shootPreset(long waitTime){
@@ -587,23 +607,22 @@ public class NineBackRightSort extends BaseAuto {
                 new ParallelCommandGroup(
                         getToShootCommandPreset(),
                         new SequentialCommandGroup(
-                            setSpindexerCorrect(IntakeLine.CLOSE),
-                            new WaitCommand(1000),
-                            new InstantCommand(() -> continueShoot = true),
-                            new InstantCommand(()-> pushUpServo.setUp())
+                                setSpindexerCorrect(IntakeLine.MID),
+                                new WaitCommand(1000),
+                                new InstantCommand(() -> continueShoot = true),
+                                new InstantCommand(()-> pushUpServo.setUp())
                         )
                 ),
                 new InstantCommand(() -> currSpindexerGotoSpot = -1),
-                new WaitCommand(waitTime),
+                new WaitUntilShootReadyCommand(shooter, waitTime, lowFlywheelTol, highFlywheelTol),
                 new InstantCommand(() -> spindexer.spin(1 * spindexerSpeed)),
                 new WaitCommand(powerFlywheelTime),
                 new InstantCommand(() -> continueShoot = false),
+                new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0)),
                 new ParallelCommandGroup(
-                        new InstantCommand(() -> currSpindexerGotoSpot = 0),
                         new InstantCommand(() -> pushUpServo.setDown()),
                         new InstantCommand(()-> spindexer.setDefault())
-                ),
-                new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0))
+                )
         );
     }
 
@@ -623,6 +642,7 @@ public class NineBackRightSort extends BaseAuto {
                 new InstantCommand(() -> currSpindexerGotoSpot = -1),
 //                 new InstantCommand(()-> autoIntakeOn = true),
 //                new ParallelRaceGroup(
+
                 new ParallelRaceGroup(
 //                         autoIntakeCommand(),
                         new AutoIntakeCommand3(spindexer, intake, intakePower, inBetweenTime, useDistanceSensor, hardwareMap),
@@ -630,7 +650,7 @@ public class NineBackRightSort extends BaseAuto {
                                 getToLineNum(lineNum),
 //                                new WaitCommand(1000),
                                 driveToIntakeEnd(lineNum).withTimeout(driveIntakeEndTime),
-                                new WaitCommand(4500)
+                                new WaitCommand(2000)
                         )
                 ),
                 new InstantCommand(()-> intake.setDirectPower(0)),
@@ -644,23 +664,33 @@ public class NineBackRightSort extends BaseAuto {
                 new InstantCommand(() -> pushUpServo.setDown()),
                 new InstantCommand(()-> spindexer.setDefault()),
                 new InstantCommand(()-> autoIntakeOn = true),
-                new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0)),
+//                new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0)),
 //                new WaitCommand(1000),
                 new InstantCommand(() -> currSpindexerGotoSpot = -1),
 //                 new InstantCommand(()-> autoIntakeOn = true),
 //                new ParallelRaceGroup(
 //                         autoIntakeCommand(),
 //                         new SequentialCommandGroup(
-                getToLineNum(IntakeLine.CORNER),
+
                 new ParallelRaceGroup(
                     new AutoIntakeCommand3(spindexer, intake, cornerIntakePower, inBetweenTime, useDistanceSensor, hardwareMap),
                     new SequentialCommandGroup(
+//                        new ParallelCommandGroup(
+//                                new SequentialCommandGroup(
+//                                        new InstantCommand(() -> currSpindexerGotoSpot = 0),
+//                                        new WaitCommand(2000),
+//                                        new InstantCommand(() -> currSpindexerGotoSpot = -1)
+//                                ),
+                                getToLineNum(IntakeLine.CORNER),
+//                        ),
                         new FollowPathCommand(follower, toIntakeLineCornerStart, true, intakeCornerDrivePower),
+                        new WaitCommand(500),
                         new FollowPathCommand(follower, toIntakeLineCornerEnd, true, intakeCornerDrivePower),
                         new WaitCommand(1000),
                         new FollowPathCommand(follower, toIntakeLineCornerBack, true, intakeCornerDrivePower),
+                        new WaitCommand(500),
                         new FollowPathCommand(follower, toIntakeLineCornerEnd2, true, intakeCornerDrivePower),
-                        new WaitCommand(4500)
+                        new WaitCommand(2000)
                     )
                 ),
                 new InstantCommand(()-> intake.setDirectPower(0)),
@@ -668,6 +698,7 @@ public class NineBackRightSort extends BaseAuto {
                 new InstantCommand(()-> currSpindexerGotoSpot = 2)
         );
     }
+
 
     protected FollowPathCommand driveToIntakeEnd(IntakeLine lineNum){
          PathChain path = lineNum == IntakeLine.FAR ? toIntakeLineFarEnd : lineNum == IntakeLine.MID ? toIntakeLineMidEnd : lineNum == IntakeLine.CORNER ? toIntakeLineCornerEnd : toIntakeLineCloseEnd;
@@ -682,10 +713,7 @@ public class NineBackRightSort extends BaseAuto {
 //        }
         return new FollowPathCommand(follower, path, true, intakeDrivePower);
     }
-    protected FollowPathCommand driveToIntakeEndCorner(){
 
-        return new FollowPathCommand(follower, toIntakeLineCornerEnd, true, intakeCornerDrivePower);
-    }
 
 
     protected Command park(){

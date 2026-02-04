@@ -17,6 +17,8 @@ public class SwyftRanger {
         } else {
             analogInput = hardwareMap.get(AnalogInput.class, name);
         }
+
+        this.mode = mode;
     }
 
     public double getDistance() {

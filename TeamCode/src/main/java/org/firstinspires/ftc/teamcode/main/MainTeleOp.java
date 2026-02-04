@@ -163,7 +163,7 @@ public class MainTeleOp extends CommandOpMode {
     public static double customTopPower = 0;
     public static double customBotPower = 0;
 
-    public static double offsetRadians = Math.toRadians(3);
+    public static double offsetRadians = Math.toRadians(0);
 
     int currentIntakeSpot = 0;
     public static double shootAngleTolerance = 10;

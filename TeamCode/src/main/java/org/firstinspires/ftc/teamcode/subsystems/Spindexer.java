@@ -68,7 +68,7 @@ public class Spindexer extends SubsystemBase {
     double overcomeWheelPower = 0.3;
     public SwyftRanger ranger;
     public static double distSensorLowerThreshold = 0;
-    public static double distSensorUpperThreshold = 4.5;
+    public static double distSensorUpperThreshold = 4;
     boolean useDistanceSensor = false;
 
     public static double minDetectDistance = 6;//inch

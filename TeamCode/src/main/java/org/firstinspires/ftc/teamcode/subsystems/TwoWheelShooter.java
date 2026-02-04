@@ -304,6 +304,10 @@ public class TwoWheelShooter extends SubsystemBase {
         return Math.abs(low.getVelocity() - predictedBotVel) <= velBotTolerance &&
                 Math.abs(high.getVelocity() - predictedTopVel) <= velTopTolerance;
     }
+    public boolean readyToShoot(double lowTolerance, double highTolerance){
+        return Math.abs(low.getVelocity() - predictedBotVel) <= lowTolerance &&
+                Math.abs(high.getVelocity() - predictedTopVel) <= highTolerance;
+    }
 
     public double getRecoveryTime(){
         return actualRecoveryTime;
