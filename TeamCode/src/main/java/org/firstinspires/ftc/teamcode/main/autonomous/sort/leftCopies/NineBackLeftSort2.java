@@ -5,12 +5,12 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.game.ShootSide;
-import org.firstinspires.ftc.teamcode.main.autonomous.sort.right.NineBackRightSort;
+import org.firstinspires.ftc.teamcode.main.autonomous.sort.right.NineBackRightCorner;
 
 @Config
 @Configurable
 @Autonomous(name = "9 Far Left Sort" , group = "Competition")
-public class NineBackLeftSort2 extends NineBackRightSort {
+public class NineBackLeftSort2 extends NineBackRightCorner {
 
     ShootSide shootSide = ShootSide.LEFT;
     @Override

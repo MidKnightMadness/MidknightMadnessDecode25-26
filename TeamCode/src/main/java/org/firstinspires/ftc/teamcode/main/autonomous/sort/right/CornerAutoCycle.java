@@ -558,7 +558,7 @@ public class CornerAutoCycle extends BaseAuto {
         } else{
             return new SequentialCommandGroup(
                     new ParallelCommandGroup(
-                            new AutoIntakeCommand2(spindexer, intake, intakePower, inBetweenTime, useDistanceSensor, maxTimeSwap1, maxTimeSwap2),
+                            new AutoIntakeCommand2(spindexer, intake, intakePower, inBetweenTime, useDistanceSensor, maxTimeSwap1, maxTimeSwap2, hardwareMap),
                             driveToIntakeEnd(targetSpot)
                     ).withTimeout(4500),
                     setSpindexerCorrect(targetSpot)
@@ -671,22 +671,6 @@ public class CornerAutoCycle extends BaseAuto {
 
     public void addStringToTelem(String s, String o){
         telemetry.addLine(s + o);
-    }
-    public void addToTelemGraph(String s, Number o){
-        telemetryManager.addData(s, o);
-        graphManager.addData(s, o);
-    }
-    public void addToAllTelemGraph(String s, Number o){
-        telemetryManager.addData(s, o);
-        graphManager.addData(s, o);
-        telemetry.addData(s, o);
-        if(dashboard != null) {
-            dashboardPacket.put(s, o);
-        };
-    }
-    public void addBooleanToTelem(String s, boolean o){
-        telemetry.addData(s, o);
-        telemetryManager.addData(s, o);
     }
 
 

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.old.opModes;
+package org.firstinspires.ftc.teamcode.main.autonomous.sort.right;
 
 import android.os.Environment;
 
@@ -7,11 +7,11 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
+import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.ConditionalCommand;
@@ -22,10 +22,12 @@ import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 
-import org.firstinspires.ftc.teamcode.commands.shooter.ShootUpdateCommand;
 import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommand;
+import org.firstinspires.ftc.teamcode.commands.intake.IntakeTimeCommand;
 import org.firstinspires.ftc.teamcode.commands.readwrite.MotifWriteCommand;
 import org.firstinspires.ftc.teamcode.commands.pathing.SchedulePathTo;
+import org.firstinspires.ftc.teamcode.commands.ShootSeqCommand;
+import org.firstinspires.ftc.teamcode.commands.spindexer.SpindexerGotoSpot;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
@@ -37,6 +39,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
+import org.firstinspires.ftc.teamcode.util.Timer;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -46,25 +49,24 @@ import java.util.Map;
 
 @Config
 @Configurable
-@Disabled
-@Autonomous(name = "9 Far Left Sort", group = "Competition")
-public class NineBackLeftSort extends BaseAuto {
+@Autonomous(name = "Old 9 Far Right Sort", group = "Competition")
+public class OldNineBackRightSort extends BaseAuto {
     int startPipeline = 1;
-    public static Pose startPose = new Pose(56, 8, Math.toRadians(90));
-    public static Pose shootPose = new Pose(60, 17, Math.toRadians(295));
-    public static Pose forwardPose = new Pose(56, 12, Math.toRadians(90));
-    public static Pose parkPose = new Pose(58, 38, Math.toRadians(180));
-    public static Pose openGatePose = new Pose(8, 76, Math.toRadians(180));
-    public static Pose intakeOnePose = new Pose(43.5, 84, Math.toRadians(180));
-    public static Pose intakeTwoPose = new Pose(43.5, 58, Math.toRadians(180));
-    public static Pose intakeThreePose = new Pose(43.5, 36, Math.toRadians(180));
-    public static Pose intakeOneEnd = new Pose(19, 84, Math.toRadians(180));
-    public static Pose intakeTwoEnd= new Pose(19, 58, Math.toRadians(180));
-    public static Pose intakeThreeEnd = new Pose(12, 36, Math.toRadians(180));
+    public static Pose startPose = new Pose(88, 8, Math.toRadians(90));
+    public static Pose shootPose = new Pose(84, 17, Math.toRadians(247));
+    public static Pose forwardPose = new Pose(88, 12, Math.toRadians(90));
+    public static Pose parkPose = new Pose(86, 38, Math.toRadians(0));
+    public static Pose openGatePose = new Pose(136, 76, Math.toRadians(180));
+    public static Pose intakeOnePose = new Pose(100.5, 84, Math.toRadians(0));
+    public static Pose intakeTwoPose = new Pose(100.5, 58, Math.toRadians(0));
+    public static Pose intakeThreePose = new Pose(100.5, 36, Math.toRadians(0));
+    public static Pose intakeOneEnd = new Pose(125, 84, Math.toRadians(0));
+    public static Pose intakeTwoEnd= new Pose(125, 58, Math.toRadians(0));
+    public static Pose intakeThreeEnd = new Pose(132, 36, Math.toRadians(0));
     MotifEnums.Motif motifPattern = MotifEnums.Motif.NONE;
     MotifWriteCommand motifCommand = null;
 
-    ShootSide shootSide = ShootSide.LEFT;
+    ShootSide shootSide = ShootSide.RIGHT;
     Pose currentPose;
 
     Command firstPath;
@@ -73,14 +75,11 @@ public class NineBackLeftSort extends BaseAuto {
     public static long thirdWaitTime = 500;//250 old
 
     public static long fourthWaitTime = 500;
+
     public static double pathDistThresholdMin = 0;
     public static double headingError = 0;
     public static double timeOutConstraint = 0;
     public static double velConstraint = 0;
-
-//    public static double pathDistThresholdMin = 1.5;
-//    public static double headingError = Math.toRadians(2);
-//    public static double timeOutConstraint = 1000;
 
     //TODO: TRY VELOCITY CONSTRAINT
     public static TwoWheelShooter.RunMode shooterRunMode = TwoWheelShooter.RunMode.RawPower;
@@ -131,6 +130,7 @@ public class NineBackLeftSort extends BaseAuto {
     FileWriter fileWriter;
     File file;
     boolean finishedWritingMotif = false;
+    public static boolean useColorSensor = false;
     public static boolean useDistanceSensor = false;
     public static double inBetweenTime = 100;
     public static boolean rawPowerOn = false;
@@ -256,6 +256,7 @@ public class NineBackLeftSort extends BaseAuto {
         }
     }
 
+
     @Override
     protected boolean isVisionComplete(){
         return true;
@@ -270,11 +271,21 @@ public class NineBackLeftSort extends BaseAuto {
     protected Command preMotifSequence(){
         return new InstantCommand();
     }
+    double currVolt;
+    boolean continueShoot;
 
     @Override
     public void update(){
         if(currSpindexerGotoSpot != -1) {
             spindexer.goToSpot(SpindexerSpot.fromIndex(currSpindexerGotoSpot), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
+        }
+        currVolt = hardwareMap.voltageSensor.iterator().next().getVoltage();
+
+
+        if(continueShoot){
+            shooter.setFlywheelStaticPresets(shootDist, voltageCompensation, currVolt);
+        } else{
+            shooter.setFlywheelStaticPresets(TwoWheelShooter.ShootDist.Close, voltageCompensation, currVolt);
         }
     }
     @Override
@@ -299,15 +310,14 @@ public class NineBackLeftSort extends BaseAuto {
 //                driveForward(),
                 setSpindexerCorrect(0),
                 new WaitCommand(1000),
-                shoot(0),
+//                shoot(0),
 
                 getToLineNum(3),
-                intakeLineThree(),
-                shoot(1),
-
+//                intakeLineThree(),
+//                shoot(1),
                 getToLineNum(2),
-                intakeLineTwo(),
-                shoot(2),
+//                intakeLineTwo(),
+//                shoot(2),
 //                getToLineNum(1),
 //                intakeLineOne(),
 //                shoot(3),
@@ -363,42 +373,40 @@ public class NineBackLeftSort extends BaseAuto {
         }
     }
     protected Command intakeLineOne(){
-        return new SequentialCommandGroup(
+        return
                 //new InstantCommand(()-> currSpindexerGotoSpot = 0),
-                intake(1, 0)
-        );
+                intake(1, 0);
+
     }
 
     protected Command intakeLineTwo(){
-        return new SequentialCommandGroup(
+        return
 //                new InstantCommand(()-> currSpindexerGotoSpot = 0),
-                intake(2, 0)
-        );
+                intake(2, 0);
+
     }
 
     protected Command intakeLineThree(){
-        return new SequentialCommandGroup(
+        return
 //                new InstantCommand(()-> currSpindexerGotoSpot = 0),
-                intake(3, 0)
-        );
+                intake(3, 0);
+
     }
     protected Command shoot(int shootNum){
         return new SequentialCommandGroup(
                 new WaitCommand(1000),
                 new ParallelCommandGroup(
-                        new ShootUpdateCommand(spindexer, shooter, follower, shootSide, useLUT, voltageCompensation, shootDist, rawPowerOn, hardwareMap).withTimeout(shootOnTime),
                         new SequentialCommandGroup(
                                 getToShootCommand(shootNum),
                                 new InstantCommand(() -> currSpindexerGotoSpot = -1),
 //                                new InstantCommand(() -> spindexer.getTurner().setRunMode(CRServoEx2.RunMode.RawPower)),
 //                                new InstantCommand(() -> spindexer.getTurner2().setRunMode(CRServoEx2.RunMode.RawPower)),
-                                new WaitCommand(1000),
+                                new WaitCommand(500),
                                 new InstantCommand(() -> spindexer.spin(1 * spindexerSpeed))
                         )
                 ),
                 new ParallelCommandGroup(
                         new InstantCommand(()-> shooter.stopFlywheels()),
-                        //  new InstantCommand(() -> spindexer.getTurner2().getServo().setPower(0)),
                         new InstantCommand(() -> spindexer.getTurner().getServo().setPower(0))
                 ),
 //                new InstantCommand(() -> spindexer.getTurner().setRunMode(CRServoEx2.RunMode.OptimizedPositionalControl)),
@@ -449,11 +457,11 @@ public class NineBackLeftSort extends BaseAuto {
 
     protected SchedulePathTo driveToIntakeEnd(int spot){
         if(spot == 3) {
-            return new SchedulePathTo(follower, intakeThreePose, intakeThreeEnd).setMaxPower(0.3);
+            return new SchedulePathTo(follower, intakeThreePose, intakeThreeEnd).setMaxPower(0.3).setHeadingConstraint(headingError).setTimeoutConstraint(timeOutConstraint).setVel(velConstraint);
         } else if(spot == 2){
-            return new SchedulePathTo(follower, intakeTwoPose, intakeTwoEnd).setMaxPower(0.3);
+            return new SchedulePathTo(follower, intakeTwoPose, intakeTwoEnd).setMaxPower(0.3).setHeadingConstraint(headingError).setTimeoutConstraint(timeOutConstraint).setVel(velConstraint);
         } else {
-            return new SchedulePathTo(follower, intakeOnePose, intakeOneEnd).setMaxPower(0.3);
+            return new SchedulePathTo(follower, intakeOnePose, intakeOneEnd).setMaxPower(0.3).setHeadingConstraint(headingError).setTimeoutConstraint(timeOutConstraint).setVel(velConstraint);
         }
     }
 
@@ -461,11 +469,17 @@ public class NineBackLeftSort extends BaseAuto {
         return new FollowPathCommand(follower, toPark, true, 1.0);
     }
 
-    protected FollowPathCommand getToLineNum(int lineNum){
+    protected Command getToLineNum(int lineNum){
         FollowPathCommand command = null;
-        if(lineNum == 3) command = new FollowPathCommand(follower, toIntakeThree, true);
-        else if(lineNum == 2) command = new FollowPathCommand(follower, toIntakeTwo, true);
-        else command = new FollowPathCommand(follower, toIntakeOne, true);
+        if(lineNum == 3){
+            command = new FollowPathCommand(follower, toIntakeThree, true);
+        }
+        else if(lineNum == 2) {
+            command = new FollowPathCommand(follower, toIntakeTwo, true);
+        }
+        else {
+            command = new FollowPathCommand(follower, toIntakeOne, true);
+        }
 
         return command;
     }
@@ -481,10 +495,10 @@ public class NineBackLeftSort extends BaseAuto {
         } else{
             currPose = intakeOneEnd;
         }
-        return new SchedulePathTo(follower, currPose, shootPose).setMaxPower(1.0);
+        return new SchedulePathTo(follower, currPose, shootPose).setMaxPower(1.0).setHeadingConstraint(headingError).setTimeoutConstraint(timeOutConstraint).setVel(velConstraint);
     }
 
-    @Override
+
     protected void updateTelemetry(){
         // Update pose & follower
         follower.update();
@@ -537,7 +551,7 @@ public class NineBackLeftSort extends BaseAuto {
         }
 
         //Motif
-//        telemetryManager.addData("Motif Pattern", motifPattern);
+        //telemetryManager.addData("Motif Pattern", motifPattern);
 
         telemetry.addData("Spindexer Get Curr Angle", spindexer.getCurrentAngle());
 //
@@ -554,22 +568,6 @@ public class NineBackLeftSort extends BaseAuto {
 
     public void addStringToTelem(String s, String o){
         telemetry.addLine(s + o);
-    }
-    public void addToTelemGraph(String s, Number o){
-//        telemetryManager.addData(s, o);
-//        graphManager.addData(s, o);
-    }
-    public void addToAllTelemGraph(String s, Number o){
-//        telemetryManager.addData(s, o);
-//        graphManager.addData(s, o);
-//        telemetry.addData(s, o);
-//        if(dashboard != null) {
-//            dashboardPacket.put(s, o);
-//        };
-    }
-    public void addBooleanToTelem(String s, boolean o){
-//        telemetry.addData(s, o);
-//        telemetryManager.addData(s, o);
     }
 
 

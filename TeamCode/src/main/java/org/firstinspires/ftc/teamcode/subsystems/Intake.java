@@ -2,11 +2,12 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
+
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
-import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
+import  org.firstinspires.ftc.teamcode.hardware.MotorEx;
 
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.teamcode.util.Math;
@@ -20,6 +21,7 @@ import java.util.Map;
 public class Intake extends SubsystemBase {
     MotorEx intakeMotor;
 
+    public static double reference_voltage = 12.5;
     public static boolean motorDirectionForward = true;
 
 
@@ -27,7 +29,7 @@ public class Intake extends SubsystemBase {
         VelocityControl, RawPower
     }
     RunMode runMode;
-    double motorGearRatio = 3;
+    double motorGearRatio = 5.31;
     public static Map<Double, Double> grToMultiplier = Map.of(
             3., 2.89,
             4., 3.61,
@@ -54,16 +56,22 @@ public class Intake extends SubsystemBase {
     public void setRunMode(RunMode runMode){
         this.runMode = runMode;
         if(runMode == RunMode.RawPower){
-            intakeMotor.setRunMode(Motor.RunMode.RawPower);
+            intakeMotor.setRunMode(MotorEx.RunMode.RawPower);
         }
         else{
-            intakeMotor.setRunMode(Motor.RunMode.VelocityControl);
+            intakeMotor.setRunMode(MotorEx.RunMode.VelocityControl);
         }
     }
 
     public void setDirectPower(double power){
         double motorPower = Math.clampOutput(power, -1, 1);
         intakeMotor.motor.setPower(motorPower);
+    }
+
+
+    public void setDirectPower(double power, double currVolt){
+        double motorPower = Math.clampOutput(power, -1, 1);
+        intakeMotor.motor.setPower(motorPower * reference_voltage / currVolt);
     }
 
     public void setVelocity(double vel){

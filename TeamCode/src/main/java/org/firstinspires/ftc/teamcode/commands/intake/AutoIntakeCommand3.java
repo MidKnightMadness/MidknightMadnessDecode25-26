@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 
 @Config
 @Configurable
-public class AutoIntakeCommand2 extends CommandBase {
+public class AutoIntakeCommand3 extends CommandBase {
     private Spindexer spindexer;
     private Intake intake;
     private double power;
@@ -40,7 +40,7 @@ public class AutoIntakeCommand2 extends CommandBase {
     public static int addition = 1;
     boolean timeExit;
     HardwareMap hardwareMap;
-    public AutoIntakeCommand2(Spindexer spindexer, Intake intake, double power, double inBetweenTime, boolean useDistanceSensor, HardwareMap hardwareMap){
+    public AutoIntakeCommand3(Spindexer spindexer, Intake intake, double power, double inBetweenTime, boolean useDistanceSensor, HardwareMap hardwareMap){
         this.spindexer = spindexer;
         this.intake = intake;
         this.power = power;
@@ -52,7 +52,7 @@ public class AutoIntakeCommand2 extends CommandBase {
         timer = new Timer();
         addRequirements(intake, spindexer);
     }
-    public AutoIntakeCommand2(Spindexer spindexer, Intake intake, double power, double inBetweenTime, boolean useDistanceSensor, double maxSwapTime1, double maxSwapTime2, HardwareMap hardwareMap){
+    public AutoIntakeCommand3(Spindexer spindexer, Intake intake, double power, double inBetweenTime, boolean useDistanceSensor, double maxSwapTime1, double maxSwapTime2, HardwareMap hardwareMap){
         this.spindexer = spindexer;
         this.intake = intake;
         this.power = power;
@@ -71,7 +71,7 @@ public class AutoIntakeCommand2 extends CommandBase {
     public void initialize(){
         timer.restart();
         startTime = timer.getTime();
-        currNumSpot = spindexer.getNearestSpot(spindexer.getCurrentAngle(), SpotType.INTAKE).getIndex();
+        currNumSpot = 0;
     }
 
     boolean updateStartTime = false;
@@ -114,7 +114,7 @@ public class AutoIntakeCommand2 extends CommandBase {
         }
 
 
-//        spindexer.goToSpot(SpindexerSpot.fromIndex(currNumSpot), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
+        spindexer.goToSpot(SpindexerSpot.fromIndex(currNumSpot), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
     }
 
     public int getSpotCurrent(){
@@ -124,7 +124,7 @@ public class AutoIntakeCommand2 extends CommandBase {
     public boolean isFinished(){
         //  spindexer.goToSpot(SpindexerSpot.fromIndex(currNumBall), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
 
-        if(spindexer.allOccuppiedBallColors() || numBall == 4){
+        if(spindexer.allOccuppiedBallColors()){
             return true;
         }
         return false;

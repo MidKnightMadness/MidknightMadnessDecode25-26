@@ -154,10 +154,10 @@ public class OldNineFarRightNSort extends BaseAuto {
         intake = new Intake(hardwareMap, Intake.RunMode.RawPower);
 
         if(shooterRunMode == TwoWheelShooter.RunMode.VelocityControl) {
-            shooter.low.setVeloCoefficients(pidBotGainsShooter[0], pidBotGainsShooter[1], pidBotGainsShooter[2]);
-            shooter.high.setVeloCoefficients(pidTopGainsShooter[0], pidTopGainsShooter[1], pidTopGainsShooter[2]);
-            shooter.low.setFeedforwardCoefficients(kBotGainsShooter[0], kBotGainsShooter[1], kBotGainsShooter[2]);
-            shooter.high.setFeedforwardCoefficients(kTopGainsShooter[0], kTopGainsShooter[1], kTopGainsShooter[2]);
+//            shooter.low.setVeloCoefficients(pidBotGainsShooter[0], pidBotGainsShooter[1], pidBotGainsShooter[2]);
+//            shooter.high.setVeloCoefficients(pidTopGainsShooter[0], pidTopGainsShooter[1], pidTopGainsShooter[2]);
+//            shooter.low.setFeedforwardCoefficients(kBotGainsShooter[0], kBotGainsShooter[1], kBotGainsShooter[2]);
+//            shooter.high.setFeedforwardCoefficients(kTopGainsShooter[0], kTopGainsShooter[1], kTopGainsShooter[2]);
         }
     }
 
@@ -503,11 +503,11 @@ public class OldNineFarRightNSort extends BaseAuto {
 //
 
         telemetry.update();
-        graphManager.update();
-        telemetryManager.update();
-        if(dashboard!= null) {
-            dashboard.sendTelemetryPacket(dashboardPacket);
-        }
+//        graphManager.update();
+//        telemetryManager.update();
+//        if(dashboard!= null) {
+//            dashboard.sendTelemetryPacket(dashboardPacket);
+//        }
     }
 
 
@@ -516,20 +516,20 @@ public class OldNineFarRightNSort extends BaseAuto {
         telemetry.addLine(s + o);
     }
     public void addToTelemGraph(String s, Number o){
-        telemetryManager.addData(s, o);
-        graphManager.addData(s, o);
+//        telemetryManager.addData(s, o);
+//        graphManager.addData(s, o);
     }
     public void addToAllTelemGraph(String s, Number o){
-        telemetryManager.addData(s, o);
-        graphManager.addData(s, o);
-        telemetry.addData(s, o);
-        if(dashboard != null) {
-            dashboardPacket.put(s, o);
-        };
+//        telemetryManager.addData(s, o);
+//        graphManager.addData(s, o);
+//        telemetry.addData(s, o);
+//        if(dashboard != null) {
+//            dashboardPacket.put(s, o);
+//        };
     }
     public void addBooleanToTelem(String s, boolean o){
         telemetry.addData(s, o);
-        telemetryManager.addData(s, o);
+//        telemetryManager.addData(s, o);
     }
 
 

@@ -39,7 +39,7 @@ import java.util.List;
 @TeleOp(name = "Tuning", group = "Pedro Pathing")
 public class Tuning extends SelectableOpMode {
     public static Follower follower;
-    public static long UPDATE_WAIT = 50;
+    public static long UPDATE_WAIT = 12;
     @IgnoreConfigurable
     static PoseHistory poseHistory;
 
@@ -324,7 +324,7 @@ class TurnTuner extends OpMode {
  */
 class ForwardVelocityTuner extends OpMode {
     private final ArrayList<Double> velocities = new ArrayList<>();
-    public static double DISTANCE = 48;
+    public static double DISTANCE = 120;
     public static double RECORD_NUMBER = 10;
 
     private boolean end;
@@ -430,7 +430,7 @@ class ForwardVelocityTuner extends OpMode {
 class LateralVelocityTuner extends OpMode {
     private final ArrayList<Double> velocities = new ArrayList<>();
 
-    public static double DISTANCE = 48;
+    public static double DISTANCE = 120;
     public static double RECORD_NUMBER = 10;
 
     private boolean end;
