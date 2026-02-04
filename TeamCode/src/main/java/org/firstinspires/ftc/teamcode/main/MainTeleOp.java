@@ -186,7 +186,7 @@ public class MainTeleOp extends CommandOpMode {
 
     boolean hasRumbledAllOccupied = false;
     int goToSpotIntakeNum = 0;
-    public static boolean readPoseFile = false;//true
+    public static boolean readPoseFile = true;//true
     boolean triggerBallShot = false;
     int recentTriggeredSpot = -1;
     BallColor[] defaultBallColor = new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE};
