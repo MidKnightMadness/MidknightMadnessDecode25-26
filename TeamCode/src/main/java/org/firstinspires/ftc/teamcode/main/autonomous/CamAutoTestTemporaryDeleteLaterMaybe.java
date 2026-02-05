@@ -114,21 +114,14 @@ public class CamAutoTestTemporaryDeleteLaterMaybe extends BaseAuto {
             return new InstantCommand();
         }
     }
-    private Command strafeLeftRight(double distance){
+    private Command strafeLeft(double distance){
         Pose botPose = follower.getPose();
 
-        double leftX = -1 * distance * Math.cos(Math.toRadians(90-botPose.getHeading()));//the amount left you have to go to go left
-        double leftY = distance * Math.sin(Math.toRadians(90-botPose.getHeading()));//amount up you go to go left
-        Pose leftPose = new Pose(leftX, leftY, botPose.getHeading());//gets pose from that
+        double leftX = -1 * distance * Math.cos(botPose.getHeading());//the amount left you have to go to go left
+        Pose leftPose = new Pose(leftX, botPose.getY(), botPose.getHeading());//gets pose from that
 
-        double rightX = distance * Math.cos(Math.toRadians(90-botPose.getHeading()));//amount right to go right
-        double rightY = -1 * distance * Math.sin(Math.toRadians(90-botPose.getHeading()));//amount down to go right
-        Pose rightPose = new Pose(rightX, rightY, botPose.getHeading());//gets pose from that
+        return new FollowPathCommand(follower, leftPose, 0.5);//this moves left
 
-        return new SequentialCommandGroup(
-                new FollowPathCommand(follower, leftPose, 0.5),//this moves left
-                new FollowPathCommand(follower, rightPose, 0.5)//this moves right
-        );
     }
 
     @Override

@@ -138,11 +138,10 @@ public class CamCommand extends CommandBase {
     }
 
     public PathChain getList(Follower follower){
-        if(finalBallList == null || finalBallList.size() < 2){
+        if(finalBallList == null || finalBallList.isEmpty()){
             return null;
         }
 
-        // ✅ SNAPSHOT
         ArrayList<Pose> balls = new ArrayList<>(finalBallList);
         ArrayList<Path> lineList = new ArrayList<>();
 
