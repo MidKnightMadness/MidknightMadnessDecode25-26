@@ -605,9 +605,10 @@ public class MainTeleOp extends CommandOpMode {
 
         if (Math.abs(filteredHeadingError) > Math.toRadians(1.0)) {
             power += Math.signum(filteredHeadingError) * 0.04;
-        } else{
-            power = 0;
         }
+//        else{
+//            power = 0;
+//        }
 
 
         return power;
