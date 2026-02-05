@@ -32,11 +32,11 @@ public class CamAutoTestTemporaryDeleteLaterMaybe extends BaseAuto {
     int limelightPipelineStart = 3;//CHANGE THIS
     public static Pose startPose = new Pose(88, 8, Math.toRadians(270));//CHANGE THIS
     CamCommand cam;
-    @Override
+    /*@Override
     protected Command preMotifSequence(){
         cam = new CamCommand(limelight, follower);
         return cam;
-    }
+    }*/
 
     @Override
     protected boolean isVisionComplete(){
@@ -46,19 +46,22 @@ public class CamAutoTestTemporaryDeleteLaterMaybe extends BaseAuto {
 
     @Override
     protected Command postMotifSequence() {
-        //CamCommand cam = new CamCommand(limelight, follower);
+        cam = new CamCommand(limelight, follower);
 
-        return// new SequentialCommandGroup(
-                /*
-                //runs camera and movementing until it finds balls
-                        new RepeatCommand(cam),//does the camera thing
-                        new RepeatCommand(strafeLeftRight(8)),//moves around so you can detect balls
-                        new WaitUntilCommand(() -> !cam.finalBallList.isEmpty())
-
-*/
-                //when balls are found you go to them
-                buildBallPathSequence(cam);
-        //);
+        return new SequentialCommandGroup(
+                strafeLeft(5),
+                cam,
+                buildBallPathSequence(cam),
+                goBack(),
+                strafeLeft(5),
+                cam,
+                buildBallPathSequence(cam),
+                goBack(),
+                strafeLeft(5),
+                cam,
+                buildBallPathSequence(cam),
+                goBack()
+        );
     }
     /*
     @Override
@@ -119,6 +122,11 @@ public class CamAutoTestTemporaryDeleteLaterMaybe extends BaseAuto {
         Pose leftPose = new Pose(botPose.getX(), botPose.getY()+distance, botPose.getHeading());
         return new FollowPathCommand(follower, leftPose, 0.5);//this moves left
 
+    }
+    private Command goBack(){
+        Pose botPose = follower.getPose();
+        Pose backPose = new Pose(92, botPose.getY(), botPose.getHeading());
+        return new FollowPathCommand(follower, backPose, 0.5);
     }
 
     @Override
