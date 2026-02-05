@@ -20,9 +20,10 @@ public class CamCommand extends CommandBase {
         this.follower = follower;
         ballList = new ArrayList<>();
         finalBallList = new ArrayList<>();
+
     }
     ArrayList<Pose> ballList;
-    public static ArrayList<Pose> finalBallList;
+    public ArrayList<Pose> finalBallList;
     Follower follower;
     Pose ballPose;
     Pose minBall;
@@ -69,7 +70,7 @@ public class CamCommand extends CommandBase {
     }
     private Pose coordRobotToField(Follower follower, Pose poseBall){
         Pose botPose = follower.getPose();
-        double hBallF = botPose.getHeading()-90+poseBall.getHeading();
+        double hBallF = botPose.getHeading()-(Math.PI/2)+poseBall.getHeading();
         double distance = distanceBot(poseBall);
 
         double x = Math.cos(Math.toRadians(hBallF)) * distance;//from bot but in field
@@ -91,6 +92,7 @@ public class CamCommand extends CommandBase {
         minY = Double.MAX_VALUE;
         minD = Double.MAX_VALUE;
         minBall = new Pose(Double.MAX_VALUE, Double.MAX_VALUE);
+
     }
 
     @Override
@@ -100,7 +102,7 @@ public class CamCommand extends CommandBase {
             detections = result.getDetectorResults();
         }
 
-        if (!detections.isEmpty() && result != null) {
+        if (result != null && detections != null && !detections.isEmpty()) {
             for (LLResultTypes.DetectorResult detection : detections) {
                 String className = detection.getClassName(); // What was detected
                 double x = detection.getTargetXDegrees(); // Where it is (left-right)
@@ -121,26 +123,49 @@ public class CamCommand extends CommandBase {
 
         }
     }
+
+    public ArrayList<Pose> getFinalBallList(){
+        return finalBallList;
+    }
     @Override
     public boolean isFinished(){//manually do it in auto
-
-        return false;
+        if(!finalBallList.isEmpty()){
+            return true;
+        } return false;
     }
     public Pose getMinBallPose(){
         return minBall;
     }
 
-    public static PathChain getList(Follower follower){
+    public PathChain getList(Follower follower){
+        if(finalBallList == null || finalBallList.size() < 2){
+            return null;
+        }
+
+        // ✅ SNAPSHOT
+        ArrayList<Pose> balls = new ArrayList<>(finalBallList);
         ArrayList<Path> lineList = new ArrayList<>();
-        for(int i = 0; i < finalBallList.size()-1; i++){
+
+        for(int i = 0; i < balls.size() - 1; i++){
             if(i == 0){
-                lineList.add(new Path(new BezierLine(follower.getPose(), finalBallList.get(1))));
-            }
-            else{
-                lineList.add(new Path(new BezierLine(finalBallList.get(i), finalBallList.get(i+1))));
+                lineList.add(new Path(
+                        new BezierLine(follower.getPose(), balls.get(0))
+                ));
+            } else {
+                lineList.add(new Path(
+                        new BezierLine(balls.get(i), balls.get(i + 1))
+                ));
             }
         }
-        Path[] paths = lineList.toArray(new Path[0]);
-        return new PathChain(paths);
+
+        return new PathChain(lineList.toArray(new Path[0]));
+    }
+    public Pose getHomographyPose(){
+        if(finalBallList.get(0) != null) {
+            return processHomography(finalBallList.get(0).getX(), finalBallList.get(0).getY());
+        }
+        else{
+            return new Pose(-1, -1);
+        }
     }
 }
