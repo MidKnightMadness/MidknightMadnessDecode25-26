@@ -66,8 +66,8 @@ public class NineBackRightCorner extends BaseAuto {
 
     public static Pose intakeFarStartPose = new Pose(99.5, 34, Math.toRadians(0));
     public static Pose intakeFarEndPose = new Pose(135, 34, Math.toRadians(0));
-    public static Pose intakeCornerStartPose = new Pose(121, 12, Math.toRadians(0));
-    public static Pose intakeCornerEndPose = new Pose(129, 12, Math.toRadians(0));
+    public static Pose intakeCornerStartPose = new Pose(121, 11, Math.toRadians(0));
+    public static Pose intakeCornerEndPose = new Pose(129, 11, Math.toRadians(0));
     public static Pose intakeCornerStartPose2 = new Pose(123, 6, Math.toRadians(0));
     public static Pose intakeCornerEndPose2 = new Pose(129, 6, Math.toRadians(0));
     public static Pose closeShootPose = new Pose(91.2, 84.6, Math.toRadians(230));
@@ -203,7 +203,7 @@ public class NineBackRightCorner extends BaseAuto {
     File file;
     boolean finishedWritingMotif = false;
     boolean useDistanceSensor = true;
-    public static double inBetweenTime = 200;
+    public static double inBetweenTime = 150;
     public static boolean rawPowerOn = false;
     public static long powerFlywheelTime = 1000;
     int aprilTagID = 0;
@@ -385,7 +385,7 @@ public class NineBackRightCorner extends BaseAuto {
     boolean continueShoot = false;
     double currVolt;
     boolean autoIntakeOn;
-    AutoIntakeCommand2 autoIntakeCommand;
+    AutoIntakeCommand3 autoIntakeCommand;
     int autoIntakeNum = -1;
     @Override
     public void update(){
@@ -681,20 +681,10 @@ public class NineBackRightCorner extends BaseAuto {
                 new ParallelRaceGroup(
                     new AutoIntakeCommand3(spindexer, intake, cornerIntakePower, inBetweenTime, useDistanceSensor, hardwareMap),
                     new SequentialCommandGroup(
-//                        new ParallelCommandGroup(
-//                                new SequentialCommandGroup(
-//                                        new InstantCommand(() -> currSpindexerGotoSpot = 0),
-//                                        new WaitCommand(2000),
-//                                        new InstantCommand(() -> currSpindexerGotoSpot = -1)
-//                                ),
-                                getToLineNum(IntakeLine.CORNER),
-//                        ),
                         new FollowPathCommand(follower, toIntakeLineCornerStart, true, intakeCornerDrivePower),
-                        new WaitCommand(500),
                         new FollowPathCommand(follower, toIntakeLineCornerEnd, true, intakeCornerDrivePower),
                         new WaitCommand(1000),
                         new FollowPathCommand(follower, toIntakeLineCornerBack, true, intakeCornerDrivePower),
-                        new WaitCommand(500),
                         new FollowPathCommand(follower, toIntakeLineCornerEnd2, true, intakeCornerDrivePower),
                         new WaitCommand(2000)
                     )
