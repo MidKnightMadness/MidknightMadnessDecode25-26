@@ -5,63 +5,64 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.Path;
-import com.pedropathing.geometry.BezierLine;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
-import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
-import com.seattlesolvers.solverslib.command.RepeatCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
-import com.seattlesolvers.solverslib.command.WaitUntilCommand;
+
 import org.firstinspires.ftc.teamcode.commands.FollowPathCommand;
 
 import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommand3;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.tests.camera.CamCommand;
-import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommand;
-import org.firstinspires.ftc.teamcode.commands.pathing.SchedulePathTo;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 @Config
 @Configurable
 
-@Autonomous(name = "Camtestautomaybe", group = "Test")
-public class CamAutoTestTemporaryDeleteLaterMaybe extends BaseAuto {
+@Autonomous(name = "Prev Cam Auto Intake", group = "Test")
+public class PreviousCameraAutoIntake extends BaseAuto {
     int limelightPipelineStart = 3;//CHANGE THIS
-    public static Pose startPose = new Pose(88, 8, Math.toRadians(270));//CHANGE THIS
+    public static Pose startPose = new Pose(72, 8, Math.toRadians(0));//CHANGE THIS
     CamCommand cam;
-    /*@Override
+    @Override
     protected Command preMotifSequence(){
         cam = new CamCommand(limelight, follower);
         return cam;
-    }*/
+    }
 
+    public static double targetX = 130;
     @Override
     protected boolean isVisionComplete(){
         return cam.isFinished();
     }
 
+    public static boolean drive = true;
+    public static double inBetweenTime = 200;
 
     @Override
     protected Command postMotifSequence() {
-        cam = new CamCommand(limelight, follower);
+        //CamCommand cam = new CamCommand(limelight, follower);
 
-        return new SequentialCommandGroup(
-                strafeLeft(5),
-                cam,
-                buildBallPathSequence(cam),
-                goBack(),
-                strafeLeft(5),
-                cam,
-                buildBallPathSequence(cam),
-                goBack(),
-                strafeLeft(5),
-                cam,
-                buildBallPathSequence(cam),
-                goBack()
-        );
+        if(drive){
+            return new ParallelCommandGroup(
+                    buildBallPathSequence(cam),
+                    new AutoIntakeCommand3(spindexer, intake, 0.8, inBetweenTime, true, hardwareMap)
+            );
+        }
+        return new InstantCommand();// new SequentialCommandGroup(
+                /*
+
+                //runs camera and movementing until it finds balls
+                        new RepeatCommand(cam),//does the camera thing
+                        new RepeatCommand(strafeLeftRight(8)),//moves around so you can detect balls
+                        new WaitUntilCommand(() -> !cam.finalBallList.isEmpty())
+
+*/
+        //when balls are found you go to them
+//                buildBallPathSequence(cam);
+        //);
     }
     /*
     @Override
@@ -111,22 +112,27 @@ public class CamAutoTestTemporaryDeleteLaterMaybe extends BaseAuto {
             parallel.addCommands(new FollowPathCommand(follower, camera.getList(follower)));
         }
         */
-        if(camera.getList(follower)!= null && camera.getList(follower).getPath(0)!= null) {
-            return new FollowPathCommand(follower, camera.getList(follower).getPath(0));
+        if(camera.getList(follower, targetX)!= null && camera.getList(follower, targetX).getPath(0)!= null) {
+            return new FollowPathCommand(follower, camera.getList(follower, targetX).getPath(0));
         } else{
             return new InstantCommand();
         }
     }
-    private Command strafeLeft(double distance){
+    private Command strafeLeftRight(double distance){
         Pose botPose = follower.getPose();
-        Pose leftPose = new Pose(botPose.getX(), botPose.getY()+distance, botPose.getHeading());
-        return new FollowPathCommand(follower, leftPose, 0.5);//this moves left
 
-    }
-    private Command goBack(){
-        Pose botPose = follower.getPose();
-        Pose backPose = new Pose(92, botPose.getY(), botPose.getHeading());
-        return new FollowPathCommand(follower, backPose, 0.5);
+        double leftX = -1 * distance * Math.cos(Math.toRadians(90-botPose.getHeading()));//the amount left you have to go to go left
+        double leftY = distance * Math.sin(Math.toRadians(90-botPose.getHeading()));//amount up you go to go left
+        Pose leftPose = new Pose(leftX, leftY, botPose.getHeading());//gets pose from that
+
+//        double rightX = distance * Math.cos(Math.toRadians(90-botPose.getHeading()));//amount right to go right
+//        double rightY = -1 * distance * Math.sin(Math.toRadians(90-botPose.getHeading()));//amount down to go right
+//        Pose rightPose = new Pose(rightX, rightY, botPose.getHeading());//gets pose from that
+
+        return new SequentialCommandGroup(
+                new FollowPathCommand(follower, leftPose, 0.5)//this moves left
+//                new FollowPathCommand(follower, rightPose, 0.5)//this moves right
+        );
     }
 
     @Override
@@ -154,20 +160,24 @@ public class CamAutoTestTemporaryDeleteLaterMaybe extends BaseAuto {
         }
         telemetry.addData("Robot position", follower.getPose());
         telemetry.update();
-        if(cam.getList(follower) == null || cam.getList(follower).getPath(0)== null) {
+        if(cam != null && cam.getList(follower, targetX) == null || cam.getList(follower, targetX).getPath(0)== null) {
             telemetry.addData("first one is null", "null");
         }
         else{
-            telemetry.addData("start", cam.getList(follower).getPath(0).getPose(0));
-            telemetry.addData("final", cam.getList(follower).getPath(0).getPose(0));
-            telemetry.addData("closest", cam.getMinBallPose().getX());
-            telemetry.addData("closest", cam.getMinBallPose().getX());
+//            telemetry.addData("start", cam.getList(follower).getPath(0).getPose(0));
+//            telemetry.addData("final", cam.getList(follower).getPath(0).getPose(1));
+//            telemetry.addData("closest", cam.getMinBallPose().getX());
+//            telemetry.addData("closest", cam.getMinBallPose().getY());
             for(Pose pose : cam.getFinalBallList()){
-                telemetry.addData("pose X", pose.getX());
-                telemetry.addData("pose y", pose.getY());
+                telemetry.addData("pose", pose);
             }
-            telemetry.addData("homography pose", cam.getHomographyPose());
+
+            telemetry.addLine("GLOBAL");
+            for(Pose pose : cam.getFinalGlobalPoseList()){
+                telemetry.addData("pose", pose);
+            }
         }
         follower.update();
     }
 }
+

@@ -116,8 +116,8 @@ public class TwoWheelShooter extends SubsystemBase {
     public TwoWheelShooter(HardwareMap hardwareMap, RunMode runMode) {
         low = new MotorEx(hardwareMap, ConfigNames.lowFlywheelMotor);
         high = new MotorEx(hardwareMap, ConfigNames.highFlywheelMotor);
-        low.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
-        high.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
+        low.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        high.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
 //        low.motorEx.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 //        high.motorEx.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 

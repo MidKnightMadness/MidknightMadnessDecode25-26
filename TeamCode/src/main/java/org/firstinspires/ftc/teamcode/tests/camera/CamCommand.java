@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.tests.camera;
 
+import com.acmerobotics.dashboard.config.Config;
+import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
@@ -13,12 +15,16 @@ import com.seattlesolvers.solverslib.command.CommandBase;
 import java.util.ArrayList;
 import java.util.List;
 
+@Config
+@Configurable
 public class CamCommand extends CommandBase {
 
     public CamCommand(Limelight3A limelight, Follower follower){
         this.limelight = limelight;
         this.follower = follower;
         ballList = new ArrayList<>();
+        globalPoseList = new ArrayList<>();
+        finalGlobalPoseList = new ArrayList<>();
         finalBallList = new ArrayList<>();
 
     }
@@ -41,12 +47,16 @@ public class CamCommand extends CommandBase {
     private static final double PPI = 96;
     private static double hOffset = -3.5;
     private static double vOffset = 15;
+    public static double intakeFromCenterY = 0;
+    public static double intakeFromCenterX = 8.5;
     private final double[][] H = {
             {5.828680, 1.841763, -3515.724491},
             {0.052028, 13.011093, -4470.243506},
             {0.000090, 0.003892, 1.000000}
     };
 
+    ArrayList<Pose> globalPoseList;
+    ArrayList<Pose> finalGlobalPoseList;
 
     private static double distanceBot(Pose pose) {
         return Math.sqrt(pose.getX() * pose.getX() + pose.getY() * pose.getY());
@@ -69,22 +79,33 @@ public class CamCommand extends CommandBase {
 
     }
     private Pose coordRobotToField(Follower follower, Pose poseBall){
+        follower.update();
         Pose botPose = follower.getPose();
-        double hBallF = botPose.getHeading()-(Math.PI/2)+poseBall.getHeading();
-        double distance = distanceBot(poseBall);
+//        double dist = distanceBot(poseBall);
 
-        double x = Math.cos(Math.toRadians(hBallF)) * distance;//from bot but in field
-        double y = Math.sin(Math.toRadians(hBallF)) * distance;
+//        double xb = dist * Math.cos(poseBall.getHeading());
+//        double yb = dist * Math.sin(poseBall.getHeading());
+        double xb = poseBall.getY();
+        double yb = -poseBall.getX();
+        if(xb < 4){
+            xb += 5;
+        } if(yb < 4){
+            yb += 5;
+        }
 
-        x += botPose.getX();
-        y += botPose.getY();
+        double x = botPose.getX() + Math.cos(botPose.getHeading()) * xb - Math.sin(botPose.getHeading()) * yb;//from bot but in field
+        double y = botPose.getY() + Math.sin(botPose.getHeading()) * xb + Math.cos(botPose.getHeading()) * yb;
 
-        return new Pose(x, y, hBallF);
+        x -= (intakeFromCenterX * Math.cos(botPose.getHeading()) - Math.sin(botPose.getHeading()) * intakeFromCenterY);
+        y -= (intakeFromCenterX * Math.sin(botPose.getHeading()) + Math.cos(botPose.getHeading()) * intakeFromCenterY);
+
+
+        return new Pose(x, y, botPose.getHeading());
     }
+
 
     @Override
     public void initialize() {
-
         limelight.setPollRateHz(400); //default 100
         limelight.start();
         limelight.pipelineSwitch(3);
@@ -92,7 +113,6 @@ public class CamCommand extends CommandBase {
         minY = Double.MAX_VALUE;
         minD = Double.MAX_VALUE;
         minBall = new Pose(Double.MAX_VALUE, Double.MAX_VALUE);
-
     }
 
     @Override
@@ -104,24 +124,31 @@ public class CamCommand extends CommandBase {
 
         if (result != null && detections != null && !detections.isEmpty()) {
             for (LLResultTypes.DetectorResult detection : detections) {
-                String className = detection.getClassName(); // What was detected
+//                String className = detection.getClassName(); // What was detected
                 double x = detection.getTargetXDegrees(); // Where it is (left-right)
                 double y = detection.getTargetYDegrees(); // Where it is (up-down)
                 ballPose = processHomography(x, y);
-                if (distanceBot(ballPose) < minD) {
-                    minBall = new Pose(ballPose.getX(), ballPose.getY(), 0);
-                    minBall = coordRobotToField(follower, ballPose);
-                    minD = distanceBot(ballPose);
-                }
-                ballPose = coordRobotToField(follower, ballPose);
+
                 ballList.add(ballPose);
+                globalPoseList.add(coordRobotToField(follower, ballPose));
+
+//                if (distanceBot(ballPose) < minD) {
+//                    minBall = new Pose(ballPose.getX(), ballPose.getY(), 0);
+//                    minBall = coordRobotToField(follower, ballPose);
+//                    minD = distanceBot(ballPose);
+//                }
             }
             minD = Double.MAX_VALUE;
 
             finalBallList = new ArrayList<>(ballList);
+            finalGlobalPoseList = new ArrayList<>(globalPoseList);
             ballList.clear();
+            globalPoseList.clear();
 
         }
+    }
+    public ArrayList<Pose> getFinalGlobalPoseList(){
+        return finalGlobalPoseList;
     }
 
     public ArrayList<Pose> getFinalBallList(){
@@ -129,35 +156,44 @@ public class CamCommand extends CommandBase {
     }
     @Override
     public boolean isFinished(){//manually do it in auto
-        if(!finalBallList.isEmpty()){
+        if(!finalGlobalPoseList.isEmpty()){
             return true;
         } return false;
     }
+
     public Pose getMinBallPose(){
         return minBall;
     }
 
-    public PathChain getList(Follower follower){
-        if(finalBallList == null || finalBallList.isEmpty()){
+    public PathChain getList(Follower follower, double targetX){
+        if(finalGlobalPoseList == null || finalGlobalPoseList.size() < 1){
             return null;
         }
 
-        ArrayList<Pose> balls = new ArrayList<>(finalBallList);
-        ArrayList<Path> lineList = new ArrayList<>();
-
-        for(int i = 0; i < balls.size() - 1; i++){
-            if(i == 0){
-                lineList.add(new Path(
-                        new BezierLine(follower.getPose(), balls.get(0))
-                ));
-            } else {
-                lineList.add(new Path(
-                        new BezierLine(balls.get(i), balls.get(i + 1))
-                ));
-            }
+        // ✅ SNAPSHOT
+        ArrayList<Pose> balls = new ArrayList<>(finalGlobalPoseList);
+        ArrayList<PathChain> lineList = new ArrayList<>();
+//
+//        for(int i = 0; i < balls.size(); i++){
+//            if(i == 0) {
+                Pose correctTargetPose = new Pose(targetX, balls.get(0).getY(), balls.get(0).getHeading());
+                PathChain path = follower.pathBuilder()
+                        .addPath(new BezierLine(follower.getPose(), correctTargetPose))
+                        .setLinearHeadingInterpolation(follower.getPose().getHeading(), correctTargetPose.getHeading())
+                        .build();
+                lineList.add(path);
+//            }
+//            } else {
+//                lineList.add(new Path(
+//                        new BezierLine(balls.get(i), balls.get(i + 1))
+//                ));
+//            }
+//        }
+        if(lineList.size() == 0){
+            return null;
+        } else{
+            return lineList.get(0);
         }
-
-        return new PathChain(lineList.toArray(new Path[0]));
     }
     public Pose getHomographyPose(){
         if(finalBallList.get(0) != null) {

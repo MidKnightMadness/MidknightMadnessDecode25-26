@@ -486,7 +486,7 @@ public class MainTeleOp extends CommandOpMode {
 
 
         if(readyToShootLight != null) {
-            GobildaLightBlock.Color targetReadyToShoot = readyToShoot ? GobildaLightBlock.Color.GREEN : GobildaLightBlock.Color.ORANGE;
+            GobildaLightBlock.Color targetReadyToShoot = headingError <= Math.toRadians(1) ? GobildaLightBlock.Color.GREEN : GobildaLightBlock.Color.ORANGE;
             if(targetReadyToShoot != readyToShootColor) {
                 readyToShootLight.setColor(targetReadyToShoot);
                 readyToShootColor = targetReadyToShoot;
@@ -852,7 +852,7 @@ public class MainTeleOp extends CommandOpMode {
 //                hasRumbledreadyToShoot = false;
 //            }
 
-            if (readyToShoot && turnPower == 0 && aligned) {
+            if (readyToShoot && headingError <= Math.toRadians(1) && aligned) {
                 gamepad1.rumble(100);
                 gamepad2.rumble(100);
 //                hasRumbledAligned = true;
