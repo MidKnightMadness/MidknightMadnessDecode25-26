@@ -12,6 +12,8 @@ import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.seattlesolvers.solverslib.command.CommandBase;
 
+import org.firstinspires.ftc.teamcode.util.Timer;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,6 +51,9 @@ public class CamCommand extends CommandBase {
     private static double vOffset = 15;
     public static double intakeFromCenterY = 0;
     public static double intakeFromCenterX = 8.5;
+    public static double minBallDetect = 2;
+    Timer timer;
+//    long minWaitTime = 500;
     private final double[][] H = {
             {5.828680, 1.841763, -3515.724491},
             {0.052028, 13.011093, -4470.243506},
@@ -113,6 +118,7 @@ public class CamCommand extends CommandBase {
         minY = Double.MAX_VALUE;
         minD = Double.MAX_VALUE;
         minBall = new Pose(Double.MAX_VALUE, Double.MAX_VALUE);
+        timer = new Timer();
     }
 
     @Override
@@ -154,11 +160,17 @@ public class CamCommand extends CommandBase {
     public ArrayList<Pose> getFinalBallList(){
         return finalBallList;
     }
+    boolean start = false;
+    double startTime = 0;
     @Override
     public boolean isFinished(){//manually do it in auto
-        if(!finalGlobalPoseList.isEmpty()){
+        if(finalGlobalPoseList != null && finalGlobalPoseList.size() >= minBallDetect){
             return true;
         } return false;
+//            start = true;
+//            startTime = timer.getTime();
+//        }
+//        return (start && timer.getDeltaTime() - startTime >= minWaitTime);
     }
 
     public Pose getMinBallPose(){
@@ -166,34 +178,20 @@ public class CamCommand extends CommandBase {
     }
 
     public PathChain getList(Follower follower, double targetX){
-        if(finalGlobalPoseList == null || finalGlobalPoseList.size() < 1){
+        if(finalGlobalPoseList == null || finalGlobalPoseList.size() < minBallDetect){
             return null;
         }
 
-        // ✅ SNAPSHOT
         ArrayList<Pose> balls = new ArrayList<>(finalGlobalPoseList);
-        ArrayList<PathChain> lineList = new ArrayList<>();
-//
-//        for(int i = 0; i < balls.size(); i++){
-//            if(i == 0) {
-                Pose correctTargetPose = new Pose(targetX, balls.get(0).getY(), balls.get(0).getHeading());
-                PathChain path = follower.pathBuilder()
-                        .addPath(new BezierLine(follower.getPose(), correctTargetPose))
-                        .setLinearHeadingInterpolation(follower.getPose().getHeading(), correctTargetPose.getHeading())
-                        .build();
-                lineList.add(path);
-//            }
-//            } else {
-//                lineList.add(new Path(
-//                        new BezierLine(balls.get(i), balls.get(i + 1))
-//                ));
-//            }
-//        }
-        if(lineList.size() == 0){
-            return null;
-        } else{
-            return lineList.get(0);
-        }
+
+
+        Pose correctTargetPose = new Pose(targetX, balls.get(0).getY(), balls.get(0).getHeading());
+        PathChain path = follower.pathBuilder()
+                .addPath(new BezierLine(follower.getPose(), correctTargetPose))
+                .setLinearHeadingInterpolation(follower.getPose().getHeading(), correctTargetPose.getHeading())
+                .build();
+
+        return path;
     }
     public Pose getHomographyPose(){
         if(finalBallList.get(0) != null) {

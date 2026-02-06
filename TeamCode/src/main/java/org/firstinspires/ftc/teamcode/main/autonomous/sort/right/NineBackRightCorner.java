@@ -681,7 +681,8 @@ public class NineBackRightCorner extends BaseAuto {
                 new ParallelRaceGroup(
                     new AutoIntakeCommand3(spindexer, intake, cornerIntakePower, inBetweenTime, useDistanceSensor, hardwareMap),
                     new SequentialCommandGroup(
-                        new FollowPathCommand(follower, toIntakeLineCornerStart, true, intakeCornerDrivePower),
+//                        new FollowPathCommand(follower, toIntakeLineCornerStart, true, intakeCornerDrivePower),
+                            getToLineNum(IntakeLine.CORNER),
                         new FollowPathCommand(follower, toIntakeLineCornerEnd, true, intakeCornerDrivePower),
                         new WaitCommand(1000),
                         new FollowPathCommand(follower, toIntakeLineCornerBack, true, intakeCornerDrivePower),

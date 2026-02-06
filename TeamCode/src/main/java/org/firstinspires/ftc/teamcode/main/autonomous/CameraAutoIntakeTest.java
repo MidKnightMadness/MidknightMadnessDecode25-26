@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.pedropathing.geometry.Pose;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
+import com.seattlesolvers.solverslib.command.DeferredCommand;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
@@ -25,6 +26,9 @@ import org.firstinspires.ftc.teamcode.tests.camera.CamCommand;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
+
+import java.util.ArrayList;
+
 @Config
 @Configurable
 @Autonomous(name = "Camera Auto Intake Test", group = "Test")
@@ -39,7 +43,7 @@ public class CameraAutoIntakeTest extends BaseAuto {
     CamCommand cam;
 
     public static double robotSpeed = 0.5;
-    public static double targetX = 130;
+    public static double targetX = 134;
 
 
     public static boolean drive = true;
@@ -53,8 +57,8 @@ public class CameraAutoIntakeTest extends BaseAuto {
     Pose targetPose;
     BallColor[] ballColors;
     public static boolean useBulkMode = false;
-    public static long waitBetweenStrafe = 200;
-    public static long waitIntakeTimeout = 200;
+    public static long waitBetweenStrafe = 100;
+    public static long waitIntakeTimeout = 3000;
     public static double strafeDistancePer = 10;
 
     PathChain driveToStartPath;
@@ -114,16 +118,16 @@ public class CameraAutoIntakeTest extends BaseAuto {
                             new InstantCommand(()-> camDetect = true)
                         ),
                         new SequentialCommandGroup(
-                            strafeNumber(1),
-                            new WaitCommand(waitBetweenStrafe),
-                            strafeNumber(2),
-                            new WaitCommand(waitBetweenStrafe),
-                            strafeNumber(3),
-                            new WaitCommand(waitBetweenStrafe),
-                            strafeNumber(4)
+                            strafeNumber(1)
+//                            new WaitCommand(waitBetweenStrafe),
+////                            strafeNumber(2),
+//                            new WaitCommand(waitBetweenStrafe),
+//                            strafeNumber(3),
+//                            new WaitCommand(waitBetweenStrafe),
+//                            strafeNumber(4)
                         )
                 ),
-//                new InstantCommand(() -> buildDrivePath()),
+//                new Insta,ntCommand(() -> buildDrivePath()),
                 intakeBall()
         );
     }
@@ -140,21 +144,21 @@ public class CameraAutoIntakeTest extends BaseAuto {
                 .setLinearHeadingInterpolation(startPose.getHeading(), startDetectPose.getHeading())
                 .build();
         strafe1Path = follower.pathBuilder()
-                .addPath(new BezierLine(startDetectPose, strafeOnePose))
-                .setLinearHeadingInterpolation(startDetectPose.getHeading(), strafeOnePose.getHeading())
+                .addPath(new BezierLine(startDetectPose, strafeFourPose))
+                .setLinearHeadingInterpolation(startDetectPose.getHeading(), strafeFourPose.getHeading())
                 .build();
-        strafe2Path = follower.pathBuilder()
-                .addPath(new BezierLine(strafeOnePose, strafeTwoPose))
-                .setLinearHeadingInterpolation(strafeOnePose.getHeading(), strafeTwoPose.getHeading())
-                .build();
-        strafe3Path = follower.pathBuilder()
-                .addPath(new BezierLine(strafeTwoPose, strafeThreePose))
-                .setLinearHeadingInterpolation(strafeTwoPose.getHeading(), strafeThreePose.getHeading())
-                .build();
-        strafe4Path = follower.pathBuilder()
-                .addPath(new BezierLine(strafeThreePose, strafeFourPose))
-                .setLinearHeadingInterpolation(strafeThreePose.getHeading(), strafeFourPose.getHeading())
-                .build();
+//        strafe2Path = follower.pathBuilder()
+//                .addPath(new BezierLine(strafeOnePose, strafeTwoPose))
+//                .setLinearHeadingInterpolation(strafeOnePose.getHeading(), strafeTwoPose.getHeading())
+//                .build();
+//        strafe3Path = follower.pathBuilder()
+//                .addPath(new BezierLine(strafeTwoPose, strafeThreePose))
+//                .setLinearHeadingInterpolation(strafeTwoPose.getHeading(), strafeThreePose.getHeading())
+//                .build();
+//        strafe4Path = follower.pathBuilder()
+//                .addPath(new BezierLine(strafeThreePose, strafeFourPose))
+//                .setLinearHeadingInterpolation(strafeThreePose.getHeading(), strafeFourPose.getHeading())
+//                .build();
 
     }
 
@@ -165,6 +169,7 @@ public class CameraAutoIntakeTest extends BaseAuto {
     boolean setPath = false;
     boolean camDetect;
 
+    boolean work = false;
     private Command buildBallPathSequence(CamCommand camera) {
         /*
         ParallelCommandGroup parallel = new ParallelCommandGroup();
@@ -173,8 +178,10 @@ public class CameraAutoIntakeTest extends BaseAuto {
             parallel.addCommands(new FollowPathCommand(follower, camera.getList(follower)));
         }
         */
-        if(camera.getList(follower, targetX)!= null && camera.getList(follower, targetX).getPath(0)!= null) {
-            return new FollowPathCommand(follower, camera.getList(follower, targetX).getPath(0), true, intakePower);
+        PathChain pathChain = camera.getList(follower, targetX);
+        if(pathChain!= null && pathChain.getPath(0)!= null) {
+            work = true;
+            return new FollowPathCommand(follower, pathChain.getPath(0), true, intakePower);
         } else{
             return new InstantCommand();
         }
@@ -182,20 +189,20 @@ public class CameraAutoIntakeTest extends BaseAuto {
     }
     public PathChain buildDrivePath(boolean camDetect){
         follower.update();
-//        if(camDetect) {
+        if(camDetect) {
             targetPose = new Pose(0, 0, 0);
             driveToPath = cam.getList(follower, targetX);
             setPath = true;
-//        }
-//        else{
-//            Pose currPose = follower.getPose();
-//            targetPose = new Pose(targetX, currPose.getY(), currPose.getHeading());
-//            driveToPath = follower.pathBuilder()
-//                    .addPath(new BezierLine(currPose, targetPose))
-//                    .setLinearHeadingInterpolation(currPose.getHeading(), targetPose.getHeading())
-//                    .build();
-//            setPath = false;
-//        }
+        }
+        else{
+            Pose currPose = follower.getPose();
+            targetPose = new Pose(targetX, currPose.getY(), currPose.getHeading());
+            driveToPath = follower.pathBuilder()
+                    .addPath(new BezierLine(currPose, targetPose))
+                    .setLinearHeadingInterpolation(currPose.getHeading(), targetPose.getHeading())
+                    .build();
+            setPath = false;
+        }
         return driveToPath;
     }
 
@@ -208,18 +215,18 @@ public class CameraAutoIntakeTest extends BaseAuto {
 //        }
 //      ballColors = spindexer.getBallColors();
 
+
+
     }
+    BuildPath buildPath;
 
     public Command intakeBall(){
-
-//        return new SequentialCommandGroup(
-//                buildDrivePath(),
+       buildPath = new BuildPath(follower, cam, targetX);
        return new ParallelRaceGroup(
             new AutoIntakeCommand3(spindexer, intake, intakePower, inBetweenTime, true, hardwareMap),
             new SequentialCommandGroup(
-                new WaitCommand(1000),
-//                new FollowPathCommand(follower, buildDrivePath(camDetect), true, robotSpeed),
-                buildBallPathSequence(cam),
+                buildPath,
+                new DeferredCommand(() -> new FollowPathCommand(follower, buildPath.getPathChain(), true, robotSpeed), null),
                 new WaitCommand(waitIntakeTimeout)
             )
         );
@@ -251,16 +258,15 @@ public class CameraAutoIntakeTest extends BaseAuto {
 
     @Override
     protected void updateTelemetry(){
-
+        telemetry.addData("Work", work);
         telemetry.addData("Camera Path", setPath);
-
         telemetry.addData("Update Rate", 1000.0 / gameTimer.getDeltaTime());
         telemetry.addData("Ball Detected", camDetect);
         if(cam != null) {
             telemetry.addData("CamCommand finished", cam.isFinished());
         }
         telemetry.addData("Robot position", follower.getPose());
-        telemetry.update();
+
         if(cam == null || cam.getList(follower, targetX) == null || cam.getList(follower, targetX).getPath(0)== null) {
             telemetry.addData("First", "null");
         }
@@ -275,11 +281,11 @@ public class CameraAutoIntakeTest extends BaseAuto {
             }
         }
 
-        if(cam != null && cam.getList(follower, targetX)== null){
-            telemetry.addLine("First Null");
-        } else if(cam != null && cam.getList(follower, targetX)== null){
-            telemetry.addLine("First Null");
-        }
+//        if(cam != null && cam.getList(follower, targetX)== null){
+//            telemetry.addLine("First Null");
+//        } else if(cam != null && cam.getList(follower, targetX)== null){
+//            telemetry.addLine("First Null");
+//        }
 
         if(targetPose!= null){
             telemetry.addData("Target Pose", targetPose);
@@ -289,6 +295,7 @@ public class CameraAutoIntakeTest extends BaseAuto {
             telemetry.addData("Ball Color 1", ballColors[1]);
             telemetry.addData("Ball Color 1", ballColors[2]);
         }
+        telemetry.update();
         follower.update();
     }
 }

@@ -117,8 +117,8 @@ public class MainTeleOp extends CommandOpMode {
     public static double currturnerSpeed = 0.3;//0.3 before
     double midTurnerSpeed = 0.5;
 
-    Pose leftTarget = new Pose(0, 144, Math.toRadians(45));
-    Pose rightTarget = new Pose(144, 144, Math.toRadians(-45));
+    Pose leftTarget = new Pose(4, 144, Math.toRadians(45));
+    Pose rightTarget = new Pose(140, 144, Math.toRadians(-45));
 
 
     boolean autoAlign = false;
@@ -606,9 +606,9 @@ public class MainTeleOp extends CommandOpMode {
         if (Math.abs(filteredHeadingError) > Math.toRadians(1.0)) {
             power += Math.signum(filteredHeadingError) * 0.04;
         }
-//        else{
-//            power = 0;
-//        }
+        else{
+            power = 0;
+        }
 
 
         return power;
@@ -616,7 +616,7 @@ public class MainTeleOp extends CommandOpMode {
     public double getAngleError(Pose position, Pose target, double positionHeading){
         double deltaY = target.getY() - position.getY();
         double deltaX = target.getX() - position.getX();
-        double heading = Math.atan2(deltaY, deltaX) + offsetRadians;
+        double heading = Math.atan2(deltaY, deltaX);
         heading = normAngle(heading);
         this.targetheading = heading;
         //heading is in absolute degrees

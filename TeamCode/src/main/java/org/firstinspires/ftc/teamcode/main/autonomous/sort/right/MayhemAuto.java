@@ -727,7 +727,7 @@ public class MayhemAuto extends BaseAuto {
 //                                ),
                                 getToLineNum(IntakeLine.CORNER),
 //                        ),
-                                new FollowPathCommand(follower, toIntakeLineCornerStart, true, intakeCornerDrivePower),
+//                                new FollowPathCommand(follower, toIntakeLineCornerStart, true, intakeCornerDrivePower),
                                 new WaitCommand(500),
                                 new FollowPathCommand(follower, toIntakeLineCornerEnd, true, intakeCornerDrivePower),
                                 new WaitCommand(1000),
