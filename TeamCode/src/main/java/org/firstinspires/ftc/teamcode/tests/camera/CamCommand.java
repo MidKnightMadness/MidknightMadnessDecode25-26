@@ -12,6 +12,7 @@ import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.seattlesolvers.solverslib.command.CommandBase;
 
+import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
 import java.util.ArrayList;
@@ -21,14 +22,14 @@ import java.util.List;
 @Configurable
 public class CamCommand extends CommandBase {
 
-    public CamCommand(Limelight3A limelight, Follower follower){
+    public CamCommand(Limelight3A limelight, Follower follower, ShootSide shootSide){
         this.limelight = limelight;
         this.follower = follower;
         ballList = new ArrayList<>();
         globalPoseList = new ArrayList<>();
         finalGlobalPoseList = new ArrayList<>();
         finalBallList = new ArrayList<>();
-
+        this.shootSide = shootSide;
     }
     ArrayList<Pose> ballList;
     public ArrayList<Pose> finalBallList;
@@ -51,6 +52,7 @@ public class CamCommand extends CommandBase {
     private static double vOffset = 15;
     public static double intakeFromCenterY = 0;
     public static double intakeFromCenterX = 8.5;
+    ShootSide shootSide;
     public static double minBallDetect = 2;
     Timer timer;
 //    long minWaitTime = 500;
@@ -101,9 +103,14 @@ public class CamCommand extends CommandBase {
         double x = botPose.getX() + Math.cos(botPose.getHeading()) * xb - Math.sin(botPose.getHeading()) * yb;//from bot but in field
         double y = botPose.getY() + Math.sin(botPose.getHeading()) * xb + Math.cos(botPose.getHeading()) * yb;
 
-        x -= (intakeFromCenterX * Math.cos(botPose.getHeading()) - Math.sin(botPose.getHeading()) * intakeFromCenterY);
-        y -= (intakeFromCenterX * Math.sin(botPose.getHeading()) + Math.cos(botPose.getHeading()) * intakeFromCenterY);
+        if(shootSide == ShootSide.RIGHT) {
+            x -= (intakeFromCenterX * Math.cos(botPose.getHeading()) - Math.sin(botPose.getHeading()) * intakeFromCenterY);
+            y -= (intakeFromCenterX * Math.sin(botPose.getHeading()) + Math.cos(botPose.getHeading()) * intakeFromCenterY);
+        } else{
+            x += (intakeFromCenterX * Math.cos(botPose.getHeading()) - Math.sin(botPose.getHeading()) * intakeFromCenterY);
+            y += (intakeFromCenterX * Math.sin(botPose.getHeading()) + Math.cos(botPose.getHeading()) * intakeFromCenterY);
 
+        }
 
         return new Pose(x, y, botPose.getHeading());
     }

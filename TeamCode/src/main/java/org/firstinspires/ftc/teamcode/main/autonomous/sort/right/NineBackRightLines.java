@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.util.RobotLog;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.ConditionalCommand;
+import com.seattlesolvers.solverslib.command.DeferredCommand;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
@@ -49,7 +50,7 @@ import java.util.Map;
 
 @Config
 @Configurable
-@Autonomous(name = "9 Far Right Lines", group = "Competition")
+@Autonomous(name = "9 BR 3 Lines", group = "Competition")
 public class NineBackRightLines extends BaseAuto {
     int objectDetectionPipeline = 3;
     public static Pose startPose = new Pose(86, 8.8, Math.toRadians(270));
@@ -134,8 +135,7 @@ public class NineBackRightLines extends BaseAuto {
     public void useLeftConstants(){
         if(getShootSide() == ShootSide.LEFT) {
             startPose = applyLeft(startPose);
-            shootPose = applyLeft(shootPose);
-            forwardPose = applyLeft(forwardPose);
+            shootPose = new Pose(144-83, 17, normAngle(Math.PI - Math.toRadians(254)));
             parkPose = applyLeft(parkPose);
             openGatePose = applyLeft(openGatePose);
             intakeCloseStartPose = applyLeft(intakeCloseStartPose);
@@ -146,8 +146,10 @@ public class NineBackRightLines extends BaseAuto {
             intakeFarEndPose = applyLeft(intakeFarEndPose);
             intakeCornerStartPose = applyLeft(intakeCornerStartPose);
             intakeCornerEndPose = applyLeft(intakeCornerEndPose);
+            intakeCornerStartPose2 = applyLeft(intakeCornerStartPose2);
+            intakeCornerEndPose2 = applyLeft(intakeCornerEndPose2);
+            closeShootPose = applyLeft(closeShootPose);
             shootSide = ShootSide.LEFT;
-
         }
     }
 
@@ -171,7 +173,9 @@ public class NineBackRightLines extends BaseAuto {
 
     @Override
     public Pose getStartPose(){
-        return startPose;
+        if(getShootSide() == shootSide) {
+            return startPose;
+        } return applyLeft(startPose);
     }
 
     @Override
@@ -566,7 +570,7 @@ public class NineBackRightLines extends BaseAuto {
                         )
                 ),
                 new InstantCommand(() -> currSpindexerGotoSpot = -1),
-                new WaitUntilShootReadyCommand(shooter, waitTime, lowFlywheelTol, highFlywheelTol),
+                new DeferredCommand(() -> new WaitUntilShootReadyCommand(shooter, waitTime, lowFlywheelTol, highFlywheelTol), null),
                 new InstantCommand(() -> spindexer.spin(1 * spindexerSpeed)),
                 new WaitCommand(powerFlywheelTime),
                 new InstantCommand(() -> continueShoot = false),
@@ -594,7 +598,7 @@ public class NineBackRightLines extends BaseAuto {
                         )
                 ),
                 new InstantCommand(() -> currSpindexerGotoSpot = -1),
-                new WaitUntilShootReadyCommand(shooter, waitTime, lowFlywheelTol, highFlywheelTol),
+                new DeferredCommand(() -> new WaitUntilShootReadyCommand(shooter, waitTime, lowFlywheelTol, highFlywheelTol), null),
                 new InstantCommand(() -> spindexer.spin(1 * spindexerSpeed)),
                 new WaitCommand(powerFlywheelTime),
                 new InstantCommand(() -> continueShoot = false),
@@ -617,7 +621,7 @@ public class NineBackRightLines extends BaseAuto {
                         )
                 ),
                 new InstantCommand(() -> currSpindexerGotoSpot = -1),
-                new WaitUntilShootReadyCommand(shooter, waitTime, lowFlywheelTol, highFlywheelTol),
+                new DeferredCommand(() -> new WaitUntilShootReadyCommand(shooter, waitTime, lowFlywheelTol, highFlywheelTol), null),
                 new InstantCommand(() -> spindexer.spin(1 * spindexerSpeed)),
                 new WaitCommand(powerFlywheelTime),
                 new InstantCommand(() -> continueShoot = false),

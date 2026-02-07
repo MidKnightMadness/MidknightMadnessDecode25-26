@@ -22,6 +22,7 @@ import org.firstinspires.ftc.teamcode.commands.FollowPathCommand;
 
 import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommand3;
 import org.firstinspires.ftc.teamcode.game.BallColor;
+import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.tests.camera.CamCommand;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
@@ -67,6 +68,7 @@ public class CameraAutoIntakeTest extends BaseAuto {
     PathChain strafe2Path;
     PathChain strafe3Path;
     PathChain strafe4Path;
+    public static ShootSide shootSide = ShootSide.RIGHT;
 
     @Override
     protected Pose getStartPose(){
@@ -108,7 +110,7 @@ public class CameraAutoIntakeTest extends BaseAuto {
 
     @Override
     protected Command postMotifSequence() {
-        cam = new CamCommand(limelight, follower);
+        cam = new CamCommand(limelight, follower, shootSide);
         return new SequentialCommandGroup(
                 driveToStartViewPosition(),
                 new WaitCommand(200),
@@ -219,9 +221,10 @@ public class CameraAutoIntakeTest extends BaseAuto {
 
     }
     BuildPath buildPath;
+    Pose failsafePose = new Pose(72, 8, Math.toRadians(90));
 
     public Command intakeBall(){
-       buildPath = new BuildPath(follower, cam, targetX);
+       buildPath = new BuildPath(follower, cam, targetX, failsafePose);
        return new ParallelRaceGroup(
             new AutoIntakeCommand3(spindexer, intake, intakePower, inBetweenTime, true, hardwareMap),
             new SequentialCommandGroup(

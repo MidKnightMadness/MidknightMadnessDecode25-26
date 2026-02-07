@@ -12,6 +12,7 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.ConditionalCommand;
@@ -45,6 +46,7 @@ import java.util.Map;
 
 @Config
 @Configurable
+@Disabled
 @Autonomous(name = "Custom 3 Ball Back ", group = "Competition")
 public class ThreeBackRightAuto extends BaseAuto {
     public static double motifDetectionTimeMs = 3000;

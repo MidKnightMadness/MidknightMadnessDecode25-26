@@ -149,7 +149,9 @@ public class CornerAutoCycle extends BaseAuto {
 
     @Override
     public Pose getStartPose(){
-        return startPose;
+        if(getShootSide() == shootSide) {
+            return startPose;
+        } return applyLeft(startPose);
     }
 
     @Override

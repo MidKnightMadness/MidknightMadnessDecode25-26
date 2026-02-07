@@ -49,8 +49,8 @@ import java.util.Map;
 
 @Config
 @Configurable
-@Autonomous(name = "Mayhem 9 Back Right Sort", group = "Competition")
-public class MayhemAuto extends BaseAuto {
+@Autonomous(name = "Mayhem 9 BR Park", group = "Competition")
+public class MayhemAutoParkBR extends BaseAuto {
     int objectDetectionPipeline = 3;
     public static Pose startPose = new Pose(86, 8.8, Math.toRadians(270));
     public static Pose shootPose = new Pose(83, 17, Math.toRadians(249));
@@ -135,7 +135,6 @@ public class MayhemAuto extends BaseAuto {
         if(getShootSide() == ShootSide.LEFT) {
             startPose = applyLeft(startPose);
             shootPose = applyLeft(shootPose);
-            forwardPose = applyLeft(forwardPose);
             parkPose = applyLeft(parkPose);
             openGatePose = applyLeft(openGatePose);
             intakeCloseStartPose = applyLeft(intakeCloseStartPose);
@@ -146,8 +145,10 @@ public class MayhemAuto extends BaseAuto {
             intakeFarEndPose = applyLeft(intakeFarEndPose);
             intakeCornerStartPose = applyLeft(intakeCornerStartPose);
             intakeCornerEndPose = applyLeft(intakeCornerEndPose);
+            intakeCornerStartPose2 = applyLeft(intakeCornerStartPose2);
+            intakeCornerEndPose2 = applyLeft(intakeCornerEndPose2);
+            closeShootPose = applyLeft(closeShootPose);
             shootSide = ShootSide.LEFT;
-
         }
     }
 
@@ -171,7 +172,9 @@ public class MayhemAuto extends BaseAuto {
 
     @Override
     public Pose getStartPose(){
-        return startPose;
+        if(getShootSide() == shootSide) {
+            return startPose;
+        } return applyLeft(startPose);
     }
 
     @Override
@@ -306,7 +309,6 @@ public class MayhemAuto extends BaseAuto {
         toShootPresets = buildPath(startPose, shootPose);
 
         toIntakeLineFarStart = buildPath(shootPose, intakeFarStartPose);
-
         toIntakeLineFarEnd = buildPath(intakeFarStartPose, intakeFarEndPose);
 
         toShootFromFar = buildPath(intakeFarEndPose, shootPose);
@@ -328,7 +330,7 @@ public class MayhemAuto extends BaseAuto {
 //
         toIntakeLineCloseEnd = buildPath(intakeCloseStartPose, intakeCloseEndPose);
 
-        toShootFromClose = buildPath(intakeCloseEndPose, shootPose);
+        toShootFromClose = buildPath(intakeCloseEndPose, closeShootPose);
         toShootCloseFromFar = buildPath(intakeFarEndPose, closeShootPose);
         toShootCloseFromMid = buildPath(intakeMidEndPose, closeShootPose);
         toShootCloseFromClose = buildPath(intakeFarEndPose, closeShootPose);
@@ -483,7 +485,6 @@ public class MayhemAuto extends BaseAuto {
         register(intake, shooter, spindexer, pushUpServo);
     }
 
-    public static long shootTime = 4000;
 
 
 
@@ -509,8 +510,10 @@ public class MayhemAuto extends BaseAuto {
 //
 //                intake(IntakeLine.MID),
 //                shootFromLines(IntakeLine.MID, maxWaitTillShoot)
-                park()
-
+                new ParallelCommandGroup(
+                    park(),
+                    new InstantCommand(()-> currSpindexerGotoSpot = 0)
+                )
         );
     }
 
@@ -535,7 +538,7 @@ public class MayhemAuto extends BaseAuto {
                     ),
                     () -> motifPattern == MotifEnums.Motif.GPP
             );
-        }  else {//middle
+        }  else {//middle & corner
             return new ConditionalCommand(
                     new InstantCommand(() -> currSpindexerGotoSpot = 2),
                     new ConditionalCommand(
@@ -719,20 +722,10 @@ public class MayhemAuto extends BaseAuto {
                 new ParallelRaceGroup(
                         new AutoIntakeCommand3(spindexer, intake, cornerIntakePower, inBetweenTime, useDistanceSensor, hardwareMap),
                         new SequentialCommandGroup(
-//                        new ParallelCommandGroup(
-//                                new SequentialCommandGroup(
-//                                        new InstantCommand(() -> currSpindexerGotoSpot = 0),
-//                                        new WaitCommand(2000),
-//                                        new InstantCommand(() -> currSpindexerGotoSpot = -1)
-//                                ),
                                 getToLineNum(IntakeLine.CORNER),
-//                        ),
-//                                new FollowPathCommand(follower, toIntakeLineCornerStart, true, intakeCornerDrivePower),
-                                new WaitCommand(500),
                                 new FollowPathCommand(follower, toIntakeLineCornerEnd, true, intakeCornerDrivePower),
                                 new WaitCommand(1000),
                                 new FollowPathCommand(follower, toIntakeLineCornerBack, true, intakeCornerDrivePower),
-                                new WaitCommand(500),
                                 new FollowPathCommand(follower, toIntakeLineCornerEnd2, true, intakeCornerDrivePower),
                                 new WaitCommand(2000)
                         )

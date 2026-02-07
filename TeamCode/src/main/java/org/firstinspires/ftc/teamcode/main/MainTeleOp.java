@@ -97,7 +97,7 @@ public class MainTeleOp extends CommandOpMode {
     double topShooterPower = 0.8;
     double botShooterPower = 0.6;
     WheelControl wheelControl;
-    boolean wheelControlUse = true;
+    public static boolean wheelControlUse = true;
     Pose toCloseLeftShoot = new Pose(57, 94, Math.toRadians(310));
     Pose toCloseRightShoot =  new Pose(87, 94, Math.toRadians(230));
     Pose toFarLeftShoot = new Pose(67, 17, Math.toRadians(300));
@@ -225,6 +225,8 @@ public class MainTeleOp extends CommandOpMode {
     public static double minArduTimeUpdate = 0;
     public static double autoSettleTime = 200;
     public static long autoIntakeTimeout = 10000;
+    public static Pose failsafeLeftPose = new Pose(8.85, 8, Math.toRadians(180));
+    public static Pose failsafeRightPose = new Pose(144-8.85, 8, Math.toRadians(0));
 
     @Override
     public void initialize() {
@@ -604,7 +606,7 @@ public class MainTeleOp extends CommandOpMode {
 //        }
 
         if (Math.abs(filteredHeadingError) > Math.toRadians(1.0)) {
-            power += Math.signum(filteredHeadingError) * 0.04;
+            power += Math.signum(filteredHeadingError) * 0.1;
         }
         else{
             power = 0;
@@ -696,6 +698,7 @@ public class MainTeleOp extends CommandOpMode {
         private void runGamepad1Comands(){
             currentPose = new Pose(follower.getPose().getX(), follower.getPose().getY(), Math.toDegrees(follower.getPose().getHeading()));
 
+            manualResetPose();
             setAlignTurnPower();
             driveRobot();//includes automations
             manualChangeShootSide();
@@ -704,7 +707,14 @@ public class MainTeleOp extends CommandOpMode {
             toggleAutoAlign();
             rumbleCloseToGate();
 
+        }
 
+        private void manualResetPose(){
+            if(gamepad1.left_trigger > 0.5){
+                follower.setPose(failsafeLeftPose);
+            } else if(gamepad1.right_trigger > 0.5){
+                follower.setPose(failsafeRightPose);
+            }
         }
         private void rumbleCloseToGate () {
             Pose[] check = null;

@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.util.RobotLog;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.ConditionalCommand;
+import com.seattlesolvers.solverslib.command.DeferredCommand;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
@@ -49,29 +50,26 @@ import java.util.Map;
 
 @Config
 @Configurable
-@Autonomous(name = "9 Far Right Sort", group = "Competition")
+@Autonomous(name = "9 BR Corner, 2 Line", group = "Competition")
 public class NineBackRightCorner extends BaseAuto {
     int objectDetectionPipeline = 3;
     public static Pose startPose = new Pose(86, 8.8, Math.toRadians(270));
     public static Pose shootPose = new Pose(83, 17, Math.toRadians(249));
 //    public static double shootOffset = Math.toRadians(2);
 //public static Pose shootPose = new Pose(84, 17, Math.toRadians(247));
-    public static Pose forwardPose = new Pose(88, 12, Math.toRadians(90));
     public static Pose parkPose = new Pose(86, 38, Math.toRadians(0));
     public static Pose openGatePose = new Pose(136, 76, Math.toRadians(180));
-    public static Pose intakeCloseStartPose = new Pose(99.5, 84, Math.toRadians(0));
+    public static Pose intakeCloseStartPose = new Pose(97, 84, Math.toRadians(0));
     public static Pose intakeCloseEndPose = new Pose(125, 84, Math.toRadians(0));
-    public static Pose intakeMidStartPose = new Pose(99.5, 58, Math.toRadians(0));
+    public static Pose intakeMidStartPose = new Pose(97, 58, Math.toRadians(0));
     public static Pose intakeMidEndPose = new Pose(129, 58, Math.toRadians(0));
-
-    public static Pose intakeFarStartPose = new Pose(99.5, 34, Math.toRadians(0));
+    public static Pose intakeFarStartPose = new Pose(97, 34, Math.toRadians(0));
     public static Pose intakeFarEndPose = new Pose(135, 34, Math.toRadians(0));
     public static Pose intakeCornerStartPose = new Pose(121, 11, Math.toRadians(0));
     public static Pose intakeCornerEndPose = new Pose(129, 11, Math.toRadians(0));
     public static Pose intakeCornerStartPose2 = new Pose(123, 6, Math.toRadians(0));
     public static Pose intakeCornerEndPose2 = new Pose(129, 6, Math.toRadians(0));
     public static Pose closeShootPose = new Pose(91.2, 84.6, Math.toRadians(230));
-
 
     public static long driveIntakeEndTime = 5000;
 
@@ -134,8 +132,7 @@ public class NineBackRightCorner extends BaseAuto {
     public void useLeftConstants(){
         if(getShootSide() == ShootSide.LEFT) {
             startPose = applyLeft(startPose);
-            shootPose = applyLeft(shootPose);
-            forwardPose = applyLeft(forwardPose);
+            shootPose = new Pose(144- shootPose.getX(), shootPose.getY(), normAngle(Math.PI - Math.toRadians(245)));
             parkPose = applyLeft(parkPose);
             openGatePose = applyLeft(openGatePose);
             intakeCloseStartPose = applyLeft(intakeCloseStartPose);
@@ -146,8 +143,10 @@ public class NineBackRightCorner extends BaseAuto {
             intakeFarEndPose = applyLeft(intakeFarEndPose);
             intakeCornerStartPose = applyLeft(intakeCornerStartPose);
             intakeCornerEndPose = applyLeft(intakeCornerEndPose);
+            intakeCornerStartPose2 = applyLeft(intakeCornerStartPose2);
+            intakeCornerEndPose2 = applyLeft(intakeCornerEndPose2);
+            closeShootPose = applyLeft(closeShootPose);
             shootSide = ShootSide.LEFT;
-
         }
     }
 
@@ -171,7 +170,9 @@ public class NineBackRightCorner extends BaseAuto {
 
     @Override
     public Pose getStartPose(){
-        return startPose;
+        if(getShootSide() == shootSide) {
+            return startPose;
+        } return applyLeft(startPose);
     }
 
     @Override
@@ -204,6 +205,7 @@ public class NineBackRightCorner extends BaseAuto {
     boolean finishedWritingMotif = false;
     boolean useDistanceSensor = true;
     public static double inBetweenTime = 150;
+    //TODO: FIND CORRECT VALUE
     public static boolean rawPowerOn = false;
     public static long powerFlywheelTime = 1000;
     int aprilTagID = 0;
@@ -306,7 +308,6 @@ public class NineBackRightCorner extends BaseAuto {
         toShootPresets = buildPath(startPose, shootPose);
 
         toIntakeLineFarStart = buildPath(shootPose, intakeFarStartPose);
-
         toIntakeLineFarEnd = buildPath(intakeFarStartPose, intakeFarEndPose);
 
         toShootFromFar = buildPath(intakeFarEndPose, shootPose);
@@ -328,7 +329,7 @@ public class NineBackRightCorner extends BaseAuto {
 //
         toIntakeLineCloseEnd = buildPath(intakeCloseStartPose, intakeCloseEndPose);
 
-        toShootFromClose = buildPath(intakeCloseEndPose, shootPose);
+        toShootFromClose = buildPath(intakeCloseEndPose, closeShootPose);
         toShootCloseFromFar = buildPath(intakeFarEndPose, closeShootPose);
         toShootCloseFromMid = buildPath(intakeMidEndPose, closeShootPose);
         toShootCloseFromClose = buildPath(intakeFarEndPose, closeShootPose);
@@ -483,7 +484,6 @@ public class NineBackRightCorner extends BaseAuto {
         register(intake, shooter, spindexer, pushUpServo);
     }
 
-    public static long shootTime = 4000;
 
 
 
@@ -509,9 +509,10 @@ public class NineBackRightCorner extends BaseAuto {
 //
 //                intake(IntakeLine.MID),
 //                shootFromLines(IntakeLine.MID, maxWaitTillShoot),
-                park(),
-                new InstantCommand(()-> currSpindexerGotoSpot = 0)
-
+                new ParallelCommandGroup(
+                        park(),
+                        new InstantCommand(()-> currSpindexerGotoSpot = 0)
+                )
         );
     }
 
@@ -536,7 +537,7 @@ public class NineBackRightCorner extends BaseAuto {
                     ),
                     () -> motifPattern == MotifEnums.Motif.GPP
             );
-        }  else {//middle
+        }  else {//middle & corner
             return new ConditionalCommand(
                     new InstantCommand(() -> currSpindexerGotoSpot = 2),
                     new ConditionalCommand(
@@ -568,7 +569,7 @@ public class NineBackRightCorner extends BaseAuto {
                         )
                 ),
                 new InstantCommand(() -> currSpindexerGotoSpot = -1),
-                new WaitUntilShootReadyCommand(shooter, waitTime, lowFlywheelTol, highFlywheelTol),
+                new DeferredCommand(() -> new WaitUntilShootReadyCommand(shooter, waitTime, lowFlywheelTol, highFlywheelTol), null),
                 new InstantCommand(() -> spindexer.spin(1 * spindexerSpeed)),
                 new WaitCommand(powerFlywheelTime),
                 new InstantCommand(() -> continueShoot = false),
@@ -596,7 +597,7 @@ public class NineBackRightCorner extends BaseAuto {
                         )
                 ),
                 new InstantCommand(() -> currSpindexerGotoSpot = -1),
-                new WaitUntilShootReadyCommand(shooter, waitTime, lowFlywheelTol, highFlywheelTol),
+                new DeferredCommand(() -> new WaitUntilShootReadyCommand(shooter, waitTime, lowFlywheelTol, highFlywheelTol), null),
                 new InstantCommand(() -> spindexer.spin(1 * spindexerSpeed)),
                 new WaitCommand(powerFlywheelTime),
                 new InstantCommand(() -> continueShoot = false),
@@ -612,7 +613,6 @@ public class NineBackRightCorner extends BaseAuto {
                 new ParallelCommandGroup(
                         getToShootCommandPreset(),
                         new SequentialCommandGroup(
-                                new WaitCommand(500),
                                 setSpindexerCorrect(IntakeLine.MID),
                                 new WaitCommand(1000),
                                 new InstantCommand(() -> continueShoot = true),
@@ -681,8 +681,7 @@ public class NineBackRightCorner extends BaseAuto {
                 new ParallelRaceGroup(
                     new AutoIntakeCommand3(spindexer, intake, cornerIntakePower, inBetweenTime, useDistanceSensor, hardwareMap),
                     new SequentialCommandGroup(
-//                        new FollowPathCommand(follower, toIntakeLineCornerStart, true, intakeCornerDrivePower),
-                            getToLineNum(IntakeLine.CORNER),
+                        getToLineNum(IntakeLine.CORNER),
                         new FollowPathCommand(follower, toIntakeLineCornerEnd, true, intakeCornerDrivePower),
                         new WaitCommand(1000),
                         new FollowPathCommand(follower, toIntakeLineCornerBack, true, intakeCornerDrivePower),

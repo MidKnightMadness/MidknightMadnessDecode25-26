@@ -14,6 +14,7 @@ import org.firstinspires.ftc.teamcode.commands.FollowPathCommand;
 
 import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommand3;
 import org.firstinspires.ftc.teamcode.game.BallColor;
+import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.tests.camera.CamCommand;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
@@ -26,9 +27,10 @@ public class PreviousCameraAutoIntake extends BaseAuto {
     int limelightPipelineStart = 3;//CHANGE THIS
     public static Pose startPose = new Pose(72, 8, Math.toRadians(0));//CHANGE THIS
     CamCommand cam;
+    public static ShootSide shootSide = ShootSide.RIGHT;
     @Override
     protected Command preMotifSequence(){
-        cam = new CamCommand(limelight, follower);
+        cam = new CamCommand(limelight, follower, shootSide);
         return cam;
     }
 
