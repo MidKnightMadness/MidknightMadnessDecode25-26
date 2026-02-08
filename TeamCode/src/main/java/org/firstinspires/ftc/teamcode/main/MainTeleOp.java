@@ -15,6 +15,7 @@ import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ReadWriteFile;
@@ -194,7 +195,7 @@ public class MainTeleOp extends CommandOpMode {
     boolean useLUT = false;
     boolean voltageCompensation = false;
 
-    public static double powerAutoIntake = 0.8;
+    public static double powerAutoIntake = 0.93;
 
     Pose[] leftGateBounds = new Pose[]{new Pose(14, 52, 0), new Pose(45, 85, 0)};
     Pose[] rightGateBounds = new Pose[]{new Pose(99, 52, 0), new Pose(130, 85, 0)};
@@ -844,13 +845,20 @@ public class MainTeleOp extends CommandOpMode {
             setBallColorsDefault();
 //        rumbleAllOccuppiedBalls();
             rumbleReadyToShoot();
+            resetSpindexer();
         }
 
+        private void resetSpindexer(){
+            if(gamepad2.rightStickButtonWasPressed()){
+                spindexer.getTurnerEncoder().encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                spindexer.getTurnerEncoder().encoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            }
+        }
         boolean hasRumbledreadyToShoot = false;
         boolean hasRumbledAligned = false;
         boolean aligned = false;
 
-        private void rumbleReadyToShoot () {
+        private void rumbleReadyToShoot() {
             //aligned and right velocity
             readyToShoot = shooter.readyToShoot();
             aligned = autoAlign;

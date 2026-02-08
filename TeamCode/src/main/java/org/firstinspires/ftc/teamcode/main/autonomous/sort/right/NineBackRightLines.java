@@ -10,6 +10,7 @@ import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
@@ -50,6 +51,7 @@ import java.util.Map;
 
 @Config
 @Configurable
+@Disabled
 @Autonomous(name = "9 BR 3 Lines", group = "Competition")
 public class NineBackRightLines extends BaseAuto {
     int objectDetectionPipeline = 3;
@@ -209,10 +211,10 @@ public class NineBackRightLines extends BaseAuto {
     boolean useDistanceSensor = true;
     public static double inBetweenTime = 200;
     public static boolean rawPowerOn = false;
-    public static long powerFlywheelTime = 1000;
+    public static long powerFlywheelTime = 1200;
     int aprilTagID = 0;
     public static long timeoutCorner = 100;
-    public static double intakeDrivePower = 0.3;
+    public static double intakeDrivePower = 0.45;
     public static double intakeCornerDrivePower = 0.6;
     int currSpindexerGotoSpot = -1;
     public static double spindexerSpeed = 0.7;

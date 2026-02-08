@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.main.autonomous.sort.leftCopies;
+package org.firstinspires.ftc.teamcode.main.autonomous.sort.right;
 
 import android.os.Environment;
 
@@ -55,8 +55,8 @@ import java.util.Map;
 
 @Config
 @Configurable
-@Autonomous(name = "Mayhem Park BL", group = "Competition")
-public class MayhemAutoParkBL extends BaseAuto {
+@Autonomous(name = "Mayhem BR Cam Slow Intake", group = "Competition")
+public class MayhemAutoCamBRSlowIntake extends BaseAuto {
     int objectDetectionPipeline = 3;
     public static Pose startPose = new Pose(86, 8.8, Math.toRadians(270));
     public static Pose shootPose = new Pose(83, 17, Math.toRadians(249));
@@ -85,7 +85,7 @@ public class MayhemAutoParkBL extends BaseAuto {
 
 
     MotifEnums.Motif motifPattern = MotifEnums.Motif.NONE;
-    ShootSide shootSide = ShootSide.LEFT;
+    ShootSide shootSide = ShootSide.RIGHT;
     Pose currentPose = startPose;
     public static long firstWaitTime = 700;
     public static long secondWaitTime = 500;
@@ -142,7 +142,7 @@ public class MayhemAutoParkBL extends BaseAuto {
     boolean isReadyToShoot;
 
     public void useLeftConstants(){
-        if(shootSide == ShootSide.LEFT) {
+        if(shootSide== ShootSide.LEFT) {
 //            startPose = applyLeft(startPose);
             shootPose = new Pose(144- shootPose.getX(), shootPose.getY(), normAngle(Math.PI - Math.toRadians(245)));
             parkPose = applyLeft(parkPose);
@@ -161,7 +161,8 @@ public class MayhemAutoParkBL extends BaseAuto {
             startDetectPose = applyLeft(startDetectPose);
             strafeFourPose = applyLeft(strafeFourPose);
             shootSide = ShootSide.LEFT;
-            targetX = 144 - targetX;
+            targetXFirst = 144 - targetXFirst;
+            targetXEnd = 144 - targetXEnd;
         }
     }
 
@@ -233,7 +234,7 @@ public class MayhemAutoParkBL extends BaseAuto {
     public static double intakeCornerDrivePower = 0.6;
     int currSpindexerGotoSpot = -1;
     public static double spindexerSpeed = 0.7;
-    public static double intakePower = 0.9;
+    public static double intakePower = 0.8;
     public static double autoCameraDrivePower = 0.6;
     boolean velAgressiveComp = false;
     boolean shootOn;
@@ -245,7 +246,8 @@ public class MayhemAutoParkBL extends BaseAuto {
     public static double maxTimeSwap1 = 1000;
     public static double maxTimeSwap2 = 1000;
     public static long maxWaitTillShoot = 3000;
-    public static double targetX = 134;
+    public static double targetXFirst = 128;
+    public static double targetXEnd = 134;
     public static double cornerIntakePower = 1.0;
     public static double lowFlywheelTol = 40;
     public static double highFlywheelTol = 40;
@@ -281,6 +283,7 @@ public class MayhemAutoParkBL extends BaseAuto {
         }
         telemetry.addData("Motif Pattern", motifPattern);
         telemetry.update();
+
     }
 
     @Override
@@ -540,7 +543,7 @@ public class MayhemAutoParkBL extends BaseAuto {
 //                intake(IntakeLine.MID),
 //                shootFromLines(IntakeLine.MID, maxWaitTillShoot)
 
-//                cameraWork(),
+                cameraWork(),
 
                 new ParallelCommandGroup(
                         park(),
@@ -583,7 +586,7 @@ public class MayhemAutoParkBL extends BaseAuto {
     }
     PathChain cameraForwardPathChain;
     public Command intakeBall(){
-        buildPath = new BuildPath(follower, cam, targetX, shootPose);
+        buildPath = new BuildPath(follower, cam, targetXFirst, targetXEnd, shootPose);
         return new SequentialCommandGroup(
                 new InstantCommand(() -> pushUpServo.setDown()),
                 new InstantCommand(()-> spindexer.setDefault()),
@@ -607,18 +610,23 @@ public class MayhemAutoParkBL extends BaseAuto {
                                         new InstantCommand(()-> cameraForwardPathChain = buildPath.getPathChain()),
                                         new SequentialCommandGroup(
                                                 new InstantCommand(()-> CommandScheduler.getInstance().cancelAll()),
+                                                new InstantCommand(()-> follower.breakFollowing()),
+                                                new InstantCommand(()-> currSpindexerGotoSpot = 0),
+                                                new WaitCommand(1000),
                                                 new ParallelCommandGroup(
-                                                        new InstantCommand(()-> currSpindexerGotoSpot = 0),
                                                         new PoseWriteCommand(follower.getPose(), maxWritePoseTimeMs),
                                                         new SideWriteCommand(getSide(), maxSideWriteTimeMs)
                                                 ),
-                                                new InstantCommand(()-> writeMotif()),
+                                                new InstantCommand(()-> spindexer.getTurner().getServo().setPower(0)),
                                                 new WaitCommand(500),
                                                 new InstantCommand(()-> requestOpModeStop())
                                         ),
                                         () -> buildPath.pathCreated), null),
-                                new DeferredCommand(() -> new FollowPathCommand(follower, cameraForwardPathChain, true, autoCameraDrivePower), null)
-//                            new WaitCommand(1000)
+                                new DeferredCommand(() -> new FollowPathCommand(follower, cameraForwardPathChain, true, autoCameraDrivePower), null),
+                                new WaitCommand(500),
+                                new InstantCommand(()-> cameraForwardPathChain = buildPath.getPathChain2()),
+                                new DeferredCommand(() -> new FollowPathCommand(follower, cameraForwardPathChain, true, autoCameraDrivePower), null),
+                            new WaitCommand(1000)
                         )
                 ),
                 new InstantCommand(()-> intake.setDirectPower(0)),

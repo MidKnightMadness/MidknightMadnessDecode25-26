@@ -9,7 +9,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 public class IncrementalEncoder extends EncoderBase<IncrementalEncoder> {
     //is the dcmotor encoder
-    private final DcMotor encoder;
+    public final DcMotor encoder;
     private final double cpr;
 
 

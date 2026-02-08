@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.main.autonomous.sort.leftCopies;
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.main.autonomous.sort.right.NineBackRightCorner;
@@ -10,6 +11,7 @@ import org.firstinspires.ftc.teamcode.main.autonomous.sort.right.NineBackRightLi
 
 @Config
 @Configurable
+@Disabled
 @Autonomous(name = "9 BL 3 Lines", group = "Competition")
 public class NineBLLines extends NineBackRightLines {
     ShootSide shootSide = ShootSide.LEFT;

@@ -22,7 +22,7 @@ public class Intake extends SubsystemBase {
     MotorEx intakeMotor;
 
     public static double reference_voltage = 12.5;
-    public static boolean motorDirectionForward = true;
+    public static boolean motorDirectionForward = false;
 
 
     public enum RunMode{

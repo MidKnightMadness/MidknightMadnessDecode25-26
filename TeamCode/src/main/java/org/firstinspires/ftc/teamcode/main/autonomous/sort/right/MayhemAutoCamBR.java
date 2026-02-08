@@ -62,15 +62,14 @@ public class MayhemAutoCamBR extends BaseAuto {
     public static Pose shootPose = new Pose(83, 17, Math.toRadians(249));
     //    public static double shootOffset = Math.toRadians(2);
 //public static Pose shootPose = new Pose(84, 17, Math.toRadians(247));
-    public static Pose forwardPose = new Pose(88, 12, Math.toRadians(90));
     public static Pose parkPose = new Pose(86, 38, Math.toRadians(0));
     public static Pose openGatePose = new Pose(136, 76, Math.toRadians(180));
-    public static Pose intakeCloseStartPose = new Pose(99.5, 84, Math.toRadians(0));
+    public static Pose intakeCloseStartPose = new Pose(97, 84, Math.toRadians(0));
     public static Pose intakeCloseEndPose = new Pose(125, 84, Math.toRadians(0));
-    public static Pose intakeMidStartPose = new Pose(99.5, 58, Math.toRadians(0));
-    public static Pose intakeMidEndPose = new Pose(129, 58, Math.toRadians(0));
+    public static Pose intakeMidStartPose = new Pose(97, 56, Math.toRadians(0));
+    public static Pose intakeMidEndPose = new Pose(129, 56, Math.toRadians(0));
 
-    public static Pose intakeFarStartPose = new Pose(98, 34, Math.toRadians(0));
+    public static Pose intakeFarStartPose = new Pose(97, 34, Math.toRadians(0));
     public static Pose intakeFarEndPose = new Pose(135, 34, Math.toRadians(0));
     public static Pose intakeCornerStartPose = new Pose(121, 12, Math.toRadians(0));
     public static Pose intakeCornerEndPose = new Pose(129, 12, Math.toRadians(0));
@@ -86,7 +85,7 @@ public class MayhemAutoCamBR extends BaseAuto {
 
 
     MotifEnums.Motif motifPattern = MotifEnums.Motif.NONE;
-    public static ShootSide shootSide = ShootSide.RIGHT;
+    ShootSide shootSide = ShootSide.RIGHT;
     Pose currentPose = startPose;
     public static long firstWaitTime = 700;
     public static long secondWaitTime = 500;
@@ -143,7 +142,7 @@ public class MayhemAutoCamBR extends BaseAuto {
     boolean isReadyToShoot;
 
     public void useLeftConstants(){
-        if(getShootSide() == ShootSide.LEFT) {
+        if(shootSide == ShootSide.LEFT) {
 //            startPose = applyLeft(startPose);
             shootPose = new Pose(144- shootPose.getX(), shootPose.getY(), normAngle(Math.PI - Math.toRadians(245)));
             parkPose = applyLeft(parkPose);
@@ -186,9 +185,9 @@ public class MayhemAutoCamBR extends BaseAuto {
 
     @Override
     public Pose getStartPose(){
-        if(getShootSide() == shootSide) {
-            return startPose;
-        } return applyLeft(startPose);
+        if(shootSide == ShootSide.LEFT){
+            return applyLeft(startPose);
+        } return startPose;
     }
 
     @Override
@@ -197,19 +196,19 @@ public class MayhemAutoCamBR extends BaseAuto {
 //        limelight.pipelineSwitch(objectDetectionPipeline);
 //        limelight.start();
 
-        arducam = new AprilTagWebcam();
-        arducam.init(hardwareMap, ConfigNames.arducam);
-        file = createFile(fileName, directoryName);
+//        arducam = new AprilTagWebcam();
+//        arducam.init(hardwareMap, ConfigNames.arducam);
+//        file = createFile(fileName, directoryName);
 
         limelight = hardwareMap.get(Limelight3A.class, ConfigNames.limelight);//init limelight
         limelight.pipelineSwitch(limelightPipelineStart);
         limelight.start();
 
-        try {
-            fileWriter = new FileWriter(file);
-        } catch (IOException e) {
-            RobotLog.ee("Log", "Error instantiating file writer of file: " + e.getMessage());
-        }
+//        try {
+//            fileWriter = new FileWriter(file);
+//        } catch (IOException e) {
+//            RobotLog.ee("Log", "Error instantiating file writer of file: " + e.getMessage());
+//        }
 
     }
 
@@ -226,15 +225,15 @@ public class MayhemAutoCamBR extends BaseAuto {
     boolean useDistanceSensor = true;
     public static double inBetweenTime = 200;
     public static boolean rawPowerOn = false;
-    public static long powerFlywheelTime = 1200;
+    public static long powerFlywheelTime = 1500;
     int aprilTagID = 0;
     BuildPath buildPath;
     public static long timeoutCorner = 100;
     public static double intakeDrivePower = 0.3;
-    public static double intakeCornerDrivePower = 0.6;
+    public static double intakeCornerDrivePower = 0.4;
     int currSpindexerGotoSpot = -1;
     public static double spindexerSpeed = 0.7;
-    public static double intakePower = 0.8;
+    public static double intakePower = 0.9;
     public static double autoCameraDrivePower = 0.6;
     boolean velAgressiveComp = false;
     boolean shootOn;
@@ -254,7 +253,7 @@ public class MayhemAutoCamBR extends BaseAuto {
     PathChain strafe1Path;
     boolean camDetect = false;
     public static long firstPresetWaitTime = 1400;
-//    public static double buildCamTimeout = 500;
+    public static long cornerTimeout = 1800;
     @Override
     public void initialize_loop(){
 //        LLResult result = limelight.getLatestResult();
@@ -266,29 +265,31 @@ public class MayhemAutoCamBR extends BaseAuto {
 //                motifPattern = idMap.getOrDefault(aprilTagID, MotifEnums.Motif.NONE);
 //            }
 //        }
-        arducam.update();
-        tag21 = arducam.getTagBySpecificId(21);
-        tag22 = arducam.getTagBySpecificId(22);
-        tag23 = arducam.getTagBySpecificId(23);
-        if(tag21 != null){
-            aprilTagID = 21;
-            motifPattern = idMap.getOrDefault(aprilTagID, MotifEnums.Motif.NONE);
-        } else if(tag22 != null){
-            aprilTagID = 22;
-            motifPattern = idMap.getOrDefault(aprilTagID, MotifEnums.Motif.NONE);
-        } else if(tag23 != null){
-            aprilTagID = 23;
-            motifPattern = idMap.getOrDefault(aprilTagID, MotifEnums.Motif.NONE);
-        }
+//        arducam.update();
+//        tag21 = arducam.getTagBySpecificId(21);
+//        tag22 = arducam.getTagBySpecificId(22);
+//        tag23 = arducam.getTagBySpecificId(23);
+//        if(tag21 != null){
+//            aprilTagID = 21;
+//            motifPattern = idMap.getOrDefault(aprilTagID, MotifEnums.Motif.NONE);
+//        } else if(tag22 != null){
+//            aprilTagID = 22;
+//            motifPattern = idMap.getOrDefault(aprilTagID, MotifEnums.Motif.NONE);
+//        } else if(tag23 != null){
+//            aprilTagID = 23;
+//            motifPattern = idMap.getOrDefault(aprilTagID, MotifEnums.Motif.NONE);
+//        }
+        telemetry.addData("Motif Pattern", motifPattern);
+        telemetry.update();
     }
 
     @Override
     public void writeMotif(){
-        if (motifPattern != MotifEnums.Motif.NONE) {
-            writeToFile(fileWriter, String.valueOf(aprilTagID));
-            closeFileWriter(fileWriter);
-            finishedWritingMotif = true;
-        }
+//        if (motifPattern != MotifEnums.Motif.NONE) {
+//            writeToFile(fileWriter, String.valueOf(aprilTagID));
+//            closeFileWriter(fileWriter);
+//            finishedWritingMotif = true;
+//        }
     }
 
 
@@ -520,7 +521,7 @@ public class MayhemAutoCamBR extends BaseAuto {
     protected Command postMotifSequence(){
 //        limelight.stop();
 //        limelight.shutdown();
-        arducam.stop();
+//        arducam.stop();
         //temporarily turn it off to hand to localizer
         return new SequentialCommandGroup(
 //                driveForward(),
@@ -539,7 +540,7 @@ public class MayhemAutoCamBR extends BaseAuto {
 //                intake(IntakeLine.MID),
 //                shootFromLines(IntakeLine.MID, maxWaitTillShoot)
 
-               cameraWork(),
+                cameraWork(),
 
                 new ParallelCommandGroup(
                         park(),
@@ -590,11 +591,11 @@ public class MayhemAutoCamBR extends BaseAuto {
 //                new WaitCommand(1000),
                 new InstantCommand(() -> currSpindexerGotoSpot = -1),
                 new ParallelRaceGroup(
-                    new AutoIntakeCommand3(spindexer, intake, intakePower, inBetweenTime, true, hardwareMap),
-                    new SequentialCommandGroup(
-                            buildPath,
-                            new DeferredCommand(()-> new InstantCommand(()-> follower.update()), null),
-                            new DeferredCommand(()-> new ConditionalCommand(
+                        new AutoIntakeCommand3(spindexer, intake, intakePower, inBetweenTime, true, hardwareMap),
+                        new SequentialCommandGroup(
+                                buildPath,
+                                new DeferredCommand(()-> new InstantCommand(()-> follower.update()), null),
+                                new DeferredCommand(()-> new ConditionalCommand(
 //                                    new InstantCommand(()-> cameraForwardPathChain = buildPath.getPathChain()),
 //                                            new DeferredCommand(()->
 //                                                new SequentialCommandGroup(
@@ -603,22 +604,22 @@ public class MayhemAutoCamBR extends BaseAuto {
 //                                                .setLinearHeadingInterpolation(follower.getPose().getHeading(), follower.getPose().getHeading()).build()),
 //                                                new WaitCommand(500)
 //                                            ), null),
-                                    new InstantCommand(()-> cameraForwardPathChain = buildPath.getPathChain()),
-                                    new SequentialCommandGroup(
-                                            new InstantCommand(()-> CommandScheduler.getInstance().cancelAll()),
-                                            new ParallelCommandGroup(
-                                                    new InstantCommand(()-> currSpindexerGotoSpot = 0),
-                                                    new PoseWriteCommand(follower.getPose(), maxWritePoseTimeMs),
-                                                    new SideWriteCommand(getSide(), maxSideWriteTimeMs)
-                                            ),
-                                            new InstantCommand(()-> writeMotif()),
-                                            new WaitCommand(500),
-                                            new InstantCommand(()-> requestOpModeStop())
-                                    ),
-                            () -> buildPath.pathCreated), null),
-                            new DeferredCommand(() -> new FollowPathCommand(follower, cameraForwardPathChain, true, autoCameraDrivePower), null)
+                                        new InstantCommand(()-> cameraForwardPathChain = buildPath.getPathChain()),
+                                        new SequentialCommandGroup(
+                                                new InstantCommand(()-> CommandScheduler.getInstance().cancelAll()),
+                                                new ParallelCommandGroup(
+                                                        new InstantCommand(()-> currSpindexerGotoSpot = 0),
+                                                        new PoseWriteCommand(follower.getPose(), maxWritePoseTimeMs),
+                                                        new SideWriteCommand(getSide(), maxSideWriteTimeMs)
+                                                ),
+                                                new InstantCommand(()-> writeMotif()),
+                                                new WaitCommand(500),
+                                                new InstantCommand(()-> requestOpModeStop())
+                                        ),
+                                        () -> buildPath.pathCreated), null),
+                                new DeferredCommand(() -> new FollowPathCommand(follower, cameraForwardPathChain, true, autoCameraDrivePower), null).withTimeout(3000)
 //                            new WaitCommand(1000)
-                    )
+                        )
                 ),
                 new InstantCommand(()-> intake.setDirectPower(0)),
                 new InstantCommand(()-> autoIntakeOn = false)
@@ -698,10 +699,10 @@ public class MayhemAutoCamBR extends BaseAuto {
                 new InstantCommand(()-> intake.setDirectPower(0)),
                 new ParallelCommandGroup(
                         new SequentialCommandGroup(
-                            new DeferredCommand(() -> new InstantCommand(()-> follower.update()), null),
-                              new DeferredCommand(() -> new FollowPathCommand(
-                                    follower, follower.pathBuilder().addPath(new BezierLine(follower.getPose(), shootPose)).setLinearHeadingInterpolation(follower.getPose().getHeading(), shootPose.getHeading()).build(),
-                            true, 1.0), null)
+                                new DeferredCommand(() -> new InstantCommand(()-> follower.update()), null),
+                                new DeferredCommand(() -> new FollowPathCommand(
+                                        follower, follower.pathBuilder().addPath(new BezierLine(follower.getPose(), shootPose)).setLinearHeadingInterpolation(follower.getPose().getHeading(), shootPose.getHeading()).build(),
+                                        true, 1.0), null)
                         ),
                         new SequentialCommandGroup(
                                 new WaitCommand(1000),
@@ -712,7 +713,7 @@ public class MayhemAutoCamBR extends BaseAuto {
                         )
                 ),
                 new InstantCommand(() -> currSpindexerGotoSpot = -1),
-                new DeferredCommand(() -> new WaitUntilShootReadyCommand(shooter, waitTime, lowFlywheelTol, highFlywheelTol), null),
+                new WaitUntilShootReadyCommand(shooter, waitTime, lowFlywheelTol, highFlywheelTol),
                 new InstantCommand(() -> spindexer.spin(1 * spindexerSpeed)),
                 new WaitCommand(powerFlywheelTime),
                 new InstantCommand(() -> continueShoot = false),
@@ -728,11 +729,11 @@ public class MayhemAutoCamBR extends BaseAuto {
     protected Command shootFromLines(IntakeLine lineNum, long waitTime){
         return new SequentialCommandGroup(
                 new InstantCommand(()-> autoIntakeOn = false),
-                new InstantCommand(()-> intake.setDirectPower(0)),
                 new ParallelCommandGroup(
                         getToShootCommand(lineNum),
                         new SequentialCommandGroup(
                                 new WaitCommand(1000),
+                                new InstantCommand(()-> intake.setDirectPower(0)),
 //                                setSpindexerCorrect(lineNum),
 //                                new WaitCommand(1000),
                                 new InstantCommand(() -> continueShoot = true),
@@ -866,14 +867,14 @@ public class MayhemAutoCamBR extends BaseAuto {
                         new AutoIntakeCommand3(spindexer, intake, cornerIntakePower, inBetweenTime, useDistanceSensor, hardwareMap),
                         new SequentialCommandGroup(
                                 getToLineNum(IntakeLine.CORNER),
-                                new FollowPathCommand(follower, toIntakeLineCornerEnd, true, intakeCornerDrivePower),
+                                new FollowPathCommand(follower, toIntakeLineCornerEnd, true, intakeCornerDrivePower).withTimeout(cornerTimeout),
                                 new WaitCommand(1000),
-                                new FollowPathCommand(follower, toIntakeLineCornerBack, true, intakeCornerDrivePower),
-                                new FollowPathCommand(follower, toIntakeLineCornerEnd2, true, intakeCornerDrivePower),
-                                new WaitCommand(2000)
+                                new FollowPathCommand(follower, toIntakeLineCornerBack, true, intakeCornerDrivePower).withTimeout(cornerTimeout),
+                                new FollowPathCommand(follower, toIntakeLineCornerEnd2, true, intakeCornerDrivePower).withTimeout(cornerTimeout),
+                                new WaitCommand(1000)
                         )
                 ),
-                new InstantCommand(()-> intake.setDirectPower(0)),
+                new InstantCommand(()-> intake.setDirectPower(0.5)),
                 new InstantCommand(()-> autoIntakeOn = false),
                 new InstantCommand(()-> currSpindexerGotoSpot = 2)
         );

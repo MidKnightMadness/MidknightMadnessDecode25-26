@@ -51,7 +51,7 @@ public class BaseAuto extends CommandOpMode {
     boolean prevVisionComplete = false;
 
     protected AprilTagWebcam arducam;
-    public static double maxTimeMs = 29300;
+    public static double maxTimeMs = 29000;
     public static double maxWritePoseTimeMs = 300;
     public static double maxSideWriteTimeMs = 300;
     boolean stopEnd = false;
@@ -138,7 +138,7 @@ public class BaseAuto extends CommandOpMode {
 //            }
     //    }
 //        if (timer.getTime() >= maxTimeMs) requestOpModeStop();
-//        writeValues();
+        endCommands();
         updateTelemetry();
     }
 
@@ -151,6 +151,7 @@ public class BaseAuto extends CommandOpMode {
     File yFile;
     File headingFile;
 
+    String sideFileName = "side.txt";
     String xFileName = "robot_x.txt";
     String yFileName = "robot_y.txt";
     String headingFileName = "robot_heading.txt";
@@ -158,6 +159,9 @@ public class BaseAuto extends CommandOpMode {
 
     }
 
+    FileWriter sideFileWriter;
+    File sideFile;
+    String outputString;
     @Override
     public void end(){
 //        writeMotif();
@@ -201,6 +205,33 @@ public class BaseAuto extends CommandOpMode {
 
         writeToFile(headingFileWriter, headingLine);
         closeFileWriter(headingFileWriter);
+
+        sideFile = createFile(sideFileName, directoryName);
+        if(getSide() == ShootSide.LEFT){
+            outputString = "Left";
+        }
+        else{
+            outputString = "Right";
+        }
+        try {
+            sideFileWriter = new FileWriter(sideFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        //write shoot side
+        try {
+            sideFileWriter.write(outputString);
+            sideFileWriter.flush();
+        } catch (IOException e) {
+            RobotLog.ee("Log", "No file writer detected: " + e.getMessage());
+        }
+        //close shoot side
+        try {
+            sideFileWriter.close();
+        } catch (IOException e) {
+            RobotLog.ee("Log", "Cannot close file writer: " + e.getMessage());
+        }
     }
     private static File createFile(String fileName, String dirName){
         File dir = new File(Environment.getExternalStorageDirectory(), dirName);
@@ -229,17 +260,18 @@ public class BaseAuto extends CommandOpMode {
         }
     }
 
-    public void writeValues() {
+    public void endCommands() {
         if(gameTimer.getTime() >= maxTimeMs && !stopEnd) {
             CommandScheduler.getInstance().cancelAll();
-            writeMotif();
-            schedule(new DeferredCommand(() ->
-                new SequentialCommandGroup(
-                        new InstantCommand(()-> follower.update()),
-                        new WaitCommand(200),
-                new ParallelCommandGroup(
-                    new PoseWriteCommand(follower.getPose(), maxWritePoseTimeMs),
-                    new SideWriteCommand(getSide(), maxSideWriteTimeMs))), null));
+            follower.breakFollowing();
+//            writeMotif();
+//            schedule(new DeferredCommand(() ->
+//                new SequentialCommandGroup(
+//                        new InstantCommand(()-> follower.update()),
+//                        new WaitCommand(200),
+//                new ParallelCommandGroup(
+//                    new PoseWriteCommand(follower.getPose(), maxWritePoseTimeMs),
+//                    new SideWriteCommand(getSide(), maxSideWriteTimeMs))), null));
             stopEnd = true;
         }
     }

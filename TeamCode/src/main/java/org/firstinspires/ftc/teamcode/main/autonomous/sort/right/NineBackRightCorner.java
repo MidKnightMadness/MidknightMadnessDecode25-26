@@ -61,12 +61,12 @@ public class NineBackRightCorner extends BaseAuto {
     public static Pose openGatePose = new Pose(136, 76, Math.toRadians(180));
     public static Pose intakeCloseStartPose = new Pose(97, 84, Math.toRadians(0));
     public static Pose intakeCloseEndPose = new Pose(125, 84, Math.toRadians(0));
-    public static Pose intakeMidStartPose = new Pose(97, 58, Math.toRadians(0));
-    public static Pose intakeMidEndPose = new Pose(129, 58, Math.toRadians(0));
+    public static Pose intakeMidStartPose = new Pose(97, 56, Math.toRadians(0));
+    public static Pose intakeMidEndPose = new Pose(129, 56, Math.toRadians(0));
     public static Pose intakeFarStartPose = new Pose(97, 34, Math.toRadians(0));
     public static Pose intakeFarEndPose = new Pose(135, 34, Math.toRadians(0));
-    public static Pose intakeCornerStartPose = new Pose(121, 11, Math.toRadians(0));
-    public static Pose intakeCornerEndPose = new Pose(129, 11, Math.toRadians(0));
+    public static Pose intakeCornerStartPose = new Pose(121, 12, Math.toRadians(0));
+    public static Pose intakeCornerEndPose = new Pose(129, 12, Math.toRadians(0));
     public static Pose intakeCornerStartPose2 = new Pose(123, 6, Math.toRadians(0));
     public static Pose intakeCornerEndPose2 = new Pose(129, 6, Math.toRadians(0));
     public static Pose closeShootPose = new Pose(91.2, 84.6, Math.toRadians(230));
@@ -99,6 +99,7 @@ public class NineBackRightCorner extends BaseAuto {
     public static boolean recoveryOn = true;
     public static boolean useLUT = false;
     public static boolean useBulkMode = true;
+    public static long firstPresetWaitTime = 2500;
     PathChain toShootPresets;
     PathChain toIntakeLineFarStart;
     PathChain toIntakeLineFarEnd;
@@ -130,7 +131,7 @@ public class NineBackRightCorner extends BaseAuto {
     boolean isReadyToShoot;
 
     public void useLeftConstants(){
-        if(getShootSide() == ShootSide.LEFT) {
+        if(shootSide == ShootSide.LEFT) {
             startPose = applyLeft(startPose);
             shootPose = new Pose(144- shootPose.getX(), shootPose.getY(), normAngle(Math.PI - Math.toRadians(245)));
             parkPose = applyLeft(parkPose);
@@ -170,9 +171,9 @@ public class NineBackRightCorner extends BaseAuto {
 
     @Override
     public Pose getStartPose(){
-        if(getShootSide() == shootSide) {
-            return startPose;
-        } return applyLeft(startPose);
+        if(shootSide == ShootSide.LEFT){
+            return applyLeft(startPose);
+        } return startPose;
     }
 
     @Override
@@ -207,14 +208,14 @@ public class NineBackRightCorner extends BaseAuto {
     public static double inBetweenTime = 150;
     //TODO: FIND CORRECT VALUE
     public static boolean rawPowerOn = false;
-    public static long powerFlywheelTime = 1000;
+    public static long powerFlywheelTime = 1200;
     int aprilTagID = 0;
     public static long timeoutCorner = 100;
-    public static double intakeDrivePower = 0.3;
+    public static double intakeDrivePower = 0.45;
     public static double intakeCornerDrivePower = 0.6;
     int currSpindexerGotoSpot = -1;
     public static double spindexerSpeed = 0.7;
-    public static double intakePower = 0.8;
+    public static double intakePower = 0.9;
 
     boolean velAgressiveComp = false;
     boolean shootOn;
@@ -254,6 +255,8 @@ public class NineBackRightCorner extends BaseAuto {
             aprilTagID = 23;
             motifPattern = idMap.getOrDefault(aprilTagID, MotifEnums.Motif.NONE);
         }
+        telemetry.addData("Motif Pattern", motifPattern);
+        telemetry.update();
     }
 
     @Override
@@ -384,6 +387,7 @@ public class NineBackRightCorner extends BaseAuto {
     }
 
     boolean continueShoot = false;
+    public static long cornerTimeout = 1800;
     double currVolt;
     boolean autoIntakeOn;
     AutoIntakeCommand3 autoIntakeCommand;
@@ -518,7 +522,7 @@ public class NineBackRightCorner extends BaseAuto {
 
     protected Command setSpindexerCorrect(IntakeLine lineNum){
         if(lineNum == IntakeLine.CLOSE) {
-            return new ConditionalCommand(
+            return new DeferredCommand(() -> new ConditionalCommand(
                     new InstantCommand(() -> currSpindexerGotoSpot = 0),
                     new ConditionalCommand(
                             new InstantCommand(() -> currSpindexerGotoSpot = 1),
@@ -526,9 +530,9 @@ public class NineBackRightCorner extends BaseAuto {
                             () -> motifPattern == MotifEnums.Motif.PPG
                     ),
                     () -> motifPattern == MotifEnums.Motif.GPP
-            );
+            ), null);
         } else if(lineNum == IntakeLine.FAR){
-            return new ConditionalCommand(
+            return new DeferredCommand(() -> new ConditionalCommand(
                     new InstantCommand(() -> currSpindexerGotoSpot = 1),
                     new ConditionalCommand(
                             new InstantCommand(() -> currSpindexerGotoSpot = 2),
@@ -536,9 +540,9 @@ public class NineBackRightCorner extends BaseAuto {
                             () -> motifPattern == MotifEnums.Motif.PPG
                     ),
                     () -> motifPattern == MotifEnums.Motif.GPP
-            );
+            ), null);
         }  else {//middle & corner
-            return new ConditionalCommand(
+            return new DeferredCommand(() -> new ConditionalCommand(
                     new InstantCommand(() -> currSpindexerGotoSpot = 2),
                     new ConditionalCommand(
                             new InstantCommand(() -> currSpindexerGotoSpot = 0),
@@ -546,7 +550,7 @@ public class NineBackRightCorner extends BaseAuto {
                             () -> motifPattern == MotifEnums.Motif.PPG
                     ),
                     () -> motifPattern == MotifEnums.Motif.GPP
-            );
+            ), null);
         }
     }
     protected FollowPathCommand getToShootCloseCommand(IntakeLine intakeLine){
@@ -585,11 +589,11 @@ public class NineBackRightCorner extends BaseAuto {
     protected Command shootFromLines(IntakeLine lineNum, long waitTime){
         return new SequentialCommandGroup(
                 new InstantCommand(()-> autoIntakeOn = false),
-                new InstantCommand(()-> intake.setDirectPower(0)),
                 new ParallelCommandGroup(
                         getToShootCommand(lineNum),
                         new SequentialCommandGroup(
                                 new WaitCommand(500),
+                                new InstantCommand(()-> intake.setDirectPower(0)),
                                 setSpindexerCorrect(lineNum),
                                 new WaitCommand(1000),
                                 new InstantCommand(() -> continueShoot = true),
@@ -614,13 +618,14 @@ public class NineBackRightCorner extends BaseAuto {
                         getToShootCommandPreset(),
                         new SequentialCommandGroup(
                                 setSpindexerCorrect(IntakeLine.MID),
-                                new WaitCommand(1000),
+                                new WaitCommand(1200),
                                 new InstantCommand(() -> continueShoot = true),
                                 new InstantCommand(()-> pushUpServo.setUp())
                         )
                 ),
                 new InstantCommand(() -> currSpindexerGotoSpot = -1),
-                new WaitUntilShootReadyCommand(shooter, waitTime, lowFlywheelTol, highFlywheelTol),
+//                new WaitUntilShootReadyCommand(shooter, waitTime, lowFlywheelTol, highFlywheelTol),
+                new WaitCommand(firstPresetWaitTime),
                 new InstantCommand(() -> spindexer.spin(1 * spindexerSpeed)),
                 new WaitCommand(powerFlywheelTime),
                 new InstantCommand(() -> continueShoot = false),
@@ -682,14 +687,14 @@ public class NineBackRightCorner extends BaseAuto {
                     new AutoIntakeCommand3(spindexer, intake, cornerIntakePower, inBetweenTime, useDistanceSensor, hardwareMap),
                     new SequentialCommandGroup(
                         getToLineNum(IntakeLine.CORNER),
-                        new FollowPathCommand(follower, toIntakeLineCornerEnd, true, intakeCornerDrivePower),
+                        new FollowPathCommand(follower, toIntakeLineCornerEnd, true, intakeCornerDrivePower).withTimeout(cornerTimeout),
                         new WaitCommand(1000),
-                        new FollowPathCommand(follower, toIntakeLineCornerBack, true, intakeCornerDrivePower),
-                        new FollowPathCommand(follower, toIntakeLineCornerEnd2, true, intakeCornerDrivePower),
-                        new WaitCommand(2000)
+                        new FollowPathCommand(follower, toIntakeLineCornerBack, true, intakeCornerDrivePower).withTimeout(cornerTimeout),
+                        new FollowPathCommand(follower, toIntakeLineCornerEnd2, true, intakeCornerDrivePower).withTimeout(cornerTimeout),
+                        new WaitCommand(1000)
                     )
                 ),
-                new InstantCommand(()-> intake.setDirectPower(0)),
+                new InstantCommand(()-> intake.setDirectPower(0.5)),
                 new InstantCommand(()-> autoIntakeOn = false),
                 new InstantCommand(()-> currSpindexerGotoSpot = 2)
         );

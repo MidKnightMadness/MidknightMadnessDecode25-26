@@ -70,7 +70,11 @@ public class Spindexer extends SubsystemBase {
     public static double distSensorLowerThreshold = 0;
     public static double distSensorUpperThreshold = 4;
     boolean useDistanceSensor = false;
+    IncrementalEncoder turnerEncoder;
 
+    public IncrementalEncoder getTurnerEncoder(){
+        return turnerEncoder;
+    }
     public static double minDetectDistance = 6;//inch
     public Spindexer(HardwareMap hardwareMap) {
         this(hardwareMap, false);
@@ -84,7 +88,7 @@ public class Spindexer extends SubsystemBase {
     }
 
     public Spindexer(HardwareMap hardwareMap, boolean useDistanceSensors, BallColor[] ballColors) {
-        IncrementalEncoder turnerEncoder = new IncrementalEncoder(
+        turnerEncoder = new IncrementalEncoder(
                 hardwareMap, ConfigNames.turnerEncoder, 8192, AngleUnit.DEGREES
         ).setReversed(true);
         turner = new CRServoEx2<>(
