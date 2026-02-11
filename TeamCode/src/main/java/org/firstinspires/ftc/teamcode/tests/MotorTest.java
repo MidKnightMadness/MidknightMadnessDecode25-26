@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 
-@TeleOp(name = "motor test")
+@TeleOp(name = "motor test", group = "General")
 public class MotorTest extends OpMode {
     DcMotorEx FR;
 

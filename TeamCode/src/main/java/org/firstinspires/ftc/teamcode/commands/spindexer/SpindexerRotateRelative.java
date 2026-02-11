@@ -1,15 +1,11 @@
 package org.firstinspires.ftc.teamcode.commands.spindexer;
 
-import com.acmerobotics.dashboard.config.Config;
-import com.bylazar.configurables.annotations.Configurable;
 import com.seattlesolvers.solverslib.command.CommandBase;
 
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.util.Angle;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
-@Config
-@Configurable
 public class SpindexerRotateRelative extends CommandBase {
     public static double stopThreshold = 3;
 

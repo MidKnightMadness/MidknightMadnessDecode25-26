@@ -14,6 +14,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
@@ -38,6 +39,7 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 
 @Config
 @Configurable
+@Disabled
 @Autonomous(name = "Intake Auto Test", group = "Competititon")
 public class NonColorIntakeAutoTest extends CommandOpMode {
     public static long firstWaitTime = 300;//700

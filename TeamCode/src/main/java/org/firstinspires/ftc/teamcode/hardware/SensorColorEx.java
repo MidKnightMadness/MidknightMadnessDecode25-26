@@ -4,8 +4,7 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.hardware.SensorColor;
 
-import org.firstinspires.ftc.teamcode.colors.ColorClassifier;
-import org.firstinspires.ftc.teamcode.colors.ColorSpace;
+import org.firstinspires.ftc.teamcode.hardware.color.ColorSpace;
 
 public class SensorColorEx extends SensorColor {
     private final ColorSpace colorSpace;
