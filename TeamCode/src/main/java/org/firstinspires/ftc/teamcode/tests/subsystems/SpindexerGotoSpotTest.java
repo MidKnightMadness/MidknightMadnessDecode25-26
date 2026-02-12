@@ -29,6 +29,7 @@ public class SpindexerGotoSpotTest extends CommandOpMode {
     public static Angle customAngle = Angle.fromDegrees(60);
     public static double finishedTimeThreshold = 1000;
 
+
     Button intakeSpot0Button, intakeSpot1Button, intakeSpot2Button;
     Button outakeSpot0Button, outakeSpot1Button, outakeSpot2Button;
     Button nearestIntakeSpotButton;

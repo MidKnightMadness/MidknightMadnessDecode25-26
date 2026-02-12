@@ -176,7 +176,7 @@ public class ConceptAprilTagOptimizeExposure extends LinearOpMode
         Can only be called AFTER calling initAprilTag();
         Returns true if controls are set.
      */
-    private boolean    setManualExposure(int exposureMS, int gain) {
+    private boolean  setManualExposure(int exposureMS, int gain) {
         // Ensure Vision Portal has been setup.
         if (visionPortal == null) {
             return false;

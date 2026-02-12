@@ -15,7 +15,7 @@ import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ReadWriteFile;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
@@ -25,27 +25,23 @@ import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommand;
-import org.firstinspires.ftc.teamcode.commands.ShootSeqCommand;
+import org.firstinspires.ftc.teamcode.commands.shooter.ShootSeqCommand;
 import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommand2;
-import org.firstinspires.ftc.teamcode.commands.misc.ServoController;
 import org.firstinspires.ftc.teamcode.commands.spindexer.SpindexerGotoSpot;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
 import org.firstinspires.ftc.teamcode.game.SpotType;
 import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
-import org.firstinspires.ftc.teamcode.lights.GobildaLightBlock;
+import org.firstinspires.ftc.teamcode.subsystems.GobildaLightBlock;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
-import org.firstinspires.ftc.teamcode.pedroPathing.motorTesting.WheelControl;
+import org.firstinspires.ftc.teamcode.pedroPathing.robotDrive.WheelControl;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.PushUpServo;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
-import org.firstinspires.ftc.teamcode.tests.opModes.AprilTagWebcam;
-import org.firstinspires.ftc.teamcode.util.Angle;
+import org.firstinspires.ftc.teamcode.tests.camera.AprilTagWebcam;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.teamcode.util.Timer;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
@@ -97,7 +93,7 @@ public class MainTeleOp extends CommandOpMode {
     double topShooterPower = 0.8;
     double botShooterPower = 0.6;
     WheelControl wheelControl;
-    boolean wheelControlUse = true;
+    public static boolean wheelControlUse = true;
     Pose toCloseLeftShoot = new Pose(57, 94, Math.toRadians(310));
     Pose toCloseRightShoot =  new Pose(87, 94, Math.toRadians(230));
     Pose toFarLeftShoot = new Pose(67, 17, Math.toRadians(300));
@@ -117,8 +113,8 @@ public class MainTeleOp extends CommandOpMode {
     public static double currturnerSpeed = 0.3;//0.3 before
     double midTurnerSpeed = 0.5;
 
-    Pose leftTarget = new Pose(0, 144, Math.toRadians(45));
-    Pose rightTarget = new Pose(144, 144, Math.toRadians(-45));
+    Pose leftTarget = new Pose(4, 144, Math.toRadians(45));
+    Pose rightTarget = new Pose(140, 144, Math.toRadians(-45));
 
 
     boolean autoAlign = false;
@@ -163,7 +159,7 @@ public class MainTeleOp extends CommandOpMode {
     public static double customTopPower = 0;
     public static double customBotPower = 0;
 
-    public static double offsetRadians = Math.toRadians(3);
+    public static double offsetRadians = Math.toRadians(0);
 
     int currentIntakeSpot = 0;
     public static double shootAngleTolerance = 10;
@@ -186,7 +182,7 @@ public class MainTeleOp extends CommandOpMode {
 
     boolean hasRumbledAllOccupied = false;
     int goToSpotIntakeNum = 0;
-    public static boolean readPoseFile = false;//true
+    public static boolean readPoseFile = true;//true
     boolean triggerBallShot = false;
     int recentTriggeredSpot = -1;
     BallColor[] defaultBallColor = new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE};
@@ -194,7 +190,7 @@ public class MainTeleOp extends CommandOpMode {
     boolean useLUT = false;
     boolean voltageCompensation = false;
 
-    public static double powerAutoIntake = 0.8;
+    public static double powerAutoIntake = 0.93;
 
     Pose[] leftGateBounds = new Pose[]{new Pose(14, 52, 0), new Pose(45, 85, 0)};
     Pose[] rightGateBounds = new Pose[]{new Pose(99, 52, 0), new Pose(130, 85, 0)};
@@ -225,6 +221,8 @@ public class MainTeleOp extends CommandOpMode {
     public static double minArduTimeUpdate = 0;
     public static double autoSettleTime = 200;
     public static long autoIntakeTimeout = 10000;
+    public static Pose failsafeLeftPose = new Pose(8.85, 8, Math.toRadians(180));
+    public static Pose failsafeRightPose = new Pose(144-8.85, 8, Math.toRadians(0));
 
     @Override
     public void initialize() {
@@ -486,7 +484,7 @@ public class MainTeleOp extends CommandOpMode {
 
 
         if(readyToShootLight != null) {
-            GobildaLightBlock.Color targetReadyToShoot = readyToShoot ? GobildaLightBlock.Color.GREEN : GobildaLightBlock.Color.ORANGE;
+            GobildaLightBlock.Color targetReadyToShoot = headingError <= Math.toRadians(1) ? GobildaLightBlock.Color.GREEN : GobildaLightBlock.Color.ORANGE;
             if(targetReadyToShoot != readyToShootColor) {
                 readyToShootLight.setColor(targetReadyToShoot);
                 readyToShootColor = targetReadyToShoot;
@@ -604,8 +602,9 @@ public class MainTeleOp extends CommandOpMode {
 //        }
 
         if (Math.abs(filteredHeadingError) > Math.toRadians(1.0)) {
-            power += Math.signum(filteredHeadingError) * 0.04;
-        } else{
+            power += Math.signum(filteredHeadingError) * 0.1;
+        }
+        else{
             power = 0;
         }
 
@@ -615,7 +614,7 @@ public class MainTeleOp extends CommandOpMode {
     public double getAngleError(Pose position, Pose target, double positionHeading){
         double deltaY = target.getY() - position.getY();
         double deltaX = target.getX() - position.getX();
-        double heading = Math.atan2(deltaY, deltaX) + offsetRadians;
+        double heading = Math.atan2(deltaY, deltaX);
         heading = normAngle(heading);
         this.targetheading = heading;
         //heading is in absolute degrees
@@ -695,6 +694,7 @@ public class MainTeleOp extends CommandOpMode {
         private void runGamepad1Comands(){
             currentPose = new Pose(follower.getPose().getX(), follower.getPose().getY(), Math.toDegrees(follower.getPose().getHeading()));
 
+            manualResetPose();
             setAlignTurnPower();
             driveRobot();//includes automations
             manualChangeShootSide();
@@ -703,7 +703,14 @@ public class MainTeleOp extends CommandOpMode {
             toggleAutoAlign();
             rumbleCloseToGate();
 
+        }
 
+        private void manualResetPose(){
+            if(gamepad1.left_trigger > 0.5){
+                follower.setPose(failsafeLeftPose);
+            } else if(gamepad1.right_trigger > 0.5){
+                follower.setPose(failsafeRightPose);
+            }
         }
         private void rumbleCloseToGate () {
             Pose[] check = null;
@@ -833,13 +840,20 @@ public class MainTeleOp extends CommandOpMode {
             setBallColorsDefault();
 //        rumbleAllOccuppiedBalls();
             rumbleReadyToShoot();
+            resetSpindexer();
         }
 
+        private void resetSpindexer(){
+            if(gamepad2.rightStickButtonWasPressed()){
+                spindexer.getTurnerEncoder().encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                spindexer.getTurnerEncoder().encoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            }
+        }
         boolean hasRumbledreadyToShoot = false;
         boolean hasRumbledAligned = false;
         boolean aligned = false;
 
-        private void rumbleReadyToShoot () {
+        private void rumbleReadyToShoot() {
             //aligned and right velocity
             readyToShoot = shooter.readyToShoot();
             aligned = autoAlign;
@@ -851,7 +865,7 @@ public class MainTeleOp extends CommandOpMode {
 //                hasRumbledreadyToShoot = false;
 //            }
 
-            if (readyToShoot && turnPower == 0 && aligned) {
+            if (readyToShoot && headingError <= Math.toRadians(1) && aligned) {
                 gamepad1.rumble(100);
                 gamepad2.rumble(100);
 //                hasRumbledAligned = true;

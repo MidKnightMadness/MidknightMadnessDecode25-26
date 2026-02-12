@@ -16,6 +16,7 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
@@ -33,6 +34,7 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 
 @Config
 @Configurable
+@Disabled
 @Autonomous(name = "Color Intake Auto Test", group = "Competition")
 public class ColorIntakeAutoTest extends CommandOpMode {
     public static double pathDistThresholdMin = 1.5;

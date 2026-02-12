@@ -116,8 +116,8 @@ public class TwoWheelShooter extends SubsystemBase {
     public TwoWheelShooter(HardwareMap hardwareMap, RunMode runMode) {
         low = new MotorEx(hardwareMap, ConfigNames.lowFlywheelMotor);
         high = new MotorEx(hardwareMap, ConfigNames.highFlywheelMotor);
-        low.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
-        high.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
+        low.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        high.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
 //        low.motorEx.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 //        high.motorEx.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
@@ -303,6 +303,10 @@ public class TwoWheelShooter extends SubsystemBase {
     public boolean readyToShoot(){
         return Math.abs(low.getVelocity() - predictedBotVel) <= velBotTolerance &&
                 Math.abs(high.getVelocity() - predictedTopVel) <= velTopTolerance;
+    }
+    public boolean readyToShoot(double lowTolerance, double highTolerance){
+        return Math.abs(low.getVelocity() - predictedBotVel) <= lowTolerance &&
+                Math.abs(high.getVelocity() - predictedTopVel) <= highTolerance;
     }
 
     public double getRecoveryTime(){

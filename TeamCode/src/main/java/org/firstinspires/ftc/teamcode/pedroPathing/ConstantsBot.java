@@ -27,25 +27,25 @@ public class ConstantsBot {
             .lateralZeroPowerAcceleration(-70)//TUNED
             // Translational PIDF
             .translationalPIDFSwitch(4)
-            .translationalPIDFCoefficients(new PIDFCoefficients(0.05, 0, 0, 0))
-            .secondaryTranslationalPIDFCoefficients(new PIDFCoefficients(0.05, 0, 0, 0.03))
+            .translationalPIDFCoefficients(new PIDFCoefficients(0.05, 0, 0, 0.07))
+            .secondaryTranslationalPIDFCoefficients(new PIDFCoefficients(0.05, 0, 0, 0.07))
             // Heading PIDF
-            .headingPIDFCoefficients(new PIDFCoefficients(1, 0, 0.02, 0.02))
-            .secondaryHeadingPIDFCoefficients(new PIDFCoefficients(1.5, 0, 0.01, 0.03))
+            .headingPIDFCoefficients(new PIDFCoefficients(1, 0, 0.02, 0.01))
+            .secondaryHeadingPIDFCoefficients(new PIDFCoefficients(2.25, 0, 0.01, 0.01))
             // Drive PIDF
             .drivePIDFSwitch(15)
             .useSecondaryDrivePIDF(true)
-            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.01, 0, 0, 0.6, 0.01))
-            .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(0.015, 0, 0, 0.6, 0.01))
+            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.01, 0, 0, 0.6, 0.07))
+            .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(0.015, 0, 0, 0.6, 0.07))
             .mass(29.1 * 0.454)
             .centripetalScaling(0.0005);
 
-    public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 0.5, 1);
+    public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
 
     //competition
     public static PinpointConstants pinpointLocalizer1Constants = new PinpointConstants()
-            .forwardPodY(115.39 / 25.4)
-            .strafePodX(-173.57 / 25.4)
+            .forwardPodY(115.354 / 25.4)
+            .strafePodX(-125.48 / 25.4)
             .distanceUnit(DistanceUnit.INCH)
             .hardwareMapName(ConfigNames.pinpoint1)
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
@@ -53,8 +53,8 @@ public class ConstantsBot {
             .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
     public static PinpointConstants pinpointLocalizer2Constants = new PinpointConstants()
-            .forwardPodY(116.11 / 25.4)
-            .strafePodX(-173.57 / 25.4)
+            .forwardPodY(115.90 / 25.4)
+            .strafePodX(-125.48 / 25.4)
             .distanceUnit(DistanceUnit.INCH)
             .hardwareMapName(ConfigNames.pinpoint2)
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)

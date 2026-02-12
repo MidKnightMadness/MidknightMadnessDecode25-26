@@ -1,0 +1,31 @@
+package org.firstinspires.ftc.teamcode.tests.color;
+
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Servo;
+
+import org.firstinspires.ftc.teamcode.game.BallColor;
+import org.firstinspires.ftc.teamcode.subsystems.GobildaLightBlock;
+import org.firstinspires.ftc.teamcode.util.ConfigNames;
+
+@TeleOp(name = "SingleLightsTest", group = "Lights")
+public class SingleLightTest extends OpMode {
+    GobildaLightBlock light1;
+    @Override
+    public void init() {
+        light1 = new GobildaLightBlock(hardwareMap.get(Servo.class, ConfigNames.spindexerLights1));
+    }
+
+    @Override
+    public void loop() {
+        if(gamepad1.b){
+            light1.setColor(BallColor.PURPLE);
+        }
+        else if(gamepad1.a){
+            light1.setColor(BallColor.GREEN);
+        }
+        else{
+            light1.setColor(BallColor.NONE);
+        }
+    }
+}
