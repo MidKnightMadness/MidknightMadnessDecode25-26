@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
@@ -12,19 +13,23 @@ import com.seattlesolvers.solverslib.util.MathUtils;
 
 import org.firstinspires.ftc.teamcode.R;
 
+@Config
 //custom cr servo for SPINDEXER. Sets minimum power to overcome wheel if error is too large
 public class CRServoEx2<E extends Encoder> extends CRServo {
     //declaring varables
     private E encoder;
     private double cachingTolerance = 0.0001;
+    public static boolean sqred = true;
     private PIDFController pidf;
 
     public double error = 0;
     public double power = 0;
+    public static double swapThreshold = 15;//within 10 swap to optimized
     public double positivePowerCount = 0;
     public double setCount = 0;
     double minPowerOvercome = 0.5;
     double minErrorThreshold = 30;//degrees
+    public static double targetPower = 0.5;
     /**
      * The mode in which the CR servo should behave.
      */
@@ -156,26 +161,38 @@ public class CRServoEx2<E extends Encoder> extends CRServo {
             }
 
             double error = MathUtils.normalizeAngle(output - encoder.getAngle(), false, encoder.getAngleUnit());
-            if (Math.abs(error) < 5) {
-                crServo.setPower(0);
-                return;
+
+
+            double power;
+            if(sqred){
+                double sqrdError = error * error;
+                power = pidf.calculate(0, sqrdError) * Math.signum(error);
+                this.error = error;
+                this.power = power;
+            } else{
+                power = pidf.calculate(0, error);
+                this.error = error;
+                this.power = power;
             }
 
-            double sqrdError = error * error;
-
-            double power = pidf.calculate(0, sqrdError) * Math.signum(error);
-            this.error = error;
-            this.power = power;
 
             if (power > 0) {
                 positivePowerCount++;
             }
-            crServo.setPower(power);
-
-//            crServo.setPower(clamp(power, - 0.8, 0.8));//clamp to make sure not setting to too fast
-        } else {
-            this.power = output;
-            crServo.setPower(output);
+            if (Math.abs(error) < 5) {
+                crServo.setPower(0);
+            } else {
+                crServo.setPower(power);
+            }
+        }
+        else {
+            double error = MathUtils.normalizeAngle(output - encoder.getAngle(), false, encoder.getAngleUnit());
+            if(Math.abs(error) <= swapThreshold){
+                runmode = RunMode.OptimizedPositionalControl;
+            }
+            this.power = targetPower;
+            this.error = error;
+            crServo.setPower(targetPower);
         }
     }
 
@@ -206,6 +223,8 @@ public class CRServoEx2<E extends Encoder> extends CRServo {
         } else {
             this.power = output;
             crServo.setPower(output);
+            runmode = RunMode.OptimizedPositionalControl;
+            //swap to other runMode
         }
     }
     public double clamp(double x1, double min, double max){

@@ -111,9 +111,9 @@ public class SpindexerGotoSpotTest extends CommandOpMode {
             spindexer.goToSpot(SpindexerSpot.fromIndex(targetSpot), SpotType.INTAKE, CRServoEx2.RunMode.OptimizedPositionalControl);
         }
 
-        try {
-            Thread.sleep(50);
-        } catch( Exception e) { }
+//        try {
+//            Thread.sleep(50);
+//        } catch( Exception e) { }
     }
 
     public void addDataTelemetryGraph(String key, Number value) {
