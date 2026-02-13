@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 
 @TeleOp
 @Configurable
-public class StandardPIDDriveTuner extends OpMode {
+public class StandardPIDDriveTest extends OpMode {
     public static double kp = 0.01;
     public static double ki = 0;
     public static double kd = 0.001;

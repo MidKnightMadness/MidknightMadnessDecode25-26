@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 @TeleOp
 @Configurable
-public class StandardPIDTuner extends OpMode {
+public class StandardPIDTest extends OpMode {
     public static double kp = 0.01;
     public static double ki = 0;
     public static double kd = 0.001;

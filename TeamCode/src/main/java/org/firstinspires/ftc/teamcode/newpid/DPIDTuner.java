@@ -6,15 +6,13 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
-import org.firstinspires.ftc.teamcode.newpid.interpolators.DelaunayTriangulationInterpolator;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.function.DoubleSupplier;
 
 @TeleOp
-public class DanielPIDTuner extends OpMode {
+public class DPIDTuner extends OpMode {
     public ArrayList<Double[]> velAndErrors;
     public ArrayList<Point3D> allData;
     public double vel, maxVel, maxVelTime;
@@ -24,9 +22,10 @@ public class DanielPIDTuner extends OpMode {
     public double target;
     public DoubleSupplier stateSupplier;
     public DoubleSupplier derivSupplier;
-    public String motorName = "FL";
+//    public String motorName = "FL";
     Buffer buffer;
     DcMotorEx motor;
+    DcMotorEx BL, BR, FL, FR;
     ArrayList<Double> times;
     Timer timer;
     TelemetryManager telemetryM;
@@ -42,8 +41,12 @@ public class DanielPIDTuner extends OpMode {
     public void init() {
         vel = 0;
         maxVel = 0;
-        motor = hardwareMap.get(DcMotorEx.class, motorName);
-        buffer = new Buffer(10, 50);
+//        motor = hardwareMap.get(DcMotorEx.class, motorName);
+        BL = hardwareMap.get(DcMotorEx.class, "BL");
+        BR = hardwareMap.get(DcMotorEx.class, "BR");
+        FL = hardwareMap.get(DcMotorEx.class, "FL");
+        FR = hardwareMap.get(DcMotorEx.class, "FR");
+        buffer = new Buffer(10, 0.1);
         times = new ArrayList<>();
         state = State.findMaxVel;
         timer = new Timer();
@@ -67,15 +70,23 @@ public class DanielPIDTuner extends OpMode {
                     maxVelTime = timer.getTime();
                     buffer.clear();
                     timer.restart();
-                    motor.setPower(0);
-                    for (double t = 50; t <= 1000; t += 50) {
+//                    motor.setPower(0);
+                    BL.setPower(0);
+                    BR.setPower(0);
+                    FL.setPower(0);
+                    FR.setPower(0);
+                    for (double t = 100; t <= 1000; t += 100) {
                         times.add(t);
                     }
                     state = State.wait;
                     break;
                 }
                 buffer.add(derivSupplier.getAsDouble(), timer.getTime());
-                motor.setPower(-1);
+//                motor.setPower(-1);
+                BL.setPower(-1);
+                BR.setPower(-1);
+                FL.setPower(-1);
+                FR.setPower(-1);
                 break;
 
             case wait:
@@ -107,10 +118,15 @@ public class DanielPIDTuner extends OpMode {
                         ));
                     }
                     velAndErrors = new ArrayList<>();
+                    state = State.wait;
                     break;
                 }
                 if (timer.getTime() < times.get(trial)) {
-                    motor.setPower(-1);
+//                    motor.setPower(-1);
+                    BL.setPower(-1);
+                    BR.setPower(-1);
+                    FL.setPower(-1);
+                    FR.setPower(-1);
                     break;
                 }
                 double currentVel = derivSupplier.getAsDouble();
@@ -118,11 +134,15 @@ public class DanielPIDTuner extends OpMode {
                 double power = controller.calculate(currentPos, target);
                 velAndErrors.add(new Double[]{ currentVel, target - currentPos });
                 buffer.add(currentVel, timer.getTime());
-                motor.setPower(power);
+//                motor.setPower(power);
+                BL.setPower(-1);
+                BR.setPower(-1);
+                FL.setPower(-1);
+                FR.setPower(-1);
                 break;
 
             case stop:
-                telemetryM.addData("All points", allData);
+                telemetryM.addData("All points", allData.toString());
                 break;
         }
 

@@ -6,7 +6,7 @@ import org.firstinspires.ftc.teamcode.newpid.interpolators.Interpolator2D;
 
 import java.util.function.Supplier;
 
-public class DanielPIDController<T extends Interpolator2D> {
+public class DPIDController<T extends Interpolator2D> {
     private double kp, ki, kd;
     private double integralSum = 0;
     private double lastError = 0;
@@ -15,7 +15,7 @@ public class DanielPIDController<T extends Interpolator2D> {
     ElapsedTime timer;
 
     @SuppressWarnings("unchecked")
-    public DanielPIDController(Supplier<T> interpFactory, double kp, double ki, double kd) {
+    public DPIDController(Supplier<T> interpFactory, double kp, double ki, double kd) {
         this.kp = kp;
         this.ki = ki;
         this.kd = kd;

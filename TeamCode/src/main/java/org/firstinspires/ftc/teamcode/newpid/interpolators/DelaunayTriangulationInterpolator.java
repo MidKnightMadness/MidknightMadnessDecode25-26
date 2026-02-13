@@ -1,9 +1,10 @@
-package org.firstinspires.ftc.teamcode.newpid;
+package org.firstinspires.ftc.teamcode.newpid.interpolators;
 
 import android.os.Environment;
 import com.qualcomm.robotcore.util.ReadWriteFile;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.newpid.Point3D;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,7 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DelaunayTriangulation implements Interpolator2D<DelaunayTriangulation> {
+public class DelaunayTriangulationInterpolator implements Interpolator2D {
     private final List<Triangle> triangles = new ArrayList<>();
     private final List<Point3D> points = new ArrayList<>();
     private final static double EPSILON = 1e-9;
@@ -73,9 +74,9 @@ public class DelaunayTriangulation implements Interpolator2D<DelaunayTriangulati
     // ----------------------------
     // Constructors
     // ----------------------------
-    public DelaunayTriangulation() {}
+    public DelaunayTriangulationInterpolator() {}
 
-    public DelaunayTriangulation(List<Point3D> inputPoints) {
+    public DelaunayTriangulationInterpolator(List<Point3D> inputPoints) {
         this.points.addAll(inputPoints);
         if (points.size() < 3) return;
 
@@ -167,8 +168,8 @@ public class DelaunayTriangulation implements Interpolator2D<DelaunayTriangulati
     // Factory method: load from file
     // ----------------------------
     @Override
-    public DelaunayTriangulation fromFile(String fileName) throws IOException, JSONException {
-        DelaunayTriangulation instance = new DelaunayTriangulation();
+    public DelaunayTriangulationInterpolator fromFile(String fileName) throws IOException, JSONException {
+        DelaunayTriangulationInterpolator instance = new DelaunayTriangulationInterpolator();
 
         File file = new File(Environment.getExternalStorageDirectory(), fileName);
         if (!file.exists()) throw new FileNotFoundException(file.getAbsolutePath() + " not found");
@@ -202,6 +203,7 @@ public class DelaunayTriangulation implements Interpolator2D<DelaunayTriangulati
     // ----------------------------
     // Public methods
     // ----------------------------
+    @Override
     public double getZ(double x, double y) {
         for (Triangle t : triangles) {
             if (t.containsPoint(x, y)) return t.interpolateZ(x, y);
@@ -228,9 +230,5 @@ public class DelaunayTriangulation implements Interpolator2D<DelaunayTriangulati
             if (poly.get(i).isSame(e)) { poly.remove(i); return; }
         }
         poly.add(e);
-    }
-
-    public void telemetryPoints(Telemetry telemetry) {
-        telemetry.addData("Points", points);
     }
 }

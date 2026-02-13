@@ -14,11 +14,11 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 import java.util.concurrent.TimeUnit;
 
 @TeleOp
-public class DanielPIDTest extends OpMode {
+public class DPIDTest extends OpMode {
     public static double kp = 0.01, ki = 0, kd = 0.001;
     public static double target = 1000;
     public static String motorName = "FL";
-    DanielPIDController<NearestPointInterpolator> controller;
+    DPIDController<NearestPointInterpolator> controller;
     TelemetryManager telemetryM;
     GraphManager graphM;
     DcMotorEx motor;
@@ -27,7 +27,7 @@ public class DanielPIDTest extends OpMode {
 
     @Override
     public void init() {
-        controller = new DanielPIDController<>(
+        controller = new DPIDController<>(
                 NearestPointInterpolator::new, kp, ki, kd
         );
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();

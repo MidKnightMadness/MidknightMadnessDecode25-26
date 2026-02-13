@@ -1,7 +1,7 @@
-package org.firstinspires.ftc.teamcode.tests;
+package org.firstinspires.ftc.teamcode.newpid;
 
 public class Point3D {
-    private double x, y, z;
+    public double x, y, z;
 
     public Point3D(double x, double y, double z) {
         this.x = x;

@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 
 //
-public class WheelControl2 {
+public class WheelControl {
     public DcMotorEx BR;
     public DcMotorEx BL;
     public DcMotorEx FR;
@@ -16,15 +16,18 @@ public class WheelControl2 {
     public double hf = 0;
     public double rf = 0;
 
-    public WheelControl2(HardwareMap hardwareMap) {
+    public WheelControl(HardwareMap hardwareMap) {
         this.BR = hardwareMap.get(DcMotorEx.class, ConfigNames.BR);
-        this.BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        this.BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         this.FR = hardwareMap.get(DcMotorEx.class, ConfigNames.FR);
-        this.FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        this.FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         this.BL = hardwareMap.get(DcMotorEx.class, ConfigNames.BL);
-        this.BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        this.BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         this.FL = hardwareMap.get(DcMotorEx.class, ConfigNames.FL);
-        this.FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        this.FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+
+        this.BL.setDirection(DcMotorEx.Direction.REVERSE);
+        this.FL.setDirection(DcMotorEx.Direction.REVERSE);
     }
 
     public void setF(double vf, double hf, double rf) {
@@ -35,10 +38,10 @@ public class WheelControl2 {
 
     public void setPowers(double BL, double BR, double FL, double FR, double power) {
         double max = 1; // max motor power
-        max = Math.max(Math.abs(BL), max);
-        max = Math.max(Math.abs(BR), max);
-        max = Math.max(Math.abs(FL), max);
-        max = Math.max(Math.abs(FR), max); // Detect the motor with the most power
+        max = Math.max(BL, max);
+        max = Math.max(BR, max);
+        max = Math.max(FL, max);
+        max = Math.max(FR, max); // Detect the motor with the most power
         this.BL.setPower(power * (BL/max));
         this.BR.setPower(power * (BR/max));
         this.FL.setPower(power * (FL/max));
@@ -59,15 +62,9 @@ public class WheelControl2 {
          */
 
         // Make sure forward and right are <= 1
-
-        double power_scale = max_power / Math.max(
-                max_power, Math.max(Math.abs(forward), Math.abs(right))
-        );
+        double power_scale = max_power/Math.max(max_power, Math.max(forward, right));
         forward *= power_scale;
         right *= power_scale;
-
-        double rotate_scale = max_power / Math.max(max_power, Math.abs(rotate_power));
-        rotate_power *= rotate_scale;
 
         // Add feedforwards
         forward += Math.signum(forward)*vf;
@@ -80,7 +77,18 @@ public class WheelControl2 {
         double FLPower = forward + right - rotate_power;
         double FRPower = forward - right + rotate_power;
 
-        setPowers(BLPower, BRPower, FLPower, FRPower, 1);
+        // Get max power to make sure powers <= max_power
+        double new_max_power = 1;
+        new_max_power = Math.max(Math.abs(BLPower), new_max_power);
+        new_max_power = Math.max(Math.abs(BRPower), new_max_power);
+        new_max_power = Math.max(Math.abs(FLPower), new_max_power);
+        new_max_power = Math.max(Math.abs(FRPower), new_max_power);
+
+        // Set powers
+        this.BL.setPower(BLPower/new_max_power);
+        this.BR.setPower(BRPower/new_max_power);
+        this.FL.setPower(FLPower/new_max_power);
+        this.FR.setPower(FRPower/new_max_power);
     }
 
     public void stop() {

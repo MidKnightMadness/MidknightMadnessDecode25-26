@@ -177,7 +177,7 @@ public class MainTeleOp extends CommandOpMode {
     public static double pathDistThresholdMax = 0;
     public static double headingErrorMax = 0;
     public static double timeOutConstraint = 0;
-    double targetheading = 0;
+    double targetHeading = 0;
 
 
     boolean hasRumbledAllOccupied = false;
@@ -611,17 +611,32 @@ public class MainTeleOp extends CommandOpMode {
 
         return power;
     }
-    public double getAngleError(Pose position, Pose target, double positionHeading){
+
+    public double getTargetAngle(Pose position, Pose target) {
         double deltaY = target.getY() - position.getY();
         double deltaX = target.getX() - position.getX();
-        double heading = Math.atan2(deltaY, deltaX);
-        heading = normAngle(heading);
-        this.targetheading = heading;
-        //heading is in absolute degrees
-        double error = heading - positionHeading;
+        double heading = Math.atan2(deltaY, deltaX) + offsetRadians;
+        return normAngle(heading);
+    }
+
+    public double getAngleError(Pose position, Pose target){
+        Pose control1, control2;
+        if (shootSide == ShootSide.LEFT) {
+            control1 = new Pose(14, 144);
+            control2 = new Pose(0, 130);
+        } else {
+            control1 = new Pose(130, 144);
+            control2 = new Pose(144, 130);
+        }
+
+        double angle1 = getTargetAngle(position, control1);
+        double angle2 = getTargetAngle(position, control2);
+        this.targetHeading = normAngle((angle1 + angle2) / 2);
+        //heading is in absolute radians
+        double error = targetHeading - position.getHeading();
         double errorSign = (error > 0 ) ? -1 : 1;
         if(Math.abs(error) > Math.PI){
-            error = errorSign * (2 * Math.PI - Math.abs(positionHeading - heading));
+            error = errorSign * (2 * Math.PI - Math.abs(position.getHeading() - targetHeading));
         }
 
         error = normAnglePlusMinusPI(error);
@@ -648,7 +663,7 @@ public class MainTeleOp extends CommandOpMode {
 //            }
 
 //            if (useArducam && arducamTimer.getTime() - prevArducamTime >= minArduTimeUpdate) {{
-            headingError = getAngleError(outakePose, ((shootSide == ShootSide.LEFT) ? leftTarget : rightTarget), outakePose.getHeading());
+            headingError = getAngleError(outakePose, ((shootSide == ShootSide.LEFT) ? leftTarget : rightTarget));
 
 
             turnPower = calculateGamepadPID(prevHeadingError, headingError);
@@ -1093,7 +1108,7 @@ public class MainTeleOp extends CommandOpMode {
 
             telemetry.addLine("------------------------------------");
             telemetry.addData("Auto Align", autoAlign);
-            telemetry.addData("Target Heading", convertRadToDegrees(targetheading));
+            telemetry.addData("Target Heading", convertRadToDegrees(targetHeading));
             telemetry.addData("Heading Error(Alignment)", convertRadToDegrees(headingError));
             telemetry.addData("Turn Power", turnPower);
             telemetry.addData("Camera Yaw Global", cameraYawGlobal);
