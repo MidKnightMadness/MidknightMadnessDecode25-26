@@ -26,7 +26,10 @@ public class Spindexer extends SubsystemBase {
     //public static double intakeSpinPower = 0.3;
     public static double shootRawPower = 1;
 
-    public static PIDFCoefficients outtakeTurnerCoeff = new PIDFCoefficients(0.00005, 0, 0.05, 0.08);
+    public static PIDFCoefficients outtakeTurnerCoeff = new PIDFCoefficients(0.00025, 0, 0.6, 0.08);
+    public static PIDFCoefficients zeroBallGains = new PIDFCoefficients(0.00015, 0, 0.4, 0.08);
+    public static PIDFCoefficients oneBallGains = new PIDFCoefficients(0.0002, 0, 0.6, 0.08);
+    public static PIDFCoefficients twoBallGains = new PIDFCoefficients(0.0004, 0, 0.8, 0.08);
     public static PIDFCoefficients intakeTurnerCoeff = new PIDFCoefficients(0.004, 0.002, 0.03, 0.00006);
 
     //COLOR STUFF
@@ -39,7 +42,7 @@ public class Spindexer extends SubsystemBase {
     public static Angle detectRange = Angle.fromDegrees(25); // How far off from the center of the spot that you detect. You don't want to trust measurements that are too off from the center
     public static Angle defaultFinishedThreshold = Angle.fromDegrees(5); // Threshold at which it's finished turning to a spot
     public static Angle finishedThreshold = Angle.fromDegrees(15);//changed from 20
-    public static Angle detectThreshold = Angle.fromDegrees(10);
+    public static Angle detectThreshold = Angle.fromDegrees(15);
     //0 degrees is facing intake
     //assuming layout at start is initialized as 0 from this position
     //  X X
@@ -55,6 +58,15 @@ public class Spindexer extends SubsystemBase {
     BallColor[] ballColorsPrev;
     SpindexerSpot[] sequence;
     boolean shootOn = false;
+    public PIDFCoefficients getZeroBallCoeff(){
+        return zeroBallGains;
+    }
+    public PIDFCoefficients getOneBallCoeff(){
+        return oneBallGains;
+    }
+    public PIDFCoefficients getTwoBallCoeff(){
+        return twoBallGains;
+    }
 
     public boolean outakeSpindexerCoeffOn = false;
     public static double dangerZoneDeg = 15;
@@ -478,13 +490,13 @@ public class Spindexer extends SubsystemBase {
     }
 
     public void goToAngle(Angle angle, CRServoEx2.RunMode runMode) {
-        turner.setRunMode(runMode);
+//        turner.setRunMode(runMode);
 //        turner2.setRunMode(runMode);
         if (runMode == CRServoEx2.RunMode.OptimizedPositionalControl) {
             turner.set(angle.toDegrees());
 //            turner2.set(angle.toDegrees());
         } else {
-            turner.set(currentAngle.add(angle).sign() * shootRawPower);
+            turner.set(angle.toDegrees());
 //            turner2.set(currentAngle.add(angle).sign() * shootRawPower);// Careful signs work out
         }
 

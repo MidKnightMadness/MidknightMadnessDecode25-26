@@ -67,6 +67,7 @@ public class AutoIntakeCommand2 extends CommandBase {
         timer.restart();
         startTime = timer.getTime();
         currNumSpot = spindexer.getNearestSpot(spindexer.getCurrentAngle(), SpotType.INTAKE).getIndex();
+        spindexer.getTurner().setPIDFTOUse(spindexer.getZeroBallCoeff());
     }
 
     boolean updateStartTime = false;
@@ -97,6 +98,7 @@ public class AutoIntakeCommand2 extends CommandBase {
 
         if (ballDetected && ((time - ballDetectionTime >= waitSettle)) || exitTime) {
             currNumSpot = (currNumSpot - 2);
+
 //        if (((time - ballDetectionTime >= waitSettle)) || exitTime) {
 
             if(currNumSpot < 0){
@@ -106,6 +108,11 @@ public class AutoIntakeCommand2 extends CommandBase {
             ballDetected = false;
             updateStartTime = false;
             numBall++;
+            if(numBall == 1){
+                spindexer.getTurner().setPIDFTOUse(spindexer.getOneBallCoeff());
+            } else if(numBall == 2){
+                spindexer.getTurner().setPIDFTOUse(spindexer.getTwoBallCoeff());
+            }
         }
 
 

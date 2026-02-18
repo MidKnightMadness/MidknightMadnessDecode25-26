@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.main.autonomous.closeStart;
+package org.firstinspires.ftc.teamcode.main.autonomous.closeStart.base;
 
 import android.os.Environment;
 
@@ -50,9 +50,7 @@ import java.util.Map;
 
 @Config
 @Configurable
-@Disabled
-@Autonomous(name = "9 Close Right Sort", group = "Competition")
-public class NineCloseRightSort extends BaseAuto {
+public class ThreeLines extends BaseAuto {
     int startPipeline = 1;
     public static Pose startPose = new Pose(118, 130, Math.toRadians(307));
     public static Pose shootPose = new Pose(87, 95, Math.toRadians(225));

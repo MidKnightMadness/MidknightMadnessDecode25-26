@@ -11,6 +11,7 @@ public class ConfigNames {
     public static String turnerEncoder = "spindexerEncoder";
     public static String pushUpServo = "pushUpServo";
     public static String imu = "imu";
+    public static String pinpointOld = "pinpoint";
     public static String pinpoint1 = "pinpoint1";
     public static String pinpoint2 = "pinpoint2";
     public static String limelight = "limelight";

@@ -20,14 +20,12 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ReadWriteFile;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
-
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-
 import org.firstinspires.ftc.teamcode.commands.shooter.ShootSeqCommand;
 import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommand2;
 import org.firstinspires.ftc.teamcode.commands.spindexer.SpindexerGotoSpot;
@@ -52,11 +50,10 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import java.io.File;
 import java.util.Map;
 
-
-@Configurable
 @Config
-@TeleOp(name = "Main TeleOp", group = "Competition")
-public class MainTeleOp extends CommandOpMode {
+@Configurable
+@TeleOp(name = "Old Main TeleOp", group = "Competition")
+public class OldMainTeleOp extends CommandOpMode {
     Follower follower;
     Pose startPose = new Pose(72, 8, Math.toRadians(90));
     Pose currentPose;
@@ -98,7 +95,6 @@ public class MainTeleOp extends CommandOpMode {
     double botShooterPower = 0.6;
     WheelControl wheelControl;
     public static boolean wheelControlUse = true;
-    public static int optimalNum = 8;
     Pose toCloseLeftShoot = new Pose(57, 94, Math.toRadians(310));
     Pose toCloseRightShoot =  new Pose(87, 94, Math.toRadians(230));
     Pose toFarLeftShoot = new Pose(67, 17, Math.toRadians(300));
@@ -163,6 +159,7 @@ public class MainTeleOp extends CommandOpMode {
     public static double customBotTargetVel = 1400;
     public static double customTopPower = 0;
     public static double customBotPower = 0;
+    public static int optimalNum = 8;
 
     public static double offsetRadians = Math.toRadians(0);
 
@@ -182,7 +179,7 @@ public class MainTeleOp extends CommandOpMode {
     public static double pathDistThresholdMax = 0;
     public static double headingErrorMax = 0;
     public static double timeOutConstraint = 0;
-    double targetHeading = 0;
+    double targetheading = 0;
 
 
     boolean hasRumbledAllOccupied = false;
@@ -286,25 +283,6 @@ public class MainTeleOp extends CommandOpMode {
 //        updateStartShootDist();
         register(intake, shooter, spindexer, pushUpServo);
 
-//
-//        if(useBulkMode) {
-////            CommandScheduler.getInstance().setClearCacheOff();
-//            // Setup in your Robot class if you have one, or in init at start of opMode
-////
-////            PhotonCore.CONTROL_HUB.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
-////            PhotonCore.EXPANSION_HUB.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
-////            PhotonCore.experimental.setMaximumParallelCommands(optimalNum); // Can be adjusted based on user preference - but raising this number further can cause issues
-////            PhotonCore.enable();
-//            CommandScheduler.getInstance().setBulkReading(
-//                    hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
-//            );
-//        }
-//        else{
-//            CommandScheduler.getInstance().setBulkReading(
-//                    hardwareMap, LynxModule.BulkCachingMode.OFF // Scheduler will clean cache for you
-//            );
-//        }
-
         telemetry.setMsTransmissionInterval(500);
     }
 
@@ -340,18 +318,23 @@ public class MainTeleOp extends CommandOpMode {
             arducam = new AprilTagWebcam();
             arducam.init(hardwareMap, ConfigNames.arducam, telemetry);
         }
-
         if(useBulkMode) {
-            CommandScheduler.getInstance().setBulkReading(
-                    hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
-            );
-            PhotonCore.disable();
+//            CommandScheduler.getInstance().setBulkReading(
+//                    hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
+//            );
+            // Setup in your Robot class if you have one, or in init at start of opMode
+            PhotonCore.CONTROL_HUB.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+            PhotonCore.EXPANSION_HUB.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+            PhotonCore.experimental.setMaximumParallelCommands(optimalNum); // Can be adjusted based on user preference - but raising this number further can cause issues
+            PhotonCore.enable();
+//            CommandScheduler.getInstance().setBulkReading(
+//                    hardwareMap, LynxModule.BulkCachingMode.OFF // Scheduler will clean cache for you
+//            );
         } else{
             CommandScheduler.getInstance().setBulkReading(
                     hardwareMap, LynxModule.BulkCachingMode.OFF // Scheduler will clean cache for you
             );
         }
-
 
     }
 
@@ -461,14 +444,13 @@ public class MainTeleOp extends CommandOpMode {
             shootOn = false;
         }
 
-        spindexer.updateShootOn(shootOn);
+//        spindexer.updateShootOn(shootOn);
 //
 //        if(!shootOn || currSpindexerBallColors == null){
 //            return;
 //        }
-
-
-
+//
+//
 //
 //        if(!velAgressiveComp && spindexer.isAtSpot(SpindexerSpot.SPOT0, SpotType.OUTTAKE)){
 //            triggeredSpot = 0;
@@ -491,12 +473,10 @@ public class MainTeleOp extends CommandOpMode {
 //            triggerBallShot = true;
 //        }
 
-
-//        if(useBulkMode){
-//            PhotonCore.CONTROL_HUB.clearBulkCache();
-//            PhotonCore.EXPANSION_HUB.clearBulkCache();
-//        }
-
+        if(useBulkMode){
+            PhotonCore.CONTROL_HUB.clearBulkCache();
+            PhotonCore.EXPANSION_HUB.clearBulkCache();
+        }
 
     }
 
@@ -646,32 +626,17 @@ public class MainTeleOp extends CommandOpMode {
 
         return power;
     }
-
-    public double getTargetAngle(Pose position, Pose target) {
+    public double getAngleError(Pose position, Pose target, double positionHeading){
         double deltaY = target.getY() - position.getY();
         double deltaX = target.getX() - position.getX();
-        double heading = Math.atan2(deltaY, deltaX) + offsetRadians;
-        return normAngle(heading);
-    }
-
-    public double getAngleError(Pose position, Pose target){
-        Pose control1, control2;
-        if (shootSide == ShootSide.LEFT) {
-            control1 = new Pose(14, 144);
-            control2 = new Pose(0, 130);
-        } else {
-            control1 = new Pose(130, 144);
-            control2 = new Pose(144, 130);
-        }
-
-        double angle1 = getTargetAngle(position, control1);
-        double angle2 = getTargetAngle(position, control2);
-        this.targetHeading = normAngle((angle1 + angle2) / 2);
-        //heading is in absolute radians
-        double error = targetHeading - position.getHeading();
+        double heading = Math.atan2(deltaY, deltaX);
+        heading = normAngle(heading);
+        this.targetheading = heading;
+        //heading is in absolute degrees
+        double error = heading - positionHeading;
         double errorSign = (error > 0 ) ? -1 : 1;
         if(Math.abs(error) > Math.PI){
-            error = errorSign * (2 * Math.PI - Math.abs(position.getHeading() - targetHeading));
+            error = errorSign * (2 * Math.PI - Math.abs(positionHeading - heading));
         }
 
         error = normAnglePlusMinusPI(error);
@@ -698,7 +663,7 @@ public class MainTeleOp extends CommandOpMode {
 //            }
 
 //            if (useArducam && arducamTimer.getTime() - prevArducamTime >= minArduTimeUpdate) {{
-            headingError = getAngleError(outakePose, ((shootSide == ShootSide.LEFT) ? leftTarget : rightTarget));
+            headingError = getAngleError(outakePose, ((shootSide == ShootSide.LEFT) ? leftTarget : rightTarget), outakePose.getHeading());
 
 
             turnPower = calculateGamepadPID(prevHeadingError, headingError);
@@ -725,188 +690,188 @@ public class MainTeleOp extends CommandOpMode {
             }
         }
     }
-        public double smallestAbsDifferenceDegrees(double a, double b) {
-            double diff = Math.abs(a - b) % 360.0;
-            if (diff > 180) {
-                return 360 - diff;
-            }
-            return diff;
+    public double smallestAbsDifferenceDegrees(double a, double b) {
+        double diff = Math.abs(a - b) % 360.0;
+        if (diff > 180) {
+            return 360 - diff;
+        }
+        return diff;
+    }
+
+
+    public static double getDistance (Pose start, Pose target){
+        double dist = Math.sqrt((target.getY() - start.getY()) * (target.getY() - start.getY()) +
+                (target.getX() - start.getX()) * (target.getX() - start.getX()));
+        return dist;
+    }
+
+
+    private void runGamepad1Comands(){
+        currentPose = new Pose(follower.getPose().getX(), follower.getPose().getY(), Math.toDegrees(follower.getPose().getHeading()));
+
+        manualResetPose();
+        setAlignTurnPower();
+        driveRobot();//includes automations
+        manualChangeShootSide();
+        manualChangeMotif();
+        speedChange();
+        toggleAutoAlign();
+        rumbleCloseToGate();
+
+    }
+
+    private void manualResetPose(){
+        if(gamepad1.left_trigger > 0.5){
+            follower.setPose(failsafeLeftPose);
+        } else if(gamepad1.right_trigger > 0.5){
+            follower.setPose(failsafeRightPose);
+        }
+    }
+    private void rumbleCloseToGate () {
+        Pose[] check = null;
+        if (shootSide == ShootSide.LEFT) {
+            check = leftGateBounds;
+        } else {
+            check = rightGateBounds;
         }
 
-
-        public static double getDistance (Pose start, Pose target){
-            double dist = Math.sqrt((target.getY() - start.getY()) * (target.getY() - start.getY()) +
-                    (target.getX() - start.getX()) * (target.getX() - start.getX()));
-            return dist;
+        if (currentPose.getX() >= check[0].getX() && currentPose.getY() >= check[0].getY()
+                && currentPose.getX() <= check[1].getX() && currentPose.getY() <= check[1].getY()) {
+            gamepad1.rumbleBlips(2);//not sure if blips is best method here
         }
+    }
 
-
-        private void runGamepad1Comands(){
-            currentPose = new Pose(follower.getPose().getX(), follower.getPose().getY(), Math.toDegrees(follower.getPose().getHeading()));
-
-            manualResetPose();
-            setAlignTurnPower();
-            driveRobot();//includes automations
-            manualChangeShootSide();
-            manualChangeMotif();
-            speedChange();
-            toggleAutoAlign();
-            rumbleCloseToGate();
-
+    private void speedChange () {
+        if (gamepad1.rightBumperWasPressed()) {
+            currSpeed = currSpeed == maxSpeed ? midSpeed : maxSpeed;
         }
+    }
 
-        private void manualResetPose(){
-            if(gamepad1.left_trigger > 0.5){
-                follower.setPose(failsafeLeftPose);
-            } else if(gamepad1.right_trigger > 0.5){
-                follower.setPose(failsafeRightPose);
-            }
+    private void toggleAutoAlign () {
+        if (gamepad1.leftBumperWasPressed()) {
+            autoAlign = !autoAlign;
+            prevHeadingError = 0;
         }
-        private void rumbleCloseToGate () {
-            Pose[] check = null;
-            if (shootSide == ShootSide.LEFT) {
-                check = leftGateBounds;
+    }
+
+    private void manualChangeShootSide () {
+        if (gamepad1.xWasPressed()) {
+            shootSide = shootSide == ShootSide.LEFT ? ShootSide.RIGHT : ShootSide.LEFT;
+        }
+    }
+    //manual changing of motif pattern - in case was not detected
+    private void manualChangeMotif () {
+        if (gamepad1.bWasPressed()) {
+            if (pattern == MotifEnums.Motif.NONE) {
+                pattern = MotifEnums.Motif.PGP;
+            } else if (pattern == MotifEnums.Motif.PGP) {
+                pattern = MotifEnums.Motif.PPG;
+            } else if (pattern == MotifEnums.Motif.PPG) {
+                pattern = MotifEnums.Motif.GPP;
             } else {
-                check = rightGateBounds;
+                pattern = MotifEnums.Motif.NONE;
             }
+        }
+    }
 
-            if (currentPose.getX() >= check[0].getX() && currentPose.getY() >= check[0].getY()
-                    && currentPose.getX() <= check[1].getX() && currentPose.getY() <= check[1].getY()) {
-                gamepad1.rumbleBlips(2);//not sure if blips is best method here
-            }
+    public void setBallColorsDefault () {
+        if (gamepad2.leftStickButtonWasPressed()) {
+            spindexer.setDefault();
         }
-
-        private void speedChange () {
-            if (gamepad1.rightBumperWasPressed()) {
-                currSpeed = currSpeed == maxSpeed ? midSpeed : maxSpeed;
-            }
-        }
-
-        private void toggleAutoAlign () {
-            if (gamepad1.leftBumperWasPressed()) {
-                autoAlign = !autoAlign;
-                prevHeadingError = 0;
-            }
-        }
-
-        private void manualChangeShootSide () {
-            if (gamepad1.xWasPressed()) {
-                shootSide = shootSide == ShootSide.LEFT ? ShootSide.RIGHT : ShootSide.LEFT;
-            }
-        }
-        //manual changing of motif pattern - in case was not detected
-        private void manualChangeMotif () {
-            if (gamepad1.bWasPressed()) {
-                if (pattern == MotifEnums.Motif.NONE) {
-                    pattern = MotifEnums.Motif.PGP;
-                } else if (pattern == MotifEnums.Motif.PGP) {
-                    pattern = MotifEnums.Motif.PPG;
-                } else if (pattern == MotifEnums.Motif.PPG) {
-                    pattern = MotifEnums.Motif.GPP;
-                } else {
-                    pattern = MotifEnums.Motif.NONE;
-                }
-            }
-        }
-
-        public void setBallColorsDefault () {
-            if (gamepad2.leftStickButtonWasPressed()) {
-                spindexer.setDefault();
-            }
-        }
-        private void driveRobot () {
+    }
+    private void driveRobot () {
 //        if (autoDriveToShoot) {
 //            if (followPathCommand != null && followPathCommand.isFinished()) {
 //                autoDriveToShoot = false;
 //            }
 //        }
 
-            if (gamepad1.dpadUpWasPressed()) {
-                if (followPathCommand != null && !followPathCommand.isFinished()) {
-                    CommandScheduler.getInstance().cancel(followPathCommand);
-                }
-                autoDriveToShoot = true;
-                Pose toPose = (shootSide == ShootSide.LEFT) ? toFarLeftShoot : toFarRightShoot;
-                PathChain pathChain = getPathChain(currentPose, toPose);
-                followPathCommand = new FollowPathCommand(follower, pathChain).setGlobalMaxPower(1.0);
-                schedule(followPathCommand);
+        if (gamepad1.dpadUpWasPressed()) {
+            if (followPathCommand != null && !followPathCommand.isFinished()) {
+                CommandScheduler.getInstance().cancel(followPathCommand);
             }
-            if (gamepad1.dpadLeftWasPressed()) {
-                if (followPathCommand != null && !followPathCommand.isFinished()) {
-                    CommandScheduler.getInstance().cancel(followPathCommand);
-                }
-                autoDriveToShoot = true;
-                Pose toPose = (shootSide == ShootSide.LEFT) ? gateIntakeLeft : gateIntakeRight;
-                PathChain pathChain = getPathChain(currentPose, toPose);
-                followPathCommand = new FollowPathCommand(follower, pathChain).setGlobalMaxPower(1.0);
-                schedule(followPathCommand);
+            autoDriveToShoot = true;
+            Pose toPose = (shootSide == ShootSide.LEFT) ? toFarLeftShoot : toFarRightShoot;
+            PathChain pathChain = getPathChain(currentPose, toPose);
+            followPathCommand = new FollowPathCommand(follower, pathChain).setGlobalMaxPower(1.0);
+            schedule(followPathCommand);
+        }
+        if (gamepad1.dpadLeftWasPressed()) {
+            if (followPathCommand != null && !followPathCommand.isFinished()) {
+                CommandScheduler.getInstance().cancel(followPathCommand);
             }
+            autoDriveToShoot = true;
+            Pose toPose = (shootSide == ShootSide.LEFT) ? gateIntakeLeft : gateIntakeRight;
+            PathChain pathChain = getPathChain(currentPose, toPose);
+            followPathCommand = new FollowPathCommand(follower, pathChain).setGlobalMaxPower(1.0);
+            schedule(followPathCommand);
+        }
 
-            if (gamepad1.dpadDownWasPressed()) {
-                if (followPathCommand != null && !followPathCommand.isFinished()) {
-                    CommandScheduler.getInstance().cancel(followPathCommand);
-                }
-                autoDriveToShoot = true;
-                Pose toPose = (shootSide == ShootSide.LEFT) ? toCloseLeftShoot : toCloseRightShoot;
-                PathChain pathChain = getPathChain(currentPose, toPose);
-                followPathCommand = new FollowPathCommand(follower, pathChain).setGlobalMaxPower(1.0);
-                schedule(followPathCommand);
+        if (gamepad1.dpadDownWasPressed()) {
+            if (followPathCommand != null && !followPathCommand.isFinished()) {
+                CommandScheduler.getInstance().cancel(followPathCommand);
             }
-            if (gamepad1.dpadRightWasPressed()) {
-                if (followPathCommand != null && !followPathCommand.isFinished()) {
-                    CommandScheduler.getInstance().cancel(followPathCommand);
-                }
-                autoDriveToShoot = true;
-                Pose toPose = (shootSide == ShootSide.LEFT) ? parkRight : parkLeft;//reversed
-                PathChain pathChain = getPathChain(currentPose, toPose);
-                followPathCommand = new FollowPathCommand(follower, pathChain).setGlobalMaxPower(1.0);
-                schedule(followPathCommand);
+            autoDriveToShoot = true;
+            Pose toPose = (shootSide == ShootSide.LEFT) ? toCloseLeftShoot : toCloseRightShoot;
+            PathChain pathChain = getPathChain(currentPose, toPose);
+            followPathCommand = new FollowPathCommand(follower, pathChain).setGlobalMaxPower(1.0);
+            schedule(followPathCommand);
+        }
+        if (gamepad1.dpadRightWasPressed()) {
+            if (followPathCommand != null && !followPathCommand.isFinished()) {
+                CommandScheduler.getInstance().cancel(followPathCommand);
             }
+            autoDriveToShoot = true;
+            Pose toPose = (shootSide == ShootSide.LEFT) ? parkRight : parkLeft;//reversed
+            PathChain pathChain = getPathChain(currentPose, toPose);
+            followPathCommand = new FollowPathCommand(follower, pathChain).setGlobalMaxPower(1.0);
+            schedule(followPathCommand);
+        }
 
 
-            if (!autoDriveToShoot) {
-                if (!wheelControlUse) {
-                    if (!autoAlign) {
-                        follower.setTeleOpDrive(gamepad1.left_stick_y * currSpeed, gamepad1.left_stick_x * currSpeed, -gamepad1.right_stick_x * currSpeed, true);
-                    } else {
-                        follower.setTeleOpDrive(gamepad1.left_stick_y * currSpeed, gamepad1.left_stick_x * currSpeed, turnPower, true);
-                    }
+        if (!autoDriveToShoot) {
+            if (!wheelControlUse) {
+                if (!autoAlign) {
+                    follower.setTeleOpDrive(gamepad1.left_stick_y * currSpeed, gamepad1.left_stick_x * currSpeed, -gamepad1.right_stick_x * currSpeed, true);
                 } else {
-                    if (!autoAlign) {
-                        wheelControl.drive_relative(gamepad1.left_stick_y, gamepad1.left_stick_x, -gamepad1.right_stick_x * currSpeed, currSpeed);
-                    } else {
-                        wheelControl.drive_relative(gamepad1.left_stick_y, gamepad1.left_stick_x, turnPower, currSpeed);
-                    }
+                    follower.setTeleOpDrive(gamepad1.left_stick_y * currSpeed, gamepad1.left_stick_x * currSpeed, turnPower, true);
+                }
+            } else {
+                if (!autoAlign) {
+                    wheelControl.drive_relative(gamepad1.left_stick_y, gamepad1.left_stick_x, -gamepad1.right_stick_x * currSpeed, currSpeed);
+                } else {
+                    wheelControl.drive_relative(gamepad1.left_stick_y, gamepad1.left_stick_x, turnPower, currSpeed);
                 }
             }
-
-            follower.update();
         }
-        private void runGamepad2Commands () {
-            flywheelCommands();
-            intakeCommands();
-            spindexerCommands();
-            pushUpCommands();
-            setBallColorsDefault();
+
+        follower.update();
+    }
+    private void runGamepad2Commands () {
+        flywheelCommands();
+        intakeCommands();
+        spindexerCommands();
+        pushUpCommands();
+        setBallColorsDefault();
 //        rumbleAllOccuppiedBalls();
-            rumbleReadyToShoot();
-            resetSpindexer();
-        }
+        rumbleReadyToShoot();
+        resetSpindexer();
+    }
 
-        private void resetSpindexer(){
-            if(gamepad2.rightStickButtonWasPressed()){
-                spindexer.getTurnerEncoder().encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                spindexer.getTurnerEncoder().encoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            }
+    private void resetSpindexer(){
+        if(gamepad2.rightStickButtonWasPressed()){
+            spindexer.getTurnerEncoder().encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            spindexer.getTurnerEncoder().encoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
-        boolean hasRumbledreadyToShoot = false;
-        boolean hasRumbledAligned = false;
-        boolean aligned = false;
+    }
+    boolean hasRumbledreadyToShoot = false;
+    boolean hasRumbledAligned = false;
+    boolean aligned = false;
 
-        private void rumbleReadyToShoot() {
-            //aligned and right velocity
-            readyToShoot = shooter.readyToShoot();
-            aligned = autoAlign;
+    private void rumbleReadyToShoot() {
+        //aligned and right velocity
+        readyToShoot = shooter.readyToShoot();
+        aligned = autoAlign;
 //            if (readyToShoot) {
 //                gamepad2.rumble(100);
 //                gamepad1.rumble(100);
@@ -915,110 +880,109 @@ public class MainTeleOp extends CommandOpMode {
 //                hasRumbledreadyToShoot = false;
 //            }
 
-            if (readyToShoot && headingError <= Math.toRadians(1) && aligned) {
-                gamepad1.rumble(100);
-                gamepad2.rumble(100);
+        if (readyToShoot && headingError <= Math.toRadians(1) && aligned) {
+            gamepad1.rumble(100);
+            gamepad2.rumble(100);
 //                hasRumbledAligned = true;
-            }
+        }
 //            } else if (turnPower > 0.1) {
 //                hasRumbledAligned = false;
 //            }
 
-        }
+    }
 
-        private void pushUpCommands () {
-            if (activeSpindexerSpotIndex !=-1 || (autoIntake && autoIntakeCommand.currNumSpot != -1) || (gamepad2.aWasPressed() && pushUpColor != GobildaLightBlock.Color.ORANGE)) {
-                pushUpServo.setDown();
-            }
+    private void pushUpCommands () {
+        if (activeSpindexerSpotIndex !=-1 || (autoIntake && autoIntakeCommand.currNumSpot != -1) || (gamepad2.aWasPressed() && pushUpColor != GobildaLightBlock.Color.ORANGE)) {
+            pushUpServo.setDown();
+        }
 //            if(gamepad1.aWasPressed()){
 //                pushUpServo.setDown();
 //            }
 
-            if (gamepad2.bWasPressed()) {
-                pushUpServo.setUp();
-                if (autoSpindexer) {
-                    resetAutoSpindexer();
-                }
+        if (gamepad2.bWasPressed()) {
+            pushUpServo.setUp();
+            if (autoSpindexer) {
+                resetAutoSpindexer();
             }
         }
-        private void spindexerCommands () {
-            if (gamepad2.dpadLeftWasPressed() && !autoIntake) {
-                activeSpindexerSpotIndex = (goToSpotIntakeNum + 1) % 3;
-                goToSpotIntakeNum = activeSpindexerSpotIndex;
-                activeSpotType = SpotType.INTAKE;
-                autoSpindexer = true;
-            } else if (gamepad2.dpadDownWasPressed() && !autoIntake) {
-                activeSpindexerSpotIndex = spindexer.getNearestSpot(spindexer.getCurrentAngle(), SpotType.INTAKE).getIndex();
-                goToSpotIntakeNum = activeSpindexerSpotIndex;
-                activeSpotType = SpotType.INTAKE;
-                autoSpindexer = true;
-            } else if (gamepad2.dpadRightWasPressed() && !autoIntake) {
-                activeSpindexerSpotIndex = (goToSpotIntakeNum - 1) % 3;
-                if(activeSpindexerSpotIndex < 0) activeSpindexerSpotIndex += 3;
-                goToSpotIntakeNum = activeSpindexerSpotIndex;
-                activeSpotType = SpotType.INTAKE;
-                autoSpindexer = true;
-            }
-
-            if(autoIntake && autoIntakeCommand != null){
-                activeSpindexerSpotIndex = autoIntakeCommand.getSpotCurrent();
-            }
-
-            if ((autoIntake && autoIntakeCommand != null) ||(autoSpindexer && activeSpotType != null && activeSpindexerSpotIndex != -1)) {
-                spindexer.setMode(spindexerRunMode);
-                spindexer.goToSpot(SpindexerSpot.fromIndex(activeSpindexerSpotIndex), activeSpotType, spindexerRunMode);
-            }
-
-            else if (!autoSpindexer && !autoIntake) {
-                spindexerRawPower = gamepad2.left_stick_y * currturnerSpeed * change;
-                spindexerServo.setPower(spindexerRawPower);
-                spindexerDirection = spindexerRawPower > 0 ? 1 : -1;
-            }
-
-
+    }
+    private void spindexerCommands () {
+        if (gamepad2.dpadLeftWasPressed() && !autoIntake) {
+            activeSpindexerSpotIndex = (goToSpotIntakeNum + 1) % 3;
+            goToSpotIntakeNum = activeSpindexerSpotIndex;
+            activeSpotType = SpotType.INTAKE;
+            autoSpindexer = true;
+        } else if (gamepad2.dpadDownWasPressed() && !autoIntake) {
+            activeSpindexerSpotIndex = spindexer.getNearestSpot(spindexer.getCurrentAngle(), SpotType.INTAKE).getIndex();
+            goToSpotIntakeNum = activeSpindexerSpotIndex;
+            activeSpotType = SpotType.INTAKE;
+            autoSpindexer = true;
+        } else if (gamepad2.dpadRightWasPressed() && !autoIntake) {
+            activeSpindexerSpotIndex = (goToSpotIntakeNum - 1) % 3;
+            if(activeSpindexerSpotIndex < 0) activeSpindexerSpotIndex += 3;
+            goToSpotIntakeNum = activeSpindexerSpotIndex;
+            activeSpotType = SpotType.INTAKE;
+            autoSpindexer = true;
         }
 
-        public void resetAutoSpindexer () {
+        if(autoIntake && autoIntakeCommand != null){
+            activeSpindexerSpotIndex = autoIntakeCommand.getSpotCurrent();
+        }
+
+        if ((autoIntake && autoIntakeCommand != null) ||(autoSpindexer && activeSpotType != null && activeSpindexerSpotIndex != -1)) {
+            spindexer.goToSpot(SpindexerSpot.fromIndex(activeSpindexerSpotIndex), activeSpotType, CRServoEx2.RunMode.OptimizedPositionalControl);
+        }
+
+        else if (!autoSpindexer && !autoIntake) {
+            spindexerRawPower = gamepad2.left_stick_y * currturnerSpeed * change;
+            spindexerServo.setPower(spindexerRawPower);
+            spindexerDirection = spindexerRawPower > 0 ? 1 : -1;
+        }
+
+
+    }
+
+    public void resetAutoSpindexer () {
+        autoSpindexer = false;
+        spindexerGotoSpot = null;
+        activeSpindexerSpotIndex = -1;
+    }
+    private void intakeCommands () {
+        if (gamepad2.xWasPressed()) {
+            autoIntake = true;
             autoSpindexer = false;
-            spindexerGotoSpot = null;
             activeSpindexerSpotIndex = -1;
-        }
-        private void intakeCommands () {
-            if (gamepad2.xWasPressed()) {
-                autoIntake = true;
-                autoSpindexer = false;
-                activeSpindexerSpotIndex = -1;
 
-                autoIntakeCommand = new AutoIntakeCommand2(spindexer, intake, powerAutoIntake, autoSettleTime, useDistanceSensor, hardwareMap);
+            autoIntakeCommand = new AutoIntakeCommand2(spindexer, intake, powerAutoIntake, autoSettleTime, useDistanceSensor, hardwareMap);
 
 //                if (seqAutoIntakeCommand != null && !seqAutoIntakeCommand.isFinished()) {
 //                    CommandScheduler.getInstance().cancel(seqAutoIntakeCommand);
 //                }
 
-                seqAutoIntakeCommand = new SequentialCommandGroup(
-                        autoIntakeCommand.withTimeout(autoIntakeTimeout),
-                        new InstantCommand(() -> resetAutoIntake())
-                );
+            seqAutoIntakeCommand = new SequentialCommandGroup(
+                    autoIntakeCommand.withTimeout(autoIntakeTimeout),
+                    new InstantCommand(() -> resetAutoIntake())
+            );
 
-                schedule(seqAutoIntakeCommand);
-            }
-
-
-            if (!autoIntake) {
-                intakePower = gamepad2.right_stick_y * maxIntakePower;
-                intake.setDirectPower(gamepad2.right_stick_y * maxIntakePower, currVolt);
-            }
+            schedule(seqAutoIntakeCommand);
         }
 
-        private void resetAutoIntake () {
-            autoIntake = false;
-            seqAutoIntakeCommand = null;
-            activeSpindexerSpotIndex = -1;
-            autoIntakeCommand = null;
-            intake.setDirectPower(0);
-        }
 
-        private void flywheelCommands () {
+        if (!autoIntake) {
+            intakePower = gamepad2.right_stick_y * maxIntakePower;
+            intake.setDirectPower(gamepad2.right_stick_y * maxIntakePower, currVolt);
+        }
+    }
+
+    private void resetAutoIntake () {
+        autoIntake = false;
+        seqAutoIntakeCommand = null;
+        activeSpindexerSpotIndex = -1;
+        autoIntakeCommand = null;
+        intake.setDirectPower(0);
+    }
+
+    private void flywheelCommands () {
 //        if(gamepad2.bWasPressed()){
 //            autoShootSeq = true;
 //            if(shootSeqCommand != null && !shootSeqCommand.isFinished()){
@@ -1032,143 +996,143 @@ public class MainTeleOp extends CommandOpMode {
 //            resetAutoShoot();
 //        }
 
-            //shoot sequence command doesn't power the flywheel, need to power using handleShooterInput simaltaenously
-            handleShooterInput();
+        //shoot sequence command doesn't power the flywheel, need to power using handleShooterInput simaltaenously
+        handleShooterInput();
 
-            //not rlly necesarry
+        //not rlly necesarry
 //        if(gamepad2.backWasPressed()){
 //            shooter.resetRecoveryFactors();
 //        }
-        }
-        private void resetAutoShoot () {
-            autoShootSeq = false;
-            shootSeqCommand = null;
-        }
+    }
+    private void resetAutoShoot () {
+        autoShootSeq = false;
+        shootSeqCommand = null;
+    }
 
-        boolean prevLeftTrigger = false;
-        double currVolt;
-        private void handleShooterInput () {
-            currVolt = hardwareMap.voltageSensor.iterator().next().getVoltage();
-
-
-            if (gamepad2.left_bumper) {
-                useLUT = false;
-                setCurrentShootDist(TwoWheelShooter.ShootDist.Close, currVolt);
-            } else if (gamepad2.right_bumper) {
-                useLUT = false;
-                setCurrentShootDist(TwoWheelShooter.ShootDist.Far, currVolt);
-            }  else if (gamepad2.left_trigger > 0.5) {
-                useLUT = true;
-                setCurrentShootDist(TwoWheelShooter.ShootDist.Far, currVolt);
-            }
+    boolean prevLeftTrigger = false;
+    double currVolt;
+    private void handleShooterInput () {
+        currVolt = hardwareMap.voltageSensor.iterator().next().getVoltage();
 
 
-            if (gamepad2.optionsWasPressed()) {
-                shooterRunMode = shooterRunMode == TwoWheelShooter.RunMode.RawPower ? TwoWheelShooter.RunMode.VelocityControl : TwoWheelShooter.RunMode.RawPower;
-                shooter.setRunMode(shooterRunMode);
-            }
-            if (gamepad2.shareWasPressed()) {
-                voltageCompensation = !voltageCompensation;
-                if (voltageCompensation) gamepad2.rumbleBlips(2);
-            }
-
-            if (gamepad2.right_trigger > 0.5) {
-                shooter.stopFlywheels();
-            }
+        if (gamepad2.left_bumper) {
+            useLUT = false;
+            setCurrentShootDist(TwoWheelShooter.ShootDist.Close, currVolt);
+        } else if (gamepad2.right_bumper) {
+            useLUT = false;
+            setCurrentShootDist(TwoWheelShooter.ShootDist.Far, currVolt);
+        }  else if (gamepad2.left_trigger > 0.5) {
+            useLUT = true;
+            setCurrentShootDist(TwoWheelShooter.ShootDist.Far, currVolt);
         }
 
-        private void setCurrentShootDist (TwoWheelShooter.ShootDist shootDist, double currVolt){
-            currentShootDist = shootDist;
-            if (!setCustomPower) {
-                if (useLUT) {
-                    shooter.setFlywheelLUT(follower, shootSide, voltageCompensation, currVolt);
-                } else {
-//                shooter.resetDefaultGains();
-                    shooter.setFlywheelPresets(shootDist, follower, shootSide, voltageCompensation, currVolt);
-                }
+
+        if (gamepad2.optionsWasPressed()) {
+            shooterRunMode = shooterRunMode == TwoWheelShooter.RunMode.RawPower ? TwoWheelShooter.RunMode.VelocityControl : TwoWheelShooter.RunMode.RawPower;
+            shooter.setRunMode(shooterRunMode);
+        }
+        if (gamepad2.shareWasPressed()) {
+            voltageCompensation = !voltageCompensation;
+            if (voltageCompensation) gamepad2.rumbleBlips(2);
+        }
+
+        if (gamepad2.right_trigger > 0.5) {
+            shooter.stopFlywheels();
+        }
+    }
+
+    private void setCurrentShootDist (TwoWheelShooter.ShootDist shootDist, double currVolt){
+        currentShootDist = shootDist;
+        if (!setCustomPower) {
+            if (useLUT) {
+                shooter.setFlywheelLUT(follower, shootSide, voltageCompensation, currVolt);
             } else {
-                shooter.setCustomPower(customBotTargetVel, customTopTargetVel, currVolt);
+//                shooter.resetDefaultGains();
+                shooter.setFlywheelPresets(shootDist, follower, shootSide, voltageCompensation, currVolt);
             }
-
+        } else {
+            shooter.setCustomPower(customBotTargetVel, customTopTargetVel, currVolt);
         }
-        //TODO: REORGANIZE TELEMETRY
-        private void updateTelem () {
+
+    }
+    //TODO: REORGANIZE TELEMETRY
+    private void updateTelem () {
 
         if(autoIntakeCommand != null && !autoIntakeCommand.isFinished()) {
             telemetry.addData("Curr Target Spot Auto Intake", autoIntakeCommand.currNumSpot);
         }
-            telemetry.addData("Relocalized", relocalized);
-            if (useDistanceSensor) {
-                telemetry.addData("ball detected", spindexer.distCheck);
+        telemetry.addData("Relocalized", relocalized);
+        if (useDistanceSensor) {
+            telemetry.addData("ball detected", spindexer.distCheck);
 //        telemetry.addData("dist 2", spindexer.distanceSensor2.getDistance(DistanceUnit.INCH));
-            }
-            // telemetry.addData("Near Wheel", spindexer.nearWheel);
-            // telemetry.addData("Min Power Overcome", spindexer.getTurner().getMinPowerOvercome());
+        }
+        // telemetry.addData("Near Wheel", spindexer.nearWheel);
+        // telemetry.addData("Min Power Overcome", spindexer.getTurner().getMinPowerOvercome());
 //        if(spindexer.getNearestEmptyIntakeSpot() != null) {
 //            telemetry.addData("Nearest Empty Intake Spot", spindexer.getNearestEmptyIntakeSpot().getIndex());
 //        }
-            //telemetry.addData("Distance Sensor", spindexer.getDistance());
-            //telemetry.addData("Spindexer Closest Intake Spot", spindexer.getNearestSpot(spindexer.getCurrentAngle(), SpotType.INTAKE));
-            telemetry.addData("update rate", 1000.0 / gameTimer.getDeltaTime());
+        //telemetry.addData("Distance Sensor", spindexer.getDistance());
+        //telemetry.addData("Spindexer Closest Intake Spot", spindexer.getNearestSpot(spindexer.getCurrentAngle(), SpotType.INTAKE));
+        telemetry.addData("update rate", 1000.0 / gameTimer.getDeltaTime());
 
 
-            telemetry.addData("follower velocity X,Y,T", "%f , %f, %f", follower.getVelocity().getXComponent(), follower.getVelocity().getYComponent(), follower.getVelocity().getTheta());
+        telemetry.addData("follower velocity X,Y,T", "%f , %f, %f", follower.getVelocity().getXComponent(), follower.getVelocity().getYComponent(), follower.getVelocity().getTheta());
 
-            telemetry.addData("Voltage Use", voltageCompensation);
-            telemetry.addData("Use LUT", useLUT);
-            telemetry.addData("Shoot Mode", shooterRunMode);
-            telemetry.addData("Current Voltage", currVolt);
-           // telemetry.addData("Ratio Voltage ", shooter.getTargetVoltage() / shooter.getCurrVoltage());
-            telemetry.addData("Start Pose", startPose.getPose().toString());
-            telemetry.addData("Start Heading(Deg)", "%.4f", convertRadToDegrees(startPose.getHeading()));
-            telemetry.addLine("Current Pose" +  currentPose.getX() + "; " + currentPose.getY() + "; " + currentPose.getHeading());
+        telemetry.addData("Voltage Use", voltageCompensation);
+        telemetry.addData("Use LUT", useLUT);
+        telemetry.addData("Shoot Mode", shooterRunMode);
+        telemetry.addData("Current Voltage", currVolt);
+        // telemetry.addData("Ratio Voltage ", shooter.getTargetVoltage() / shooter.getCurrVoltage());
+        telemetry.addData("Start Pose", startPose.getPose().toString());
+        telemetry.addData("Start Heading(Deg)", "%.4f", convertRadToDegrees(startPose.getHeading()));
+        telemetry.addLine("Current Pose" +  currentPose.getX() + "; " + currentPose.getY() + "; " + currentPose.getHeading());
 //        telemetry.addData("Ball Color Sensor 1", spindexer.getBallColor1());
 //        telemetry.addData("Ball Color Sensor 2", spindexer.getBallColor2());
-            telemetry.addLine("------------------------------------");
+        telemetry.addLine("------------------------------------");
 
 
-            telemetry.addLine("------------------------------------");
-            telemetry.addData("Current Speed", currSpeed);
-            telemetry.addData("Shoot Side", shootSide);
-            telemetry.addData("Current Shoot Dist", currentShootDist);
-            // telemetry.addData("Pattern", pattern);
-            telemetry.addData("Shooter Top Factor", shooter.getCurrTopFactor());
-            telemetry.addData("Shooter Bot Factor", shooter.getCurrBotFactor());
-            telemetry.addData("Multiplier Top", shooter.getCurrTopFactor() * shooter.getTargetVoltage() / shooter.getCurrVoltage());
-            telemetry.addData("Multiplier Bot", shooter.getCurrBotFactor() * shooter.getTargetVoltage() / shooter.getCurrVoltage());
-            telemetry.addData("Trigger Ball Shot", triggerBallShot);
-            telemetry.addData("Recently Triggered Shot", recentTriggeredSpot);
-            telemetry.addData("Ready to Shoot", shooter.readyToShoot());
-            telemetry.addData("Actual Recovery Time", shooter.getRecoveryTime());
+        telemetry.addLine("------------------------------------");
+        telemetry.addData("Current Speed", currSpeed);
+        telemetry.addData("Shoot Side", shootSide);
+        telemetry.addData("Current Shoot Dist", currentShootDist);
+        // telemetry.addData("Pattern", pattern);
+        telemetry.addData("Shooter Top Factor", shooter.getCurrTopFactor());
+        telemetry.addData("Shooter Bot Factor", shooter.getCurrBotFactor());
+        telemetry.addData("Multiplier Top", shooter.getCurrTopFactor() * shooter.getTargetVoltage() / shooter.getCurrVoltage());
+        telemetry.addData("Multiplier Bot", shooter.getCurrBotFactor() * shooter.getTargetVoltage() / shooter.getCurrVoltage());
+        telemetry.addData("Trigger Ball Shot", triggerBallShot);
+        telemetry.addData("Recently Triggered Shot", recentTriggeredSpot);
+        telemetry.addData("Ready to Shoot", shooter.readyToShoot());
+        telemetry.addData("Actual Recovery Time", shooter.getRecoveryTime());
 
 
-            telemetry.addLine("------------------------------------");
-            telemetry.addData("Auto Align", autoAlign);
-            telemetry.addData("Target Heading", convertRadToDegrees(targetHeading));
-            telemetry.addData("Heading Error(Alignment)", convertRadToDegrees(headingError));
-            telemetry.addData("Turn Power", turnPower);
-            telemetry.addData("Camera Yaw Global", cameraYawGlobal);
-            telemetry.addData("Camera Yaw Rel", cameraYawRelative);
-            telemetry.addData("Tag", tag == null ? "NONE" : tag.id);
+        telemetry.addLine("------------------------------------");
+        telemetry.addData("Auto Align", autoAlign);
+        telemetry.addData("Target Heading", convertRadToDegrees(targetheading));
+        telemetry.addData("Heading Error(Alignment)", convertRadToDegrees(headingError));
+        telemetry.addData("Turn Power", turnPower);
+        telemetry.addData("Camera Yaw Global", cameraYawGlobal);
+        telemetry.addData("Camera Yaw Rel", cameraYawRelative);
+        telemetry.addData("Tag", tag == null ? "NONE" : tag.id);
 
 
-            telemetry.addLine("------------------------------------");
-            telemetry.addData("Auto Spindexer", autoSpindexer);
-            telemetry.addData("Auto Drive", autoDriveToShoot);
+        telemetry.addLine("------------------------------------");
+        telemetry.addData("Auto Spindexer", autoSpindexer);
+        telemetry.addData("Auto Drive", autoDriveToShoot);
 
-            telemetry.addLine("--------------------------------");
-            telemetry.addData("Intake Run Mode", intakeRunMode);
-            telemetry.addData("Intake Power", intakePower);
+        telemetry.addLine("--------------------------------");
+        telemetry.addData("Intake Run Mode", intakeRunMode);
+        telemetry.addData("Intake Power", intakePower);
 //        telemetry.addData("Intake Target Velocity", intakeTargetVel);
 
-            telemetry.addLine("--------------------------------");
-            telemetry.addData("Shooter Mode", shooterRunMode);
-            telemetry.addData("Shooter Top Power", shooter.high.get());
-            telemetry.addData("Shooter Bot Power", shooter.low.get());
-            telemetry.addData("Shooter Top Vel", shooter.high.getVelocity());
-            telemetry.addData("Shooter Bot Vel", shooter.low.getVelocity());
-            telemetry.addData("Corr Shooter Top", shooter.high.getCorrectedVelocity());
-            telemetry.addData("Corr Shooter Bot", shooter.low.getCorrectedVelocity());
+        telemetry.addLine("--------------------------------");
+        telemetry.addData("Shooter Mode", shooterRunMode);
+        telemetry.addData("Shooter Top Power", shooter.high.get());
+        telemetry.addData("Shooter Bot Power", shooter.low.get());
+        telemetry.addData("Shooter Top Vel", shooter.high.getVelocity());
+        telemetry.addData("Shooter Bot Vel", shooter.low.getVelocity());
+        telemetry.addData("Corr Shooter Top", shooter.high.getCorrectedVelocity());
+        telemetry.addData("Corr Shooter Bot", shooter.low.getCorrectedVelocity());
 
 //        dashboardTelemetry.addData("Spindexer Req Spot Indx", requestedSpindexerSpotIndex);
 //        dashboardTelemetry.addData("Spindexer Req Spot Type", requestedSpotType);
@@ -1182,15 +1146,15 @@ public class MainTeleOp extends CommandOpMode {
 //        dashboardTelemetry.addData("Shooter Corr Top Vel", shooter.high.getCorrectedVelocity());
 //        dashboardTelemetry.addData("Shooter Corr Bot Vel", shooter.low.getCorrectedVelocity());
 //        telemetry.addData("Shooter Dir RunMode", shooter.runMode);
-            telemetry.addData("Distance From Goal", shooter.getDistance(currentPose, shootSide));
+        telemetry.addData("Distance From Goal", shooter.getDistance(currentPose, shootSide));
 
 
-            telemetry.addLine("--------------------------------");
-            telemetry.addData("Spindexer Mode", spindexerRunMode);
-            telemetry.addData("Spindexer Angle", spindexer.getCurrentAngle());
+        telemetry.addLine("--------------------------------");
+        telemetry.addData("Spindexer Mode", spindexerRunMode);
+        telemetry.addData("Spindexer Angle", spindexer.getCurrentAngle());
 //        telemetry.addData("Spindexer Norm Angle", spindexer.getEncoder().getAngle());
 //        telemetry.addData("Spindexer Raw Angle", spindexer.getEncoder().getAngleUnnormalized());
-            telemetry.addData("Spindexer Auto Spindxer", autoSpindexer);
+        telemetry.addData("Spindexer Auto Spindxer", autoSpindexer);
 //        if(spindexer.getSequence() != null) {
 //            telemetry.addData("Spindexer Seq 0", spindexer.getSequence()[0]);
 //            telemetry.addData("Spindexer Seq 1", spindexer.getSequence()[1]);
@@ -1201,23 +1165,23 @@ public class MainTeleOp extends CommandOpMode {
             telemetry.addData("Spindexer Ball Color 1", currSpindexerBallColors[1]);
             telemetry.addData("Spindexer Ball Color 2", currSpindexerBallColors[2]);
         }
-            telemetry.addData("Spindexer Angle Error", spindexer.getTurner().error);
-            //telemetry.addData("Auto Intake", autoIntake);
-            // telemetry.addData("Manual Spindexer Power", gamepad2.left_stick_y * currturnerSpeed * change);
-            telemetry.addData("Spindexer Direction", spindexerDirection);
-            telemetry.addData("Spindexer Curr Active Indx", activeSpindexerSpotIndex);
+        telemetry.addData("Spindexer Angle Error", spindexer.getTurner().error);
+        //telemetry.addData("Auto Intake", autoIntake);
+        // telemetry.addData("Manual Spindexer Power", gamepad2.left_stick_y * currturnerSpeed * change);
+        telemetry.addData("Spindexer Direction", spindexerDirection);
+        telemetry.addData("Spindexer Curr Active Indx", activeSpindexerSpotIndex);
 //        telemetry.addData("Spindexer Req Indx", requestedSpindexerSpotIndex);
 
-            telemetry.addData("Spindexer Raw Power", spindexerRawPower);
-            telemetry.addData("Spindexer Curr Spot Type", activeSpotType);
+        telemetry.addData("Spindexer Raw Power", spindexerRawPower);
+        telemetry.addData("Spindexer Curr Spot Type", activeSpotType);
 //        telemetry.addData("Spindexer Req Spot Type", requestedSpotType);
-            // telemetry.addData("Outake Spindexer Coeff on", spindexer.outakeSpindexerCoeffOn);
+        // telemetry.addData("Outake Spindexer Coeff on", spindexer.outakeSpindexerCoeffOn);
 
 //        telemetryM.update();;
 //        graphM.update();
-            telemetry.update();
+        telemetry.update();
 //        dashboardTelemetry.update();
 
-        }
-
     }
+
+}

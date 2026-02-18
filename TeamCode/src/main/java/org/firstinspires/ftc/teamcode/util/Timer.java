@@ -5,8 +5,14 @@ import java.util.concurrent.TimeUnit;
 public class Timer {
     private long startTime;
     private long previousTime;
+    private final TimeUnit defaultUnit;
 
     public Timer() {
+        this(TimeUnit.MILLISECONDS);
+    }
+
+    public Timer(TimeUnit defaultUnit) {
+        this.defaultUnit = defaultUnit;
         restart();
     }
 
@@ -15,31 +21,45 @@ public class Timer {
         previousTime = startTime;
     }
 
-    public long getTime() {
-        return getTime(TimeUnit.MILLISECONDS);
+    public double getTime() {
+        return getTime(defaultUnit);
     }
 
-    public long getTime(TimeUnit unit) {
+    public double getTime(TimeUnit unit) {
         long elapsed = System.nanoTime() - startTime;
-        return unit.convert(elapsed, TimeUnit.NANOSECONDS);
+        return convert(elapsed, unit);
     }
 
-    public long getDeltaTime() {
-        return getDeltaTime(TimeUnit.MILLISECONDS);
+    public double getDeltaTime() {
+        return getDeltaTime(defaultUnit);
     }
 
-    public long getDeltaTime(TimeUnit unit) {
+    public double getDeltaTime(TimeUnit unit) {
         long now = System.nanoTime();
         long delta = now - previousTime;
         previousTime = now;
-        return unit.convert(delta, TimeUnit.NANOSECONDS);
+        return convert(delta, unit);
     }
 
-    public long getPreviousTime() {
-        return getPreviousTime(TimeUnit.MILLISECONDS);
+    public double getPreviousTime() {
+        return getPreviousTime(defaultUnit);
     }
 
-    public long getPreviousTime(TimeUnit unit) {
-        return unit.convert(previousTime - startTime, TimeUnit.NANOSECONDS);
+    public double getPreviousTime(TimeUnit unit) {
+        long elapsed = previousTime - startTime;
+        return convert(elapsed, unit);
+    }
+
+    private double convert(long nanos, TimeUnit unit) {
+        switch (unit) {
+            case NANOSECONDS: return nanos;
+            case MICROSECONDS: return nanos / 1_000.0;
+            case MILLISECONDS: return nanos / 1_000_000.0;
+            case SECONDS: return nanos / 1_000_000_000.0;
+            case MINUTES: return nanos / 60_000_000_000.0;
+            case HOURS: return nanos / 3_600_000_000_000.0;
+            case DAYS: return nanos / 86_400_000_000_000.0;
+            default: throw new IllegalArgumentException("Unsupported TimeUnit");
+        }
     }
 }
