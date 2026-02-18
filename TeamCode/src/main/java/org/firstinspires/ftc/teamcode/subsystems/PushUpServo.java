@@ -12,6 +12,7 @@ public class PushUpServo extends SubsystemBase {
     public static double minPos = 0.25;
     public static double maxPos = 0.57;
     public static double initPos = minPos;
+    public static double cachingTolerance = 0.01;
     public static Servo.Direction dir = Servo.Direction.FORWARD;
     Servo pushUpServo;
 
@@ -22,7 +23,7 @@ public class PushUpServo extends SubsystemBase {
     }
 
     public void setDown(){
-        pushUpServo.setPosition(minPos);
+        setPosition(minPos);
     }
     public double getMinPos(){
         return minPos;
@@ -32,11 +33,11 @@ public class PushUpServo extends SubsystemBase {
     }
 
     public void setUp(){
-        pushUpServo.setPosition(maxPos);
+        setPosition(maxPos);
     }
 
     public void setCustomPos(double pos){
-        pushUpServo.setPosition(Math.max(Math.min(pos, maxPos), minPos));
+        setPosition(Math.max(Math.min(pos, maxPos), minPos));
     }
 
     public Servo getServo(){
@@ -44,4 +45,9 @@ public class PushUpServo extends SubsystemBase {
     }
 
 
+    public void setPosition(double position){
+        if ((Math.abs(position - pushUpServo.getPosition()) > cachingTolerance) || (position == 0 && pushUpServo.getPosition() != 0)) {
+            pushUpServo.setPosition(position);
+        }
+    }
 }

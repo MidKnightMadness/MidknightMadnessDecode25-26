@@ -19,7 +19,7 @@ public class MotorEx extends Motor {
     public DcMotorEx motorEx;
 
     // The minimum difference between the current and requested motor power between motor writes
-    private double cachingTolerance = 0.0001;
+    private double cachingTolerance = 0.01;
 
     /**
      * Constructs the instance motor for the wrapper
@@ -142,7 +142,7 @@ public class MotorEx extends Motor {
     /**
      * @param power power to be assigned to the motor if difference is greater than caching tolerance or if power is exactly 0
      */
-    private void setPower(double power) {
+    public void setPower(double power) {
         if ((Math.abs(power - motorEx.getPower()) > cachingTolerance) || (power == 0 && motorEx.getPower() != 0)) {
             motorEx.setPower(power);
         }

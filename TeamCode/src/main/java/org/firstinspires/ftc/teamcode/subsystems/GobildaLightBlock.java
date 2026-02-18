@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 
 public class GobildaLightBlock {
+    public static double cachingTolerance = 0.01;
 
     public enum Color{
         RED,
@@ -36,7 +37,7 @@ public class GobildaLightBlock {
         } else if(color.equals(BallColor.UNKNOWN)){
             setColor(Color.ORANGE);
         } else{
-            lightControl.setPosition(0);
+            setPosition(0);
         }
     }
     //anything else
@@ -67,9 +68,15 @@ public class GobildaLightBlock {
                 targetPower = 0;
         }
         if(targetPower != currPower){
-            lightControl.setPosition(targetPower);
-            currPower = targetPower;
+            setPosition(targetPower);
         }
+        currPower = targetPower;
 
+    }
+
+    public void setPosition(double position){
+        if ((Math.abs(position - lightControl.getPosition()) > cachingTolerance) || (position == 0 && lightControl.getPosition() != 0)) {
+            lightControl.setPosition(position);
+        }
     }
 }

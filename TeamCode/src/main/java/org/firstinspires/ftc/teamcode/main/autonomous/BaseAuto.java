@@ -38,9 +38,9 @@ public class BaseAuto extends CommandOpMode {
     boolean prevVisionComplete = false;
 
     protected AprilTagWebcam arducam;
-    public static double maxTimeMs = 29000;
-    public static double maxWritePoseTimeMs = 300;
-    public static double maxSideWriteTimeMs = 300;
+    public static double maxTimeMs = 28500;
+    public static double maxWritePoseTimeMs = 500;
+    public static double maxSideWriteTimeMs = 500;
     boolean stopEnd = false;
     ShootSide side;
     boolean postMotif = false;

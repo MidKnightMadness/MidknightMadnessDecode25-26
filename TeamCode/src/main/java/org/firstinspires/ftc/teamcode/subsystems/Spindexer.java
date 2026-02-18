@@ -180,6 +180,7 @@ public class Spindexer extends SubsystemBase {
         }
         return works;
     }
+
     public Spindexer setBallColors(BallColor[] ballColors) {
         this.ballColors = ballColors;
         return this;
@@ -541,25 +542,25 @@ public class Spindexer extends SubsystemBase {
     public void goToSpotOptimized(SpindexerSpot spot, SpotType spotType){
         goToAngleOptimized(spot.getSpotAngle(spotType));
     }
-    public boolean goToColor(BallColor ballColor, SpotType spotType, CRServoEx2.RunMode runMode, boolean wheelCompensation) {
-        double angleClosest = 400;
-        SpindexerSpot closestSpot = null;
-        for(int i = 0; i < NUM_SPOTS; i++){
-            if(ballColor == ballColors[i]){
-                if((currentAngle.absGap(SpindexerSpot.fromIndex(i).getPreOuttakeAngle()).toDegrees()) < angleClosest){
-                    angleClosest = currentAngle.absGap(SpindexerSpot.fromIndex(i).getPreOuttakeAngle()).toDegrees();
-                    closestSpot = SpindexerSpot.fromIndex(i);
-                }
-            }
-        }
-        if(closestSpot != null){
-            goToSpot(closestSpot, spotType, runMode);
-        }
-
-        if(closestSpot == null){
-            return false;
-        } return true;
-    }
+//    public boolean goToColor(BallColor ballColor, SpotType spotType, CRServoEx2.RunMode runMode, boolean wheelCompensation) {
+//        double angleClosest = 400;
+//        SpindexerSpot closestSpot = null;
+//        for(int i = 0; i < NUM_SPOTS; i++){
+//            if(ballColor == ballColors[i]){
+//                if((currentAngle.absGap(SpindexerSpot.fromIndex(i).getPreOuttakeAngle()).toDegrees()) < angleClosest){
+//                    angleClosest = currentAngle.absGap(SpindexerSpot.fromIndex(i).getPreOuttakeAngle()).toDegrees();
+//                    closestSpot = SpindexerSpot.fromIndex(i);
+//                }
+//            }
+//        }
+//        if(closestSpot != null){
+//            goToSpot(closestSpot, spotType, runMode);
+//        }
+//
+//        if(closestSpot == null){
+//            return false;
+//        } return true;
+//    }
 
     public int getBallCount() {
         if(ballColors == null){

@@ -71,7 +71,7 @@ public class Intake extends SubsystemBase {
 
     public void setDirectPower(double power, double currVolt){
         double motorPower = Math.clampOutput(power, -1, 1);
-        intakeMotor.motor.setPower(motorPower * reference_voltage / currVolt);
+        intakeMotor.setPower(motorPower * reference_voltage / currVolt);
     }
 
     public void setVelocity(double vel){

@@ -105,6 +105,13 @@ public class ConstantsBot {
                 .pathConstraints(pathConstraints)
                 .build();
     }
+    public static Follower createReusedPinpointFollower(HardwareMap hardwareMap) {
+        return new FollowerBuilder(followerConstants, hardwareMap)
+                .pinpointCustomLocalizer(pinpointLocalizer1Constants)
+                .mecanumDrivetrain(driveConstants)
+                .pathConstraints(pathConstraints)
+                .build();
+    }
     public static Follower createPinpointFollower1(HardwareMap hardwareMap) {
         return new FollowerBuilder(followerConstants, hardwareMap)
                 .pinpointCustomLocalizer(pinpointLocalizer1Constants)

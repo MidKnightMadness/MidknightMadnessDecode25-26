@@ -287,23 +287,23 @@ public class MainTeleOp extends CommandOpMode {
         register(intake, shooter, spindexer, pushUpServo);
 
 //
-//        if(useBulkMode) {
-////            CommandScheduler.getInstance().setClearCacheOff();
-//            // Setup in your Robot class if you have one, or in init at start of opMode
+        if(useBulkMode) {
+//            CommandScheduler.getInstance().setClearCacheOff();
+            // Setup in your Robot class if you have one, or in init at start of opMode
 ////
-////            PhotonCore.CONTROL_HUB.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
-////            PhotonCore.EXPANSION_HUB.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
-////            PhotonCore.experimental.setMaximumParallelCommands(optimalNum); // Can be adjusted based on user preference - but raising this number further can cause issues
-////            PhotonCore.enable();
-//            CommandScheduler.getInstance().setBulkReading(
-//                    hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
-//            );
-//        }
-//        else{
-//            CommandScheduler.getInstance().setBulkReading(
-//                    hardwareMap, LynxModule.BulkCachingMode.OFF // Scheduler will clean cache for you
-//            );
-//        }
+//            PhotonCore.CONTROL_HUB.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+//            PhotonCore.EXPANSION_HUB.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+//            PhotonCore.experimental.setMaximumParallelCommands(optimalNum); // Can be adjusted based on user preference - but raising this number further can cause issues
+//            PhotonCore.enable();
+            CommandScheduler.getInstance().setBulkReading(
+                    hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
+            );
+        }
+        else{
+            CommandScheduler.getInstance().setBulkReading(
+                    hardwareMap, LynxModule.BulkCachingMode.OFF // Scheduler will clean cache for you
+            );
+        }
 
         telemetry.setMsTransmissionInterval(500);
     }
@@ -411,6 +411,11 @@ public class MainTeleOp extends CommandOpMode {
 
     @Override
     public void run(){
+//        if(useBulkMode){
+//            PhotonCore.CONTROL_HUB.clearBulkCache();
+//            PhotonCore.EXPANSION_HUB.clearBulkCache();
+//        }
+
         super.run();
         currSpindexerBallColors = spindexer.getBallColors();
 
@@ -431,7 +436,7 @@ public class MainTeleOp extends CommandOpMode {
 //        }
 
         runGamepad1Comands();
-        runGamepad2Commands();
+//        runGamepad2Commands();
         if(gamepad1.aWasPressed()){
             calibrateYaw();
         }
@@ -492,10 +497,7 @@ public class MainTeleOp extends CommandOpMode {
 //        }
 
 
-//        if(useBulkMode){
-//            PhotonCore.CONTROL_HUB.clearBulkCache();
-//            PhotonCore.EXPANSION_HUB.clearBulkCache();
-//        }
+
 
 
     }
@@ -657,11 +659,11 @@ public class MainTeleOp extends CommandOpMode {
     public double getAngleError(Pose position, Pose target){
         Pose control1, control2;
         if (shootSide == ShootSide.LEFT) {
-            control1 = new Pose(14, 144);
-            control2 = new Pose(0, 130);
+            control1 = new Pose(10, 144);
+            control2 = new Pose(0, 134);
         } else {
-            control1 = new Pose(130, 144);
-            control2 = new Pose(144, 130);
+            control1 = new Pose(134, 144);
+            control2 = new Pose(144, 134);
         }
 
         double angle1 = getTargetAngle(position, control1);
@@ -1074,6 +1076,7 @@ public class MainTeleOp extends CommandOpMode {
 
             if (gamepad2.right_trigger > 0.5) {
                 shooter.stopFlywheels();
+                setBallColorsDefault();
             }
         }
 

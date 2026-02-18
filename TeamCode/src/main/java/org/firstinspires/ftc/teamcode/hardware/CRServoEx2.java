@@ -217,12 +217,12 @@ public class CRServoEx2<E extends Encoder> extends CRServo {
             if (power > 0) {
                 positivePowerCount++;
             }
-            crServo.setPower(power);
+            setPower(power);
 
 //            crServo.setPower(clamp(power, - 0.8, 0.8));//clamp to make sure not setting to too fast
         } else {
             this.power = output;
-            crServo.setPower(output);
+            setPower(output);
             runmode = RunMode.OptimizedPositionalControl;
             //swap to other runMode
         }
