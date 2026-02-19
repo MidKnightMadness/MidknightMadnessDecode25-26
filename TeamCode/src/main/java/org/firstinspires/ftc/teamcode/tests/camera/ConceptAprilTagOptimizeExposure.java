@@ -28,7 +28,6 @@ package org.firstinspires.ftc.teamcode.tests.camera;/* Copyright (c) 2023 FIRST.
  */
 
 
-
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
