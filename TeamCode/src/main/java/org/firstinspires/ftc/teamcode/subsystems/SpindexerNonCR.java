@@ -365,11 +365,15 @@ public class SpindexerNonCR extends SubsystemBase {
         double angle = position * degreesPerRevolution;
         return isAtAngle(AngleNonCR.fromDegrees(angle), finishedThreshold);
     }
+    public boolean isAtPositionStrict(double position){
+        double angle = position * degreesPerRevolution;
+        return isAtAngleStrict(AngleNonCR.fromDegrees(angle));
+    }
     public boolean isAtAngle(AngleNonCR angle, AngleNonCR finishedThreshold) {
         return angle.diff(currentAngle).toDegrees() < finishedThreshold.abs().toDegrees();
     }
 
-    public boolean isAtAngleStrict(AngleNonCR angle, AngleNonCR finishedThreshold){
+    public boolean isAtAngleStrict(AngleNonCR angle){
         return angle.diff(currentAngle).toDegrees() < strictFinished.abs().toDegrees();
     }
 

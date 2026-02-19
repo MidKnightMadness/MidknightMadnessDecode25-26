@@ -111,7 +111,7 @@ public class ShooterTest extends OpMode {
             triggerBallShot = false;
         }
         if(!triggerBallShot && triggeredSpot != -1){
-            shooter.triggerBallShot(recoveryOn);
+            shooter.triggerBallShot();
             spindexer.removeBall(triggeredSpot);
             triggerBallShot = true;
         }

@@ -230,7 +230,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
     double currTurnerPosition;
     double targetSpindexerPosition;
     int activeSpindexerSpot = 0;
-    public static double intermediateSmoothServo = 0.015;
+    public static double totalSmoothTime = 1;
 
     @Override
     public void initialize() {
@@ -431,6 +431,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
         }
 
         updateLights();
+        shooter.checkForFirstShot();
 //
 //        if((autoIntake || autoSpindexer) && activeSpindexerSpotIndex != -1 && activeSpotType != null){
 //            spindexer.goToSpot(SpindexerSpot.fromIndex(activeSpindexerSpotIndex), activeSpotType, spindexerRunMode);
@@ -932,6 +933,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
     private void pushUpCommands() {
         if (autoSpindexer || (autoIntake && autoIntakeCommand.currNumSpot != -1) || (gamepad2.aWasPressed() && pushUpColor != GobildaLightBlock.Color.ORANGE)) {
             pushUpServo.setDown();
+            shooter.resetGainScheduling();
         }
 //            if(gamepad1.aWasPressed()){
 //                pushUpServo.setDown();
@@ -950,18 +952,6 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
     private void spindexerCommands() {
         currTurnerPosition = spindexer.getCurrentSpindexerPosition();
-
-//        if (autoIntake && autoIntakeCommand != null)
-//            targetSpotPosition = autoIntakeCommand.getSpotPosition();
-//
-//        if (autoIntake && autoIntakeCommand != null && targetSpotPosition != currSpotPosition) {
-//            currSpotPosition = targetSpotPosition;
-//            clearExistingSpindexerCommand();
-//            spindexerGotoPosition = new SpindexerGotoPosition(spindexer, targetSpotPosition);
-//            schedulePosition(spindexerGotoPosition);
-//        }
-
-
 
         if(autoIntake && autoIntakeCommand != null){
             autoIntakeSpot = autoIntakeCommand.getSpotPosition();
@@ -991,11 +981,11 @@ public class MainTeleOpNonCR extends CommandOpMode {
             schedulePosition(spindexerGotoPosition);
         } else if (gamepad2.leftBumperWasPressed() && !autoIntake) {
             clearExistingSpindexerCommand();
-            spindexerGotoPositionSmooth = new SpindexerGotoPositionSmooth(spindexer, spindexer.startOutakePosition, intermediateSmoothServo);
+            spindexerGotoPositionSmooth = new SpindexerGotoPositionSmooth(spindexer, spindexer.startOutakePosition, totalSmoothTime);
             schedulePosition(spindexerGotoPositionSmooth);
         } else if (gamepad2.rightBumperWasPressed() && !autoIntake) {
             clearExistingSpindexerCommand();
-            spindexerGotoPositionSmooth = new SpindexerGotoPositionSmooth(spindexer, spindexer.endOutakePosition, intermediateSmoothServo);
+            spindexerGotoPositionSmooth = new SpindexerGotoPositionSmooth(spindexer, spindexer.endOutakePosition, totalSmoothTime);
             schedulePosition(spindexerGotoPositionSmooth);
         }
 

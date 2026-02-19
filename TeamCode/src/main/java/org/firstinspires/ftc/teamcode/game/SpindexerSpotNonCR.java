@@ -35,7 +35,7 @@ public enum SpindexerSpotNonCR {
     SPOT3(
             3,
             (double)360/439,
-            Double.NaN,
+            (double)60/439,
             Double.NaN,
             Double.NaN
     );
