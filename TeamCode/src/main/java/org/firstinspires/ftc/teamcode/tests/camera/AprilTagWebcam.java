@@ -40,6 +40,10 @@ public class AprilTagWebcam {
     public static double roll = 90;
     private AprilTagProcessor aprilTagProcessor;
     private VisionPortal visionPortal;
+    public VisionPortal getVisionPortal() {
+        return visionPortal;
+    }
+
     public static int exposure = 255;
     public static int gain = 40;
     public static boolean changeExposure = true;
