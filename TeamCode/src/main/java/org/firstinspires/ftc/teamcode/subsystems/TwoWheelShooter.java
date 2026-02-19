@@ -44,11 +44,12 @@ public class TwoWheelShooter extends SubsystemBase {
     public static double[] pidBotGains = new double[]{0.0012, 0, 0};
     public static double[] kTopGains = new double[]{0.04386, 0.000346, 0};
 
-    public static boolean useAggressiveRecovery = false;
+    public static boolean useAggressiveRecovery = true;
     public boolean inRecoveryMode = false;
-    //AGGRESSIVE GAINS: FOR RECOVERY
-    public static double[] pidBotAggressiveGains = new double[]{0.0008, 0, 0.00005};
-    public static double[] pidTopAggressiveGains = new double[]{0.0008, 0, 0.00005};
+    //AGGRESSIVE GAINS: FOR RECOVERY - gain scheduling
+
+    public static double[] pidBotAggressiveGains = new double[]{0.002, 0, 0};
+    public static double[] pidTopAggressiveGains = new double[]{0.002, 0, 0};
 
     InterpLUT distToLowVel;
     InterpLUT distToHighVel;
@@ -106,6 +107,32 @@ public class TwoWheelShooter extends SubsystemBase {
     public static double velMovingThreshold = 2;//in per sec
     double topMultiplier = 0;
     double botMultiplier = 0;
+    private boolean firstShotDetected = false;
+    private boolean velocityWasStable = false;
+
+    public static double shotDropThreshold = 100;
+    public static double minVelocityAgressive = 500;
+    public void checkForFirstShot() {
+        if (firstShotDetected) return;
+
+        boolean stable =
+                Math.abs(low.getVelocity() - predictedBotVel) < shotDropThreshold && low.getVelocity() > minVelocityAgressive &&
+                        Math.abs(high.getVelocity() - predictedTopVel) < shotDropThreshold && high.getVelocity() > minVelocityAgressive;
+
+        //first ball left, velocity not enough for next shot
+        if (velocityWasStable && !stable) {
+            triggerBallShot();
+            firstShotDetected = true;
+        }
+
+        velocityWasStable = stable;
+    }
+
+    public void resetGainScheduling(){
+        firstShotDetected = false;
+        resetDefaultGains();
+        inRecoveryMode = false;
+    }
 
 
 
@@ -321,23 +348,23 @@ public class TwoWheelShooter extends SubsystemBase {
     }
 
 
-    public void triggerBallShot(boolean recover){//every time ball is shot
+    public void triggerBallShot(){//every time ball is shot
         if(useAggressiveRecovery){
             setAggressiveGains();
         }
         //override curr recovery if it is in one
-        if(recover) {
-            currBotFactor = botRecoveryFactor;
-            currTopFactor = topRecoveryFactor;
-        }
-        recoveryStartTime = System.currentTimeMillis();
+//        if(recover) {
+//            currBotFactor = botRecoveryFactor;
+//            currTopFactor = topRecoveryFactor;
+//        }
+//        recoveryStartTime = System.currentTimeMillis();
 
-        if(!inRecoveryMode) {
-            recoveryEndTime = System.currentTimeMillis() + recoveryBoostTime;
-        }
-        else{//trying to recover and shoot another ball
-            recoveryEndTime = System.currentTimeMillis() + recoveryBoostTime * 1.2;
-        }
+//        if(!inRecoveryMode) {
+//            recoveryEndTime = System.currentTimeMillis() + recoveryBoostTime;
+//        }
+//        else{//trying to recover and shoot another ball
+//            recoveryEndTime = System.currentTimeMillis() + recoveryBoostTime * 1.2;
+//        }
 
         inRecoveryMode = true;
     }

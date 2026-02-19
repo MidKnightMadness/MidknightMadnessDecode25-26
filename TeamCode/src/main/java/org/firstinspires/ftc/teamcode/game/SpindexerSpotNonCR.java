@@ -14,23 +14,30 @@ public enum SpindexerSpotNonCR {
     SPOT0(
             0,
             0,
-            180/480,
-            360/480,
-            -1
+            (double)180/439,
+            (double)360/439,
+            Double.NaN
     ),
     SPOT1(
             1,
-            120/480,
-            300/480,
-            -1,
-            -1
+            (double)120/439,
+            (double)300/439,
+            Double.NaN,
+            Double.NaN
     ),
     SPOT2(
             2,
-            240/480,
-            420/480,
-            -1,
-            60/480
+            (double)240/439,
+            (double)420/439,
+            Double.NaN,
+            (double)60/439
+    ),
+    SPOT3(
+            3,
+            (double)360/439,
+            (double)60/439,
+            Double.NaN,
+            Double.NaN
     );
 
 
@@ -80,23 +87,30 @@ public enum SpindexerSpotNonCR {
 
     public ArrayList<Double> getIntakePositions(){
         ArrayList<Double> list = new ArrayList<>();
-        if(intakePosition1 != -1){
+        if(!Double.isNaN(intakePosition1)){
             list.add(intakePosition1);
         }
-        if(intakePosition2 != -1){
+        if(!Double.isNaN(intakePosition2)){
             list.add(intakePosition2);
         }
         return list;
     }
     public ArrayList<Double> getOutakePositions(){
         ArrayList<Double> list = new ArrayList<>();
-        if(outakePosition1 != -1){
+        if(!Double.isNaN(outakePosition1)){
             list.add(outakePosition1);
         }
-        if(outakePosition2 != -1){
+        if(!Double.isNaN(outakePosition2)){
             list.add(outakePosition2);
         }
         return list;
+    }
+
+    public double getIntakePositionSolo(){
+       return intakePosition1;
+    }
+    public double getOuttakePositionSolo(){
+        return outakePosition1;
     }
 
 }

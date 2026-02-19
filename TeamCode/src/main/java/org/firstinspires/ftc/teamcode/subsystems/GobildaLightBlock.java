@@ -68,15 +68,16 @@ public class GobildaLightBlock {
                 targetPower = 0;
         }
         if(targetPower != currPower){
-            setPosition(targetPower);
+           setPosition(targetPower);
+            currPower = targetPower;
         }
-        currPower = targetPower;
+
 
     }
 
     public void setPosition(double position){
-        if ((Math.abs(position - lightControl.getPosition()) > cachingTolerance) || (position == 0 && lightControl.getPosition() != 0)) {
+//        if ((Math.abs(position - lightControl.getPosition()) > cachingTolerance) || (position == 0 && lightControl.getPosition() != 0)) {
             lightControl.setPosition(position);
-        }
+//        }
     }
 }
