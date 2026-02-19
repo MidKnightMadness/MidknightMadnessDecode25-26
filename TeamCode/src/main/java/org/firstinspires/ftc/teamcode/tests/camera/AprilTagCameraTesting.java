@@ -8,24 +8,26 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
-@Autonomous(name = "AprilTag Position Test (No Odo)")
-@Config//nasffssdfdfaadf
+@Autonomous(name = "AprilTag Field Localization Test")
+@Config
 @Configurable
 public class AprilTagCameraTesting extends OpMode {
 
     AprilTagWebcam aprilTagWebcam = new AprilTagWebcam();
     AprilTagDetection tag;
 
-    // set to field values in inches
+    // === FIELD TAG POSITIONS (INCHES) ===
     public static double TAG_20_X = 0;
     public static double TAG_20_Y = 144;
+    public static double TAG_20_HEADING = 0;   // degrees
 
     public static double TAG_24_X = 144;
     public static double TAG_24_Y = 144;
+    public static double TAG_24_HEADING = 90;  // example
 
-    // Camera offset from robot center (inches)
-    public static double CAMERA_FORWARD_OFFSET = 0;   // + forward
-    public static double CAMERA_LEFT_OFFSET = 0;      // + left
+    // === Camera offset from robot center (inches) ===
+    public static double CAMERA_FORWARD_OFFSET = 0;
+    public static double CAMERA_LEFT_OFFSET = 0;
 
     double robotX;
     double robotY;
@@ -42,50 +44,56 @@ public class AprilTagCameraTesting extends OpMode {
 
         aprilTagWebcam.update();
 
-        tag = aprilTagWebcam.getTagBySpecificId(tag.id);
+        tag = null;
 
+        // Grab first valid tag
+        for (AprilTagDetection detection : aprilTagWebcam.getDetectedTags()) {
+            if (detection.id == 20 || detection.id == 24) {
+                tag = detection;
+                break;
+            }
+        }
 
         telemetry.addData("FPS", aprilTagWebcam.getFps());
         telemetry.addData("Latency (ms)", aprilTagWebcam.getLatencyMs());
 
         if (tag != null) {
 
-            // get camera relative pos
+            // === Convert cm → inches ===
+            double relX = tag.ftcPose.x * 0.393701; // left/right
+            double relY = tag.ftcPose.y * 0.393701; // forward/back
 
-            double xCamMeters = tag.ftcPose.x;   // left/right
-            double yCamMeters = tag.ftcPose.y;   // forward/back
-            double yawDeg = tag.ftcPose.yaw;
-
-            // Convert meters → inches
-            double xCam = xCamMeters * 39.3701;
-            double yCam = yCamMeters * 39.3701;
-
-            // get tag field position
-
+            // === Get tag field data ===
             double tagFieldX = 0;
             double tagFieldY = 0;
+            double tagFieldHeadingDeg = 0;
 
             if (tag.id == 20) {
                 tagFieldX = TAG_20_X;
                 tagFieldY = TAG_20_Y;
+                tagFieldHeadingDeg = TAG_20_HEADING;
             } else if (tag.id == 24) {
                 tagFieldX = TAG_24_X;
                 tagFieldY = TAG_24_Y;
+                tagFieldHeadingDeg = TAG_24_HEADING;
             }
 
-            // find robot position
+            double theta = Math.toRadians(tagFieldHeadingDeg);
 
-            // Robot position = Tag position − relative offset
+            // === Rotate relative pose into field coordinates ===
+            double fieldOffsetX = relX * Math.cos(theta) - relY * Math.sin(theta);
+            double fieldOffsetY = relX * Math.sin(theta) + relY * Math.cos(theta);
 
-            robotX = tagFieldX - yCam;
-            robotY = tagFieldY - xCam;
+            // === Compute robot position ===
+            robotX = tagFieldX - fieldOffsetX;
+            robotY = tagFieldY - fieldOffsetY;
 
-            // Compensate camera offset
-            robotX -= CAMERA_FORWARD_OFFSET;
-            robotY -= CAMERA_LEFT_OFFSET;
+            // === Apply camera offset ===
+            robotX -= CAMERA_FORWARD_OFFSET * Math.cos(theta);
+            robotY -= CAMERA_LEFT_OFFSET * Math.sin(theta);
 
-            // Heading from tag yaw
-            robotHeadingDeg = -yawDeg;
+            // === Robot heading ===
+            robotHeadingDeg = tagFieldHeadingDeg - tag.ftcPose.yaw;
 
             telemetry.addData("Tag ID", tag.id);
             telemetry.addData("Robot X (in)", "%.2f", robotX);
