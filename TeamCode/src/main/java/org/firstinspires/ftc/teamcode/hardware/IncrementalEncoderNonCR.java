@@ -15,7 +15,6 @@ public class IncrementalEncoderNonCR extends EncoderBase<IncrementalEncoderNonCR
 
     private int lastPosition;
     private double lastTimeStamp, veloEstimate, dpp, accel, lastVelo;
-    double gearRatio;
 
     /**
      * The constructor for incremental encoders
@@ -23,8 +22,8 @@ public class IncrementalEncoderNonCR extends EncoderBase<IncrementalEncoderNonCR
      * @param id the ID of the encoder as configured
      * @param countsPerRevolution the number of encoder ticks per full revolution, aka cycles per revolution
      */
-    public IncrementalEncoderNonCR(HardwareMap hwMap, String id, double countsPerRevolution, AngleUnit angleUnit, double GR) {
-        this(hwMap.get(DcMotor.class, id), countsPerRevolution, angleUnit, GR);
+    public IncrementalEncoderNonCR(HardwareMap hwMap, String id, double countsPerRevolution, AngleUnit angleUnit) {
+        this(hwMap.get(DcMotor.class, id), countsPerRevolution, angleUnit);
         encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         encoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         encoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -36,7 +35,7 @@ public class IncrementalEncoderNonCR extends EncoderBase<IncrementalEncoderNonCR
      * @param encoder the DcMotor which encoder is bound to
      * @param countsPerRevolution the number of encoder ticks per full revolution, aka cycles per revolution
      */
-    public IncrementalEncoderNonCR(DcMotor encoder, double countsPerRevolution, AngleUnit angleUnit, double GR) {
+    public IncrementalEncoderNonCR(DcMotor encoder, double countsPerRevolution, AngleUnit angleUnit) {
         this.encoder = encoder;
         this.cpr = countsPerRevolution;
         this.angleUnit = angleUnit;
@@ -44,7 +43,6 @@ public class IncrementalEncoderNonCR extends EncoderBase<IncrementalEncoderNonCR
         lastPosition = 0;
         veloEstimate = 0;
         lastTimeStamp = (double) System.nanoTime() / 1E9;
-        this.gearRatio = GR;
     }
 
     /**

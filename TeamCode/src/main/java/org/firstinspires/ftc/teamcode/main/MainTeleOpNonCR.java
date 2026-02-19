@@ -20,6 +20,7 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ReadWriteFile;
+import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 
 import com.seattlesolvers.solverslib.command.CommandScheduler;
@@ -33,6 +34,7 @@ import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommandNonCR;
 import org.firstinspires.ftc.teamcode.commands.shooter.ShootSeqCommand;
 import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommand2;
 import org.firstinspires.ftc.teamcode.commands.spindexer.SpindexerGotoPosition;
+import org.firstinspires.ftc.teamcode.commands.spindexer.SpindexerGotoPositionSmooth;
 import org.firstinspires.ftc.teamcode.commands.spindexer.SpindexerGotoSpot;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.MotifEnums;
@@ -167,6 +169,8 @@ public class MainTeleOpNonCR extends CommandOpMode {
     SequentialCommandGroup seqAutoIntakeCommand;
     SequentialCommandGroup spindexerGotoPositionSeq;
     SpindexerGotoPosition spindexerGotoPosition;
+    SpindexerGotoPositionSmooth spindexerGotoPositionSmooth;
+
     boolean mapDistToShoot = true;
 
     Telemetry dashboardTelemetry;
@@ -225,6 +229,8 @@ public class MainTeleOpNonCR extends CommandOpMode {
     public static Pose failsafeRightPose = new Pose(144 - 8.85, 8, Math.toRadians(0));
     double currTurnerPosition;
     double targetSpindexerPosition;
+    int activeSpindexerSpot = 0;
+    public static double intermediateSmoothServo = 0.015;
 
     @Override
     public void initialize() {
@@ -403,8 +409,14 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
     boolean rumbledLastFive = false;
 
+    boolean start;
     @Override
     public void run() {
+        if(!start){
+            spindexer.getTurnerEncoder().encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            spindexer.getTurnerEncoder().encoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            start = true;
+        }
         super.run();
         currSpindexerBallColors = spindexer.getBallColors();
 
@@ -933,48 +945,58 @@ public class MainTeleOpNonCR extends CommandOpMode {
         }
     }
 
-    double targetSpotPosition;
-    double currSpotPosition;
+    double autoIntakeSpot = 0;
+    boolean autoIntakeFinishedReset;
 
     private void spindexerCommands() {
         currTurnerPosition = spindexer.getCurrentSpindexerPosition();
-        if (autoIntake && autoIntakeCommand != null)
-            targetSpotPosition = autoIntakeCommand.getSpotPosition();
 
-        if (autoIntake && autoIntakeCommand != null && targetSpotPosition != currSpotPosition) {
-            currSpotPosition = targetSpotPosition;
-            autoSpindexer = true;
+//        if (autoIntake && autoIntakeCommand != null)
+//            targetSpotPosition = autoIntakeCommand.getSpotPosition();
+//
+//        if (autoIntake && autoIntakeCommand != null && targetSpotPosition != currSpotPosition) {
+//            currSpotPosition = targetSpotPosition;
+//            clearExistingSpindexerCommand();
+//            spindexerGotoPosition = new SpindexerGotoPosition(spindexer, targetSpotPosition);
+//            schedulePosition(spindexerGotoPosition);
+//        }
+
+
+
+        if(autoIntake && autoIntakeCommand != null){
+            autoIntakeSpot = autoIntakeCommand.getSpotPosition();
+        }
+
+        //cycles between spindexer intake spots
+        if (gamepad2.dpadLeftWasPressed() && !autoIntake) {
             clearExistingSpindexerCommand();
-            spindexerGotoPosition = new SpindexerGotoPosition(spindexer, targetSpotPosition);
+            if(activeSpindexerSpot != 0) {
+                activeSpindexerSpot--;
+            }
+            spindexerGotoPosition = new SpindexerGotoPosition(spindexer, SpindexerSpotNonCR.fromIndex(activeSpindexerSpot).getIntakePositionSolo());
+            schedulePosition(spindexerGotoPosition);
+        } else if (gamepad2.dpadRightWasPressed() && !autoIntake) {
+            clearExistingSpindexerCommand();
+            if(activeSpindexerSpot != 3) {
+                activeSpindexerSpot++;
+            }
+            spindexerGotoPosition = new SpindexerGotoPosition(spindexer, SpindexerSpotNonCR.fromIndex(activeSpindexerSpot).getIntakePositionSolo());
             schedulePosition(spindexerGotoPosition);
         }
 
-
-        if (gamepad2.dpadLeftWasPressed() && !autoIntake) {
-            autoSpindexer = true;
-            clearExistingSpindexerCommand();
-            spindexerGotoPosition = new SpindexerGotoPosition(spindexer, currTurnerPosition - 0.25);
-            schedulePosition(spindexerGotoPosition);
-        } else if (gamepad2.dpadDownWasPressed() && !autoIntake) {
-            autoSpindexer = true;
+        //finds nearest spindexer intake spot
+        else if (gamepad2.dpadDownWasPressed() && !autoIntake) {
             clearExistingSpindexerCommand();
             spindexerGotoPosition = new SpindexerGotoPosition(spindexer, spindexer.getNearestIntakePosition(SpotType.INTAKE));
             schedulePosition(spindexerGotoPosition);
-        } else if (gamepad2.dpadRightWasPressed() && !autoIntake) {
-            autoSpindexer = true;
-            clearExistingSpindexerCommand();
-            spindexerGotoPosition = new SpindexerGotoPosition(spindexer, currTurnerPosition + 0.25);
-            schedulePosition(spindexerGotoPosition);
         } else if (gamepad2.leftBumperWasPressed() && !autoIntake) {
-            autoSpindexer = true;
             clearExistingSpindexerCommand();
-            spindexerGotoPosition = new SpindexerGotoPosition(spindexer, spindexer.startOutakePosition);
-            schedulePosition(spindexerGotoPosition);
+            spindexerGotoPositionSmooth = new SpindexerGotoPositionSmooth(spindexer, spindexer.startOutakePosition, intermediateSmoothServo);
+            schedulePosition(spindexerGotoPositionSmooth);
         } else if (gamepad2.rightBumperWasPressed() && !autoIntake) {
-            autoSpindexer = true;
             clearExistingSpindexerCommand();
-            spindexerGotoPosition = new SpindexerGotoPosition(spindexer, spindexer.endOutakePosition);
-            schedulePosition(spindexerGotoPosition);
+            spindexerGotoPositionSmooth = new SpindexerGotoPositionSmooth(spindexer, spindexer.endOutakePosition, intermediateSmoothServo);
+            schedulePosition(spindexerGotoPositionSmooth);
         }
 
 //        if (!autoSpindexer && !autoIntake) {
@@ -993,7 +1015,8 @@ public class MainTeleOpNonCR extends CommandOpMode {
         }
     }
 
-    private void schedulePosition(SpindexerGotoPosition spindexerGotoPosition) {
+    private void schedulePosition(Command spindexerGotoPosition) {
+        autoSpindexer = true;
         spindexerGotoPositionSeq = new SequentialCommandGroup(spindexerGotoPosition,
                 new InstantCommand(() -> resetAutoSpindexer()));
         schedule(spindexerGotoPositionSeq);
@@ -1002,6 +1025,8 @@ public class MainTeleOpNonCR extends CommandOpMode {
     public void resetAutoSpindexer() {
         autoSpindexer = false;
         spindexerGotoPosition = null;
+        spindexerGotoPositionSmooth = null;
+        spindexerGotoPositionSeq = null;
         targetSpindexerPosition = -1;
     }
 
@@ -1010,11 +1035,12 @@ public class MainTeleOpNonCR extends CommandOpMode {
             autoIntake = true;
             autoSpindexer = false;
 
-            autoIntakeCommand = new AutoIntakeCommandNonCR(spindexer, intake, powerAutoIntake, autoSettleTime, useDistanceSensor, hardwareMap, SpindexerSpotNonCR.SPOT1, 0, 1);
+            autoIntakeCommand = new AutoIntakeCommandNonCR(spindexer, intake, powerAutoIntake, autoSettleTime, useDistanceSensor, hardwareMap, SpindexerSpotNonCR.SPOT1, 1);
 
             seqAutoIntakeCommand = new SequentialCommandGroup(
                     autoIntakeCommand.withTimeout(autoIntakeTimeout),
                     new InstantCommand(() -> resetAutoIntake())
+//                    new InstantCommand(()-> activeSpindexerSpot = autoIntakeCommand.currNumSpot)
             );
 
             schedule(seqAutoIntakeCommand);
@@ -1185,8 +1211,11 @@ public class MainTeleOpNonCR extends CommandOpMode {
             telemetry.addLine("--------------------------------");
             telemetry.addData("Spindexer Mode", spindexerRunMode);
             telemetry.addData("Spindexer Angle", spindexer.getCurrentAngle());
-            telemetry.addData("Current Turner Position", currTurnerPosition);
-            telemetry.addData("Spindexer Auto Spindxer", autoSpindexer);
+            telemetry.addData("Current Set Position", spindexer.getServo().getPosition());
+            telemetry.addData("Curr Active Spot", activeSpindexerSpot);
+            telemetry.addData("Auto Intake Spot", autoIntakeSpot);
+//            telemetry.addData("Spindexer Auto Spindxer", autoSpindexer);
+//            telemetry.addData("Auto Intake Target Spot", targetSpotPosition);
             if (currSpindexerBallColors != null) {
                 telemetry.addData("Spindexer Ball Color 0", currSpindexerBallColors[0]);
                 telemetry.addData("Spindexer Ball Color 1", currSpindexerBallColors[1]);

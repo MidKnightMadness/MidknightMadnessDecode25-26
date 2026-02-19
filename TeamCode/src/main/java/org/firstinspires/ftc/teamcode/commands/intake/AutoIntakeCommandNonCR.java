@@ -44,10 +44,8 @@ public class AutoIntakeCommandNonCR extends CommandBase {
     boolean secondBall;
     boolean thirdBall;
     public SpindexerSpotNonCR startSpot;
-    public int startRev;
-    public int currRev;
     public int dir;
-    public AutoIntakeCommandNonCR(SpindexerNonCR spindexer, Intake intake, double power, double inBetweenTime, boolean useDistanceSensor, HardwareMap hardwareMap, SpindexerSpotNonCR startSpot, int startRev, int dir){
+    public AutoIntakeCommandNonCR(SpindexerNonCR spindexer, Intake intake, double power, double inBetweenTime, boolean useDistanceSensor, HardwareMap hardwareMap, SpindexerSpotNonCR startSpot, int dir){
         this.spindexer = spindexer;
         this.intake = intake;
         this.power = power;
@@ -56,7 +54,6 @@ public class AutoIntakeCommandNonCR extends CommandBase {
         this.useDistanceSensor = useDistanceSensor;
         this.hardwareMap = hardwareMap;
         this.startSpot = startSpot;
-        this.startRev = startRev;
         this.dir = dir;
 
         timer = new Timer();
@@ -83,7 +80,6 @@ public class AutoIntakeCommandNonCR extends CommandBase {
         timer.restart();
         startTime = timer.getTime();
         ballColors = spindexer.getBallColors();
-        this.currRev = startRev;
         this.currNumSpot = this.startSpot.getIndex();
 
 //        firstBall = ballColors[0] != BallColor.NONE;
@@ -100,6 +96,7 @@ public class AutoIntakeCommandNonCR extends CommandBase {
 //            currNumSpot = 0;
 //            currRev = 1;
 //        }
+        spindexer.setDirectPosition(startSpot.getIntakePositionSolo());
     }
 
     boolean updateStartTime = false;
@@ -111,12 +108,13 @@ public class AutoIntakeCommandNonCR extends CommandBase {
         currVolt = hardwareMap.voltageSensor.iterator().next().getVoltage();
         intake.setDirectPower(power, currVolt);
 
-        if (!atSpot && spindexer.isAtSpotDetection(SpindexerSpotNonCR.fromIndex(currNumSpot), SpotType.INTAKE, currRev)) {
+        if (!atSpot && spindexer.isAtPosition(SpindexerSpotNonCR.fromIndex(currNumSpot).getIntakePositionSolo())) {
             atSpot = true;
         }
 
         if(atSpot){
-            ballDetected = spindexer.updateBallSpot(currNumSpot);
+            ballDetected = spindexer.updateBallSpot(currNumSpot % 3);
+
             if(ballDetected && !updateStartTime) {
                 ballDetectionTime = timer.getTime();
                 updateStartTime = true;
@@ -128,31 +126,12 @@ public class AutoIntakeCommandNonCR extends CommandBase {
 
         if (ballDetected && ((time - ballDetectionTime >= waitSettle)) || exitTime) {
             currNumSpot += dir;
-            if(currNumSpot < 0){
-                if(currRev == 1) {//decrease by 1
-                    currRev = 0;
-                    currNumSpot = 2;
-                } else{
-                    currNumSpot -= dir;
-                    exit = true;
-                }
-            } else if(currNumSpot > 2){
-                if(currRev == 0) {//increase by 1
-                    currRev = 1;
-                    currNumSpot = 0;
-                } else{
-                    currNumSpot -= dir;
-                    exit = true;
-                }
+            if(currNumSpot == -1 || currNumSpot == 4){
+               exit = true;
+               currNumSpot -= dir;
             }
+            spindexer.setDirectPosition(SpindexerSpotNonCR.fromIndex(currNumSpot).getIntakePositionSolo());
 
-            if(currNumSpot == 2 && currRev == 1){
-                currNumSpot = 1;
-                currRev = 1;
-                exit = true;
-            }
-
-            spindexer.setPosition(SpindexerSpotNonCR.fromIndex(currNumSpot).getSpotPosition(SpotType.INTAKE).get(currRev));
             atSpot = false;
             ballDetected = false;
             updateStartTime = false;
@@ -161,7 +140,7 @@ public class AutoIntakeCommandNonCR extends CommandBase {
     }
 
     public double getSpotPosition(){
-        return SpindexerSpotNonCR.fromIndex(currNumSpot).getSpotPosition(SpotType.INTAKE).get(currRev);
+        return SpindexerSpotNonCR.fromIndex(currNumSpot).getIntakePositionSolo();
     }
 
     @Override
