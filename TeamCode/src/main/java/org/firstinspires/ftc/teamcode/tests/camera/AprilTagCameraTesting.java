@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 @Autonomous(name = "AprilTag Position Test (No Odo)")
-@Config
+@Config//nasffssdfdfaadf
 @Configurable
 public class AprilTagCameraTesting extends OpMode {
 
