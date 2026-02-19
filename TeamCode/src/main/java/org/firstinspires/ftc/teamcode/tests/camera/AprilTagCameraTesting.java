@@ -5,8 +5,12 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
+import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+
+import java.util.concurrent.TimeUnit;
 
 @Autonomous(name = "AprilTag Field Localization Test")
 @Config
@@ -19,11 +23,11 @@ public class AprilTagCameraTesting extends OpMode {
     // === FIELD TAG POSITIONS (INCHES) ===
     public static double TAG_20_X = 0;
     public static double TAG_20_Y = 144;
-    public static double TAG_20_HEADING = 0;   // degrees
+    public static double TAG_20_HEADING = 0;
 
     public static double TAG_24_X = 144;
     public static double TAG_24_Y = 144;
-    public static double TAG_24_HEADING = 90;  // example
+    public static double TAG_24_HEADING = 90;
 
     // === Camera offset from robot center (inches) ===
     public static double CAMERA_FORWARD_OFFSET = 0;
@@ -33,10 +37,26 @@ public class AprilTagCameraTesting extends OpMode {
     double robotY;
     double robotHeadingDeg;
 
+    // === Exposure Control ===
+    private ExposureControl exposureControl;
+    private long currentExposureMs = 6;
+
+    private boolean lastLeft = false;
+    private boolean lastRight = false;
+
     @Override
     public void init() {
+
         aprilTagWebcam.init(hardwareMap, ConfigNames.arducam, telemetry);
+
+        VisionPortal portal = aprilTagWebcam.getVisionPortal();
+        exposureControl = portal.getCameraControl(ExposureControl.class);
+
+        exposureControl.setMode(ExposureControl.Mode.Manual);
+        exposureControl.setExposure(currentExposureMs, TimeUnit.MILLISECONDS);
+
         telemetry.addLine("Initialized");
+        telemetry.update();
     }
 
     @Override
@@ -44,9 +64,28 @@ public class AprilTagCameraTesting extends OpMode {
 
         aprilTagWebcam.update();
 
+        // === Live Exposure Adjustment ===
+        boolean left = gamepad1.left_bumper;
+        boolean right = gamepad1.right_bumper;
+
+        if (right && !lastRight) {
+            currentExposureMs++;
+        }
+
+        if (left && !lastLeft) {
+            currentExposureMs--;
+        }
+
+        if (currentExposureMs < 1) currentExposureMs = 1;
+        if (currentExposureMs > 50) currentExposureMs = 50;
+
+        exposureControl.setExposure(currentExposureMs, TimeUnit.MILLISECONDS);
+
+        lastLeft = left;
+        lastRight = right;
+
         tag = null;
 
-        // Grab first valid tag
         for (AprilTagDetection detection : aprilTagWebcam.getDetectedTags()) {
             if (detection.id == 20 || detection.id == 24) {
                 tag = detection;
@@ -54,16 +93,15 @@ public class AprilTagCameraTesting extends OpMode {
             }
         }
 
+        telemetry.addData("Exposure (ms)", currentExposureMs);
         telemetry.addData("FPS", aprilTagWebcam.getFps());
         telemetry.addData("Latency (ms)", aprilTagWebcam.getLatencyMs());
 
         if (tag != null) {
 
-            // === Convert cm → inches ===
-            double relX = tag.ftcPose.x * 0.393701; // left/right
-            double relY = tag.ftcPose.y * 0.393701; // forward/back
+            double relX = tag.ftcPose.x * 0.393701;
+            double relY = tag.ftcPose.y * 0.393701;
 
-            // === Get tag field data ===
             double tagFieldX = 0;
             double tagFieldY = 0;
             double tagFieldHeadingDeg = 0;
@@ -80,19 +118,12 @@ public class AprilTagCameraTesting extends OpMode {
 
             double theta = Math.toRadians(tagFieldHeadingDeg);
 
-            // === Rotate relative pose into field coordinates ===
             double fieldOffsetX = relX * Math.cos(theta) - relY * Math.sin(theta);
             double fieldOffsetY = relX * Math.sin(theta) + relY * Math.cos(theta);
 
-            // === Compute robot position ===
             robotX = tagFieldX - fieldOffsetX;
             robotY = tagFieldY - fieldOffsetY;
 
-            // === Apply camera offset ===
-            robotX -= CAMERA_FORWARD_OFFSET * Math.cos(theta);
-            robotY -= CAMERA_LEFT_OFFSET * Math.sin(theta);
-
-            // === Robot heading ===
             robotHeadingDeg = tagFieldHeadingDeg - tag.ftcPose.yaw;
 
             telemetry.addData("Tag ID", tag.id);
