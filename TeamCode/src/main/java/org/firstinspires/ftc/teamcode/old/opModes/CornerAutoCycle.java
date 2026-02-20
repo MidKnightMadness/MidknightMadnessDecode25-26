@@ -401,7 +401,7 @@ public class CornerAutoCycle extends BaseAuto {
 
 
             if (!triggerBallShot && triggeredSpot != -1) {
-                shooter.triggerBallShot(recoveryOn);
+                shooter.triggerBallShot();
                 spindexer.removeBall(triggeredSpot);
                 triggerBallShot = true;
             }

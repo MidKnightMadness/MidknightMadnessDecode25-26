@@ -1,202 +1,164 @@
 package org.firstinspires.ftc.teamcode.tests.camera;
-
-import static org.firstinspires.ftc.teamcode.util.ExtraFns.normAngle;
-
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
-import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.teamcode.game.ShootSide;
-import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
-import org.firstinspires.ftc.teamcode.util.Timer;
+import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
-@Autonomous(name = "AprilTag Camera Test")
+import java.util.concurrent.TimeUnit;
+
+@Autonomous(name = "AprilTag Field Localization Test")
 @Config
 @Configurable
 public class AprilTagCameraTesting extends OpMode {
 
-    // Telemetry telemetryM;
-
-    public static double[] pidAutoAlign = new double[]{1.0, 0, 0.1};//1.5, 0, 0.1
     AprilTagWebcam aprilTagWebcam = new AprilTagWebcam();
-    double prevHeadingError;
-    double turnPower;
-    boolean autoAlign = true;
-    Pose currentPose;
-
-    double targetheading;
-    public static int TAG_ID = 21;
-    Timer timer;
-    Follower follower;
-    ShootSide shootSide = ShootSide.LEFT;
     AprilTagDetection tag;
-    double cameraYawRelative;
 
-    double cameraYawGlobal;
-    double headingError;
-    double rightAprilAngle = 180 + 38.565;//degrees
-    double leftAprilAngle = 360 - 38.565;
-    public static double offset = 13;
-    Pose leftTarget = new Pose(0, 144, Math.toRadians(45));
-    Pose rightTarget = new Pose(144, 144, Math.toRadians(-45));
+    // === FIELD TAG POSITIONS (INCHES) ===
+    public static double TAG_20_X = 0;
+    public static double TAG_20_Y = 144;
+    public static double TAG_20_HEADING = 0;
+
+    public static double TAG_24_X = 144;
+    public static double TAG_24_Y = 144;
+    public static double TAG_24_HEADING = 90;
+
+    // === Camera offset from robot center (inches) ===
+    public static double CAMERA_FORWARD_OFFSET = 0;
+    public static double CAMERA_LEFT_OFFSET = 0;
+
+    double robotX;
+    double robotY;
+    double robotHeadingDeg;
+
+    // === Exposure Control ===
+    private VisionPortal portal;
+    private ExposureControl exposureControl;
+    private boolean exposureInitialized = false;
+
+    private long currentExposureMs = 6;
+
+    private boolean lastLeft = false;
+    private boolean lastRight = false;
+
     @Override
     public void init() {
-        follower = ConstantsBot.createPinpointFollower(hardwareMap);
-        follower.setPose(new Pose(72, 8, Math.toRadians(90)));
-//        follower.startTeleopDrive();
 
-        aprilTagWebcam = new AprilTagWebcam();
         aprilTagWebcam.init(hardwareMap, ConfigNames.arducam, telemetry);
-        timer = new Timer();
-        telemetry.addData("Status", "Initialized");
+        portal = aprilTagWebcam.getVisionPortal();
+
+        telemetry.addLine("Waiting for camera to start streaming...");
+        telemetry.update();
+    }
+
+    @Override
+    public void init_loop() {
+
+        if (!exposureInitialized &&
+                portal.getCameraState() == VisionPortal.CameraState.STREAMING) {
+
+            exposureControl = portal.getCameraControl(ExposureControl.class);
+
+            exposureControl.setMode(ExposureControl.Mode.Manual);
+            exposureControl.setExposure(currentExposureMs, TimeUnit.MILLISECONDS);
+
+            exposureInitialized = true;
+        }
+
+        telemetry.addData("Camera State", portal.getCameraState());
+        telemetry.addData("Exposure Ready", exposureInitialized);
+        telemetry.update();
     }
 
     @Override
     public void loop() {
+
         aprilTagWebcam.update();
 
-//        AprilTagDetection tag = aprilTagWebcam.getTagBySpecificId(TAG_ID);
+        // === Live Exposure Adjustment ===
+        if (exposureInitialized) {
 
+            boolean left = gamepad1.left_bumper;
+            boolean right = gamepad1.right_bumper;
 
-        // camera fps and latency
+            if (right && !lastRight) {
+                currentExposureMs++;
+            }
+
+            if (left && !lastLeft) {
+                currentExposureMs--;
+            }
+
+            if (currentExposureMs < 1) currentExposureMs = 1;
+            if (currentExposureMs > 50) currentExposureMs = 50;
+
+            exposureControl.setExposure(currentExposureMs, TimeUnit.MILLISECONDS);
+
+            lastLeft = left;
+            lastRight = right;
+        }
+
+        tag = null;
+
+        for (AprilTagDetection detection : aprilTagWebcam.getDetectedTags()) {
+            if (detection.id == 20 || detection.id == 24) {
+                tag = detection;
+                break;
+            }
+        }
+
+        telemetry.addData("Exposure (ms)", currentExposureMs);
         telemetry.addData("FPS", aprilTagWebcam.getFps());
         telemetry.addData("Latency (ms)", aprilTagWebcam.getLatencyMs());
 
         if (tag != null) {
 
-            // position relative to camera (meters)
-            double x = aprilTagWebcam.aprilTagXPos(tag);
-            double z = aprilTagWebcam.aprilTagZPos(tag);
+            // === Convert cm → inches ===
+            double relX = tag.ftcPose.x * 0.393701;
+            double relY = tag.ftcPose.y * 0.393701;
 
-            // horizontal angle to apriltag
-            double angleRad = Math.atan(x / z);
-            double angleDeg = Math.toDegrees(angleRad);
+            // === Get tag field data ===
+            double tagFieldX = 0;
+            double tagFieldY = 0;
+            double tagFieldHeadingDeg = 0;
 
-            // straight line distance to april tag
-            double distance = Math.hypot(x, z);
+            if (tag.id == 20) {
+                tagFieldX = TAG_20_X;
+                tagFieldY = TAG_20_Y;
+                tagFieldHeadingDeg = TAG_20_HEADING;
+            } else if (tag.id == 24) {
+                tagFieldX = TAG_24_X;
+                tagFieldY = TAG_24_Y;
+                tagFieldHeadingDeg = TAG_24_HEADING;
+            }
+
+            double theta = Math.toRadians(tagFieldHeadingDeg);
+
+            // === Rotate relative pose into field coordinates ===
+            double fieldOffsetX = relX * Math.cos(theta) - relY * Math.sin(theta);
+            double fieldOffsetY = relX * Math.sin(theta) + relY * Math.cos(theta);
+
+            // === Compute robot position ===
+            robotX = tagFieldX - fieldOffsetX;
+            robotY = tagFieldY - fieldOffsetY;
+
+            // === Robot heading ===
+            robotHeadingDeg = tagFieldHeadingDeg - tag.ftcPose.yaw;
 
             telemetry.addData("Tag ID", tag.id);
-            telemetry.addData("X Offset (m)", "%.3f", x);
-            telemetry.addData("Z Distance (m)", "%.3f", z);
-            telemetry.addData("Total Distance (m)", "%.3f", distance);
-            telemetry.addData("Angle (deg)", "%.2f", angleDeg);
-
-            //pose, yaw, pitch
-
-            aprilTagWebcam.displayDetectionTelemetry(tag);
+            telemetry.addData("Robot X (in)", "%.2f", robotX);
+            telemetry.addData("Robot Y (in)", "%.2f", robotY);
+            telemetry.addData("Robot Heading (deg)", "%.2f", robotHeadingDeg);
 
         } else {
-            telemetry.addData("AprilTag " + TAG_ID, "Not Visible");
+            telemetry.addLine("No Tag Visible");
         }
-
-        follower.update();
-        telemetry.addLine("------------------------------------");
-        telemetry.addData("Auto Align", autoAlign);
-        telemetry.addData("Target Heading", convertRadToDegrees(targetheading));
-        telemetry.addData("Heading Error(Alignment)", convertRadToDegrees(headingError));
-        telemetry.addData("Turn Power", turnPower);
-        telemetry.addData("Camera Yaw Global", cameraYawGlobal);
-        telemetry.addData("Camera Yaw Rel", cameraYawRelative);
-        telemetry.addData("Follower Heading", convertRadToDegrees(follower.getPose().getHeading()));
-        telemetry.addData("Tag", tag == null ? "NONE" : tag.id);
-
-        setAlignTurnPower();
-
 
         telemetry.update();
     }
-
-    private void setAlignTurnPower(){
-
-        //MODIFY so that the heading is facing the outake side, not the intake side
-        if(autoAlign) {
-//            Pose outakePose = new Pose(currentPose.getX(), currentPose.getY(), normAngle(currentPose.getHeading() + Math.PI));
-//            //add compensation for spindexer direction
-//            double distToTarget = getDistance(follower.getPose(), outakePose);
-//            double compY = outakePose.getY() + distToTarget * Math.tan(spindexerCompensationOffset);
-            // double compY = outakePose.getY() + spindexerDirection * distToTarget * Math.tan(spindexerCompensationOffset);
-//            Pose compensatedPose = new Pose(outakePose.getX(), outakePose.getY(), outakePose.getHeading());
-//            if (spindexer.getTurner().getServo().getPower() < 0.1) {
-//                compensatedPose = outakePose;
-//            }
-
-//            if (prevHeadingError < Math.toRadians(20)) {
-            if (shootSide == ShootSide.LEFT) {
-                tag = aprilTagWebcam.getTagBySpecificId(20);
-            } else {
-                tag = aprilTagWebcam.getTagBySpecificId(24);
-            }
-            if (tag != null) {
-                cameraYawRelative = -tag.ftcPose.pitch;
-                cameraYawGlobal = cameraYawRelative + ((shootSide == ShootSide.LEFT) ? leftAprilAngle : rightAprilAngle);
-            }
-            // headingError = getAngleError(outakePose, ((shootSide == ShootSide.LEFT) ? leftTarget : rightTarget), cameraYawGlobal);
-            //   }
-//            }
-//
-//            turnPower = calculateGamepadPID(prevHeadingError, headingError);
-//            prevHeadingError = headingError;
-        }
-    }
-
-    public double getAngleError(Pose position, Pose target, double positionHeading){
-        double deltaY = target.getY() - position.getY();
-        double deltaX = target.getX() - position.getX();
-        double heading = Math.atan2(deltaY, deltaX);
-        heading = normAngle(heading);
-        this.targetheading = heading;
-        //heading is in absolute degrees
-        double error = heading - positionHeading;
-        double errorSign = (error > 0 ) ? -1 : 1;
-        if(Math.abs(error) > Math.PI){
-            error = errorSign * (2 * Math.PI - Math.abs(positionHeading - heading));
-        }
-
-        error = normAnglePlusMinus2PI(error);
-        return error;
-    }
-    private double convertRadToDegrees(double val){
-        return val * 180 / Math.PI;
-    }
-
-    private double normAnglePlusMinus2PI(double error){
-        while(error < -Math.PI *2){
-            error += Math.PI *2;
-        }
-        while(error > Math.PI * 2){
-            error -= Math.PI * 2;
-        }
-        return error;
-    }
-
-    private double calculateGamepadPID(double prevHeadingError, double headingError){
-//        double filteredHeadingError = (1-alignmentWeight) * headingError + alignmentWeight * prevHeadingError;
-        double filteredHeadingError = headingError;
-        double pGain = pidAutoAlign[0] * filteredHeadingError;
-        double dGain = pidAutoAlign[2] * (filteredHeadingError - prevHeadingError) / timer.getDeltaTime();
-
-        double power = pGain + dGain;
-        power = Math.max(-1, Math.min(1, power));
-
-
-//          if(Math.abs(power) <= minPowerHeadingAlign) {
-//            power = 0;
-//        }
-
-        if (Math.abs(filteredHeadingError) > Math.toRadians(1.5)) {
-            power += Math.signum(filteredHeadingError) * 0.04;
-        } else{
-            power = 0;
-        }
-
-
-        return power;
-    }
-
-
 }

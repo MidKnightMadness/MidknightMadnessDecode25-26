@@ -33,9 +33,10 @@ public class SpindexerNonCR extends SubsystemBase {
     public double startOutakePosition = 1;
     public double endOutakePosition = 0;
     public double startTeleOpIntakePosition = SpindexerSpotNonCR.fromIndex(1).getIntakePositions().get(0);
-    public double gearRatio = 420/360;
+    public double degreesPerRevolution = 439;
     public static AngleNonCR defaultFinishedThreshold = AngleNonCR.fromDegrees(5); // Threshold at which it's finished turning to a spot
-    public static AngleNonCR finishedThreshold = AngleNonCR.fromDegrees(15);//changed from 20
+    public static AngleNonCR finishedThreshold = AngleNonCR.fromDegrees(20);//changed from 20
+    public static AngleNonCR strictFinished = AngleNonCR.fromDegrees(10);
     public static AngleNonCR detectThreshold = AngleNonCR.fromDegrees(15);
     private static final int NUM_SPOTS = 3;
     ServoImplEx turner;
@@ -51,7 +52,7 @@ public class SpindexerNonCR extends SubsystemBase {
     IncrementalEncoderNonCR turnerEncoder;
     double cachingTolerance = 0.01;
 
-    double currentSpindexerPosition = 0;
+    double currentTurnerPosition = 0;
     public IncrementalEncoderNonCR getTurnerEncoder(){
         return turnerEncoder;
     }
@@ -68,15 +69,11 @@ public class SpindexerNonCR extends SubsystemBase {
 
     public SpindexerNonCR(HardwareMap hardwareMap, boolean useDistanceSensors, BallColor[] ballColors) {
         turnerEncoder = new IncrementalEncoderNonCR(
-                hardwareMap, ConfigNames.turnerEncoder, 8192, AngleUnit.DEGREES, degrees_conversion/360
+                hardwareMap, ConfigNames.turnerEncoder, 8192, AngleUnit.DEGREES
         ).setReversed(false);
         turner = hardwareMap.get(ServoImplEx.class, ConfigNames.turner);
         turner.setPwmRange(new PwmControl.PwmRange(500, 2500));
         turner.setPosition(0);
-
-        turnerEncoder.encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        turnerEncoder.encoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
 
 
         this.useDistanceSensor = useDistanceSensors;
@@ -113,16 +110,16 @@ public class SpindexerNonCR extends SubsystemBase {
     }
 
 
-    public static double degrees_conversion = 465;
+
 
 
     public double getCurrentSpindexerPosition(){
-        return currentSpindexerPosition;
+        return currentTurnerPosition;
     }
     @Override
     public void periodic() {
         currentAngle = AngleNonCR.fromDegrees(turnerEncoder.getAngle());
-        currentSpindexerPosition = turnerEncoder.getAngle() / degrees_conversion;
+        currentTurnerPosition = turner.getPosition();
     }
 
 
@@ -319,7 +316,7 @@ public class SpindexerNonCR extends SubsystemBase {
 
 
     public AngleNonCR getAbsoluteAngle(SpindexerSpot spot, SpotType spotType, int num) {
-        return AngleNonCR.fromDegrees(spot.getSpotAngle(spotType).getValue() * 360 * gearRatio);
+        return AngleNonCR.fromDegrees(spot.getSpotAngle(spotType).getValue() * 360 * degreesPerRevolution);
     }
 
 //    public SpindexerSpotNonCR findNearestSpot(AngleNonCR query, SpotType spotType, BallColor matchColorOrNull) {
@@ -353,7 +350,7 @@ public class SpindexerNonCR extends SubsystemBase {
             ArrayList<Double> spotPositions = spot.getSpotPosition(spotType);
             for(double j : spotPositions){
                 if(j != -1){
-                    double gap = Math.abs(j - currentSpindexerPosition);
+                    double gap = Math.abs(j - currentTurnerPosition);
                     if (gap < smallestGap) {
                         smallestGap = gap;
                         bestValue = j;
@@ -365,20 +362,26 @@ public class SpindexerNonCR extends SubsystemBase {
     }
 
     public boolean isAtPosition(double position){
-        double angle = position * gearRatio * 360;
+        double angle = position * degreesPerRevolution;
         return isAtAngle(AngleNonCR.fromDegrees(angle), finishedThreshold);
+    }
+    public boolean isAtPositionStrict(double position){
+        double angle = position * degreesPerRevolution;
+        return isAtAngleStrict(AngleNonCR.fromDegrees(angle));
     }
     public boolean isAtAngle(AngleNonCR angle, AngleNonCR finishedThreshold) {
         return angle.diff(currentAngle).toDegrees() < finishedThreshold.abs().toDegrees();
     }
 
+    public boolean isAtAngleStrict(AngleNonCR angle){
+        return angle.diff(currentAngle).toDegrees() < strictFinished.abs().toDegrees();
+    }
+
     public boolean isAtSpot(SpindexerSpotNonCR spot, SpotType spotType, int spotNum) {
-        return Math.abs(currentAngle.toDegrees() - (spot.getSpotPosition(spotType).get(spotNum)) * gearRatio * 360)
-                < finishedThreshold.abs().toDegrees();
+        return Math.abs(spot.getSpotPosition(spotType).get(spotNum) - currentAngle.getValue()) <= finishedThreshold.getValue();
     }
     public boolean isAtSpotDetection(SpindexerSpotNonCR spot, SpotType spotType, int spotNum) {
-        return  Math.abs(currentAngle.toDegrees() - (spot.getSpotPosition(spotType).get(spotNum)) * gearRatio * 360)
-                < detectThreshold.abs().toDegrees();
+        return isAtPosition(spot.getSpotPosition(spotType).get(spotNum));
     }
     public void removeBall(int spot) {
         ballColors[spot] = BallColor.NONE;
