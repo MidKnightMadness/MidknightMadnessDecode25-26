@@ -45,6 +45,8 @@ public class AprilTagCameraTesting extends OpMode {
 
     private boolean lastLeft = false;
     private boolean lastRight = false;
+    public double generalOffsetX = 0;
+    public double generalOffsetY = 0;
 
     @Override
     public void init() {
@@ -144,8 +146,8 @@ public class AprilTagCameraTesting extends OpMode {
             double fieldOffsetY = relX * Math.sin(theta) + relY * Math.cos(theta);
 
             // === Compute robot position ===
-            robotX = tagFieldX - fieldOffsetX;
-            robotY = tagFieldY - fieldOffsetY;
+            robotX = tagFieldX - fieldOffsetX + generalOffsetX;
+            robotY = tagFieldY - fieldOffsetY + generalOffsetY;
 
             // === Robot heading ===
             robotHeadingDeg = tagFieldHeadingDeg - tag.ftcPose.yaw;
