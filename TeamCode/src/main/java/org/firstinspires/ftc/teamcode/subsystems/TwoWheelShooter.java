@@ -49,9 +49,10 @@ public class TwoWheelShooter extends SubsystemBase {
 
     public static boolean useAggressiveRecovery = false;
     public boolean inRecoveryMode = false;
-    //AGGRESSIVE GAINS: FOR RECOVERY
-    public static double[] pidBotAggressiveGains = new double[]{0.0008, 0, 0.00005};
-    public static double[] pidTopAggressiveGains = new double[]{0.0008, 0, 0.00005};
+    //AGGRESSIVE GAINS: FOR RECOVERY - gain scheduling
+
+    public static double[] pidBotAggressiveGains = new double[]{0.002, 0, 0};
+    public static double[] pidTopAggressiveGains = new double[]{0.002, 0, 0};
 
     InterpLUT distToLowVel;
     InterpLUT distToHighVel;
@@ -204,6 +205,33 @@ public class TwoWheelShooter extends SubsystemBase {
         }
     }
 
+    private boolean firstShotDetected = false;
+
+    public static double shotDropThreshold = 100;
+    public static double minVelocityAgressive = 500;
+    boolean velStable = false;
+    public void checkForFirstShot() {
+        if (firstShotDetected) return;
+
+        if(!velStable && readyToShoot()){//checks to make sure up to speed
+            velStable = true;
+        }
+        if(velStable){//if up to speed and drop detected use recovery gains
+            if((Math.abs(low.getVelocity() - predictedBotVel) > shotDropThreshold ||
+                    Math.abs(high.getVelocity() - predictedTopVel) > shotDropThreshold)
+                    && low.getVelocity() > minVelocityAgressive && high.getVelocity() > minVelocityAgressive){
+                triggerBallShot();
+                firstShotDetected = true;
+            }
+        }
+    }
+
+    public void resetGainScheduling(){
+        firstShotDetected = false;
+        resetDefaultGains();
+        inRecoveryMode = false;
+    }
+
 
     public double getTargetVoltage(){
         return targetVoltage;
@@ -308,7 +336,7 @@ public class TwoWheelShooter extends SubsystemBase {
 //        if(!isMoving){
 //            setFlywheelMovingLUT(follower.getPose(), shootSide, robotVelocity, voltageUse, currVolt);
 //        } else{
-            setFlywheelStaticLUT(getDistance(follower.getPose(), shootSide), voltageUse, currVolt);
+        setFlywheelStaticLUT(getDistance(follower.getPose(), shootSide), voltageUse, currVolt);
 //        }
     }
 
@@ -395,6 +423,7 @@ public class TwoWheelShooter extends SubsystemBase {
 
         low.set(botVelocity, botMultiplier, currVolt);
         high.set(topVelocity, topMultiplier, currVolt);
+        checkForFirstShot();
     }
 
     /**
@@ -460,24 +489,10 @@ public class TwoWheelShooter extends SubsystemBase {
     }
 
 
-    public void triggerBallShot(boolean recover){//every time ball is shot
+    public void triggerBallShot(){//every time ball is shot
         if(useAggressiveRecovery){
             setAggressiveGains();
         }
-        //override curr recovery if it is in one
-        if(recover) {
-            currBotFactor = botRecoveryFactor;
-            currTopFactor = topRecoveryFactor;
-        }
-        recoveryStartTime = System.currentTimeMillis();
-
-        if(!inRecoveryMode) {
-            recoveryEndTime = System.currentTimeMillis() + recoveryBoostTime;
-        }
-        else{//trying to recover and shoot another ball
-            recoveryEndTime = System.currentTimeMillis() + recoveryBoostTime * 1.2;
-        }
-
         inRecoveryMode = true;
     }
 

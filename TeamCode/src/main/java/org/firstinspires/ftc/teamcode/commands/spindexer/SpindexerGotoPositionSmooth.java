@@ -37,12 +37,9 @@ public class SpindexerGotoPositionSmooth extends CommandBase {
 
     @Override
     public void execute() {
+        double time = timer.getTime() / 1000.0;
 
-        double time = timer.getTime();
-
-        double current = spindexer.getServo().getPosition();
-        double error = targetPosition - current;
-        spindexer.setDirectPosition(startValue + Math.signum(error) * time/totalTime);
+        spindexer.setDirectPosition(startValue + (targetPosition - startValue) * time/totalTime);
     }
 
     @Override
