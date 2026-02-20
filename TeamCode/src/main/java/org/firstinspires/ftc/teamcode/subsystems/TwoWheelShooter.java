@@ -47,12 +47,11 @@ public class TwoWheelShooter extends SubsystemBase {
     public static double[] pidBotGains = new double[]{0.0012, 0, 0};
     public static double[] kTopGains = new double[]{0.04386, 0.000346, 0};
 
-    public static boolean useAggressiveRecovery = true;
+    public static boolean useAggressiveRecovery = false;
     public boolean inRecoveryMode = false;
-    //AGGRESSIVE GAINS: FOR RECOVERY - gain scheduling
-
-    public static double[] pidBotAggressiveGains = new double[]{0.002, 0, 0};
-    public static double[] pidTopAggressiveGains = new double[]{0.002, 0, 0};
+    //AGGRESSIVE GAINS: FOR RECOVERY
+    public static double[] pidBotAggressiveGains = new double[]{0.0008, 0, 0.00005};
+    public static double[] pidTopAggressiveGains = new double[]{0.0008, 0, 0.00005};
 
     InterpLUT distToLowVel;
     InterpLUT distToHighVel;
@@ -189,6 +188,21 @@ public class TwoWheelShooter extends SubsystemBase {
             Vector dirParallel = gap.getAsVector().normalize();
             double velParallel = velocity.dot(dirParallel); // component parallel to line from robot to target pose
 
+            double realDist = targetPose.distanceFrom(pose);
+            double targetDist = realDist;
+            for (int i = 0; i < iterations; i++) {
+                targetDist = MathUtils.clamp(targetDist, dist[0], dist[dist.length - 1]); // find a better way later
+                double kCorr = distToKCorrection.get(targetDist);
+                double predict = targetDist + kCorr * velParallel;
+                targetDist += realDist - predict;
+            }
+
+            return new double[]{
+                    distToLowVel.get(targetDist),
+                    distToHighVel.get(targetDist),
+            };
+        }
+    }
 
 
     public double getTargetVoltage(){
