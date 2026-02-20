@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.main;
 
+import static org.firstinspires.ftc.teamcode.util.ExtraFns.getAngle;
 import static org.firstinspires.ftc.teamcode.util.ExtraFns.normAngle;
 
 import android.os.Environment;
@@ -658,7 +659,11 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
         double angle1 = getTargetAngle(position, control1);
         double angle2 = getTargetAngle(position, control2);
-        this.targetHeading = normAngle((angle1 + angle2) / 2);
+        return getAngleError(position, normAngle((angle1 + angle2) / 2));
+    }
+
+    public double getAngleError(Pose position, double targetHeading) {
+        this.targetHeading = targetHeading;
         //heading is in absolute radians
         double error = targetHeading - position.getHeading();
         double errorSign = (error > 0) ? -1 : 1;
@@ -680,10 +685,10 @@ public class MainTeleOpNonCR extends CommandOpMode {
         turnPower = 0;//REMOVE?
         //MODIFY so that the heading is facing the outake side, not the intake side
         if (autoAlign) {
-
+            double[] aimData = shooter.aimCalculator.targetPowersHeading(follower.getPose(), follower.getVelocity(), shooter.getShootPose(shootSide));
+            double targetHeading = aimData[2];
             Pose outakePose = new Pose(currentPose.getX(), currentPose.getY(), normAngle(Math.toRadians(currentPose.getHeading()) + Math.PI));
-            headingError = getAngleError(outakePose);
-
+            headingError = getAngleError(outakePose, targetHeading);
 
             turnPower = calculateGamepadPID(prevHeadingError, headingError);
             prevHeadingError = headingError;
@@ -1101,7 +1106,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
         currentShootDist = shootDist;
         if (!setCustomPower) {
             if (useLUT) {
-                shooter.setFlywheelLUT(follower, shootSide, voltageCompensation, currVolt);
+                shooter.setFlywheelNew(follower.getPose(), follower.getVelocity(), shootSide, currVolt);
             } else {
 //                shooter.resetDefaultGains();
                 shooter.setFlywheelPresets(shootDist, follower, shootSide, voltageCompensation, currVolt);

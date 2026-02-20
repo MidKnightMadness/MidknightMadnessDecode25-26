@@ -6,8 +6,13 @@ import com.seattlesolvers.solverslib.hardware.SensorColor;
 
 import org.firstinspires.ftc.teamcode.hardware.color.ColorSpace;
 
+/**
+ * A color sensor extension that allows for easy reads to any color space
+ *
+ * @author Daniel - FTC 7854
+ */
 public class SensorColorEx extends SensorColor {
-    private final ColorSpace colorSpace;
+    private ColorSpace colorSpace;
     private final ColorSensor colorSensor;
 
     /**
@@ -59,5 +64,14 @@ public class SensorColorEx extends SensorColor {
                 colorSensor.blue(),
                 colorSensor.alpha()
         );
+    }
+
+    /**
+     * Set the color space
+     *
+     * @param space the color space to use
+     */
+    public void setColorSpace(ColorSpace space) {
+        this.colorSpace = space;
     }
 }

@@ -1084,7 +1084,7 @@ public class MainTeleOp extends CommandOpMode {
             currentShootDist = shootDist;
             if (!setCustomPower) {
                 if (useLUT) {
-                    shooter.setFlywheelLUT(follower, shootSide, voltageCompensation, currVolt);
+                    shooter.setFlywheelNew(follower.getPose(), follower.getVelocity(), shootSide, currVolt);
                 } else {
 //                shooter.resetDefaultGains();
                     shooter.setFlywheelPresets(shootDist, follower, shootSide, voltageCompensation, currVolt);

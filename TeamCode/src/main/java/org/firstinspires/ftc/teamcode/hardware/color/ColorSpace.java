@@ -4,6 +4,11 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 
+/**
+ * An enum to make handling color spaces much easier.
+ *
+ * @author Daniel - FTC 7854
+ */
 public enum ColorSpace {
     RGBA(4, -1, Imgproc.COLOR_RGBA2RGB),
     RGB(3, Imgproc.COLOR_RGBA2RGB, -1),

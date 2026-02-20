@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.math.MathFunctions;
 import com.pedropathing.math.Vector;
 
 
@@ -13,12 +14,14 @@ import com.seattlesolvers.solverslib.command.SubsystemBase;
 
 
 import com.seattlesolvers.solverslib.util.InterpLUT;
+import com.seattlesolvers.solverslib.util.MathUtils;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 import org.firstinspires.ftc.teamcode.hardware.Motor;
 import org.firstinspires.ftc.teamcode.hardware.MotorEx;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
+import org.firstinspires.ftc.teamcode.util.ExtraFns;
 
 import java.util.Map;
 
@@ -53,10 +56,10 @@ public class TwoWheelShooter extends SubsystemBase {
     InterpLUT distToLowVel;
     InterpLUT distToHighVel;
 
-    public static double[] dist= {60, 70, 80, 90, 100, 112, 128, 149.5, 156.0};//inches
-    public static double[] bottomVel = {1350, 1350, 1400, 1450, 1500, 1500, 1700, 1700, 1800};
-    //ticks in sec for 3: 1 direct driven gear ratios
-    public static double[] topVel = {1550, 1600, 1650, 1650, 1750, 1800, 1900, 2100, 2100};
+//    public static double[] dist= {60, 70, 80, 90, 100, 112, 128, 149.5, 156.0};//inches
+//    public static double[] bottomVel = {1350, 1350, 1400, 1450, 1500, 1500, 1700, 1700, 1800};
+//    //ticks in sec for 3: 1 direct driven gear ratios
+//    public static double[] topVel = {1550, 1600, 1650, 1650, 1750, 1800, 1900, 2100, 2100};
 
 
     public final MotorEx low;
@@ -106,7 +109,100 @@ public class TwoWheelShooter extends SubsystemBase {
     public static double velMovingThreshold = 2;//in per sec
     double topMultiplier = 0;
     double botMultiplier = 0;
+    public AimCalculator aimCalculator;
 
+    public static class AimCalculator {
+        InterpLUT distToLowVel;
+        InterpLUT distToHighVel;
+        InterpLUT distToKCorrection;
+
+        //ticks in sec for 3: 1 direct driven gear ratios
+        public static int iterations = 10; // For tuning targetDistance
+        public static double[] dist = {60, 70, 80, 90, 100, 112, 128, 149.5, 156.0};//inches
+        public static double[] bottomVel = {1350, 1350, 1400, 1450, 1500, 1500, 1700, 1700, 1800};
+        public static double[] topVel = {1550, 1600, 1650, 1650, 1750, 1800, 1900, 2100, 2100};
+        public static double[] velCorrectionFactor = {0.7, 0.75, 0.8, 0.85, 0.9, 0.97, 1.05, 1.15, 1.2}; // take time in the air and then subtract a bit
+
+        public AimCalculator() {
+            distToLowVel = new InterpLUT();
+            distToHighVel = new InterpLUT();
+            distToKCorrection = new InterpLUT();
+            for (int i = 0; i < dist.length; i++) {
+                distToLowVel.add(dist[i], bottomVel[i]);
+                distToHighVel.add(dist[i], topVel[i]);
+                distToKCorrection.add(dist[i], velCorrectionFactor[i]);
+            }
+            distToLowVel.createLUT();
+            distToHighVel.createLUT();
+            distToKCorrection.createLUT();
+        }
+
+        /**
+         * Calculate target powers and heading.<br>
+         * Algorithm:<br>
+         * 1. Act like you're aiming for a distance d<br>
+         * 2. Simulate error for shooting with distance d, making sure the parallel component of the error is 0<br>
+         * 3. Update d by adding the error<br>
+         * 4. Repeat steps 1-3 to iterative refine d
+         * @param pose     The robot pose
+         * @param velocity The robot velocity
+         * @return bottom velocity, top velocity, heading
+         */
+        public double[] targetPowersHeading(Pose pose, Vector velocity, Pose targetPose) {
+            Pose gap = targetPose.minus(pose);
+            Vector dirParallel = gap.getAsVector().normalize();
+            Vector dirPerp = gap.rotate(Math.PI / 2, false).getAsVector().normalize();
+            double velParallel = velocity.dot(dirParallel); // component parallel to line from robot to target pose
+            double velPerp = velocity.dot(dirPerp); // left is positive, right is negative
+
+            double realDist = targetPose.distanceFrom(pose);
+            double targetDist = realDist;
+            double headingCorrection = 0;
+            for (int i = 0; i < iterations; i++) {
+                // Steps 1-2: simulation
+                targetDist = MathUtils.clamp(targetDist, dist[0], dist[dist.length - 1]); // find a better way later
+                double kCorr = distToKCorrection.get(targetDist);
+                double predict = targetDist + kCorr * velParallel;
+                double predictPerp = kCorr * velPerp;
+                double predictParallel = Math.sqrt(predict * predict - predictPerp * predictPerp);
+                headingCorrection = Math.atan2(predictPerp, predictParallel);
+                // Steps 3-4: error and update
+                double distanceIdeal = (realDist / predictParallel) * predict;
+                // d + correction + error = ideal d
+                // (d + error) + correction = ideal d, update d += error
+                targetDist += distanceIdeal - predict;
+            }
+
+            return new double[]{
+                    distToLowVel.get(targetDist),
+                    distToHighVel.get(targetDist),
+                    MathFunctions.normalizeAngle(gap.getHeading() + headingCorrection)
+            };
+        }
+
+        /**
+         * Calculate target powers, no heading.<br>
+         */
+        public double[] targetPowers(Pose pose, Vector velocity, Pose targetPose) {
+            Pose gap = targetPose.minus(pose);
+            Vector dirParallel = gap.getAsVector().normalize();
+            double velParallel = velocity.dot(dirParallel); // component parallel to line from robot to target pose
+
+            double realDist = targetPose.distanceFrom(pose);
+            double targetDist = realDist;
+            for (int i = 0; i < iterations; i++) {
+                targetDist = MathUtils.clamp(targetDist, dist[0], dist[dist.length - 1]); // find a better way later
+                double kCorr = distToKCorrection.get(targetDist);
+                double predict = targetDist + kCorr * velParallel;
+                targetDist += realDist - predict;
+            }
+
+            return new double[]{
+                    distToLowVel.get(targetDist),
+                    distToHighVel.get(targetDist),
+            };
+        }
+    }
 
 
     public double getTargetVoltage(){
@@ -124,15 +220,16 @@ public class TwoWheelShooter extends SubsystemBase {
         this.map = hardwareMap;
         setRunMode(runMode);
 
-        distToLowVel = new InterpLUT();
-        distToHighVel = new InterpLUT();
-        for (int i = 0; i < dist.length; i++) {
-            distToLowVel.add(dist[i], bottomVel[i]);
-            distToHighVel.add(dist[i], topVel[i]);
-        }
+//        distToLowVel = new InterpLUT();
+//        distToHighVel = new InterpLUT();
+//        for (int i = 0; i < dist.length; i++) {
+//            distToLowVel.add(dist[i], bottomVel[i]);
+//            distToHighVel.add(dist[i], topVel[i]);
+//        }
 
-        distToLowVel.createLUT();
-        distToHighVel.createLUT();
+//        distToLowVel.createLUT();
+//        distToHighVel.createLUT();
+        aimCalculator = new AimCalculator();
 
         low.motor.setDirection(lowMotorDirForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);
         high.motor.setDirection(highMotorDirForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);
@@ -259,11 +356,11 @@ public class TwoWheelShooter extends SubsystemBase {
         double botVelocity, topVelocity;
         if(useLUT){
             if(dist > 156 ){
-                botVelocity = bottomVel[bottomVel.length - 1];
-                topVelocity = topVel[topVel.length - 1];
+                botVelocity = AimCalculator.bottomVel[AimCalculator.bottomVel.length - 1];
+                topVelocity = AimCalculator.topVel[AimCalculator.topVel.length - 1];
             } else if(dist < 60) {
-                botVelocity = bottomVel[0];
-                topVelocity = topVel[0];
+                botVelocity = AimCalculator.bottomVel[0];
+                topVelocity = AimCalculator.topVel[0];
             }
             else {
                 botVelocity = distToLowVel.get(dist);
@@ -298,6 +395,48 @@ public class TwoWheelShooter extends SubsystemBase {
 
         low.set(botVelocity, botMultiplier, currVolt);
         high.set(topVelocity, topMultiplier, currVolt);
+    }
+
+    /**
+     * Cuberobot simulation go brrrrrrr
+     *
+     * @param robotPose The current robot pose
+     * @param robotVel The current robot velocity
+     * @param shootSide The shooting side
+     * @param currVolt Current voltage of robot
+     * @return The target heading for the robot
+     */
+    public double setFlywheelNew(Pose robotPose, Vector robotVel, ShootSide shootSide, double currVolt){
+        updateRecoveryState();
+//        double ratio = voltageUse ? (targetVoltage / currVolt) : 1;
+//        ratio = Math.min(ratio, 1.35);
+        double ratio = 1;
+
+        double botVelocity, topVelocity;
+        double[] aimData = aimCalculator.targetPowersHeading(
+                robotPose,
+                robotVel,
+                getShootPose(shootSide)
+        );
+        botVelocity = aimData[0];
+        topVelocity = aimData[1];
+        if (runMode != RunMode.VelocityControl) setRunMode(RunMode.VelocityControl);
+
+        topMultiplier = ratio * currTopFactor;
+        botMultiplier = ratio * currBotFactor;
+
+        if(runMode == RunMode.VelocityControl) {
+            predictedBotVel = botVelocity;
+            predictedTopVel = topVelocity;
+        } else{
+            predictedBotPower = botVelocity;
+            predictedTopPower = topVelocity;
+        }
+
+        low.set(botVelocity, botMultiplier, currVolt);
+        high.set(topVelocity, topMultiplier, currVolt);
+
+        return aimData[2];
     }
 
     public boolean readyToShoot(){

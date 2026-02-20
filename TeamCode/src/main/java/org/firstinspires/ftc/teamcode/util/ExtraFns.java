@@ -55,4 +55,8 @@ public class ExtraFns {
                 .map(Map.Entry::getKey)
                 .orElse(null); // or throw if you prefer
     }
+
+    public static double dotPose(Pose a, Pose b) {
+        return a.getX() * b.getX() + a.getY() * b.getY();
+    }
 }

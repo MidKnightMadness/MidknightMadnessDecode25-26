@@ -4,6 +4,11 @@ import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 
+/**
+ * Thresholding made simple.
+ *
+ * @author Daniel - 7854
+ */
 public class Threshold {
     public static final int GLOBAL_MIN = 0;
     public static final int GLOBAL_MAX = 255;
@@ -12,6 +17,13 @@ public class Threshold {
     public final double low;
     public final double high;
 
+    /**
+     * Construct a threshold
+     *
+     * @param low The lower bound
+     * @param high The upper bound
+     * @param invert Whether to invert it (e.g. from 30-100 to 0-30 + 100-255)
+     */
     public Threshold(double low, double high, boolean invert) {
         assert low >= GLOBAL_MIN && low <= GLOBAL_MAX:
                 "Min threshold must be between " + GLOBAL_MIN + " and " + GLOBAL_MAX;
@@ -25,22 +37,33 @@ public class Threshold {
         this.inverted = invert;
     }
 
+    /**
+     * Construct a threshold
+     *
+     * @param low The lower bound
+     * @param high The upper bound
+     */
     public Threshold(double low, double high) {
         this(low, high, false);
     }
 
-    public static Threshold of(double low, double high, boolean invert) {
-        return new Threshold(low, high, invert);
-    }
-
-    public static Threshold of(double low, double high) {
-        return new Threshold(low, high);
-    }
-
+    /**
+     * Construct a threshold from {@link Threshold#GLOBAL_MIN} to {@link Threshold#GLOBAL_MAX}
+     *
+     * @return The desired threshold
+     */
     public static Threshold any() {
         return new Threshold(GLOBAL_MIN, GLOBAL_MAX);
     }
 
+    /**
+     * Threshold from ratios of the total range
+     *
+     * @param lowRatio The lower bound ratio
+     * @param highRatio The higher bound ratio
+     * @param invert Invert the range
+     * @return The desired threshold
+     */
     public static Threshold fromRatios(double lowRatio, double highRatio, boolean invert) {
         return new Threshold(
                 lowRatio * (GLOBAL_MAX - GLOBAL_MIN) + GLOBAL_MIN,
@@ -49,18 +72,39 @@ public class Threshold {
         );
     }
 
+    /**
+     * Threshold from ratios of the total range
+     *
+     * @param lowRatio The lower bound ratio
+     * @param highRatio The higher bound ratio
+     * @return The desired threshold
+     */
     public static Threshold fromRatios(double lowRatio, double highRatio) {
         return fromRatios(lowRatio, highRatio, false);
     }
 
+    /**
+     * Gets the ratio of the lower bound vs. the total range
+     *
+     * @return The desired ratio
+     */
     public double lowRatio() {
         return (low - GLOBAL_MIN) / (GLOBAL_MAX - GLOBAL_MIN);
     }
 
+    /**
+     * Gets the ratio of the upper bound vs. the total range
+     *
+     * @return The desired ratio
+     */
     public double highRatio() {
         return (high - GLOBAL_MIN) / (GLOBAL_MAX - GLOBAL_MIN);
     }
 
+    /**
+     * Generates a random value within the threshold
+     * @return The random value
+     */
     public double randomValue() {
         if (!inverted) return low + Math.random() * (high - low);
 
@@ -74,6 +118,12 @@ public class Threshold {
         }
     }
 
+    /**
+     * Check if a threshold contains a value
+     *
+     * @param value The value to check
+     * @return If the threshold contains the value
+     */
     public boolean contains(double value) {
         if (!inverted) {
             return value >= low && value <= high;
@@ -83,8 +133,17 @@ public class Threshold {
                 (value >= high && value <= GLOBAL_MAX);
     }
 
+    /**
+     * Get the range of the threshold
+     *
+     * @return The desired range
+     */
     public double range() {
-        return high - low;
+        if (inverted) {
+            return (GLOBAL_MAX - GLOBAL_MIN) - (high - low);
+        } else {
+            return high - low;
+        }
     }
 
     private static void maskNativeImpl(
@@ -124,6 +183,13 @@ public class Threshold {
         }
     }
 
+    /**
+     * Recursively masks a {@link Mat} with {@link Threshold}
+     *
+     * @param thresholds The color thresholds
+     * @param src The original mat
+     * @param dst The output mat
+     */
     public static void maskNative(Threshold[] thresholds, Mat src, Mat dst) {
         double[] firstPixel = src.get(0, 0);
         assert thresholds.length == firstPixel.length:
@@ -136,7 +202,14 @@ public class Threshold {
         );
     }
 
-    public static boolean isWithin(Threshold[] thresholds, double[] color) {
+    /**
+     * Check if a color is within thresholds
+     *
+     * @param thresholds The thresholds to check
+     * @param color The color array
+     * @return If the color is within the thresholds
+     */
+    public static boolean colorWithin(Threshold[] thresholds, double[] color) {
         assert thresholds.length == color.length:
                 "Thresholds length must be equal to color space length of " +
                         color.length + " got: " + thresholds.length;
