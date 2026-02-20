@@ -73,7 +73,9 @@ public class SpindexerNonCR extends SubsystemBase {
         ).setReversed(false);
         turner = hardwareMap.get(ServoImplEx.class, ConfigNames.turner);
         turner.setPwmRange(new PwmControl.PwmRange(500, 2500));
+        turner.setDirection(Servo.Direction.REVERSE);
         turner.setPosition(0);
+
 
 
         this.useDistanceSensor = useDistanceSensors;
@@ -379,9 +381,6 @@ public class SpindexerNonCR extends SubsystemBase {
 
     public boolean isAtSpot(SpindexerSpotNonCR spot, SpotType spotType, int spotNum) {
         return Math.abs(spot.getSpotPosition(spotType).get(spotNum) - currentAngle.getValue()) <= finishedThreshold.getValue();
-    }
-    public boolean isAtSpotDetection(SpindexerSpotNonCR spot, SpotType spotType, int spotNum) {
-        return isAtPosition(spot.getSpotPosition(spotType).get(spotNum));
     }
     public void removeBall(int spot) {
         ballColors[spot] = BallColor.NONE;

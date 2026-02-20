@@ -4,6 +4,7 @@ import com.seattlesolvers.solverslib.command.CommandBase;
 
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpotNonCR;
+import org.firstinspires.ftc.teamcode.game.SpotType;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexerNonCR;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
@@ -24,6 +25,7 @@ public class OutakeSpotsRotation extends CommandBase {
         this.dir = dir;
         this.timeWait = timeWait;
         currSpindexerOutakeSpot = startSpot.getIndex();
+        timer = new Timer();
         addRequirements(this.spindexer);
     }
     @Override
@@ -31,21 +33,28 @@ public class OutakeSpotsRotation extends CommandBase {
         timer.restart();
         prevTime = 0;
     }
+    boolean atSpot = false;
 
     @Override
     public void execute() {
         if(first){
             spindexer.setDirectPosition(SpindexerSpotNonCR.fromIndex(currSpindexerOutakeSpot).getOuttakePositionSolo());
             first = false;
-            prevTime = timer.getTime();
         }
 
-        if(timer.getTime() - prevTime >= timeWait && numSpot < 3){
+        if(!atSpot){
+            atSpot = spindexer.isAtPosition(SpindexerSpotNonCR.fromIndex(currSpindexerOutakeSpot).getOuttakePositionSolo());
+            if(atSpot){
+                prevTime = timer.getTime();
+            }
+        }
+
+        if(atSpot && timer.getTime() - prevTime >= timeWait && numSpot < 3){
             currSpindexerOutakeSpot += dir;
             if(currSpindexerOutakeSpot < 0){
-                currSpindexerOutakeSpot += 3;
+                currSpindexerOutakeSpot = 3;
             } else if(currSpindexerOutakeSpot > 3){
-                currSpindexerOutakeSpot -= 3;
+                currSpindexerOutakeSpot = 0;
             }
             spindexer.setDirectPosition(SpindexerSpotNonCR.fromIndex(currSpindexerOutakeSpot).getOuttakePositionSolo());
             prevTime = timer.getTime();

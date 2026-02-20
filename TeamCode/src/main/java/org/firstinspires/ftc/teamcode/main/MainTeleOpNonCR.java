@@ -1,10 +1,10 @@
 package org.firstinspires.ftc.teamcode.main;
 
-import static org.firstinspires.ftc.teamcode.util.ExtraFns.getAngle;
 import static org.firstinspires.ftc.teamcode.util.ExtraFns.normAngle;
 
 import android.os.Environment;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 //import com.bylazar.graph.GraphManager;
@@ -21,6 +21,7 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ReadWriteFile;
+import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 
 import com.seattlesolvers.solverslib.command.CommandScheduler;
@@ -33,7 +34,9 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommandNonCR;
 import org.firstinspires.ftc.teamcode.commands.shooter.ShootSeqCommand;
 import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommand2;
+import org.firstinspires.ftc.teamcode.commands.spindexer.OutakeSpotsRotation;
 import org.firstinspires.ftc.teamcode.commands.spindexer.SpindexerGotoPosition;
+import org.firstinspires.ftc.teamcode.commands.spindexer.SpindexerGotoPositionSmooth;
 import org.firstinspires.ftc.teamcode.commands.spindexer.SpindexerGotoSpot;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.MotifEnums;
@@ -72,6 +75,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
     SpindexerNonCR spindexer;
     TwoWheelShooter shooter;
     Intake intake;
+    Telemetry dashboardTelemetry;
 
 
     MotifEnums.Motif pattern = MotifEnums.Motif.NONE;
@@ -168,9 +172,12 @@ public class MainTeleOpNonCR extends CommandOpMode {
     SequentialCommandGroup seqAutoIntakeCommand;
     SequentialCommandGroup spindexerGotoPositionSeq;
     SpindexerGotoPosition spindexerGotoPosition;
+    SpindexerGotoPositionSmooth spindexerGotoPositionSmooth;
+    OutakeSpotsRotation outakeSpotsRotation;
+
     boolean mapDistToShoot = true;
 
-    Telemetry dashboardTelemetry;
+
     TwoWheelShooter.ShootDist currentShootDist;
 
     public static boolean useDistanceSensor = true;
@@ -191,7 +198,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
     boolean useLUT = false;
     boolean voltageCompensation = false;
 
-    public static double powerAutoIntake = 0.93;
+    public static double powerAutoIntake = 1.0;
 
     Pose[] leftGateBounds = new Pose[]{new Pose(14, 52, 0), new Pose(45, 85, 0)};
     Pose[] rightGateBounds = new Pose[]{new Pose(99, 52, 0), new Pose(130, 85, 0)};
@@ -222,10 +229,13 @@ public class MainTeleOpNonCR extends CommandOpMode {
     public static double minArduTimeUpdate = 0;
     public static double autoSettleTime = 0;
     public static long autoIntakeTimeout = 10000;
-    public static Pose failsafeLeftPose = new Pose(8.85, 8, Math.toRadians(180));
-    public static Pose failsafeRightPose = new Pose(144 - 8.85, 8, Math.toRadians(0));
+    public static Pose failsafeLeftPose = new Pose(8.85, 8, Math.toRadians(270));
+    public static Pose failsafeRightPose = new Pose(144 - 8.85, 8, Math.toRadians(270));
     double currTurnerPosition;
     double targetSpindexerPosition;
+    int activeSpindexerSpot = 0;
+    public static double totalSmoothTime = 1;
+    public static double inBetweenOutakeTime = 300;
 
     @Override
     public void initialize() {
@@ -303,6 +313,8 @@ public class MainTeleOpNonCR extends CommandOpMode {
         }
 
         telemetry.setMsTransmissionInterval(500);
+        FtcDashboard dashboard = FtcDashboard.getInstance();
+        dashboardTelemetry = dashboard.getTelemetry();
     }
 
     @Override
@@ -404,8 +416,14 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
     boolean rumbledLastFive = false;
 
+    boolean start;
     @Override
     public void run() {
+        if(!start){
+            spindexer.getTurnerEncoder().encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            spindexer.getTurnerEncoder().encoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            start = true;
+        }
         super.run();
         currSpindexerBallColors = spindexer.getBallColors();
 
@@ -420,6 +438,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
         }
 
         updateLights();
+//        shooter.checkForFirstShot();
 //
 //        if((autoIntake || autoSpindexer) && activeSpindexerSpotIndex != -1 && activeSpotType != null){
 //            spindexer.goToSpot(SpindexerSpot.fromIndex(activeSpindexerSpotIndex), activeSpotType, spindexerRunMode);
@@ -552,6 +571,9 @@ public class MainTeleOpNonCR extends CommandOpMode {
                 if(spindexerGotoPositionSeq != null){
                     CommandScheduler.getInstance().cancel(spindexerGotoPositionSeq);
                 }
+                if(outakeSpotsRotation != null){
+                    CommandScheduler.getInstance().cancel(outakeSpotsRotation);
+                }
             }
 
             if (autoIntake) {
@@ -659,11 +681,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
         double angle1 = getTargetAngle(position, control1);
         double angle2 = getTargetAngle(position, control2);
-        return getAngleError(position, normAngle((angle1 + angle2) / 2));
-    }
-
-    public double getAngleError(Pose position, double targetHeading) {
-        this.targetHeading = targetHeading;
+        this.targetHeading = normAngle((angle1 + angle2) / 2);
         //heading is in absolute radians
         double error = targetHeading - position.getHeading();
         double errorSign = (error > 0) ? -1 : 1;
@@ -685,10 +703,10 @@ public class MainTeleOpNonCR extends CommandOpMode {
         turnPower = 0;//REMOVE?
         //MODIFY so that the heading is facing the outake side, not the intake side
         if (autoAlign) {
-            double[] aimData = shooter.aimCalculator.targetPowersHeading(follower.getPose(), follower.getVelocity(), shooter.getShootPose(shootSide));
-            double targetHeading = aimData[2];
+
             Pose outakePose = new Pose(currentPose.getX(), currentPose.getY(), normAngle(Math.toRadians(currentPose.getHeading()) + Math.PI));
-            headingError = getAngleError(outakePose, targetHeading);
+            headingError = getAngleError(outakePose);
+
 
             turnPower = calculateGamepadPID(prevHeadingError, headingError);
             prevHeadingError = headingError;
@@ -923,12 +941,10 @@ public class MainTeleOpNonCR extends CommandOpMode {
     }
 
     private void pushUpCommands() {
-        if (autoSpindexer || (autoIntake && autoIntakeCommand.currNumSpot != -1) || (gamepad2.aWasPressed() && pushUpColor != GobildaLightBlock.Color.ORANGE)) {
+
+        if(gamepad1.aWasPressed()){
             pushUpServo.setDown();
         }
-//            if(gamepad1.aWasPressed()){
-//                pushUpServo.setDown();
-//            }
 
         if (gamepad2.bWasPressed()) {
             pushUpServo.setUp();
@@ -938,48 +954,50 @@ public class MainTeleOpNonCR extends CommandOpMode {
         }
     }
 
-    double targetSpotPosition;
-    double currSpotPosition;
+    double autoIntakeSpot = 0;
+    boolean autoIntakeFinishedReset;
 
     private void spindexerCommands() {
         currTurnerPosition = spindexer.getCurrentSpindexerPosition();
-        if (autoIntake && autoIntakeCommand != null)
-            targetSpotPosition = autoIntakeCommand.getSpotPosition();
 
-        if (autoIntake && autoIntakeCommand != null && targetSpotPosition != currSpotPosition) {
-            currSpotPosition = targetSpotPosition;
-            autoSpindexer = true;
+        if(autoIntake && autoIntakeCommand != null){
+            autoIntakeSpot = autoIntakeCommand.getSpotPosition();
+        }
+
+        //cycles between spindexer intake spots
+        if (gamepad2.dpadLeftWasPressed() && !autoIntake) {
             clearExistingSpindexerCommand();
-            spindexerGotoPosition = new SpindexerGotoPosition(spindexer, targetSpotPosition);
+            if(activeSpindexerSpot != 0) {
+                activeSpindexerSpot--;
+            }
+            spindexerGotoPosition = new SpindexerGotoPosition(spindexer, SpindexerSpotNonCR.fromIndex(activeSpindexerSpot).getIntakePositionSolo());
+            schedulePosition(spindexerGotoPosition);
+        } else if (gamepad2.dpadRightWasPressed() && !autoIntake) {
+            clearExistingSpindexerCommand();
+            if(activeSpindexerSpot != 3) {
+                activeSpindexerSpot++;
+            }
+            spindexerGotoPosition = new SpindexerGotoPosition(spindexer, SpindexerSpotNonCR.fromIndex(activeSpindexerSpot).getIntakePositionSolo());
             schedulePosition(spindexerGotoPosition);
         }
 
-
-        if (gamepad2.dpadLeftWasPressed() && !autoIntake) {
-            autoSpindexer = true;
-            clearExistingSpindexerCommand();
-            spindexerGotoPosition = new SpindexerGotoPosition(spindexer, currTurnerPosition - 0.25);
-            schedulePosition(spindexerGotoPosition);
-        } else if (gamepad2.dpadDownWasPressed() && !autoIntake) {
-            autoSpindexer = true;
+        //finds nearest spindexer intake spot
+        else if (gamepad2.dpadDownWasPressed() && !autoIntake) {
             clearExistingSpindexerCommand();
             spindexerGotoPosition = new SpindexerGotoPosition(spindexer, spindexer.getNearestIntakePosition(SpotType.INTAKE));
             schedulePosition(spindexerGotoPosition);
-        } else if (gamepad2.dpadRightWasPressed() && !autoIntake) {
-            autoSpindexer = true;
-            clearExistingSpindexerCommand();
-            spindexerGotoPosition = new SpindexerGotoPosition(spindexer, currTurnerPosition + 0.25);
-            schedulePosition(spindexerGotoPosition);
         } else if (gamepad2.leftBumperWasPressed() && !autoIntake) {
-            autoSpindexer = true;
             clearExistingSpindexerCommand();
-            spindexerGotoPosition = new SpindexerGotoPosition(spindexer, spindexer.startOutakePosition);
-            schedulePosition(spindexerGotoPosition);
+            spindexerGotoPositionSmooth = new SpindexerGotoPositionSmooth(spindexer, spindexer.startOutakePosition, totalSmoothTime);
+            schedulePosition(spindexerGotoPositionSmooth);
         } else if (gamepad2.rightBumperWasPressed() && !autoIntake) {
-            autoSpindexer = true;
             clearExistingSpindexerCommand();
-            spindexerGotoPosition = new SpindexerGotoPosition(spindexer, spindexer.endOutakePosition);
-            schedulePosition(spindexerGotoPosition);
+            spindexerGotoPositionSmooth = new SpindexerGotoPositionSmooth(spindexer, spindexer.endOutakePosition, totalSmoothTime);
+            schedulePosition(spindexerGotoPositionSmooth);
+        }  else if(gamepad2.yWasPressed()){
+            clearExistingSpindexerCommand();;
+            outakeSpotsRotation = new OutakeSpotsRotation(spindexer, SpindexerSpotNonCR.SPOT1, -1, inBetweenOutakeTime);
+            schedulePosition(outakeSpotsRotation);
         }
 
 //        if (!autoSpindexer && !autoIntake) {
@@ -996,9 +1014,13 @@ public class MainTeleOpNonCR extends CommandOpMode {
         if(spindexerGotoPosition != null){
             CommandScheduler.getInstance().cancel(spindexerGotoPosition);
         }
+        if(outakeSpotsRotation != null){
+            CommandScheduler.getInstance().cancel(outakeSpotsRotation);
+        }
     }
 
-    private void schedulePosition(SpindexerGotoPosition spindexerGotoPosition) {
+    private void schedulePosition(Command spindexerGotoPosition) {
+        autoSpindexer = true;
         spindexerGotoPositionSeq = new SequentialCommandGroup(spindexerGotoPosition,
                 new InstantCommand(() -> resetAutoSpindexer()));
         schedule(spindexerGotoPositionSeq);
@@ -1007,6 +1029,8 @@ public class MainTeleOpNonCR extends CommandOpMode {
     public void resetAutoSpindexer() {
         autoSpindexer = false;
         spindexerGotoPosition = null;
+        spindexerGotoPositionSmooth = null;
+        spindexerGotoPositionSeq = null;
         targetSpindexerPosition = -1;
     }
 
@@ -1087,6 +1111,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
         } else if (gamepad2.right_trigger > 0.5) {
             shooter.stopFlywheels();
             setBallColorsDefault();
+            shooter.resetGainScheduling();
         }
 
 
@@ -1106,7 +1131,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
         currentShootDist = shootDist;
         if (!setCustomPower) {
             if (useLUT) {
-                shooter.setFlywheelNew(follower.getPose(), follower.getVelocity(), shootSide, currVolt);
+                shooter.setFlywheelLUT(follower, shootSide, voltageCompensation, currVolt);
             } else {
 //                shooter.resetDefaultGains();
                 shooter.setFlywheelPresets(shootDist, follower, shootSide, voltageCompensation, currVolt);
@@ -1190,8 +1215,11 @@ public class MainTeleOpNonCR extends CommandOpMode {
             telemetry.addLine("--------------------------------");
             telemetry.addData("Spindexer Mode", spindexerRunMode);
             telemetry.addData("Spindexer Angle", spindexer.getCurrentAngle());
-            telemetry.addData("Current Turner Position", currTurnerPosition);
-            telemetry.addData("Spindexer Auto Spindxer", autoSpindexer);
+            telemetry.addData("Current Set Position", spindexer.getServo().getPosition());
+            telemetry.addData("Curr Active Spot", activeSpindexerSpot);
+            telemetry.addData("Auto Intake Spot", autoIntakeSpot);
+//            telemetry.addData("Spindexer Auto Spindxer", autoSpindexer);
+//            telemetry.addData("Auto Intake Target Spot", targetSpotPosition);
             if (currSpindexerBallColors != null) {
                 telemetry.addData("Spindexer Ball Color 0", currSpindexerBallColors[0]);
                 telemetry.addData("Spindexer Ball Color 1", currSpindexerBallColors[1]);
@@ -1202,7 +1230,13 @@ public class MainTeleOpNonCR extends CommandOpMode {
             telemetry.addData("Spindexer Raw Power", spindexerRawPower);
             telemetry.addData("Spindexer Curr Spot Type", activeSpotType);
 
+            telemetry.addData("Shooter Recovery Gains", shooter.inRecoveryMode);
             telemetry.update();
+            dashboardTelemetry.addData("Shooter Top Vel", shooter.high.getVelocity());
+            dashboardTelemetry.addData("Shooter Bot Vel", shooter.low.getVelocity());
+            dashboardTelemetry.addData("Corr Shooter Top", shooter.high.getCorrectedVelocity());
+            dashboardTelemetry.addData("Corr Shooter Bot", shooter.low.getCorrectedVelocity());
+            dashboardTelemetry.update();
 
         }
 

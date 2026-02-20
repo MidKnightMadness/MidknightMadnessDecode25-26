@@ -19,7 +19,7 @@ public class MotorEx extends Motor {
     public DcMotorEx motorEx;
 
     // The minimum difference between the current and requested motor power between motor writes
-    private double cachingTolerance = 0.01;
+    private double cachingTolerance = 0.001;
 
     /**
      * Constructs the instance motor for the wrapper
