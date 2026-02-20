@@ -61,7 +61,6 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import java.io.File;
 import java.util.Map;
 
-
 @Configurable
 @Config
 @TeleOp(name = "Main TeleOp NON CR", group = "Competition")
@@ -75,7 +74,6 @@ public class MainTeleOpNonCR extends CommandOpMode {
     SpindexerNonCR spindexer;
     TwoWheelShooter shooter;
     Intake intake;
-    Telemetry dashboardTelemetry;
 
 
     MotifEnums.Motif pattern = MotifEnums.Motif.NONE;
@@ -172,12 +170,13 @@ public class MainTeleOpNonCR extends CommandOpMode {
     SequentialCommandGroup seqAutoIntakeCommand;
     SequentialCommandGroup spindexerGotoPositionSeq;
     SpindexerGotoPosition spindexerGotoPosition;
+
     SpindexerGotoPositionSmooth spindexerGotoPositionSmooth;
     OutakeSpotsRotation outakeSpotsRotation;
 
     boolean mapDistToShoot = true;
 
-
+    Telemetry dashboardTelemetry;
     TwoWheelShooter.ShootDist currentShootDist;
 
     public static boolean useDistanceSensor = true;
@@ -415,8 +414,8 @@ public class MainTeleOpNonCR extends CommandOpMode {
     boolean gameTimerStart = false;
 
     boolean rumbledLastFive = false;
-
     boolean start;
+
     @Override
     public void run() {
         if(!start){
@@ -438,7 +437,8 @@ public class MainTeleOpNonCR extends CommandOpMode {
         }
 
         updateLights();
-//        shooter.checkForFirstShot();
+        //        shooter.checkForFirstShot();
+
 //
 //        if((autoIntake || autoSpindexer) && activeSpindexerSpotIndex != -1 && activeSpotType != null){
 //            spindexer.goToSpot(SpindexerSpot.fromIndex(activeSpindexerSpotIndex), activeSpotType, spindexerRunMode);
@@ -681,7 +681,11 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
         double angle1 = getTargetAngle(position, control1);
         double angle2 = getTargetAngle(position, control2);
-        this.targetHeading = normAngle((angle1 + angle2) / 2);
+        return getAngleError(position, normAngle((angle1 + angle2) / 2));
+    }
+
+    public double getAngleError(Pose position, double targetHeading) {
+        this.targetHeading = targetHeading;
         //heading is in absolute radians
         double error = targetHeading - position.getHeading();
         double errorSign = (error > 0) ? -1 : 1;
@@ -703,10 +707,10 @@ public class MainTeleOpNonCR extends CommandOpMode {
         turnPower = 0;//REMOVE?
         //MODIFY so that the heading is facing the outake side, not the intake side
         if (autoAlign) {
-
+            double[] aimData = shooter.aimCalculator.targetPowersHeading(follower.getPose(), follower.getVelocity(), shooter.getShootPose(shootSide));
+            double targetHeading = aimData[2];
             Pose outakePose = new Pose(currentPose.getX(), currentPose.getY(), normAngle(Math.toRadians(currentPose.getHeading()) + Math.PI));
-            headingError = getAngleError(outakePose);
-
+            headingError = getAngleError(outakePose, targetHeading);
 
             turnPower = calculateGamepadPID(prevHeadingError, headingError);
             prevHeadingError = headingError;

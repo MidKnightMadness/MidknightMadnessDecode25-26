@@ -341,7 +341,7 @@ public class SpindexerNonCR extends SubsystemBase {
 //        return findNearestSpot(query, spotType, null);
 //    }
 
-//    public SpindexerSpotNonCR getNearestEmptyIntakeSpot(){
+    //    public SpindexerSpotNonCR getNearestEmptyIntakeSpot(){
 //        return getNearestSpot(currentAngle, SpotType.INTAKE, BallColor.NONE);
 //    }
     public double getNearestIntakePosition(SpotType spotType) {
