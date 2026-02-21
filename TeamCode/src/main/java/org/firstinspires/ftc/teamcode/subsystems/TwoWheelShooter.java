@@ -47,7 +47,7 @@ public class TwoWheelShooter extends SubsystemBase {
     public static double[] pidBotGains = new double[]{0.0012, 0, 0};
     public static double[] kTopGains = new double[]{0.04386, 0.000346, 0};
 
-    public static boolean useAggressiveRecovery = false;
+    public static boolean useAggressiveRecovery = true;
     public boolean inRecoveryMode = false;
     //AGGRESSIVE GAINS: FOR RECOVERY - gain scheduling
 
@@ -113,9 +113,9 @@ public class TwoWheelShooter extends SubsystemBase {
     public AimCalculator aimCalculator;
 
     public static class AimCalculator {
-        InterpLUT distToLowVel;
-        InterpLUT distToHighVel;
-        InterpLUT distToKCorrection;
+        public InterpLUT distToLowVel;
+        public InterpLUT distToHighVel;
+        public InterpLUT distToKCorrection;
 
         //ticks in sec for 3: 1 direct driven gear ratios
         public static int iterations = 10; // For tuning targetDistance
@@ -161,7 +161,7 @@ public class TwoWheelShooter extends SubsystemBase {
             double headingCorrection = 0;
             for (int i = 0; i < iterations; i++) {
                 // Steps 1-2: simulation
-                targetDist = MathUtils.clamp(targetDist, dist[0], dist[dist.length - 1]); // find a better way later
+                targetDist = MathUtils.clamp(targetDist, dist[0] + 0.01, dist[dist.length - 1] - 0.01); // find a better way later
                 double kCorr = distToKCorrection.get(targetDist);
                 double predict = targetDist + kCorr * velParallel;
                 double predictPerp = kCorr * velPerp;
@@ -172,6 +172,8 @@ public class TwoWheelShooter extends SubsystemBase {
                 // d + correction + error = ideal d
                 // (d + error) + correction = ideal d, update d += error
                 targetDist += distanceIdeal - predict;
+                targetDist = MathUtils.clamp(targetDist, dist[0] + 0.01, dist[dist.length - 1] - 0.01);
+
             }
 
             return new double[]{
@@ -210,19 +212,27 @@ public class TwoWheelShooter extends SubsystemBase {
     public static double shotDropThreshold = 100;
     public static double minVelocityAgressive = 500;
     boolean velStable = false;
+    public double bottomError;
+    public double topError;
     public void checkForFirstShot() {
-        if (firstShotDetected) return;
-
-        if(!velStable && readyToShoot()){//checks to make sure up to speed
-            velStable = true;
-        }
-        if(velStable){//if up to speed and drop detected use recovery gains
-            if((Math.abs(low.getVelocity() - predictedBotVel) > shotDropThreshold ||
-                    Math.abs(high.getVelocity() - predictedTopVel) > shotDropThreshold)
-                    && low.getVelocity() > minVelocityAgressive && high.getVelocity() > minVelocityAgressive){
-                triggerBallShot();
-                firstShotDetected = true;
-            }
+//        if (firstShotDetected) return;
+//        if(!velStable && readyToShoot()){//checks to make sure up to speed
+//            velStable = true;
+//        }
+//        if(velStable){//if up to speed and drop detected use recovery gains
+//            if((Math.abs(low.getVelocity() - predictedBotVel) > shotDropThreshold ||
+//                    Math.abs(high.getVelocity() - predictedTopVel) > shotDropThreshold)
+//                    && low.getVelocity() > minVelocityAgressive && high.getVelocity() > minVelocityAgressive){
+//                triggerBallShot();
+//                firstShotDetected = true;
+//            }
+//        }
+        bottomError = low.getVelocity() - predictedBotVel;
+        topError = high.getVelocity() - predictedTopVel;
+        if(Math.abs(bottomError) > shotDropThreshold || Math.abs(topError) > shotDropThreshold){
+            setAggressiveGains();
+        } else{
+            resetDefaultGains();
         }
     }
 
@@ -230,6 +240,7 @@ public class TwoWheelShooter extends SubsystemBase {
         firstShotDetected = false;
         resetDefaultGains();
         inRecoveryMode = false;
+        velStable = false;
     }
 
 
@@ -269,12 +280,14 @@ public class TwoWheelShooter extends SubsystemBase {
         high.stopAndResetEncoder();
     }
     public void resetDefaultGains(){
+        inRecoveryMode = false;
         low.setVeloCoefficients(pidBotGains[0], pidBotGains[1], pidBotGains[2]);
         low.setFeedforwardCoefficients(kBotGains[0], kBotGains[1], kBotGains[2]);
         high.setVeloCoefficients(pidTopGains[0], pidTopGains[1], pidTopGains[2]);
         high.setFeedforwardCoefficients(kTopGains[0], kTopGains[1], kTopGains[2]);
     }
     public void setAggressiveGains(){
+        inRecoveryMode = true;
         low.setVeloCoefficients(pidBotAggressiveGains[0], pidBotAggressiveGains[1], pidBotAggressiveGains[2]);
         high.setVeloCoefficients(pidTopAggressiveGains[0], pidTopAggressiveGains[1], pidTopAggressiveGains[2]);
     }
@@ -383,16 +396,16 @@ public class TwoWheelShooter extends SubsystemBase {
 
         double botVelocity, topVelocity;
         if(useLUT){
-            if(dist > 156 ){
+            if(dist >= 156 ){
                 botVelocity = AimCalculator.bottomVel[AimCalculator.bottomVel.length - 1];
                 topVelocity = AimCalculator.topVel[AimCalculator.topVel.length - 1];
-            } else if(dist < 60) {
+            } else if(dist <= 60) {
                 botVelocity = AimCalculator.bottomVel[0];
                 topVelocity = AimCalculator.topVel[0];
             }
             else {
-                botVelocity = distToLowVel.get(dist);
-                topVelocity = distToHighVel.get(dist);
+                botVelocity = aimCalculator.distToLowVel.get(dist);
+                topVelocity = aimCalculator.distToHighVel.get(dist);
             }
             if(runMode != RunMode.VelocityControl) setRunMode(RunMode.VelocityControl);
         }

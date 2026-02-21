@@ -94,6 +94,7 @@ package org.firstinspires.ftc.teamcode.tests.sensors;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.teamcode.hardware.GobildaDistance;
 import org.firstinspires.ftc.teamcode.hardware.RangerMode;
 import org.firstinspires.ftc.teamcode.hardware.SwyftRanger;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
@@ -101,11 +102,13 @@ import org.firstinspires.ftc.teamcode.util.ConfigNames;
 @TeleOp(name="Ranger Proximity Sensor Test (Digital)", group="Test")
 public class RangerDistanceSensorTest extends LinearOpMode {
 
-    SwyftRanger ranger;
+    GobildaDistance ranger1;
+    GobildaDistance ranger2;
 
     @Override
     public void runOpMode() {
-        ranger = new SwyftRanger(hardwareMap, ConfigNames.intakeDist1, RangerMode.DEG15);
+        ranger1 = new GobildaDistance(hardwareMap, ConfigNames.intakeDist1, RangerMode.DEG15);
+        ranger2 = new GobildaDistance(hardwareMap, ConfigNames.intakeDist1, RangerMode.DEG15);
 
         telemetry.addLine("Initialized");
         telemetry.update();
@@ -113,11 +116,13 @@ public class RangerDistanceSensorTest extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-            double distance = ranger.getDistance();
+            double distance1 = ranger1.getDistance();
+            double distance2 = ranger2.getDistance();
             // telemetry.addData("Inch 15DEG 0-1 Mode: ", (ranger.getVoltage()*32.5)-2.6);
             // telemetry.addData("Inch 20DEG 0-0 Mode: ", (ranger.getVoltage()*48.7)-4.9);
             // telemetry.addData("Inch 27DEG 1-0 Mode: ", (ranger.getVoltage()*78.1)-10.2);
-            telemetry.addData("Distance", distance);
+            telemetry.addData("Distance1", distance1);
+            telemetry.addData("Distance2", distance2);
 
             telemetry.update();
         }

@@ -7,6 +7,7 @@ import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.follower;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.stopRobot;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.telemetryM;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.bylazar.configurables.PanelsConfigurables;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.configurables.annotations.IgnoreConfigurable;
@@ -22,6 +23,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.util.PanelsDrawing;
 
 import java.util.ArrayList;
@@ -962,6 +964,8 @@ class Line extends OpMode {
 
     private Path forwards;
     private Path backwards;
+    Telemetry dashboardTelemetry;
+
 
     @Override
     public void init() {}
@@ -975,6 +979,9 @@ class Line extends OpMode {
         telemetryM.update(telemetry);
         follower.update();
         drawCurrent();
+        FtcDashboard dashboard = FtcDashboard.getInstance();
+        dashboardTelemetry = dashboard.getTelemetry();
+
     }
 
     @Override
@@ -1008,8 +1015,24 @@ class Line extends OpMode {
         } catch(Exception e ){
         }
 
+        double realDistance = follower.getPose().distanceFrom(follower.getCurrentPath().endPose());
         telemetryM.debug("Driving Forward?: " + forward);
+        telemetryM.debug("Distance to End: " + realDistance);
+        telemetryM.debug("Drive Error: " + follower.getDriveError());
+        telemetryM.debug("Translational Error: " + follower.getTranslationalError());
+        telemetryM.debug("heading Error: " + follower.getHeadingError());
+
+
+        dashboardTelemetry.addData("X Pos: ", follower.getPose().getX());
+        dashboardTelemetry.addData("Y Pos: ", follower.getPose().getY());
+
+        dashboardTelemetry.addData("Driving Forward?: ", forward);
+        dashboardTelemetry.addData("Distance to End: ", follower.getDistanceRemaining());
+        dashboardTelemetry.addData("Drive Error: ", follower.getDriveError());
+        dashboardTelemetry.addData("Translational Error: ", follower.getTranslationalError());
+        dashboardTelemetry.addData("heading Error: ", follower.getHeadingError());
         telemetryM.update(telemetry);
+        dashboardTelemetry.update();
     }
 }
 

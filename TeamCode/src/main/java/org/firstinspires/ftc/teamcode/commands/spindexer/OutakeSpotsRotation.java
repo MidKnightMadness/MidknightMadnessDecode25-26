@@ -43,7 +43,7 @@ public class OutakeSpotsRotation extends CommandBase {
         }
 
         if(!atSpot){
-            atSpot = spindexer.isAtPosition(SpindexerSpotNonCR.fromIndex(currSpindexerOutakeSpot).getOuttakePositionSolo());
+            atSpot = spindexer.isAtPositionStrict(SpindexerSpotNonCR.fromIndex(currSpindexerOutakeSpot).getOuttakePositionSolo());
             if(atSpot){
                 prevTime = timer.getTime();
             }

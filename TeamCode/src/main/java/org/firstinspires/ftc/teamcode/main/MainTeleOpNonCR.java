@@ -233,8 +233,10 @@ public class MainTeleOpNonCR extends CommandOpMode {
     double currTurnerPosition;
     double targetSpindexerPosition;
     int activeSpindexerSpot = 0;
-    public static double totalSmoothTime = 1;
-    public static double inBetweenOutakeTime = 300;
+    public static double currSmoothTime = 1;
+    public static double fastSmoothTime = 0.7;
+    public static double slowSmoothTime = 1;
+    public static double inBetweenOutakeTime = 250;
 
     @Override
     public void initialize() {
@@ -422,24 +424,19 @@ public class MainTeleOpNonCR extends CommandOpMode {
             spindexer.getTurnerEncoder().encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             spindexer.getTurnerEncoder().encoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             start = true;
-        }
-        super.run();
-        currSpindexerBallColors = spindexer.getBallColors();
-
-        if (!gameTimerStart) {
-            gameTimerStart = true;
             gameTimer.restart();
         }
+        super.run();
+
+
         if (!rumbledLastFive && gameTimer.getTime() >= 115000) {//endgame
             gamepad1.rumble(3000);
             gamepad2.rumble(3000);
             rumbledLastFive = true;
         }
 
+//        currSpindexerBallColors = spindexer.getBallColors();
         updateLights();
-        //        shooter.checkForFirstShot();
-
-//
 //        if((autoIntake || autoSpindexer) && activeSpindexerSpotIndex != -1 && activeSpotType != null){
 //            spindexer.goToSpot(SpindexerSpot.fromIndex(activeSpindexerSpotIndex), activeSpotType, spindexerRunMode);
 //        }
@@ -453,11 +450,11 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
 
         if (gamepad2.touchpadWasPressed()) {
-            currturnerSpeed = currturnerSpeed == maxTurnerSpeed ? midTurnerSpeed : maxTurnerSpeed;
+            currSmoothTime = currSmoothTime == fastSmoothTime ? slowSmoothTime : fastSmoothTime;
         }
 
 
-//        currSpindexerBallColors = spindexer.getBallColors();
+        currSpindexerBallColors = spindexer.getBallColors();
 
         //only triggers shot if spindexer in spot and bottom flywheel on
 
@@ -669,23 +666,20 @@ public class MainTeleOpNonCR extends CommandOpMode {
         return normAngle(heading);
     }
 
+
     public double getAngleError(Pose position) {
         Pose control1, control2;
         if (shootSide == ShootSide.LEFT) {
             control1 = new Pose(14, 144);
-            control2 = new Pose(0, 130);
+            control2 = new Pose(0, 125);
         } else {
             control1 = new Pose(130, 144);
-            control2 = new Pose(144, 130);
+            control2 = new Pose(144, 125);
         }
 
         double angle1 = getTargetAngle(position, control1);
         double angle2 = getTargetAngle(position, control2);
-        return getAngleError(position, normAngle((angle1 + angle2) / 2));
-    }
-
-    public double getAngleError(Pose position, double targetHeading) {
-        this.targetHeading = targetHeading;
+        this.targetHeading = normAngle((angle1 + angle2) / 2);
         //heading is in absolute radians
         double error = targetHeading - position.getHeading();
         double errorSign = (error > 0) ? -1 : 1;
@@ -707,11 +701,8 @@ public class MainTeleOpNonCR extends CommandOpMode {
         turnPower = 0;//REMOVE?
         //MODIFY so that the heading is facing the outake side, not the intake side
         if (autoAlign) {
-            double[] aimData = shooter.aimCalculator.targetPowersHeading(follower.getPose(), follower.getVelocity(), shooter.getShootPose(shootSide));
-            double targetHeading = aimData[2];
             Pose outakePose = new Pose(currentPose.getX(), currentPose.getY(), normAngle(Math.toRadians(currentPose.getHeading()) + Math.PI));
-            headingError = getAngleError(outakePose, targetHeading);
-
+            headingError = getAngleError(outakePose);
             turnPower = calculateGamepadPID(prevHeadingError, headingError);
             prevHeadingError = headingError;
         }
@@ -799,7 +790,6 @@ public class MainTeleOpNonCR extends CommandOpMode {
     private void toggleAutoAlign() {
         if (gamepad1.leftBumperWasPressed()) {
             autoAlign = !autoAlign;
-            prevHeadingError = 0;
         }
     }
 
@@ -992,11 +982,11 @@ public class MainTeleOpNonCR extends CommandOpMode {
             schedulePosition(spindexerGotoPosition);
         } else if (gamepad2.leftBumperWasPressed() && !autoIntake) {
             clearExistingSpindexerCommand();
-            spindexerGotoPositionSmooth = new SpindexerGotoPositionSmooth(spindexer, spindexer.startOutakePosition, totalSmoothTime);
+            spindexerGotoPositionSmooth = new SpindexerGotoPositionSmooth(spindexer, spindexer.startOutakePosition, currSmoothTime);
             schedulePosition(spindexerGotoPositionSmooth);
         } else if (gamepad2.rightBumperWasPressed() && !autoIntake) {
             clearExistingSpindexerCommand();
-            spindexerGotoPositionSmooth = new SpindexerGotoPositionSmooth(spindexer, spindexer.endOutakePosition, totalSmoothTime);
+            spindexerGotoPositionSmooth = new SpindexerGotoPositionSmooth(spindexer, spindexer.endOutakePosition, currSmoothTime);
             schedulePosition(spindexerGotoPositionSmooth);
         }  else if(gamepad2.yWasPressed()){
             clearExistingSpindexerCommand();;
@@ -1118,16 +1108,14 @@ public class MainTeleOpNonCR extends CommandOpMode {
             shooter.resetGainScheduling();
         }
 
-
-//        if (gamepad2.optionsWasPressed()) {
-//            shooterRunMode = shooterRunMode == TwoWheelShooter.RunMode.RawPower ? TwoWheelShooter.RunMode.VelocityControl : TwoWheelShooter.RunMode.RawPower;
-//            shooter.setRunMode(shooterRunMode);
+//        if(gamepad2.backWasPressed()){
+//            shootingWhileMoving = false;
+//            gamepad2.rumbleBlips(2);
 //        }
-        if (gamepad2.shareWasPressed()) {
-            voltageCompensation = !voltageCompensation;
-            if (voltageCompensation) gamepad2.rumbleBlips(2);
-        }
-
+//        if(gamepad2.startWasPressed()){
+//            shootingWhileMoving = true;
+//            gamepad2.rumbleBlips(2);
+//        }
 
     }
 
@@ -1233,8 +1221,12 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
             telemetry.addData("Spindexer Raw Power", spindexerRawPower);
             telemetry.addData("Spindexer Curr Spot Type", activeSpotType);
+            telemetry.addData("Dist 1", spindexer.getDistance1());
+            telemetry.addData("Dist 2", spindexer.getDistance2());
 
             telemetry.addData("Shooter Recovery Gains", shooter.inRecoveryMode);
+            telemetry.addData("Error Bot", shooter.bottomError);
+            telemetry.addData("Error Top", shooter.topError);
             telemetry.update();
             dashboardTelemetry.addData("Shooter Top Vel", shooter.high.getVelocity());
             dashboardTelemetry.addData("Shooter Bot Vel", shooter.low.getVelocity());

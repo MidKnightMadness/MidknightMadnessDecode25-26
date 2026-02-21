@@ -11,6 +11,7 @@ import com.seattlesolvers.solverslib.command.SubsystemBase;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpotNonCR;
+import org.firstinspires.ftc.teamcode.hardware.GobildaDistance;
 import org.firstinspires.ftc.teamcode.hardware.IncrementalEncoderNonCR;
 import org.firstinspires.ftc.teamcode.hardware.color.BallDetector;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
@@ -46,7 +47,9 @@ public class SpindexerNonCR extends SubsystemBase {
     boolean shootOn = false;
     BallColor newBallType = null;
     boolean useDistanceSensor;
-    public SwyftRanger ranger;
+    public GobildaDistance ranger1;
+    public GobildaDistance ranger2;
+    //0 - 4 for swyft distance sensor
     public static double distSensorLowerThreshold = 0;
     public static double distSensorUpperThreshold = 4;
     IncrementalEncoderNonCR turnerEncoder;
@@ -82,7 +85,8 @@ public class SpindexerNonCR extends SubsystemBase {
 
 
         if(useDistanceSensor){
-            ranger = new SwyftRanger(hardwareMap, ConfigNames.intakeDist1, RangerMode.DEG15);
+            ranger1 = new GobildaDistance(hardwareMap, ConfigNames.intakeDist1, RangerMode.DEG15);
+            ranger2 = new GobildaDistance(hardwareMap, ConfigNames.intakeDist2, RangerMode.DEG15);
         }
 
         if(ballColors!= null){
@@ -205,9 +209,31 @@ public class SpindexerNonCR extends SubsystemBase {
         return false;
     }
 
+    double distance1;
+    double distance2;
+    boolean dist1Check;
+    boolean dist2Check;
+
+    public double getDistance1(){
+        return distance1;
+    }
+    public double getDistance2(){
+        return distance2;
+    }
+    public boolean getDist1Check(){
+        return dist1Check;
+    }
+    public boolean getDist2Check(){
+        return dist2Check;
+    }
+
+
     boolean checkDist() {
-        double distance = ranger.getDistance();
-        return distance > distSensorLowerThreshold && distance < distSensorUpperThreshold;
+        distance1 = ranger1.getDistance();
+        distance2 = ranger2.getDistance();
+        dist1Check = distance1 > distSensorLowerThreshold && distance1 < distSensorUpperThreshold;
+        dist2Check = distance2 > distSensorLowerThreshold && distance2 < distSensorUpperThreshold;
+        return dist1Check || dist2Check;
     }
 
 //    private int computeMomentum(SpindexerSpot[] seq, SpotType spotType, int i) {
