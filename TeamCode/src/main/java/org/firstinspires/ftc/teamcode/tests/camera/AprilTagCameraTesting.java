@@ -45,8 +45,8 @@ public class AprilTagCameraTesting extends OpMode {
 
     private boolean lastLeft = false;
     private boolean lastRight = false;
-    public static double generalOffsetX = 0;
-    public static double generalOffsetY = 0;
+    public double generalOffsetX = 0;
+    public double generalOffsetY = 0;
 
     @Override
     public void init() {
