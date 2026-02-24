@@ -91,6 +91,13 @@ public class WheelControl {
         this.FR.setPower(FRPower/new_max_power);
     }
 
+    public void driveFieldCentric(double driveX, double driveY, double rotate,double maxPower, double robotHeadingRad) {
+
+        double forward = driveY * Math.cos(robotHeadingRad) + driveX * Math.sin(robotHeadingRad);
+        double right  = -driveY * Math.sin(robotHeadingRad) + driveX * Math.cos(robotHeadingRad);
+        drive_relative(forward, right, rotate, maxPower);
+    }
+
     public void stop() {
         this.BL.setPower(0);
         this.BR.setPower(0);

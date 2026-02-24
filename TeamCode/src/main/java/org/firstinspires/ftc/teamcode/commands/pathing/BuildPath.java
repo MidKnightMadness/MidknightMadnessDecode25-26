@@ -73,11 +73,5 @@ public class BuildPath extends SequentialCommandGroup {
     }
     @Override
     public void end(boolean interrupted) {
-//        if(!pathCreated){
-//            pathChain = follower.pathBuilder()
-//                    .addPath(new BezierLine(follower.getPose(), failsafePose))
-//                    .setLinearHeadingInterpolation(follower.getPose().getHeading(), failsafePose.getHeading())
-//                    .build();
-//        }
     }
 }

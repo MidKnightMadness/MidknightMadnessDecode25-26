@@ -173,10 +173,6 @@ public class CamCommand extends CommandBase {
         if(finalGlobalPoseList != null && finalGlobalPoseList.size() >= minBallDetect){
             return true;
         } return false;
-//            start = true;
-//            startTime = timer.getTime();
-//        }
-//        return (start && timer.getDeltaTime() - startTime >= minWaitTime);
     }
 
     public Pose getMinBallPose(){

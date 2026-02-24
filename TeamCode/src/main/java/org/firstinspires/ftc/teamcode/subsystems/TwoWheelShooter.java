@@ -79,8 +79,8 @@ public class TwoWheelShooter extends SubsystemBase {
     public static boolean lowMotorDirForward = true;
     public static boolean highMotorDirForward = true;
     public static double topVelocityOffset = 0;
-    double predictedTopVel = 1500;
-    double predictedBotVel = 1500;
+    double predictedTopVel = 2000;
+    double predictedBotVel = 2000;
     double predictedTopPower = 0.8;
     double predictedBotPower = 0.8;
 

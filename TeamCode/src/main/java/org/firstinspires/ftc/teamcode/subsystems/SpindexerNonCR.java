@@ -36,7 +36,7 @@ public class SpindexerNonCR extends SubsystemBase {
     public double startTeleOpIntakePosition = SpindexerSpotNonCR.fromIndex(1).getIntakePositions().get(0);
     public double degreesPerRevolution = 439;
     public static AngleNonCR defaultFinishedThreshold = AngleNonCR.fromDegrees(5); // Threshold at which it's finished turning to a spot
-    public static AngleNonCR finishedThreshold = AngleNonCR.fromDegrees(20);//changed from 20
+    public static AngleNonCR finishedThreshold = AngleNonCR.fromDegrees(10);//TODO: Change to 15 for auto?
     public static AngleNonCR strictFinished = AngleNonCR.fromDegrees(10);
     public static AngleNonCR detectThreshold = AngleNonCR.fromDegrees(15);
     private static final int NUM_SPOTS = 3;
@@ -51,7 +51,7 @@ public class SpindexerNonCR extends SubsystemBase {
     public GobildaDistance ranger2;
     //0 - 4 for swyft distance sensor
     public static double distSensorLowerThreshold = 0;
-    public static double distSensorUpperThreshold = 4;
+    public static double distSensorUpperThreshold = 2.5;
     IncrementalEncoderNonCR turnerEncoder;
     double cachingTolerance = 0.01;
 
@@ -78,6 +78,31 @@ public class SpindexerNonCR extends SubsystemBase {
         turner.setPwmRange(new PwmControl.PwmRange(500, 2500));
         turner.setDirection(Servo.Direction.REVERSE);
         turner.setPosition(0);
+
+
+
+        this.useDistanceSensor = useDistanceSensors;
+
+
+        if(useDistanceSensor){
+            ranger1 = new GobildaDistance(hardwareMap, ConfigNames.intakeDist1, RangerMode.DEG15);
+            ranger2 = new GobildaDistance(hardwareMap, ConfigNames.intakeDist2, RangerMode.DEG15);
+        }
+
+        if(ballColors!= null){
+            setBallColors(ballColors);
+        }
+    }
+    public SpindexerNonCR(HardwareMap hardwareMap, boolean useDistanceSensors, BallColor[] ballColors, boolean setPosition) {
+        turnerEncoder = new IncrementalEncoderNonCR(
+                hardwareMap, ConfigNames.turnerEncoder, 8192, AngleUnit.DEGREES
+        ).setReversed(false);
+        turner = hardwareMap.get(ServoImplEx.class, ConfigNames.turner);
+        turner.setPwmRange(new PwmControl.PwmRange(500, 2500));
+        turner.setDirection(Servo.Direction.REVERSE);
+        if(setPosition) {
+            turner.setPosition(0);
+        }
 
 
 

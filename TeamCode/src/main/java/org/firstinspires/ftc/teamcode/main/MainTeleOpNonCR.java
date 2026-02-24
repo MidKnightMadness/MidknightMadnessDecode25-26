@@ -131,7 +131,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
 
     boolean autoAlign = false;
-    public static boolean useArducam = true;
+    public static boolean useArducam = false;
     boolean autoSpindexer = false;
     boolean autoDriveToShoot = false;
     boolean autoIntake = false;
@@ -233,7 +233,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
     double currTurnerPosition;
     double targetSpindexerPosition;
     int activeSpindexerSpot = 0;
-    public static double currSmoothTime = 1;
+    public static double currSmoothTime = 0.7f;
     public static double fastSmoothTime = 0.7;
     public static double slowSmoothTime = 1;
     public static double inBetweenOutakeTime = 250;
@@ -327,7 +327,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
     }
 
     public void initializeSubsystems() {
-        spindexer = new SpindexerNonCR(hardwareMap, useDistanceSensor, new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE});
+        spindexer = new SpindexerNonCR(hardwareMap, useDistanceSensor, new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE}, false);
 //        spindexer.setMode(spindexerRunMode);
         intake = new Intake(hardwareMap, intakeRunMode);
         if (intakeRunMode == Intake.RunMode.VelocityControl) {
@@ -335,7 +335,6 @@ public class MainTeleOpNonCR extends CommandOpMode {
         }
 
         shooter = new TwoWheelShooter(hardwareMap, shooterRunMode);
-//        shooter.resetEncoders();
 
         spindexerLights = new GobildaLightBlock[3];
         spindexerLights[0] = new GobildaLightBlock(hardwareMap.get(Servo.class, ConfigNames.spindexerLights1));
@@ -345,7 +344,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
         pushUpLight = new GobildaLightBlock(hardwareMap.get(Servo.class, ConfigNames.light4));
         readyToShootLight = new GobildaLightBlock(hardwareMap.get(Servo.class, ConfigNames.light5));
 
-        pushUpServo = new PushUpServo(hardwareMap);
+        pushUpServo = new PushUpServo(hardwareMap, false);
         if (useArducam) {
             arducam = new AprilTagWebcam();
             arducam.init(hardwareMap, ConfigNames.arducam, telemetry);
@@ -421,8 +420,8 @@ public class MainTeleOpNonCR extends CommandOpMode {
     @Override
     public void run() {
         if(!start){
-            spindexer.getTurnerEncoder().encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            spindexer.getTurnerEncoder().encoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            spindexer.setDirectPosition(0);
+            pushUpServo.setDown();
             start = true;
             gameTimer.restart();
         }
@@ -897,9 +896,10 @@ public class MainTeleOpNonCR extends CommandOpMode {
         setBallColorsDefault();
 //        rumbleAllOccuppiedBalls();
         rumbleReadyToShoot();
-//        resetSpindexer();
+        resetSpindexer();
     }
 
+    //MUST Manually reset spindexer at position of 0
     private void resetSpindexer() {
         if (gamepad2.rightStickButtonWasPressed()) {
             spindexer.getTurnerEncoder().encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
