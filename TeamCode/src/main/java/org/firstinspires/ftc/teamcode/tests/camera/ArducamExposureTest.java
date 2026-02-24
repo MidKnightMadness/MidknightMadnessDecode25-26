@@ -24,7 +24,7 @@ public class ArducamExposureTest extends LinearOpMode {
 
         VisionPortal.Builder builder = new VisionPortal.Builder();
         builder.setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"));
-        builder.setCameraResolution(new Size(1280, 800));
+        builder.setCameraResolution(new Size(1280, 720));
         builder.enableLiveView(true);
 
         visionPortal = builder.build();
