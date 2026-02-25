@@ -36,7 +36,7 @@ public class CornerFarCam extends BaseAutoFarFunctions {
                         shootFromLines(IntakeLine.FAR, maxWaitTillShoot),
 
                         cameraWork(),
-                        cameraWork(),
+//                        cameraWork(),
                         //come back second time(if have time)
 
                         new ParallelCommandGroup(
@@ -55,7 +55,7 @@ public class CornerFarCam extends BaseAutoFarFunctions {
                 new ParallelRaceGroup(
                         new AutoIntakeCommandNonCR(spindexer, intake, intakePower, inBetweenTime, true, hardwareMap, SpindexerSpotNonCR.SPOT1, 1),
                         new SequentialCommandGroup(
-                                buildPath,
+                                new DeferredCommand(() -> buildPath, null),
                                 new DeferredCommand(()-> new ConditionalCommand(
                                         new SequentialCommandGroup(
                                                 new InstantCommand(()-> cameraForwardPathChain1 = buildPath.getPathChain()),

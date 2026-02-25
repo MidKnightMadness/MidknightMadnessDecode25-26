@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 
 //
@@ -62,14 +63,34 @@ public class WheelControl {
          */
 
         // Make sure forward and right are <= 1
-        double power_scale = max_power/Math.max(max_power, Math.max(forward, right));
+//        double power_scale = max_power/Math.max(max_power, Math.max(forward, right));
+
+        double maxInput = Math.max(
+                Math.abs(forward),
+                Math.max(Math.abs(right), Math.abs(rotate_power))
+        );
+
+        double power_scale = (maxInput > max_power) ? max_power / maxInput : 1.0;
+
         forward *= power_scale;
         right *= power_scale;
+        rotate_power *= power_scale;
 
         // Add feedforwards
-        forward += Math.signum(forward)*vf;
-        right += Math.signum(right)*hf;
-        rotate_power += Math.signum(rotate_power)*rf;
+//        forward += Math.signum(forward)*vf;
+//        right += Math.signum(right)*hf;
+//        rotate_power += Math.signum(rotate_power)*rf;
+
+        if (Math.abs(forward) > 1e-3)
+            forward += Math.signum(forward) * vf;
+
+        if (Math.abs(right) > 1e-3)
+            right += Math.signum(right) * hf;
+
+        if (Math.abs(rotate_power) > 1e-3)
+            rotate_power += Math.signum(rotate_power) * rf;
+
+
 
         // Calculate motor powers
         double BLPower = forward - right - rotate_power;
@@ -78,7 +99,13 @@ public class WheelControl {
         double FRPower = forward - right + rotate_power;
 
         // Get max power to make sure powers <= max_power
-        double new_max_power = 1;
+//        double new_max_power = 1;
+//        new_max_power = Math.max(Math.abs(BLPower), new_max_power);
+//        new_max_power = Math.max(Math.abs(BRPower), new_max_power);
+//        new_max_power = Math.max(Math.abs(FLPower), new_max_power);
+//        new_max_power = Math.max(Math.abs(FRPower), new_max_power);
+
+        double new_max_power = max_power;
         new_max_power = Math.max(Math.abs(BLPower), new_max_power);
         new_max_power = Math.max(Math.abs(BRPower), new_max_power);
         new_max_power = Math.max(Math.abs(FLPower), new_max_power);
@@ -91,10 +118,19 @@ public class WheelControl {
         this.FR.setPower(FRPower/new_max_power);
     }
 
-    public void driveFieldCentric(double driveX, double driveY, double rotate,double maxPower, double robotHeadingRad) {
+    public void driveFieldCentric(double driveX, double driveY, double rotate,double maxPower, double robotHeadingRad, ShootSide shootSide) {
+
+        //if right shoot side: forward = +x, left = +y, right = -y, back = -x
+        //if left shoot side: forward = -x, left = -y, right = +y, back = +x
 
         double forward = driveY * Math.cos(robotHeadingRad) + driveX * Math.sin(robotHeadingRad);
         double right  = -driveY * Math.sin(robotHeadingRad) + driveX * Math.cos(robotHeadingRad);
+
+        forward *= -1;//bc gamepad reversed for some reason
+        if(shootSide == ShootSide.RIGHT){
+            forward *= -1;
+            right *= -1;
+        }
         drive_relative(forward, right, rotate, maxPower);
     }
 

@@ -3,11 +3,10 @@ package org.firstinspires.ftc.teamcode.main.autonomous.farStart.left;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.game.ShootSide;
-import org.firstinspires.ftc.teamcode.main.autonomous.farStart.base.ThreeLines;
+import org.firstinspires.ftc.teamcode.main.autonomous.farStart.base.PresetUnsortCornerFarMidSort;
 
-
-@Autonomous(name = "FLB FarMidClose", group = "Competition")
-public class ThreeLinesLeft extends ThreeLines {
+@Autonomous(name = "FLB PresetUnsort CornerFarMid Sort", group = "LeftFar")
+public class PresetUnsortCornerFarMidSorted extends PresetUnsortCornerFarMidSort {
 
     @Override
     public ShootSide getShootSide(){

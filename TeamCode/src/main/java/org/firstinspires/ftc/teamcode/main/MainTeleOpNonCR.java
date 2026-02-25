@@ -105,7 +105,6 @@ public class MainTeleOpNonCR extends CommandOpMode {
     double topShooterPower = 0.8;
     double botShooterPower = 0.6;
     WheelControl wheelControl;
-    public static boolean wheelControlUse = true;
     public static int optimalNum = 8;
     Pose toCloseLeftShoot = new Pose(57, 94, Math.toRadians(310));
     Pose toCloseRightShoot = new Pose(87, 94, Math.toRadians(230));
@@ -131,7 +130,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
 
     boolean autoAlign = false;
-    public static boolean useArducam = false;
+    public static boolean useArducam = true;
     boolean autoSpindexer = false;
     boolean autoDriveToShoot = false;
     boolean autoIntake = false;
@@ -237,6 +236,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
     public static double fastSmoothTime = 0.7;
     public static double slowSmoothTime = 1;
     public static double inBetweenOutakeTime = 250;
+    boolean driveFieldOreinted = false;
 
     @Override
     public void initialize() {
@@ -275,13 +275,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
         initializeSubsystems();
 
-
-        if (wheelControlUse) {
-            wheelControl = new WheelControl(hardwareMap);
-        } else {
-            follower.startTeleopDrive();
-        }
-
+        wheelControl = new WheelControl(hardwareMap);
 //        spindexerServo = spindexer.getServo();
 //        spindexerServo2 = spindexer.getTurner2().getServo();
 
@@ -314,8 +308,8 @@ public class MainTeleOpNonCR extends CommandOpMode {
         }
 
         telemetry.setMsTransmissionInterval(500);
-        FtcDashboard dashboard = FtcDashboard.getInstance();
-        dashboardTelemetry = dashboard.getTelemetry();
+//        FtcDashboard dashboard = FtcDashboard.getInstance();
+//        dashboardTelemetry = dashboard.getTelemetry();
     }
 
     @Override
@@ -434,7 +428,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
             rumbledLastFive = true;
         }
 
-//        currSpindexerBallColors = spindexer.getBallColors();
+        currSpindexerBallColors = spindexer.getBallColors();
         updateLights();
 //        if((autoIntake || autoSpindexer) && activeSpindexerSpotIndex != -1 && activeSpotType != null){
 //            spindexer.goToSpot(SpindexerSpot.fromIndex(activeSpindexerSpotIndex), activeSpotType, spindexerRunMode);
@@ -452,8 +446,6 @@ public class MainTeleOpNonCR extends CommandOpMode {
             currSmoothTime = currSmoothTime == fastSmoothTime ? slowSmoothTime : fastSmoothTime;
         }
 
-
-        currSpindexerBallColors = spindexer.getBallColors();
 
         //only triggers shot if spindexer in spot and bottom flywheel on
 
@@ -594,9 +586,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
                 }
             }
             follower.breakFollowing();
-            if (!wheelControlUse) {
-                follower.startTeleopDrive();
-            }
+
             followPathCommand = null;
             autoDriveToShoot = false;
         }
@@ -696,15 +686,38 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
     boolean swappedToArducam = false;
 
+    double aprilTagBearing = 0;
+    boolean detected;
+
     private void setAlignTurnPower() {
         turnPower = 0;//REMOVE?
         //MODIFY so that the heading is facing the outake side, not the intake side
-        if (autoAlign) {
-            Pose outakePose = new Pose(currentPose.getX(), currentPose.getY(), normAngle(Math.toRadians(currentPose.getHeading()) + Math.PI));
-            headingError = getAngleError(outakePose);
-            turnPower = calculateGamepadPID(prevHeadingError, headingError);
+        if (!autoAlign) return;
+
+        detected = false;
+        AprilTagDetection detection = null;
+
+        if (useArducam) {
+            arducam.update();
+            for (AprilTagDetection tag : arducam.getDetectedTags()) {
+                detected = shootSide == ShootSide.LEFT ? tag.id == 20 : tag.id == 24;
+                if (detected) detection = tag;
+            }
+        }
+        Pose outakePose = new Pose(currentPose.getX(), currentPose.getY(), normAngle(Math.toRadians(currentPose.getHeading()) + Math.PI));
+
+        if (detected && detection != null) {
+            aprilTagBearing = detection.ftcPose.elevation;
+            headingError = aprilTagBearing;
             prevHeadingError = headingError;
         }
+        else {
+            headingError = getAngleError(outakePose);
+        }
+
+        turnPower = calculateGamepadPID(prevHeadingError, headingError);
+        prevHeadingError = headingError;
+
     }
 
     boolean relocalized = false;
@@ -751,10 +764,10 @@ public class MainTeleOpNonCR extends CommandOpMode {
         setAlignTurnPower();
         driveRobot();//includes automations
         manualChangeShootSide();
-        manualChangeMotif();
+//        manualChangeMotif();
         speedChange();
         toggleAutoAlign();
-        rumbleCloseToGate();
+//        rumbleCloseToGate();
 
     }
 
@@ -869,23 +882,17 @@ public class MainTeleOpNonCR extends CommandOpMode {
         }
 
 
-        if (!autoDriveToShoot) {
-            if (!wheelControlUse) {
-                if (!autoAlign) {
-                    follower.setTeleOpDrive(gamepad1.left_stick_y * currSpeed, gamepad1.left_stick_x * currSpeed, -gamepad1.right_stick_x * currSpeed, true);
-                } else {
-                    follower.setTeleOpDrive(gamepad1.left_stick_y * currSpeed, gamepad1.left_stick_x * currSpeed, turnPower, true);
-                }
-            } else {
-                if (!autoAlign) {
-                    wheelControl.drive_relative(gamepad1.left_stick_y, gamepad1.left_stick_x, -gamepad1.right_stick_x * currSpeed, currSpeed);
-                } else {
-                    wheelControl.drive_relative(gamepad1.left_stick_y, gamepad1.left_stick_x, turnPower, currSpeed);
-                }
-            }
+        if (!autoDriveToShoot && !driveFieldOreinted) {
+            wheelControl.drive_relative(gamepad1.left_stick_y, gamepad1.left_stick_x, !autoAlign ? -gamepad1.right_stick_x : turnPower, currSpeed);
+        } else if(!autoDriveToShoot && driveFieldOreinted){
+            wheelControl.driveFieldCentric(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x, currSpeed, currentPose.getHeading(), shootSide);
         }
 
         follower.update();
+
+        if(gamepad1.rightStickButtonWasPressed()){
+            driveFieldOreinted = !driveFieldOreinted;
+        }
     }
 
     private void runGamepad2Commands() {
@@ -901,7 +908,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
     //MUST Manually reset spindexer at position of 0
     private void resetSpindexer() {
-        if (gamepad2.rightStickButtonWasPressed()) {
+        if (gamepad2.optionsWasPressed()) {
             spindexer.getTurnerEncoder().encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             spindexer.getTurnerEncoder().encoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
@@ -1092,30 +1099,15 @@ public class MainTeleOpNonCR extends CommandOpMode {
         currVolt = hardwareMap.voltageSensor.iterator().next().getVoltage();
 
 
-//        if (gamepad2.left_bumper) {
-//            useLUT = false;
-//            setCurrentShootDist(TwoWheelShooter.ShootDist.Close, currVolt);
-//        } else if (gamepad2.right_bumper) {
-//            useLUT = false;
-//            setCurrentShootDist(TwoWheelShooter.ShootDist.Far, currVolt);
-//        }  else if (gamepad2.left_trigger > 0.5) {
         if (gamepad2.left_trigger > 0.5) {
             useLUT = true;
             setCurrentShootDist(null, currVolt);
         } else if (gamepad2.right_trigger > 0.5) {
             shooter.stopFlywheels();
             setBallColorsDefault();
-            shooter.resetGainScheduling();
+            shooter.resetDefaultGains();
         }
 
-//        if(gamepad2.backWasPressed()){
-//            shootingWhileMoving = false;
-//            gamepad2.rumbleBlips(2);
-//        }
-//        if(gamepad2.startWasPressed()){
-//            shootingWhileMoving = true;
-//            gamepad2.rumbleBlips(2);
-//        }
 
     }
 
@@ -1136,8 +1128,6 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
     //TODO: REORGANIZE TELEMETRY
     private void updateTelem() {
-
-
         if (autoIntakeCommand != null && !autoIntakeCommand.isFinished()) {
             telemetry.addData("Curr Target Spot Auto Intake", autoIntakeCommand.currNumSpot);
         }
@@ -1182,6 +1172,9 @@ public class MainTeleOpNonCR extends CommandOpMode {
             telemetry.addData("Camera Yaw Global", cameraYawGlobal);
             telemetry.addData("Camera Yaw Rel", cameraYawRelative);
             telemetry.addData("Tag", tag == null ? "NONE" : tag.id);
+            telemetry.addData("AprilTag Detected", detected);
+            telemetry.addData("Bearing", aprilTagBearing);
+
 
 
             telemetry.addLine("------------------------------------");
@@ -1228,11 +1221,11 @@ public class MainTeleOpNonCR extends CommandOpMode {
             telemetry.addData("Error Bot", shooter.bottomError);
             telemetry.addData("Error Top", shooter.topError);
             telemetry.update();
-            dashboardTelemetry.addData("Shooter Top Vel", shooter.high.getVelocity());
-            dashboardTelemetry.addData("Shooter Bot Vel", shooter.low.getVelocity());
-            dashboardTelemetry.addData("Corr Shooter Top", shooter.high.getCorrectedVelocity());
-            dashboardTelemetry.addData("Corr Shooter Bot", shooter.low.getCorrectedVelocity());
-            dashboardTelemetry.update();
+//            dashboardTelemetry.addData("Shooter Top Vel", shooter.high.getVelocity());
+//            dashboardTelemetry.addData("Shooter Bot Vel", shooter.low.getVelocity());
+//            dashboardTelemetry.addData("Corr Shooter Top", shooter.high.getCorrectedVelocity());
+//            dashboardTelemetry.addData("Corr Shooter Bot", shooter.low.getCorrectedVelocity());
+//            dashboardTelemetry.update();
 
         }
 

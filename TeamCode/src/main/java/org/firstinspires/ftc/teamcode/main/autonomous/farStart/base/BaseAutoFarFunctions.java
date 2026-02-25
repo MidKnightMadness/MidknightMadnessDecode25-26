@@ -8,6 +8,7 @@ import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.ConditionalCommand;
@@ -36,6 +37,7 @@ import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpotNonCR;
 import org.firstinspires.ftc.teamcode.commands.pathing.BuildPath;
 import org.firstinspires.ftc.teamcode.game.IntakeLine;
+import org.firstinspires.ftc.teamcode.game.SpotType;
 import org.firstinspires.ftc.teamcode.main.autonomous.BaseAuto;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.PushUpServo;
@@ -65,8 +67,8 @@ public class BaseAutoFarFunctions extends BaseAuto {
 
     Pose intakeFarStartPose = new Pose(97, 34, Math.toRadians(0));
     Pose intakeFarEndPose = new Pose(135, 34, Math.toRadians(0));
-    Pose intakeCornerStartPose = new Pose(121, 12, Math.toRadians(0));
-    Pose intakeCornerEndPose = new Pose(129, 12, Math.toRadians(0));
+    Pose intakeCornerStartPose = new Pose(121, 10, Math.toRadians(0));
+    Pose intakeCornerEndPose = new Pose(127, 10, Math.toRadians(0));
     Pose intakeCornerStartPose2 = new Pose(123, 6, Math.toRadians(0));
     Pose intakeCornerEndPose2 = new Pose(129, 6, Math.toRadians(0));
     Pose closeShootPose = new Pose(91.2, 84.6, Math.toRadians(230));
@@ -116,6 +118,7 @@ public class BaseAutoFarFunctions extends BaseAuto {
     PathChain toShootCloseFromFar;
 
     PathChain toPark;
+    public static long maxShootingTime = 3000;
 
     public static double strafePower = 0.5;
     AprilTagDetection tag21;
@@ -192,7 +195,7 @@ public class BaseAutoFarFunctions extends BaseAuto {
     }
 
     boolean useDistanceSensor = true;
-    public static double inBetweenTime = 200;
+    public static double inBetweenTime = 0;
     int aprilTagID = 0;
     BuildPath buildPath;
     public static long timeoutCorner = 100;
@@ -209,11 +212,11 @@ public class BaseAutoFarFunctions extends BaseAuto {
     public static double cornerIntakePower = 1.0;
     public static double lowFlywheelTol = 100;
     public static double highFlywheelTol = 100;
-    public static double totalSmoothTime = 0.8;//what we have for teleop(fast) -> 0.7, (slow) - 1.0
+    public static double totalSmoothTime = 1;//what we have for teleop(fast) -> 0.7, (slow) - 1.0
     PathChain driveToStartPath;
     PathChain strafe1Path;
     boolean camDetect = false;
-    public static long firstPresetWaitTime = 1400;
+    public static long firstPresetWaitTime = 2500;
     public static long cornerTimeout = 1800;
     public static long betweenShootPresetTime = 200;
     @Override
@@ -233,6 +236,8 @@ public class BaseAutoFarFunctions extends BaseAuto {
             motifPattern = idMap.getOrDefault(aprilTagID, MotifEnums.Motif.NONE);
         }
         telemetry.addData("Motif Pattern", motifPattern);
+        telemetry.addData("Spindexer angle", spindexer.getTurner().getAngle());
+        telemetry.addData("Spindexer spot", spindexer.getNearestIntakePosition(SpotType.INTAKE));
         telemetry.update();
     }
 
@@ -326,10 +331,12 @@ public class BaseAutoFarFunctions extends BaseAuto {
     protected Command preMotifSequence(){
         return null;
     }
-    AutoIntakeCommandMotif autoIntakeCommand;
+    AutoIntakeCommandNonCR autoIntakeCommand;
     int autoIntakeSpot = -1;
     int autoIntakeIndex = -1;
     CamCommand cam;
+    boolean continueShoot;
+    boolean prevContinueShoot;
     @Override
     public void update(){
         //override to park if not enough time
@@ -349,28 +356,49 @@ public class BaseAutoFarFunctions extends BaseAuto {
 //            autoIntakeSpot = autoIntakeCommand.getCurrSpot();
 //            autoIntakeIndex = autoIntakeCommand.getCurrentIndex();
 //        }
+
+
+        if(continueShoot){
+            double currVolt = hardwareMap.voltageSensor.iterator().next().getVoltage();
+            shooter.setFlywheelStaticLUT(follower.getPose(), shootSide, true, currVolt);
+        } else if(!continueShoot && prevContinueShoot){
+            shooter.stopFlywheels();
+        }
+        prevContinueShoot = continueShoot;
+
     }
 
     @Override
     protected void initializeMechanisms() {
-        spindexer = new SpindexerNonCR(hardwareMap, useDistanceSensor).setBallColors(startBallColors);
+        spindexer = new SpindexerNonCR(hardwareMap, useDistanceSensor, startBallColors, true);
         shooter = new TwoWheelShooter(hardwareMap, shooterRunMode);
         intake = new Intake(hardwareMap, Intake.RunMode.RawPower);
         pushUpServo = new PushUpServo(hardwareMap);
         register(intake, shooter, spindexer, pushUpServo);
+        telemetry.setMsTransmissionInterval(500);
     }
+
+
 
 
 
     @Override
     protected void setBulkReading(){
-        try{
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        
+        //wait 2 seconds for the spindexer to get to position 0
+        waitThread(2000);
+
+        //reset spindexer encoders then wait 2 seconds
+        spindexer.getTurnerEncoder().encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        spindexer.getTurnerEncoder().encoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        waitThread(2000);
+        spindexer.setDirectPosition(SpindexerSpotNonCR.fromIndex(1).getIntakePositionSolo());
+        waitThread(500);
+        spindexer.setDirectPosition(SpindexerSpotNonCR.fromIndex(2).getIntakePositionSolo());
+        waitThread(500);
         spindexer.setDirectPosition(SpindexerSpotNonCR.fromIndex(3).getIntakePositionSolo());
+        waitThread(500);
+
         if(useBulkMode) {
             CommandScheduler.getInstance().setBulkReading(
                     hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
@@ -382,6 +410,14 @@ public class BaseAutoFarFunctions extends BaseAuto {
         }
     }
 
+    public void waitThread(long time){
+        try{
+            Thread.sleep(time);
+
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 
 
@@ -449,7 +485,7 @@ public class BaseAutoFarFunctions extends BaseAuto {
                 new ParallelRaceGroup(
                         new AutoIntakeCommandNonCR(spindexer, intake, intakePower, inBetweenTime, true, hardwareMap, SpindexerSpotNonCR.SPOT1, 1),
                         new SequentialCommandGroup(
-                                buildPath,
+                                new DeferredCommand(() -> buildPath, null),
                                 new DeferredCommand(()-> new ConditionalCommand(
                                         new SequentialCommandGroup(
                                                 new InstantCommand(()-> cameraForwardPathChain1 = buildPath.getPathChain()),
@@ -473,28 +509,22 @@ public class BaseAutoFarFunctions extends BaseAuto {
     }
     protected Command shootClose(IntakeLine lineNum, double maxWaitTime){
         return new SequentialCommandGroup(
-                new SequentialCommandGroup(
                         new ParallelDeadlineGroup(
                                 getToShootCloseCommand(lineNum),
                                 new SequentialCommandGroup(
                                         new WaitCommand(1000),
                                         new SpindexerGotoPosition(spindexer, SpindexerSpotNonCR.fromIndex(3).getIntakePositionSolo()),
                                         new InstantCommand(()-> pushUpServo.setUp()),
-                                        new ShootUpdateCommand(shooter, hardwareMap, false, follower)
+                                        new InstantCommand(()-> continueShoot = true)
                                 )
                         ),
-                        new ParallelDeadlineGroup(
-                                new SequentialCommandGroup(
-                                        new WaitUntilShootReadyCommand(shooter, maxWaitTime, lowFlywheelTol, highFlywheelTol),
-                                        new SpindexerGotoPositionSmooth(spindexer, spindexer.endOutakePosition, totalSmoothTime)
-                                ),
-                                new ShootUpdateCommand(shooter, hardwareMap, true, follower)
-                        ).withTimeout(parallelTimeout)
-                ).andThen(new InstantCommand(()-> shooter.stopFlywheels())));
+                        new InstantCommand(()-> continueShoot = true),
+                        new WaitUntilShootReadyCommand(shooter, maxWaitTime, lowFlywheelTol, highFlywheelTol),
+                        new SpindexerGotoPositionSmooth(spindexer, spindexer.endOutakePosition, totalSmoothTime)
+        ).andThen(new InstantCommand(()-> continueShoot = false));
     }
     protected Command shootFromCam(long waitTime){
         return new SequentialCommandGroup(
-                new SequentialCommandGroup(
                         new ParallelDeadlineGroup(
                             new DeferredCommand(() -> new FollowPathCommand(
                                     follower, follower.pathBuilder().addPath(new BezierLine(follower.getPose(), shootPose)).setLinearHeadingInterpolation(follower.getPose().getHeading(), shootPose.getHeading()).build(),
@@ -503,64 +533,46 @@ public class BaseAutoFarFunctions extends BaseAuto {
                                     new WaitCommand(1000),
                                     new SpindexerGotoPosition(spindexer, SpindexerSpotNonCR.fromIndex(3).getIntakePositionSolo()),
                                     new InstantCommand(()-> pushUpServo.setUp()),
-                                    new ShootUpdateCommand(shooter, hardwareMap, false, follower)
+                                    new InstantCommand(()-> continueShoot = true)
                             )
                         ),
-                        new ParallelDeadlineGroup(
-                                new SequentialCommandGroup(
-                                    new WaitUntilShootReadyCommand(shooter, waitTime, lowFlywheelTol, highFlywheelTol),
-                                    new SpindexerGotoPositionSmooth(spindexer, spindexer.endOutakePosition, totalSmoothTime)
-                                ),
-                                new ShootUpdateCommand(shooter, hardwareMap, true, follower)
-                        ).withTimeout(parallelTimeout)
-                ).andThen(new InstantCommand(()-> shooter.stopFlywheels())));
+                        new InstantCommand(()-> continueShoot = true),
+                        new WaitUntilShootReadyCommand(shooter, waitTime, lowFlywheelTol, highFlywheelTol),
+                        new SpindexerGotoPositionSmooth(spindexer, spindexer.endOutakePosition, totalSmoothTime)
+                ).andThen(new InstantCommand(()-> continueShoot = false));
     }
 
 
     protected Command shootFromLines(IntakeLine lineNum, long maxWaitTime){
         return new SequentialCommandGroup(
-                new SequentialCommandGroup(
                     new ParallelDeadlineGroup(
                         getToShootCommand(lineNum),
                         new SequentialCommandGroup(
                             new WaitCommand(1000),
                             new SpindexerGotoPosition(spindexer, SpindexerSpotNonCR.fromIndex(3).getIntakePositionSolo()),
                             new InstantCommand(()-> pushUpServo.setUp()),
-                            new ShootUpdateCommand(shooter, hardwareMap, false, follower)
+                            new InstantCommand(()-> continueShoot = true)
                         )
                     ),
-                    new ParallelDeadlineGroup(
-                            new SequentialCommandGroup(
-                                new WaitUntilShootReadyCommand(shooter, maxWaitTime, lowFlywheelTol, highFlywheelTol),
-                                new SpindexerGotoPositionSmooth(spindexer, spindexer.endOutakePosition, totalSmoothTime)
-                            ),
-                            new ShootUpdateCommand(shooter, hardwareMap, true, follower)
-                    ).withTimeout(parallelTimeout)
-                ).andThen(new InstantCommand(()-> shooter.stopFlywheels())));
+                    new InstantCommand(()-> continueShoot = true),
+                    new WaitUntilShootReadyCommand(shooter, maxWaitTime, lowFlywheelTol, highFlywheelTol),
+                    new SpindexerGotoPositionSmooth(spindexer, spindexer.endOutakePosition, totalSmoothTime)
+                ).andThen(new InstantCommand(()-> continueShoot = false));
 
     }
-    public static long parallelTimeout = 3000;
     protected Command shootPresetUnsorted(){
-//        return new SequentialCommandGroup(
-                return new SequentialCommandGroup(
-                        new ParallelDeadlineGroup(
-//                                new SequentialCommandGroup(
-                                    getToShootCommandPreset(),
-//                                ),
-                                new SequentialCommandGroup(
-                                        new SpindexerGotoPosition(spindexer, SpindexerSpotNonCR.fromIndex(3).getIntakePositionSolo()),
-                                        new InstantCommand(()-> pushUpServo.setUp()),
-                                        new ShootUpdateCommand(shooter, hardwareMap, false, follower)
-                                )
-                        ),
-                        new ParallelDeadlineGroup(
-                                new SequentialCommandGroup(
-                                        new WaitUntilShootReadyCommand(shooter, maxWaitTillShoot, lowFlywheelTol, highFlywheelTol),
-                                        new SpindexerGotoPositionSmooth(spindexer, spindexer.endOutakePosition, totalSmoothTime)
-                                ),
-                                new ShootUpdateCommand(shooter, hardwareMap, true, follower)
-                        ).withTimeout(parallelTimeout)
-                ).andThen(new InstantCommand(()-> shooter.stopFlywheels()));
+            return new SequentialCommandGroup(
+                    new ParallelDeadlineGroup(
+                            getToShootCommandPreset(),
+                            new SequentialCommandGroup(
+                                    new InstantCommand(()-> pushUpServo.setUp()),
+                                    new InstantCommand(()-> continueShoot = true)
+                            )
+                    ),
+                    new InstantCommand(()-> continueShoot = true),
+                    new WaitUntilShootReadyCommand(shooter, firstPresetWaitTime, lowFlywheelTol, highFlywheelTol),
+                    new SpindexerGotoPositionSmooth(spindexer, spindexer.endOutakePosition, totalSmoothTime)
+                ).andThen(new InstantCommand(()-> continueShoot = false));
     }
     int presetSortIndexStart = 0;
     protected Command shootPresetSorted(){
@@ -570,48 +582,42 @@ public class BaseAutoFarFunctions extends BaseAuto {
                         new InstantCommand(()-> presetSortIndexStart = 3),
                         ()-> motifPattern == MotifEnums.Motif.GPP
                 ),
-                new SequentialCommandGroup(
-                        new ParallelDeadlineGroup(
-                                new SequentialCommandGroup(
-                                    getToShootCommandPreset(),
-                                    new WaitCommand(500)
-                                ),
-                                new SequentialCommandGroup(
-                                        new SpindexerGotoPosition(spindexer, SpindexerSpotNonCR.fromIndex(presetSortIndexStart).getIntakePositionSolo()),
-                                        new InstantCommand(()-> pushUpServo.setUp()),
-                                        new ShootUpdateCommand(shooter, hardwareMap, false, follower)
-                                )
+
+                new ParallelDeadlineGroup(
+                        new SequentialCommandGroup(
+                            getToShootCommandPreset(),
+                            new WaitCommand(500)
                         ),
-                        new ParallelDeadlineGroup(
-                            new SequentialCommandGroup(
-                                    new WaitUntilShootReadyCommand(shooter, maxWaitTillShoot, lowFlywheelTol, highFlywheelTol),
-                                    new ConditionalCommand(
-                                    new SequentialCommandGroup(//GPP
-                                            new SpindexerGotoPosition(spindexer, SpindexerSpotNonCR.fromIndex(0).getOuttakePositionSolo()),
-                                            new WaitCommand(betweenShootPresetTime),
-                                            new SpindexerGotoPosition(spindexer,  SpindexerSpotNonCR.fromIndex(2).getOuttakePositionSolo()),
-                                            new WaitCommand(betweenShootPresetTime),
-                                            new SpindexerGotoPosition(spindexer,  SpindexerSpotNonCR.fromIndex(1).getOuttakePositionSolo())
-                                    ),
-                                    new ConditionalCommand(
-                                          new SequentialCommandGroup(//PPG
-                                                  new SpindexerGotoPosition(spindexer, SpindexerSpotNonCR.fromIndex(1).getOuttakePositionSolo()),
-                                                  new WaitCommand(betweenShootPresetTime),
-                                                  new SpindexerGotoPosition(spindexer,  SpindexerSpotNonCR.fromIndex(2).getOuttakePositionSolo()),
-                                                  new WaitCommand(betweenShootPresetTime),
-                                                  new SpindexerGotoPosition(spindexer,  SpindexerSpotNonCR.fromIndex(3).getOuttakePositionSolo())
-                                          ),
-                                          new SpindexerGotoPositionSmooth(spindexer, spindexer.endOutakePosition, totalSmoothTime),//PGP
-                                          () -> motifPattern == MotifEnums.Motif.PPG
-                                    ),
-                                        () -> motifPattern == MotifEnums.Motif.GPP
-                                )
-                            ),
-                            new ShootUpdateCommand(shooter, hardwareMap, true, follower)
+                        new SequentialCommandGroup(
+                                new DeferredCommand(() ->new SpindexerGotoPosition(spindexer, SpindexerSpotNonCR.fromIndex(presetSortIndexStart).getIntakePositionSolo()), null),
+                                new InstantCommand(()-> pushUpServo.setUp()),
+                                new InstantCommand(()-> continueShoot = true)
                         )
                 ),
-                new InstantCommand(() -> pushUpServo.setDown())
-        );
+                new InstantCommand(()-> continueShoot = true),
+                new WaitUntilShootReadyCommand(shooter, maxWaitTillShoot, lowFlywheelTol, highFlywheelTol),
+                new ConditionalCommand(
+                    new SequentialCommandGroup(//GPP
+                            new SpindexerGotoPosition(spindexer, SpindexerSpotNonCR.fromIndex(0).getOuttakePositionSolo()),
+                            new WaitCommand(betweenShootPresetTime),
+                            new SpindexerGotoPosition(spindexer,  SpindexerSpotNonCR.fromIndex(2).getOuttakePositionSolo()),
+                            new WaitCommand(betweenShootPresetTime),
+                            new SpindexerGotoPosition(spindexer,  SpindexerSpotNonCR.fromIndex(1).getOuttakePositionSolo())
+                    ),
+                    new ConditionalCommand(
+                          new SequentialCommandGroup(//PPG
+                                  new SpindexerGotoPosition(spindexer, SpindexerSpotNonCR.fromIndex(1).getOuttakePositionSolo()),
+                                  new WaitCommand(betweenShootPresetTime),
+                                  new SpindexerGotoPosition(spindexer,  SpindexerSpotNonCR.fromIndex(2).getOuttakePositionSolo()),
+                                  new WaitCommand(betweenShootPresetTime),
+                                  new SpindexerGotoPosition(spindexer,  SpindexerSpotNonCR.fromIndex(3).getOuttakePositionSolo())
+                          ),
+                          new SpindexerGotoPositionSmooth(spindexer, spindexer.endOutakePosition, totalSmoothTime),//PGP
+                          () -> motifPattern == MotifEnums.Motif.PPG
+                    ),
+                    () -> motifPattern == MotifEnums.Motif.GPP
+                )
+        ).andThen(new InstantCommand(()-> continueShoot = false));
     }
 
 
@@ -622,6 +628,7 @@ public class BaseAutoFarFunctions extends BaseAuto {
 
 
     protected Command intake(IntakeLine lineNum, boolean sort){
+        autoIntakeCommand = new AutoIntakeCommandNonCR(spindexer, intake, intakePower, inBetweenTime, true, hardwareMap, SpindexerSpotNonCR.SPOT1, 1);
         return new SequentialCommandGroup(
                 new InstantCommand(() -> pushUpServo.setDown()),
                 new InstantCommand(() -> currentIntakeOrder = getIntakeOrder(lineNum)),
@@ -629,8 +636,8 @@ public class BaseAutoFarFunctions extends BaseAuto {
                 new ParallelRaceGroup(
                         new ConditionalCommand(
                                 new AutoIntakeCommandMotif(spindexer, intake, intakePower, inBetweenTime, motifPattern, currentIntakeOrder, hardwareMap),
-                                new AutoIntakeCommandNonCR(spindexer, intake, intakePower, inBetweenTime, true, hardwareMap, SpindexerSpotNonCR.fromIndex(1), 1),
-                                () -> sort
+                                 autoIntakeCommand,
+                                         ()-> sort
                         ),new SequentialCommandGroup(
                                 getToLineNum(lineNum),
                                 driveToIntakeEnd(lineNum).withTimeout(driveIntakeEndTime),
@@ -650,7 +657,7 @@ public class BaseAutoFarFunctions extends BaseAuto {
                 new ParallelRaceGroup(
                         new ConditionalCommand(
                             new AutoIntakeCommandMotif(spindexer, intake, intakePower, inBetweenTime, motifPattern, currentIntakeOrder, hardwareMap),
-                            new AutoIntakeCommandNonCR(spindexer, intake, intakePower, inBetweenTime, true, hardwareMap, SpindexerSpotNonCR.fromIndex(1), 1),
+                            new AutoIntakeCommandNonCR(spindexer, intake, intakePower, inBetweenTime, true, hardwareMap, SpindexerSpotNonCR.SPOT1, 1),
                                 () -> sort
                         ),
                         new SequentialCommandGroup(
@@ -716,6 +723,12 @@ public class BaseAutoFarFunctions extends BaseAuto {
         telemetry.addData("Encoder position", spindexer.getEncoder().getPosition());
         telemetry.addData("Encoder angle", spindexer.getEncoder().getAngle());
 
+
+        if(autoIntakeCommand != null){
+            telemetry.addData("Curr Spot", autoIntakeCommand.currNumSpot);
+            telemetry.addData("At Spot", autoIntakeCommand.atSpot);
+
+        }
         telemetry.addData("Motif", motifPattern);
         if(spindexer.getBallColors() != null) {
             telemetry.addData("Spindexer Ball Color 0", spindexer.getBallColors()[0]);

@@ -161,7 +161,10 @@ public class AprilTagCameraTesting extends OpMode {
             telemetry.addData("relY", relY);
             telemetry.addData("fieldOffsetX", fieldOffsetX);
             telemetry.addData("fieldOffsetY", fieldOffsetY);
-
+            telemetry.addData("Bearing", tag.ftcPose.bearing);
+            telemetry.addData("Range", tag.ftcPose.range);
+            telemetry.addData("Elevation", tag.ftcPose.elevation);
+            aprilTagWebcam.displayDetectionTelemetry(tag);
         } else {
             telemetry.addLine("No Tag Visible");
         }

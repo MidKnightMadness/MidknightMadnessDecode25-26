@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.main.autonomous.farStart.base;
 
-import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
@@ -9,12 +8,11 @@ import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 
 
 import org.firstinspires.ftc.teamcode.game.IntakeLine;
-import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.tests.camera.AprilTagWebcam;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 
 
-public class CornerFarMid extends BaseAutoFarFunctions {
+public class CornerFarMidSorted extends BaseAutoFarFunctions {
 
     @Override
     protected Command postMotifSequence(){

@@ -31,7 +31,7 @@ public class AutoIntakeCommandNonCR extends CommandBase {
     boolean useDistanceSensor = true;
     double maxSwapTime1 = 500;
     double maxSwapTime2 = 500;
-    boolean atSpot = false;
+    public boolean atSpot = false;
 
     boolean ballDetected = false;
     boolean exitTime = false;
@@ -121,10 +121,10 @@ public class AutoIntakeCommandNonCR extends CommandBase {
             }
         }
 
-        time = timer.getTime();
-        exitTime = timeExit && (numBall == 1) ? time - ballDetectionTime >= maxSwapTime1 : timeExit && (numBall == 2) ? time - ballDetectionTime >= maxSwapTime2 : false;
-
-        if (ballDetected && ((time - ballDetectionTime >= waitSettle)) || exitTime) {
+//        time = timer.getTime();
+//        exitTime = timeExit && (numBall == 1) ? time - ballDetectionTime >= maxSwapTime1 : timeExit && (numBall == 2) ? time - ballDetectionTime >= maxSwapTime2 : false;
+//
+        if (ballDetected  || exitTime) {
             currNumSpot += dir;
             if(currNumSpot == -1 || currNumSpot == 4){
                exit = true;

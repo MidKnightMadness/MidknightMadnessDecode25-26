@@ -365,7 +365,7 @@ public class ShooterTestNonCR extends CommandOpMode {
         }else if (gamepad2.right_trigger > 0.5) {
             shooter.stopFlywheels();
             setBallColorsDefault();
-            shooter.resetGainScheduling();
+//            shooter.resetGainScheduling();
         }
 
         if (gamepad2.shareWasPressed()) {

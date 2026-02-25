@@ -3,7 +3,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.main.autonomous.farStart.base.CornerFarCamUnoptimized;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 
-@Autonomous(name = "FLB CornerFar CamNonOptim", group = "Competition")
+@Autonomous(name = "FLB CornerFar CamNonOptim", group = "LeftFar")
 public class CornerFarCamLeft extends CornerFarCamUnoptimized {
 
     @Override

@@ -88,7 +88,7 @@ public class TwoWheelShooter extends SubsystemBase {
     public static double botRecoveryFactor = 1.1;//TUNE
     double currTopFactor = 1;
     double currBotFactor = 1;
-    public static double recoveryBoostTime = 1000;
+
     double actualRecoveryTime = 0;
     double recoveryStartTime = 0;
     double recoveryEndTime = 0;
@@ -207,40 +207,25 @@ public class TwoWheelShooter extends SubsystemBase {
         }
     }
 
-    private boolean firstShotDetected = false;
 
     public static double shotDropThreshold = 100;
-    public static double minVelocityAgressive = 500;
-    boolean velStable = false;
     public double bottomError;
     public double topError;
-    public void checkForFirstShot() {
-//        if (firstShotDetected) return;
-//        if(!velStable && readyToShoot()){//checks to make sure up to speed
-//            velStable = true;
-//        }
-//        if(velStable){//if up to speed and drop detected use recovery gains
-//            if((Math.abs(low.getVelocity() - predictedBotVel) > shotDropThreshold ||
-//                    Math.abs(high.getVelocity() - predictedTopVel) > shotDropThreshold)
-//                    && low.getVelocity() > minVelocityAgressive && high.getVelocity() > minVelocityAgressive){
-//                triggerBallShot();
-//                firstShotDetected = true;
-//            }
-//        }
+    public void updateRecoveryState() {
+
         bottomError = low.getVelocity() - predictedBotVel;
         topError = high.getVelocity() - predictedTopVel;
-        if(Math.abs(bottomError) > shotDropThreshold || Math.abs(topError) > shotDropThreshold){
-            setAggressiveGains();
+        if(Math.abs(bottomError) > shotDropThreshold){
+            setAggressiveGainsBottom();
         } else{
-            resetDefaultGains();
+            resetDefaultGainsBottom();
         }
-    }
 
-    public void resetGainScheduling(){
-        firstShotDetected = false;
-        resetDefaultGains();
-        inRecoveryMode = false;
-        velStable = false;
+        if(Math.abs(topError) > shotDropThreshold){
+            setAggressiveGainsTop();
+        } else{
+            resetDefaultGainsTop();
+        }
     }
 
 
@@ -286,9 +271,28 @@ public class TwoWheelShooter extends SubsystemBase {
         high.setVeloCoefficients(pidTopGains[0], pidTopGains[1], pidTopGains[2]);
         high.setFeedforwardCoefficients(kTopGains[0], kTopGains[1], kTopGains[2]);
     }
+
+    public void resetDefaultGainsBottom(){
+        inRecoveryMode = false;
+        low.setVeloCoefficients(pidBotGains[0], pidBotGains[1], pidBotGains[2]);
+        low.setFeedforwardCoefficients(kBotGains[0], kBotGains[1], kBotGains[2]);
+    }
+    public void resetDefaultGainsTop(){
+        inRecoveryMode = false;
+        high.setVeloCoefficients(pidTopGains[0], pidTopGains[1], pidTopGains[2]);
+        high.setFeedforwardCoefficients(kTopGains[0], kTopGains[1], kTopGains[2]);
+    }
     public void setAggressiveGains(){
         inRecoveryMode = true;
         low.setVeloCoefficients(pidBotAggressiveGains[0], pidBotAggressiveGains[1], pidBotAggressiveGains[2]);
+        high.setVeloCoefficients(pidTopAggressiveGains[0], pidTopAggressiveGains[1], pidTopAggressiveGains[2]);
+    }
+    public void setAggressiveGainsBottom(){
+        inRecoveryMode = true;
+        low.setVeloCoefficients(pidBotAggressiveGains[0], pidBotAggressiveGains[1], pidBotAggressiveGains[2]);
+    }
+    public void setAggressiveGainsTop(){
+        inRecoveryMode = true;
         high.setVeloCoefficients(pidTopAggressiveGains[0], pidTopAggressiveGains[1], pidTopAggressiveGains[2]);
     }
 
@@ -316,14 +320,7 @@ public class TwoWheelShooter extends SubsystemBase {
         low.setFeedforwardCoefficients(kS, kV, kA);
         high.setFeedforwardCoefficients(kS, kV, kA);
     }
-    public void updateRecoveryState(){
-        if(inRecoveryMode && System.currentTimeMillis() > recoveryEndTime){
-            actualRecoveryTime = System.currentTimeMillis() - recoveryStartTime;
-            resetRecoveryFactors();
-            resetDefaultGains();
-            inRecoveryMode = false;
-        }
-    }
+
 
     //thresholds whether robot is currently moving
     public void setFlywheelPresets(ShootDist shootDist, Follower follower, ShootSide shootSide,  boolean voltageUse, double currVolt){
@@ -389,7 +386,6 @@ public class TwoWheelShooter extends SubsystemBase {
         setFlywheel(dist, shootDist, vparallel, voltageUse, false, currVolt);
     }
     public void setFlywheel(double dist, ShootDist shootDist, double vParallel, boolean voltageUse, boolean useLUT, double currVolt){
-        updateRecoveryState();
 //        double ratio = voltageUse ? (targetVoltage / currVolt) : 1;
 //        ratio = Math.min(ratio, 1.35);
         double ratio = 1;
@@ -436,7 +432,7 @@ public class TwoWheelShooter extends SubsystemBase {
 
         low.set(botVelocity, botMultiplier, currVolt);
         high.set(topVelocity, topMultiplier, currVolt);
-        checkForFirstShot();
+        updateRecoveryState();
     }
 
     /**
@@ -507,11 +503,6 @@ public class TwoWheelShooter extends SubsystemBase {
             setAggressiveGains();
         }
         inRecoveryMode = true;
-    }
-
-    public void simpleTrigger(){
-        recoveryStartTime = System.currentTimeMillis();
-        recoveryEndTime = System.currentTimeMillis() + recoveryBoostTime;
     }
 
     public double getTopRecoveryFactor(){
