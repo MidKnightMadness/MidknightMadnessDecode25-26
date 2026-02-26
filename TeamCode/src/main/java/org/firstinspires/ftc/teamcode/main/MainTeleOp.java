@@ -53,9 +53,9 @@ import java.io.File;
 import java.util.Map;
 
 
-@Configurable
-@Config
-@TeleOp(name = "Main TeleOp", group = "Competition")
+//@Configurable
+//@Config
+//@TeleOp(name = "Main TeleOp", group = "Competition")
 public class MainTeleOp extends CommandOpMode {
     Follower follower;
     Pose startPose = new Pose(72, 8, Math.toRadians(90));

@@ -13,6 +13,7 @@ import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 
 import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommandNonCR;
+import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpotNonCR;
 import org.firstinspires.ftc.teamcode.commands.pathing.BuildPath;
@@ -56,6 +57,7 @@ public class CornerFarCamUnoptimized extends BaseAutoFarFunctions {
        buildPath = new BuildPath(follower, cam, targetx1, shootPose);
        return new SequentialCommandGroup(
                new InstantCommand(() -> pushUpServo.setDown()),
+               new InstantCommand(()-> spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE})),
                new ParallelRaceGroup(
                        new AutoIntakeCommandNonCR(spindexer, intake, intakePower, inBetweenTime, true, hardwareMap, SpindexerSpotNonCR.SPOT1, 1),
                        new SequentialCommandGroup(

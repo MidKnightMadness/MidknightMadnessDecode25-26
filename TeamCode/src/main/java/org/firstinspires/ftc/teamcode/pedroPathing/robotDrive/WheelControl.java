@@ -118,13 +118,13 @@ public class WheelControl {
         this.FR.setPower(FRPower/new_max_power);
     }
 
-    public void driveFieldCentric(double driveX, double driveY, double rotate,double maxPower, double robotHeadingRad, ShootSide shootSide) {
+    public void driveFieldCentric(double driveX, double driveY, double rotate, double maxPower, double robotHeadingRad, ShootSide shootSide) {
 
         //if right shoot side: forward = +x, left = +y, right = -y, back = -x
         //if left shoot side: forward = -x, left = -y, right = +y, back = +x
 
-        double forward = driveY * Math.cos(robotHeadingRad) + driveX * Math.sin(robotHeadingRad);
-        double right  = -driveY * Math.sin(robotHeadingRad) + driveX * Math.cos(robotHeadingRad);
+        double forward = driveY * Math.cos(robotHeadingRad) - driveX * Math.sin(robotHeadingRad);
+        double right   = driveY * Math.sin(robotHeadingRad) + driveX * Math.cos(robotHeadingRad);
 
         forward *= -1;//bc gamepad reversed for some reason
         if(shootSide == ShootSide.RIGHT){

@@ -29,6 +29,9 @@ public class PresetUnsortCornerFarSort extends BaseAutoFarFunctions{
                         intake(IntakeLine.FAR, true),
                         shootFromLines(IntakeLine.FAR, maxWaitTillShoot),
 
+                        intakeCorner(true),
+                        shootFromLines(IntakeLine.CORNER, maxWaitTillShoot),
+
                         new ParallelCommandGroup(
                                 park(),
                                 new InstantCommand(()-> spindexer.setDirectPosition(0))//reset spindexer

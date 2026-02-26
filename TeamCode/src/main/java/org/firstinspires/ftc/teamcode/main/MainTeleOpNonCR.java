@@ -95,6 +95,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
     double intakePower = 1.0;
     double maxIntakePower = 1.0;
     double intakeTargetVel = 3;
+    public static double headingThresholdSwap = Math.toRadians(20);
     public static double minHeadingError = Math.toRadians(1);
 //    TelemetryManager telemetryM;
 //    GraphManager graphM;
@@ -131,6 +132,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
     boolean autoAlign = false;
     public static boolean useArducam = true;
+    public static double cameraAlignThresholdDegrees = 5;
     boolean autoSpindexer = false;
     boolean autoDriveToShoot = false;
     boolean autoIntake = false;
@@ -147,6 +149,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
 //    VelocityControl
 
     public static double[] pidAutoAlign = new double[]{1.0, 0, 0.1};//1.5, 0, 0.1
+//    public static double[] pidAutoAlignAgressive = new double[]{2, 0, 0.1};
     public static double alignmentWeight = 0.2;
     FollowPathCommand followPathCommand;
     double prevHeadingError = 0;
@@ -627,8 +630,13 @@ public class MainTeleOpNonCR extends CommandOpMode {
     private double calculateGamepadPID(double prevHeadingError, double headingError) {
 //        double filteredHeadingError = (1-alignmentWeight) * headingError + alignmentWeight * prevHeadingError;
         double filteredHeadingError = headingError;
-        double pGain = pidAutoAlign[0] * filteredHeadingError;
-        double dGain = pidAutoAlign[2] * (filteredHeadingError - prevHeadingError) / timer.getDeltaTime();
+
+        double pGain;
+        double dGain;
+//        if(Math.abs(headingError) > headingThresholdSwap) {
+            pGain = pidAutoAlign[0] * filteredHeadingError;
+            dGain = pidAutoAlign[2] * (filteredHeadingError - prevHeadingError) / timer.getDeltaTime();
+//        }
 
         double power = pGain + dGain;
         power = Math.max(-1, Math.min(1, power));
@@ -660,10 +668,10 @@ public class MainTeleOpNonCR extends CommandOpMode {
         Pose control1, control2;
         if (shootSide == ShootSide.LEFT) {
             control1 = new Pose(14, 144);
-            control2 = new Pose(0, 125);
+            control2 = new Pose(0, 130);
         } else {
             control1 = new Pose(130, 144);
-            control2 = new Pose(144, 125);
+            control2 = new Pose(144, 130);
         }
 
         double angle1 = getTargetAngle(position, control1);
@@ -688,6 +696,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
     double aprilTagBearing = 0;
     boolean detected;
+    boolean cameraAlign;
 
     private void setAlignTurnPower() {
         turnPower = 0;//REMOVE?
@@ -695,21 +704,25 @@ public class MainTeleOpNonCR extends CommandOpMode {
         if (!autoAlign) return;
 
         detected = false;
+        cameraAlign = false;
         AprilTagDetection detection = null;
 
         if (useArducam) {
             arducam.update();
             for (AprilTagDetection tag : arducam.getDetectedTags()) {
-                detected = shootSide == ShootSide.LEFT ? tag.id == 20 : tag.id == 24;
+                detected = (shootSide == ShootSide.LEFT) ? (tag.id == 20) : (tag.id == 24);
                 if (detected) detection = tag;
             }
         }
         Pose outakePose = new Pose(currentPose.getX(), currentPose.getY(), normAngle(Math.toRadians(currentPose.getHeading()) + Math.PI));
 
         if (detected && detection != null) {
-            aprilTagBearing = detection.ftcPose.elevation;
+            aprilTagBearing = Math.toRadians(detection.ftcPose.elevation);
+            cameraAlign = Math.abs(aprilTagBearing) < Math.toRadians(cameraAlignThresholdDegrees);
+        }
+
+        if (cameraAlign) {
             headingError = aprilTagBearing;
-            prevHeadingError = headingError;
         }
         else {
             headingError = getAngleError(outakePose);
@@ -717,7 +730,6 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
         turnPower = calculateGamepadPID(prevHeadingError, headingError);
         prevHeadingError = headingError;
-
     }
 
     boolean relocalized = false;
@@ -839,37 +851,37 @@ public class MainTeleOpNonCR extends CommandOpMode {
 //            }
 //        }
 
-        if (gamepad1.dpadUpWasPressed()) {
-            if (followPathCommand != null && !followPathCommand.isFinished()) {
-                CommandScheduler.getInstance().cancel(followPathCommand);
-            }
-            autoDriveToShoot = true;
-            Pose toPose = (shootSide == ShootSide.LEFT) ? toFarLeftShoot : toFarRightShoot;
-            PathChain pathChain = getPathChain(currentPose, toPose);
-            followPathCommand = new FollowPathCommand(follower, pathChain).setGlobalMaxPower(1.0);
-            schedule(followPathCommand);
-        }
-        if (gamepad1.dpadLeftWasPressed()) {
-            if (followPathCommand != null && !followPathCommand.isFinished()) {
-                CommandScheduler.getInstance().cancel(followPathCommand);
-            }
-            autoDriveToShoot = true;
-            Pose toPose = (shootSide == ShootSide.LEFT) ? gateIntakeLeft : gateIntakeRight;
-            PathChain pathChain = getPathChain(currentPose, toPose);
-            followPathCommand = new FollowPathCommand(follower, pathChain).setGlobalMaxPower(1.0);
-            schedule(followPathCommand);
-        }
-
-        if (gamepad1.dpadDownWasPressed()) {
-            if (followPathCommand != null && !followPathCommand.isFinished()) {
-                CommandScheduler.getInstance().cancel(followPathCommand);
-            }
-            autoDriveToShoot = true;
-            Pose toPose = (shootSide == ShootSide.LEFT) ? toCloseLeftShoot : toCloseRightShoot;
-            PathChain pathChain = getPathChain(currentPose, toPose);
-            followPathCommand = new FollowPathCommand(follower, pathChain).setGlobalMaxPower(1.0);
-            schedule(followPathCommand);
-        }
+//        if (gamepad1.dpadUpWasPressed()) {
+//            if (followPathCommand != null && !followPathCommand.isFinished()) {
+//                CommandScheduler.getInstance().cancel(followPathCommand);
+//            }
+//            autoDriveToShoot = true;
+//            Pose toPose = (shootSide == ShootSide.LEFT) ? toFarLeftShoot : toFarRightShoot;
+//            PathChain pathChain = getPathChain(currentPose, toPose);
+//            followPathCommand = new FollowPathCommand(follower, pathChain).setGlobalMaxPower(1.0);
+//            schedule(followPathCommand);
+//        }
+//        if (gamepad1.dpadLeftWasPressed()) {
+//            if (followPathCommand != null && !followPathCommand.isFinished()) {
+//                CommandScheduler.getInstance().cancel(followPathCommand);
+//            }
+//            autoDriveToShoot = true;
+//            Pose toPose = (shootSide == ShootSide.LEFT) ? gateIntakeLeft : gateIntakeRight;
+//            PathChain pathChain = getPathChain(currentPose, toPose);
+//            followPathCommand = new FollowPathCommand(follower, pathChain).setGlobalMaxPower(1.0);
+//            schedule(followPathCommand);
+//        }
+//
+//        if (gamepad1.dpadDownWasPressed()) {
+//            if (followPathCommand != null && !followPathCommand.isFinished()) {
+//                CommandScheduler.getInstance().cancel(followPathCommand);
+//            }
+//            autoDriveToShoot = true;
+//            Pose toPose = (shootSide == ShootSide.LEFT) ? toCloseLeftShoot : toCloseRightShoot;
+//            PathChain pathChain = getPathChain(currentPose, toPose);
+//            followPathCommand = new FollowPathCommand(follower, pathChain).setGlobalMaxPower(1.0);
+//            schedule(followPathCommand);
+//        }
         if (gamepad1.dpadRightWasPressed()) {
             if (followPathCommand != null && !followPathCommand.isFinished()) {
                 CommandScheduler.getInstance().cancel(followPathCommand);
@@ -885,7 +897,14 @@ public class MainTeleOpNonCR extends CommandOpMode {
         if (!autoDriveToShoot && !driveFieldOreinted) {
             wheelControl.drive_relative(gamepad1.left_stick_y, gamepad1.left_stick_x, !autoAlign ? -gamepad1.right_stick_x : turnPower, currSpeed);
         } else if(!autoDriveToShoot && driveFieldOreinted){
-            wheelControl.driveFieldCentric(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x, currSpeed, currentPose.getHeading(), shootSide);
+            wheelControl.driveFieldCentric(
+                    gamepad1.left_stick_x,
+                    gamepad1.left_stick_y,
+                    !autoAlign ? -gamepad1.right_stick_x : turnPower,
+                    currSpeed,
+                    currentPose.getHeading(),
+                    shootSide
+            );
         }
 
         follower.update();
@@ -999,6 +1018,10 @@ public class MainTeleOpNonCR extends CommandOpMode {
             clearExistingSpindexerCommand();;
             outakeSpotsRotation = new OutakeSpotsRotation(spindexer, SpindexerSpotNonCR.SPOT1, -1, inBetweenOutakeTime);
             schedulePosition(outakeSpotsRotation);
+        } else if(gamepad2.shareWasPressed()){
+            clearExistingSpindexerCommand();
+            spindexerGotoPosition = new SpindexerGotoPosition(spindexer, spindexer.startOutakePosition);
+            schedulePosition(spindexerGotoPosition);
         }
 
 //        if (!autoSpindexer && !autoIntake) {

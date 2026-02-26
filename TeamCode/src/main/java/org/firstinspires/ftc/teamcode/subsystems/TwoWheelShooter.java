@@ -121,7 +121,7 @@ public class TwoWheelShooter extends SubsystemBase {
         public static int iterations = 10; // For tuning targetDistance
         public static double[] dist = {60, 70, 80, 90, 100, 112, 128, 149.5, 156.0};//inches
         public static double[] bottomVel = {1350, 1350, 1400, 1450, 1500, 1500, 1700, 1700, 1800};
-        public static double[] topVel = {1550, 1600, 1650, 1650, 1750, 1800, 1900, 2100, 2100};
+        public static double[] topVel = {1550, 1600, 1650, 1650, 1750, 1800, 1900, 1950, 2000};
         public static double[] velCorrectionFactor = {0.7, 0.75, 0.8, 0.85, 0.9, 0.97, 1.05, 1.15, 1.2}; // take time in the air and then subtract a bit
 
         public AimCalculator() {

@@ -13,6 +13,7 @@ import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommandNonCR;
 import org.firstinspires.ftc.teamcode.commands.pathing.BuildPath;
+import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.IntakeLine;
 import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpotNonCR;
@@ -52,6 +53,7 @@ public class CornerFarCam extends BaseAutoFarFunctions {
         buildPath = new BuildPath(follower, cam, targetx1, targetx2, shootPose);
         return new SequentialCommandGroup(
                 new InstantCommand(() -> pushUpServo.setDown()),
+                new InstantCommand(()-> spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE})),
                 new ParallelRaceGroup(
                         new AutoIntakeCommandNonCR(spindexer, intake, intakePower, inBetweenTime, true, hardwareMap, SpindexerSpotNonCR.SPOT1, 1),
                         new SequentialCommandGroup(

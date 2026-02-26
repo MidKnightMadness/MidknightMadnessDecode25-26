@@ -63,10 +63,10 @@ public class BaseAutoFarFunctions extends BaseAuto {
     Pose intakeCloseStartPose = new Pose(97, 84, Math.toRadians(0));
     Pose intakeCloseEndPose = new Pose(125, 84, Math.toRadians(0));
     Pose intakeMidStartPose = new Pose(97, 56, Math.toRadians(0));
-    Pose intakeMidEndPose = new Pose(129, 56, Math.toRadians(0));
+    Pose intakeMidEndPose = new Pose(130, 56, Math.toRadians(0));
 
     Pose intakeFarStartPose = new Pose(97, 34, Math.toRadians(0));
-    Pose intakeFarEndPose = new Pose(135, 34, Math.toRadians(0));
+    Pose intakeFarEndPose = new Pose(130, 34, Math.toRadians(0));
     Pose intakeCornerStartPose = new Pose(121, 10, Math.toRadians(0));
     Pose intakeCornerEndPose = new Pose(127, 10, Math.toRadians(0));
     Pose intakeCornerStartPose2 = new Pose(123, 6, Math.toRadians(0));
@@ -74,10 +74,10 @@ public class BaseAutoFarFunctions extends BaseAuto {
     Pose closeShootPose = new Pose(91.2, 84.6, Math.toRadians(230));
 
     Pose startDetectPose = new Pose(110, 10, Math.toRadians(0));
-    Pose strafeFourPose = new Pose(110, 50, Math.toRadians(0));
+    Pose strafeFourPose = new Pose(110, 40, Math.toRadians(0));
 
 
-    public static long driveIntakeEndTime = 5000;
+    public static long driveIntakeEndTime = 4000;
 
 
     MotifEnums.Motif motifPattern = MotifEnums.Motif.NONE;
@@ -199,10 +199,10 @@ public class BaseAutoFarFunctions extends BaseAuto {
     int aprilTagID = 0;
     BuildPath buildPath;
     public static long timeoutCorner = 100;
-    public static double intakeDrivePower = 0.3;
-    public static double intakeCornerDrivePower = 0.4;
+    public static double intakeDrivePower = 0.5;
+    public static double intakeCornerDrivePower = 0.5;
     public static double intakePower = 1;
-    public static double autoCameraDrivePower = 0.6;//primary
+    public static double autoCameraDrivePower = 0.4;//primary
     public static double autoCameraDrivePowerSec = 0.8;
     public static double maxTimeSwap1 = 1000;
     public static double maxTimeSwap2 = 1000;
@@ -461,7 +461,7 @@ public class BaseAutoFarFunctions extends BaseAuto {
         cam = new CamCommand(limelight, follower, shootSide);
         return new SequentialCommandGroup(
                 driveToStartViewPosition(),
-                new ParallelDeadlineGroup(
+                new ParallelRaceGroup(
                         new SequentialCommandGroup(
                                 cam,
                                 new InstantCommand(()-> camDetect = true)
@@ -482,6 +482,7 @@ public class BaseAutoFarFunctions extends BaseAuto {
         buildPath = new BuildPath(follower, cam, targetx1, targetx2, shootPose);
         return new SequentialCommandGroup(
                 new InstantCommand(() -> pushUpServo.setDown()),
+                new InstantCommand(()-> spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE})),
                 new ParallelRaceGroup(
                         new AutoIntakeCommandNonCR(spindexer, intake, intakePower, inBetweenTime, true, hardwareMap, SpindexerSpotNonCR.SPOT1, 1),
                         new SequentialCommandGroup(
@@ -662,11 +663,11 @@ public class BaseAutoFarFunctions extends BaseAuto {
                         ),
                         new SequentialCommandGroup(
                                 getToLineNum(IntakeLine.CORNER),
-                                new FollowPathCommand(follower, toIntakeLineCornerEnd, true, intakeCornerDrivePower).withTimeout(cornerTimeout),
-                                new WaitCommand(1000),
-                                new FollowPathCommand(follower, toIntakeLineCornerBack, true, intakeCornerDrivePower).withTimeout(cornerTimeout),
-                                new FollowPathCommand(follower, toIntakeLineCornerEnd2, true, intakeCornerDrivePower).withTimeout(cornerTimeout),
-                                new WaitCommand(1000)
+                                new FollowPathCommand(follower, toIntakeLineCornerEnd, true, 0.6).withTimeout(2500),
+                                new WaitCommand(500),
+                                new FollowPathCommand(follower, toIntakeLineCornerBack, true, intakeCornerDrivePower).withTimeout(1500),
+                                new FollowPathCommand(follower, toIntakeLineCornerEnd2, true, intakeCornerDrivePower).withTimeout(1000),
+                                new WaitCommand(800)
                         )
                 ),
                 new InstantCommand(()-> intake.setDirectPower(0))
@@ -723,6 +724,7 @@ public class BaseAutoFarFunctions extends BaseAuto {
         telemetry.addData("Encoder position", spindexer.getEncoder().getPosition());
         telemetry.addData("Encoder angle", spindexer.getEncoder().getAngle());
 
+        telemetry.addData("Cam detect", camDetect);
 
         if(autoIntakeCommand != null){
             telemetry.addData("Curr Spot", autoIntakeCommand.currNumSpot);

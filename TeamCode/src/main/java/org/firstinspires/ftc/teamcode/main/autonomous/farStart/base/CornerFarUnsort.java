@@ -31,6 +31,9 @@ public class CornerFarUnsort extends BaseAutoFarFunctions {
                         intake(IntakeLine.FAR, false),
                         shootFromLines(IntakeLine.FAR, maxWaitTillShoot),
 
+                        intakeCorner(false),
+                        shootFromLines(IntakeLine.CORNER, maxWaitTillShoot),
+
 
                         new ParallelCommandGroup(
                                 park(),
