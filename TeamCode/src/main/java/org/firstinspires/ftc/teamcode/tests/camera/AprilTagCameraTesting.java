@@ -151,7 +151,7 @@ public class AprilTagCameraTesting extends OpMode {
             robotY = tagFieldY - fieldOffsetY + generalOffsetY;
 
             // robot heading
-            robotHeadingDeg = tagFieldHeadingDeg - tag.ftcPose.yaw;
+            robotHeadingDeg = tagFieldHeadingDeg - tag.ftcPose.pitch;
 
             telemetry.addData("Tag ID", tag.id);
             telemetry.addData("Robot X (in)", "%.2f", robotX);
