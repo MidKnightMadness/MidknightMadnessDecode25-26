@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.main.autonomous.farStart.base.PresetUnsortCornerFarMidSort;
 
-@Autonomous(name = "FLB PresetUnsort Corner Sort", group = "LeftFar")
+@Autonomous(name = "FLB PresetUnsort Corner Sort", group = "ALeftFar")
 public class PresetUnsortCornerSorted extends PresetUnsortCornerFarMidSort {
 
     @Override

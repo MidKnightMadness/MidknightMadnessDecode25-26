@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.main.autonomous.farStart.base.CornerFarMidSorted;
 
-@Autonomous(name = "FLB CornerFarMidPark", group = "LeftFar")
+@Autonomous(name = "FLB CornerFarMidPark", group = "ALeftFar")
 public class CornerFarMidLeft extends CornerFarMidSorted {
     @Override
     public ShootSide getShootSide(){

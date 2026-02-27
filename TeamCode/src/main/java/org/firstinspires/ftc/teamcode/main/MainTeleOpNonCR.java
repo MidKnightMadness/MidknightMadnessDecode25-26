@@ -15,6 +15,7 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -63,7 +64,7 @@ import java.util.Map;
 
 @Configurable
 @Config
-@TeleOp(name = "Main TeleOp NON CR", group = "Competition")
+@TeleOp(name = "Main TeleOp NON CR", group = "aCompetition")
 public class MainTeleOpNonCR extends CommandOpMode {
     Follower follower;
     Pose startPose = new Pose(72, 8, Math.toRadians(90));
@@ -131,7 +132,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
 
     boolean autoAlign = false;
-    public static boolean useArducam = true;
+    public boolean useArducam = true;
     public static double cameraAlignThresholdDegrees = 5;
     boolean autoSpindexer = false;
     boolean autoDriveToShoot = false;
@@ -240,12 +241,16 @@ public class MainTeleOpNonCR extends CommandOpMode {
     public static double slowSmoothTime = 1;
     public static double inBetweenOutakeTime = 250;
     boolean driveFieldOreinted = false;
+    Limelight3A limelight;
 
     @Override
     public void initialize() {
         //TODO: Bulk read testing
 
         reset();
+        limelight = hardwareMap.get(Limelight3A.class, ConfigNames.limelight);//init limelight
+        limelight.close();
+
 
 //        telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 //        graphM = PanelsGraph.INSTANCE.getManager();
@@ -292,14 +297,6 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
 //
         if(useBulkMode) {
-//            CommandScheduler.getInstance().setClearCacheOff();
-            // Setup in your Robot class if you have one, or in init at start of opMode
-//
-//            PhotonCore.CONTROL_HUB.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
-//            PhotonCore.EXPANSION_HUB.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
-//            PhotonCore.experimental.setMaximumParallelCommands(optimalNum); // Can be adjusted based on user preference - but raising this number further can cause issues
-//            PhotonCore.enable();
-            PhotonCore.disable();
             CommandScheduler.getInstance().setBulkReading(
                     hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
             );
@@ -310,6 +307,9 @@ public class MainTeleOpNonCR extends CommandOpMode {
             );
         }
 
+        spin1Color = BallColor.NONE;
+        spin2Color = BallColor.NONE;
+        spin3Color = BallColor.NONE;
         telemetry.setMsTransmissionInterval(500);
 //        FtcDashboard dashboard = FtcDashboard.getInstance();
 //        dashboardTelemetry = dashboard.getTelemetry();
@@ -423,7 +423,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
             gameTimer.restart();
         }
         super.run();
-
+        currSpindexerBallColors = spindexer.getBallColors();
 
         if (!rumbledLastFive && gameTimer.getTime() >= 115000) {//endgame
             gamepad1.rumble(3000);
@@ -431,7 +431,6 @@ public class MainTeleOpNonCR extends CommandOpMode {
             rumbledLastFive = true;
         }
 
-        currSpindexerBallColors = spindexer.getBallColors();
         updateLights();
 //        if((autoIntake || autoSpindexer) && activeSpindexerSpotIndex != -1 && activeSpotType != null){
 //            spindexer.goToSpot(SpindexerSpot.fromIndex(activeSpindexerSpotIndex), activeSpotType, spindexerRunMode);
@@ -522,7 +521,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
 
         if (readyToShootLight != null) {
-            GobildaLightBlock.Color targetReadyToShoot = headingError <= Math.toRadians(1) ? GobildaLightBlock.Color.GREEN : GobildaLightBlock.Color.ORANGE;
+            GobildaLightBlock.Color targetReadyToShoot = useArducam ? GobildaLightBlock.Color.GREEN : GobildaLightBlock.Color.ORANGE;
             if (targetReadyToShoot != readyToShootColor) {
                 readyToShootLight.setColor(targetReadyToShoot);
                 readyToShootColor = targetReadyToShoot;
@@ -772,6 +771,10 @@ public class MainTeleOpNonCR extends CommandOpMode {
     private void runGamepad1Comands() {
         currentPose = new Pose(follower.getPose().getX(), follower.getPose().getY(), Math.toDegrees(follower.getPose().getHeading()));
 
+        if(gamepad1.startWasPressed()){
+            useArducam = !useArducam;
+        }
+
         manualResetPose();
         setAlignTurnPower();
         driveRobot();//includes automations
@@ -1020,7 +1023,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
             schedulePosition(outakeSpotsRotation);
         } else if(gamepad2.shareWasPressed()){
             clearExistingSpindexerCommand();
-            spindexerGotoPosition = new SpindexerGotoPosition(spindexer, spindexer.startOutakePosition);
+            spindexerGotoPosition = new SpindexerGotoPosition(spindexer, spindexer.endOutakePosition);
             schedulePosition(spindexerGotoPosition);
         }
 
@@ -1076,7 +1079,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
         if (!autoIntake) {
             intakePower = gamepad2.right_stick_y * maxIntakePower;
-            intake.setDirectPower(gamepad2.right_stick_y * maxIntakePower, currVolt);
+            intake.setDirectPower(gamepad2.right_stick_y * maxIntakePower);
         }
     }
 
@@ -1233,6 +1236,13 @@ public class MainTeleOpNonCR extends CommandOpMode {
                 telemetry.addData("Spindexer Ball Color 1", currSpindexerBallColors[1]);
                 telemetry.addData("Spindexer Ball Color 2", currSpindexerBallColors[2]);
             }
+            telemetry.addData("Light position1", spindexerLights[0].lightControl.getPosition());
+            telemetry.addData("Light position2", spindexerLights[1].lightControl.getPosition());
+            telemetry.addData("Light position3", spindexerLights[2].lightControl.getPosition());
+            telemetry.addData("Color 1", spin1Color);
+            telemetry.addData("Color 2", spin2Color);
+            telemetry.addData("Color 3", spin3Color);
+
             telemetry.addData("Spindexer Direction", spindexerDirection);
 
             telemetry.addData("Spindexer Raw Power", spindexerRawPower);

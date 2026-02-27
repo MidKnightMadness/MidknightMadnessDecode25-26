@@ -7,7 +7,7 @@ import org.firstinspires.ftc.teamcode.main.autonomous.farStart.base.CornerFarMid
 import org.firstinspires.ftc.teamcode.main.autonomous.farStart.base.ThreeLines;
 
 
-@Autonomous(name = "FLB CornerFarMid Unsort", group = "LeftFar")
+@Autonomous(name = "FLB CornerFarMid Unsort", group = "ALeftFar")
 public class CornerFarMidUnsorted extends CornerFarMidUnsort {
 
     @Override

@@ -3,7 +3,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.main.autonomous.farStart.base.ThreeLines;
 
-@Autonomous(name = "FRB FarMidClose Sort", group = "RightFar")
+@Autonomous(name = "FRB FarMidClose Sort", group = "ARightFar")
 public class ThreeLinesRightSort extends ThreeLines {
 
     @Override

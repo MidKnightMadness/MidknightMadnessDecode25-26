@@ -6,7 +6,7 @@ import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.main.autonomous.farStart.base.ThreeLines;
 
 
-@Autonomous(name = "FLB FarMidClose Sort", group = "Competition")
+@Autonomous(name = "FLB FarMidClose Sort", group = "ALeftFar")
 public class ThreeLinesLeftSort extends ThreeLines {
 
     @Override

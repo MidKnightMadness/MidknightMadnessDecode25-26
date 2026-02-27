@@ -85,7 +85,6 @@ public class CamCommand extends CommandBase {
 
     }
     private Pose coordRobotToField(Follower follower, Pose poseBall){
-        follower.update();
         Pose botPose = follower.getPose();
 //        double dist = distanceBot(poseBall);
 

@@ -96,6 +96,7 @@ public class AutoIntakeCommandNonCR extends CommandBase {
 //            currNumSpot = 0;
 //            currRev = 1;
 //        }
+        intake.setDirectPower(power);
         spindexer.setDirectPosition(startSpot.getIntakePositionSolo());
     }
 
@@ -105,8 +106,8 @@ public class AutoIntakeCommandNonCR extends CommandBase {
     double currVolt;
     @Override
     public void execute(){
-        currVolt = hardwareMap.voltageSensor.iterator().next().getVoltage();
-        intake.setDirectPower(power, currVolt);
+//        currVolt = hardwareMap.voltageSensor.iterator().next().getVoltage();
+//        intake.setDirectPower(power, currVolt);
 
         if (!atSpot && spindexer.isAtPosition(SpindexerSpotNonCR.fromIndex(currNumSpot).getIntakePositionSolo())) {
             atSpot = true;

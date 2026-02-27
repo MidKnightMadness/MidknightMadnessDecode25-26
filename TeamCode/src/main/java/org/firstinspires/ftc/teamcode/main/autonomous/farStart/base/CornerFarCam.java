@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.IntakeLine;
 import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpotNonCR;
+import org.firstinspires.ftc.teamcode.game.SpotType;
 import org.firstinspires.ftc.teamcode.tests.camera.AprilTagWebcam;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 
@@ -36,7 +37,7 @@ public class CornerFarCam extends BaseAutoFarFunctions {
                         intake(IntakeLine.FAR, false),
                         shootFromLines(IntakeLine.FAR, maxWaitTillShoot),
 
-                        cameraWork(),
+                        cameraWorkOpt(),
 //                        cameraWork(),
                         //come back second time(if have time)
 
@@ -49,28 +50,7 @@ public class CornerFarCam extends BaseAutoFarFunctions {
         );
     }
 
-    public Command intakeCameraBalls(){
-        buildPath = new BuildPath(follower, cam, targetx1, targetx2, shootPose);
-        return new SequentialCommandGroup(
-                new InstantCommand(() -> pushUpServo.setDown()),
-                new InstantCommand(()-> spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE})),
-                new ParallelRaceGroup(
-                        new AutoIntakeCommandNonCR(spindexer, intake, intakePower, inBetweenTime, true, hardwareMap, SpindexerSpotNonCR.SPOT1, 1),
-                        new SequentialCommandGroup(
-                                new DeferredCommand(() -> buildPath, null),
-                                new DeferredCommand(()-> new ConditionalCommand(
-                                        new SequentialCommandGroup(
-                                                new InstantCommand(()-> cameraForwardPathChain1 = buildPath.getPathChain()),
-                                                new InstantCommand(()-> cameraForwardPathChain2 = buildPath.getPathChain2())
-                                        ),
-                                        new InstantCommand(),
-                                        () -> buildPath.pathCreated), null),
-                                new DeferredCommand(() -> new FollowPathCommand(follower, cameraForwardPathChain1, true, autoCameraDrivePower), null).withTimeout(3000),
-                                new DeferredCommand(() -> new FollowPathCommand(follower, cameraForwardPathChain2, true, autoCameraDrivePowerSec), null).withTimeout(1000)
-                        )
-                )
-        );
-    }
+
 
     //only use limelight, no arducam setup
     @Override
@@ -81,5 +61,9 @@ public class CornerFarCam extends BaseAutoFarFunctions {
     }
     @Override
     public void initialize_loop(){
+        telemetry.addData("Motif Pattern", motifPattern);
+        telemetry.addData("Spindexer angle", spindexer.getTurner().getAngle());
+        telemetry.addData("Spindexer spot", spindexer.getNearestIntakePosition(SpotType.INTAKE));
+        telemetry.update();
     }
 }
