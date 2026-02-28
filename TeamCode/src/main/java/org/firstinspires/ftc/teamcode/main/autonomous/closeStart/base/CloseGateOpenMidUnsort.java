@@ -24,6 +24,8 @@ public class CloseGateOpenMidUnsort extends BaseAutoCloseFunctions {
 
                         intake(IntakeLine.MID, false),
                         shootClose(IntakeLine.MID, maxWaitTillShoot, true),
+                        backupMid(),
+
                         new InstantCommand(()-> spindexer.setDirectPosition(0))
                 ),
                 new RunCommand(()-> follower.update())

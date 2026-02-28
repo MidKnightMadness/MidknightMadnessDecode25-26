@@ -52,7 +52,7 @@ public class TwoWheelShooter extends SubsystemBase {
     //AGGRESSIVE GAINS: FOR RECOVERY - gain scheduling
 
     public static double[] pidBotAggressiveGains = new double[]{0.0020, 0, 0};
-    public static double[] pidTopAggressiveGains = new double[]{0.0017, 0, 0};
+    public static double[] pidTopAggressiveGains = new double[]{0.0020, 0, 0};
 
     InterpLUT distToLowVel;
     InterpLUT distToHighVel;
@@ -121,7 +121,7 @@ public class TwoWheelShooter extends SubsystemBase {
         public static int iterations = 10; // For tuning targetDistance
         public static double[] dist = {60, 70, 80, 90, 100, 112, 128, 149.5, 156.0};//inches
         public static double[] bottomVel = {1350, 1350, 1400, 1425, 1500, 1550, 1700, 1750, 1800};
-        public static double[] topVel = {1500, 1550, 1600, 1650, 1700, 1800, 1900, 2000, 2070};
+        public static double[] topVel = {1500, 1550, 1600, 1650, 1700, 1800, 1900, 2000, 2050};
         public static double[] velCorrectionFactor = {0.7, 0.75, 0.8, 0.85, 0.9, 0.97, 1.05, 1.15, 1.2}; // take time in the air and then subtract a bit
 
         public AimCalculator() {

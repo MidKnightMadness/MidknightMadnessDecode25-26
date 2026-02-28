@@ -9,7 +9,7 @@ import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import org.firstinspires.ftc.teamcode.game.IntakeLine;
 import org.firstinspires.ftc.teamcode.game.SpotType;
 
-public class CloseMidGateUnsort extends BaseAutoCloseFunctions{
+public class CloseMidFar extends BaseAutoCloseFunctions{
     @Override
     protected Command postMotifSequence(){
         //temporarily turn it off to hand to localizer
@@ -22,10 +22,11 @@ public class CloseMidGateUnsort extends BaseAutoCloseFunctions{
                         shootClose(IntakeLine.CLOSE, maxWaitTillShoot, false),
 
                         intake(IntakeLine.MID, false),
-                        openGateMid(),
-                        backupMid(),
-
                         shootClose(IntakeLine.MID, maxWaitTillShoot, true),
+
+                        intake(IntakeLine.FAR, false),
+                        shootClose(IntakeLine.FAR, maxWaitTillShoot, true),
+
                         new InstantCommand(()-> spindexer.setDirectPosition(0))//reset spindexer
                 ),
                 new RunCommand(()-> follower.update())

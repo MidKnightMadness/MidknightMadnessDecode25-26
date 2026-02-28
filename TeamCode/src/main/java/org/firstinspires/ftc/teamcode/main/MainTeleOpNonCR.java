@@ -102,6 +102,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
 //    GraphManager graphM;
 
     public static double autoIntakePower = 1;
+    public static double  leftOffsetShoot = Math.toRadians(3);
     public static double[] pidIntakeGains = new double[]{0.0004, 0.0, 0.00001};
     public static double[] kIntakeGains = new double[]{0, 0, 0};
     double topShooterPower = 0.8;
@@ -351,7 +352,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
 //            CommandScheduler.getInstance().setBulkReading(
 //                    hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
 //            );
-//            PhotonCore.disable();
+            PhotonCore.disable();
 //        } else {
 //            CommandScheduler.getInstance().setBulkReading(
 //                    hardwareMap, LynxModule.BulkCachingMode.OFF // Scheduler will clean cache for you
@@ -521,7 +522,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
 
         if (readyToShootLight != null) {
-            GobildaLightBlock.Color targetReadyToShoot = useArducam ? GobildaLightBlock.Color.GREEN : GobildaLightBlock.Color.ORANGE;
+            GobildaLightBlock.Color targetReadyToShoot = headingError <= Math.toRadians(1) ? GobildaLightBlock.Color.GREEN : GobildaLightBlock.Color.ORANGE;
             if (targetReadyToShoot != readyToShootColor) {
                 readyToShootLight.setColor(targetReadyToShoot);
                 readyToShootColor = targetReadyToShoot;
@@ -529,7 +530,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
         }
 
         if (pushUpLight != null) {
-            GobildaLightBlock.Color targetPushUpColor = Math.abs(pushUpServo.getServo().getPosition() - pushUpServo.getMinPos()) < 0.1 ? GobildaLightBlock.Color.ORANGE : GobildaLightBlock.Color.GREEN;
+            GobildaLightBlock.Color targetPushUpColor = useArducam ? GobildaLightBlock.Color.GREEN : GobildaLightBlock.Color.ORANGE;
             if (targetPushUpColor != pushUpColor) {
                 pushUpLight.setColor(targetPushUpColor);
                 pushUpColor = targetPushUpColor;
@@ -717,6 +718,9 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
         if (detected && detection != null) {
             aprilTagBearing = Math.toRadians(detection.ftcPose.elevation);
+            if(shootSide == ShootSide.LEFT){
+                aprilTagBearing += leftOffsetShoot;
+            }
             cameraAlign = Math.abs(aprilTagBearing) < Math.toRadians(cameraAlignThresholdDegrees);
         }
 
@@ -1226,7 +1230,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
             telemetry.addLine("--------------------------------");
             telemetry.addData("Spindexer Mode", spindexerRunMode);
             telemetry.addData("Spindexer Angle", spindexer.getCurrentAngle());
-            telemetry.addData("Current Set Position", spindexer.getServo().getPosition());
+//            telemetry.addData("Current Set Position", spindexer.getServo().getPosition());
             telemetry.addData("Curr Active Spot", activeSpindexerSpot);
             telemetry.addData("Auto Intake Spot", autoIntakeSpot);
 //            telemetry.addData("Spindexer Auto Spindxer", autoSpindexer);
@@ -1236,9 +1240,9 @@ public class MainTeleOpNonCR extends CommandOpMode {
                 telemetry.addData("Spindexer Ball Color 1", currSpindexerBallColors[1]);
                 telemetry.addData("Spindexer Ball Color 2", currSpindexerBallColors[2]);
             }
-            telemetry.addData("Light position1", spindexerLights[0].lightControl.getPosition());
-            telemetry.addData("Light position2", spindexerLights[1].lightControl.getPosition());
-            telemetry.addData("Light position3", spindexerLights[2].lightControl.getPosition());
+//            telemetry.addData("Light position1", spindexerLights[0].lightControl.getPosition());
+//            telemetry.addData("Light position2", spindexerLights[1].lightControl.getPosition());
+//            telemetry.addData("Light position3", spindexerLights[2].lightControl.getPosition());
             telemetry.addData("Color 1", spin1Color);
             telemetry.addData("Color 2", spin2Color);
             telemetry.addData("Color 3", spin3Color);

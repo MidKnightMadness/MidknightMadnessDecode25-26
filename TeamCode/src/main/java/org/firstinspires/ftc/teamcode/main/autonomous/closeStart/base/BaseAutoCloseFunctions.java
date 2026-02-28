@@ -57,8 +57,8 @@ import java.util.Map;
 public class BaseAutoCloseFunctions extends BaseAuto {
     int objectDetectionPipeline = 3;
     Pose startPose = new Pose(118, 129, Math.toRadians(225));
-    Pose shootPose = new Pose(98, 101, Math.toRadians(230));
-    Pose inwardShootPose = new Pose(94, 112, Math.toRadians(215));
+    Pose shootPose = new Pose(88, 89, Math.toRadians(230));
+    Pose inwardShootPose = new Pose(86, 105, Math.toRadians(215));
     Pose parkPose = new Pose(129, 129, Math.toRadians(0));
     Pose openGatePose = new Pose(128, 76, Math.toRadians(180));
     Pose gateIntakePose = new Pose(131, 61, Math.toRadians(20));
@@ -104,6 +104,7 @@ public class BaseAutoCloseFunctions extends BaseAuto {
     PathChain toIntakeLineFarStart;
     PathChain toIntakeLineFarEnd, toIntakeLineMidStart, toIntakeLineMidEnd, toIntakeLineCornerEnd;
     PathChain toIntakeLineCornerStart, toShootFromFar, toShootFromMid, toShootFromClose;
+    PathChain backupMid;
     PathChain toShootFromCorner, toIntakeLineCloseStart,  toIntakeLineCloseEnd;
     PathChain toIntakeLineCornerBack,  toIntakeLineCornerEnd2,  toShootCloseFromMid;
     PathChain toIntakeLastPath, toShootFromLast,  toShootCloseFromClose;
@@ -269,8 +270,10 @@ public class BaseAutoCloseFunctions extends BaseAuto {
 
         toIntakeLineCloseStart = buildPath(shootPose, intakeCloseStartPose);
         toIntakeLineCloseEnd = buildPath(intakeCloseStartPose, intakeCloseEndPose);
+
         closeLineToCloseIn = buildPath(intakeCloseEndPose, inwardShootPose);
-        midLineToCloseIn = buildPath(intakeMidEndPose, inwardShootPose);
+        midLineToCloseIn = buildPath(intakeMidStartPose, inwardShootPose);
+        backupMid = buildPath(intakeMidEndPose, intakeMidStartPose);
         farLineToCloseIn = buildPath(intakeFarEndPose, inwardShootPose);
 
 
@@ -442,6 +445,10 @@ public class BaseAutoCloseFunctions extends BaseAuto {
         return new FollowPathCommand(follower, path, true, 1.0);
     }
 
+    protected Command backupMid(){
+        return new FollowPathCommand(follower, backupMid, true, 1.0);
+    }
+
     protected Command shootClose(IntakeLine lineNum, double maxWaitTime, boolean inner){
         return new SequentialCommandGroup(
                 new ParallelDeadlineGroup(
@@ -461,7 +468,7 @@ public class BaseAutoCloseFunctions extends BaseAuto {
     protected Command shootFromGate(){
         return new SequentialCommandGroup(
                 new ParallelDeadlineGroup(
-                        new FollowPathCommand(follower, gateIntakeToShoot, 0.6),
+                        new FollowPathCommand(follower, gateIntakeToShoot, 1),
                         new SequentialCommandGroup(
                                 new InstantCommand(()-> pushUpServo.setUp()),
                                 new InstantCommand(()-> continueShoot = true)
@@ -491,7 +498,7 @@ public class BaseAutoCloseFunctions extends BaseAuto {
                 new ParallelRaceGroup(
                         autoIntakeCommand,
                         new SequentialCommandGroup(
-                            new FollowPathCommand(follower, toGateIntake, 0.6),
+                            new FollowPathCommand(follower, toGateIntake, 1),
                             new WaitCommand(1000)
                         )
                 ),

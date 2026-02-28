@@ -41,10 +41,7 @@ public class CornerFarCamUnoptimized extends BaseAutoFarFunctions {
                        shootFromLines(IntakeLine.FAR, maxWaitTillShoot),
 
                        cameraWorkNonOpt(),
-//                       cameraWork2(),
 
-                       intakeLastPath(),
-                       shootLast(maxWaitTillShoot),
                        //come back second time(if have time)
 
                        new ParallelCommandGroup(
