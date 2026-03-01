@@ -552,9 +552,21 @@ public class MainTeleOpNonCR extends CommandOpMode {
     }
 
 
+    double disableServoTime = 500;
+    double startTimeServo;
+    boolean startDisable;
     private void emergencyStops() {
+        //TODO: SEE IF WORKS> CURRENTLY SETS PWM DISABLE CONTINUALLY FOR SOME TIME
+        if(startDisable && timer.getTime() < disableServoTime + startTimeServo){
+            spindexer.getServoImplEx().setPwmDisable();
+        } else if(startDisable && timer.getTime() > disableServoTime + startTimeServo){
+            startDisable = false;
+        }
+
         if (gamepad2.dpadUpWasPressed()) {
             spindexer.getServoImplEx().setPwmDisable();//TODO: SEE IF WORKS CHANGE
+            startDisable = true;
+            startTimeServo = timer.getTime();
             if (autoSpindexer) {
                 if (spindexerGotoPosition != null) {
                     CommandScheduler.getInstance().cancel(spindexerGotoPosition);
