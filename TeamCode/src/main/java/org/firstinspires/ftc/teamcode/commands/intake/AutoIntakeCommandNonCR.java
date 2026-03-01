@@ -132,7 +132,7 @@ public class AutoIntakeCommandNonCR extends CommandBase {
             if(currNumSpot == -1 || spindexer.allOccuppiedBallColors()){//TODO:CHANGED
 //               exit = true;//TODO:CHANGED
                currNumSpot -= dir;
-               if(lastTimeStart != 0) {//last time not alr triggered
+               if(lastTimeStart == 0) {//last time not alr triggered
                    lastTimeStart = timer.getTime();
                }
             }
