@@ -8,6 +8,7 @@ import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
@@ -30,6 +31,7 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 @Configurable
 @Config
 @TeleOp(name = "SpindexerUpdateRateTest", group="Subsystems")
+@Disabled
 public class SpindexerUpdateRateTest extends CommandOpMode {
     public static CRServoEx2.RunMode runMode = CRServoEx2.RunMode.OptimizedPositionalControl;
     public static Angle customAngle = Angle.fromDegrees(60);

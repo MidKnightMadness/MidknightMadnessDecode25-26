@@ -49,7 +49,9 @@ public class SpindexerGotoPositionSmooth extends CommandBase {
 
     @Override
     public void end(boolean interrupted){
-        spindexer.setDirectPosition(targetPosition);
+        if(!interrupted) {//TODO: SEE IF WORKS
+            spindexer.setDirectPosition(targetPosition);
+        }
     }
 
 

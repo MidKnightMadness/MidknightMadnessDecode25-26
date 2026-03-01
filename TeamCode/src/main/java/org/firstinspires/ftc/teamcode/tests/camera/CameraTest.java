@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.tests.camera;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 
 import java.util.List;
 @TeleOp
+@Disabled
 public class CameraTest extends OpMode {
     Limelight3A limelight;
     LLResult result;

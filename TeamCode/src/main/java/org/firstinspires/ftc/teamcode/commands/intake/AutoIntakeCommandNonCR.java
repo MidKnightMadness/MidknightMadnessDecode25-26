@@ -45,6 +45,9 @@ public class AutoIntakeCommandNonCR extends CommandBase {
     boolean thirdBall;
     public SpindexerSpotNonCR startSpot;
     public int dir;
+
+    double lastTimeDuration = 500;
+    double lastTimeStart = 0;
     public AutoIntakeCommandNonCR(SpindexerNonCR spindexer, Intake intake, double power, double inBetweenTime, boolean useDistanceSensor, HardwareMap hardwareMap, SpindexerSpotNonCR startSpot, int dir){
         this.spindexer = spindexer;
         this.intake = intake;
@@ -115,7 +118,6 @@ public class AutoIntakeCommandNonCR extends CommandBase {
 
         if(atSpot){
             ballDetected = spindexer.updateBallSpot(currNumSpot % 3);
-
             if(ballDetected && !updateStartTime) {
                 ballDetectionTime = timer.getTime();
                 updateStartTime = true;
@@ -125,11 +127,14 @@ public class AutoIntakeCommandNonCR extends CommandBase {
 //        time = timer.getTime();
 //        exitTime = timeExit && (numBall == 1) ? time - ballDetectionTime >= maxSwapTime1 : timeExit && (numBall == 2) ? time - ballDetectionTime >= maxSwapTime2 : false;
 //
-        if (ballDetected  || exitTime) {
+        if (ballDetected || exitTime) {
             currNumSpot += dir;
             if(currNumSpot == -1 || currNumSpot == 4){
-               exit = true;
+//               exit = true;//TODO:CHANGED
                currNumSpot -= dir;
+               if(lastTimeStart != 0) {//last time not alr triggered
+                   lastTimeStart = timer.getTime();
+               }
             }
             spindexer.setDirectPosition(SpindexerSpotNonCR.fromIndex(currNumSpot).getIntakePositionSolo());
 
@@ -137,6 +142,11 @@ public class AutoIntakeCommandNonCR extends CommandBase {
             ballDetected = false;
             updateStartTime = false;
             numBall++;
+        }
+
+        //TODO: CHANGED
+        if(lastTimeStart != 0 && timer.getTime() > lastTimeStart + lastTimeDuration){
+            exit = true;
         }
     }
 
@@ -146,7 +156,10 @@ public class AutoIntakeCommandNonCR extends CommandBase {
 
     @Override
     public boolean isFinished(){
-        if(spindexer.allOccuppiedBallColors() || numBall == 4 || exit){
+//        if(spindexer.allOccuppiedBallColors() || numBall == 4 || exit){
+//            return true;
+//        }
+        if(exit){//TODO:CHANGED
             return true;
         }
         return false;

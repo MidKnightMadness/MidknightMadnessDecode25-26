@@ -70,6 +70,10 @@ public class SpindexerNonCR extends SubsystemBase {
         return turner;
     }
 
+    public ServoImplEx getServoImplEx(){
+        return turner;
+    }
+
     public SpindexerNonCR(HardwareMap hardwareMap, boolean useDistanceSensors, BallColor[] ballColors) {
         turnerEncoder = new IncrementalEncoderNonCR(
                 hardwareMap, ConfigNames.turnerEncoder, 8192, AngleUnit.DEGREES

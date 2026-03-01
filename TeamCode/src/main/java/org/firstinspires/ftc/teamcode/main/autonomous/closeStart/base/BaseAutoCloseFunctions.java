@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.main.autonomous.closeStart.base;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
+import com.outoftheboxrobotics.photoncore.PhotonCore;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
@@ -383,6 +384,7 @@ public class BaseAutoCloseFunctions extends BaseAuto {
         pushUpServo = new PushUpServo(hardwareMap);
         register(intake, shooter, spindexer, pushUpServo);
         telemetry.setMsTransmissionInterval(500);
+        PhotonCore.disable();
     }
 
 
@@ -407,6 +409,7 @@ public class BaseAutoCloseFunctions extends BaseAuto {
         waitThread(500);
 
         if(useBulkMode) {
+
             CommandScheduler.getInstance().setBulkReading(
                     hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
             );

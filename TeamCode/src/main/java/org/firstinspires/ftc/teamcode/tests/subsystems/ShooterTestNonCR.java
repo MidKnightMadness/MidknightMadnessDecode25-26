@@ -16,6 +16,7 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -63,6 +64,7 @@ import java.util.Map;
 
 @Config
 @TeleOp(name = "Shooter Test NON CR", group = "Competition")
+@Disabled
 public class ShooterTestNonCR extends CommandOpMode {
     Timer timer;
     SpindexerNonCR spindexer;

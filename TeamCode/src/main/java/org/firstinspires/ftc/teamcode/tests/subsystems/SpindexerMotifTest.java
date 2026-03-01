@@ -1,11 +1,14 @@
 package org.firstinspires.ftc.teamcode.tests.subsystems;
 
+import androidx.annotation.DeprecatedSinceApi;
+
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.graph.GraphManager;
 import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
@@ -24,6 +27,7 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 
 @Configurable
 @TeleOp(name="SpindexerMotifTest", group = "Spindexer")
+@Disabled
 public class SpindexerMotifTest extends CommandOpMode {
     public static CRServoEx2.RunMode runMode = CRServoEx2.RunMode.OptimizedPositionalControl;
     public static BallColor[] ballColors = { BallColor.PURPLE, BallColor.PURPLE, BallColor.GREEN};

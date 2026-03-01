@@ -5,6 +5,7 @@ import com.bylazar.graph.GraphManager;
 import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.InstantCommand;
@@ -24,6 +25,7 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 
 @Configurable
 @TeleOp(group="Subsystems")
+@Disabled
 public class SpindexerGotoSpotTest extends CommandOpMode {
     public static CRServoEx2.RunMode runMode = CRServoEx2.RunMode.OptimizedPositionalControl;
     public static Angle customAngle = Angle.fromDegrees(60);

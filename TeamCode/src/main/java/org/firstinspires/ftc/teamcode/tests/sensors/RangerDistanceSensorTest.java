@@ -91,6 +91,7 @@
 //}
 package org.firstinspires.ftc.teamcode.tests.sensors;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -99,6 +100,7 @@ import org.firstinspires.ftc.teamcode.hardware.RangerMode;
 import org.firstinspires.ftc.teamcode.hardware.SwyftRanger;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 
+@Disabled
 @TeleOp(name="Ranger Proximity Sensor Test (Digital)", group="Test")
 public class RangerDistanceSensorTest extends LinearOpMode {
 

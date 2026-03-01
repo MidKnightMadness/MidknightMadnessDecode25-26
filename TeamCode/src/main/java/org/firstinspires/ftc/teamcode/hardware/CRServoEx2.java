@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.ServoControllerEx;
 
+import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.seattlesolvers.solverslib.hardware.motors.CRServo;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.util.MathUtils;
@@ -44,6 +45,7 @@ public class CRServoEx2<E extends Encoder> extends CRServo {
         RawPower
     }
     private RunMode runmode;
+    ServoImplEx servo;
 
     /**
      * The constructor for the CR Servo.
@@ -57,6 +59,7 @@ public class CRServoEx2<E extends Encoder> extends CRServo {
         super(hwMap, id);
         this.encoder = encoder;
         this.runmode = runmode;
+        servo.setPwmDisable();
     }
 
     /**

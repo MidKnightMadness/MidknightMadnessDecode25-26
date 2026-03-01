@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.tests.color;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -10,6 +11,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 
 @TeleOp(name = "MultiLightsTest", group = "Lights")
+@Disabled
 public class MultlLightsTest extends OpMode {
     GobildaLightBlock light1;//declaring the lights
     GobildaLightBlock light2;

@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.tests.color;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -15,6 +16,7 @@ import org.firstinspires.ftc.teamcode.hardware.color.Threshold;
 import java.util.Map;
 
 @TeleOp
+@Disabled
 @Configurable
 public class SolversColorSensorTest extends OpMode {
     public static ColorSpace space = ColorSpace.HSV;

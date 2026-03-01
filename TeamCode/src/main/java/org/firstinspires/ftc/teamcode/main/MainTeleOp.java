@@ -14,6 +14,7 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -56,6 +57,7 @@ import java.util.Map;
 //@Configurable
 //@Config
 //@TeleOp(name = "Main TeleOp", group = "Competition")
+@Disabled
 public class MainTeleOp extends CommandOpMode {
     Follower follower;
     Pose startPose = new Pose(72, 8, Math.toRadians(90));

@@ -10,6 +10,7 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.util.ReadWriteFile;
@@ -34,6 +35,7 @@ import java.io.File;
 import java.util.Map;
 
 @Config
+@Disabled
 @Configurable
 @TeleOp(name = "Single Player", group = "Competition")
 public class SinglePlayerControls extends CommandOpMode {

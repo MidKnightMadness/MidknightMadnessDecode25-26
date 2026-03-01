@@ -4,6 +4,7 @@ import com.bylazar.graph.GraphManager;
 import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -14,6 +15,7 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 import java.util.concurrent.TimeUnit;
 
 @TeleOp
+@Disabled
 public class DPIDTest extends OpMode {
     public static double kp = 0.01, ki = 0, kd = 0.001;
     public static double target = 1000;

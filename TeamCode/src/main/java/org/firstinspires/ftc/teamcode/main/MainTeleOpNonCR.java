@@ -554,6 +554,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
     private void emergencyStops() {
         if (gamepad2.dpadUpWasPressed()) {
+            spindexer.getServoImplEx().setPwmDisable();//TODO: SEE IF WORKS CHANGE
             if (autoSpindexer) {
                 if (spindexerGotoPosition != null) {
                     CommandScheduler.getInstance().cancel(spindexerGotoPosition);
@@ -579,6 +580,10 @@ public class MainTeleOpNonCR extends CommandOpMode {
                     CommandScheduler.getInstance().cancel(shootSeqCommand);
                 }
                 resetAutoShoot();
+            }
+        } else{//TODO: SEE IF WORKS CHANGE
+            if(!spindexer.getServoImplEx().isPwmEnabled()) {
+                spindexer.getServoImplEx().setPwmEnable();
             }
         }
 

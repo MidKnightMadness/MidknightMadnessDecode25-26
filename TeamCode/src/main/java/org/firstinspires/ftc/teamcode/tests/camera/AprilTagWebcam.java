@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 @Configurable
 @Config
+
 public class AprilTagWebcam {
     public static int resolutionX = 1280;//640;
     public static int resolutionY = 800;//480;

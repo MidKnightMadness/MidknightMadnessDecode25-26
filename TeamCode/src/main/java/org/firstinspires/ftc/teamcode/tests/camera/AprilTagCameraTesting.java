@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 @Autonomous(name = "AprilTag Field Localization Test")
 @Config
 @Configurable
+
 public class AprilTagCameraTesting extends OpMode {
 
     AprilTagWebcam aprilTagWebcam = new AprilTagWebcam();
