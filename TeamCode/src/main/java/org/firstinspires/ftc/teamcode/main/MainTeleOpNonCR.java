@@ -561,6 +561,10 @@ public class MainTeleOpNonCR extends CommandOpMode {
             spindexer.getServoImplEx().setPwmDisable();
         } else if(startDisable && timer.getTime() > disableServoTime + startTimeServo){
             startDisable = false;
+        } else if(!startDisable){
+            if(!spindexer.getServoImplEx().isPwmEnabled()) {
+                spindexer.getServoImplEx().setPwmEnable();
+            }
         }
 
         if (gamepad2.dpadUpWasPressed()) {
@@ -592,10 +596,6 @@ public class MainTeleOpNonCR extends CommandOpMode {
                     CommandScheduler.getInstance().cancel(shootSeqCommand);
                 }
                 resetAutoShoot();
-            }
-        } else{//TODO: SEE IF WORKS CHANGE
-            if(!spindexer.getServoImplEx().isPwmEnabled()) {
-                spindexer.getServoImplEx().setPwmEnable();
             }
         }
 
