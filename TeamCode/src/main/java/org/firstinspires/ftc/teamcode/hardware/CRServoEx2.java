@@ -45,7 +45,6 @@ public class CRServoEx2<E extends Encoder> extends CRServo {
         RawPower
     }
     private RunMode runmode;
-    ServoImplEx servo;
 
     /**
      * The constructor for the CR Servo.
@@ -59,7 +58,6 @@ public class CRServoEx2<E extends Encoder> extends CRServo {
         super(hwMap, id);
         this.encoder = encoder;
         this.runmode = runmode;
-        servo.setPwmDisable();
     }
 
     /**
