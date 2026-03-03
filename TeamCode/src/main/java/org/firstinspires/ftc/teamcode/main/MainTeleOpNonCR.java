@@ -557,20 +557,25 @@ public class MainTeleOpNonCR extends CommandOpMode {
     boolean startDisable;
     private void emergencyStops() {
         //TODO: SEE IF WORKS> CURRENTLY SETS PWM DISABLE CONTINUALLY FOR SOME TIME
-        if(startDisable && timer.getTime() < disableServoTime + startTimeServo){
-            spindexer.getServoImplEx().setPwmDisable();
-        } else if(startDisable && timer.getTime() > disableServoTime + startTimeServo){
-            startDisable = false;
-        } else if(!startDisable){
+//        if(startDisable && timer.getTime() < disableServoTime + startTimeServo){
+//            spindexer.getServoImplEx().setPwmDisable();
+//        } else if(startDisable && timer.getTime() > disableServoTime + startTimeServo){
+//            startDisable = false;
+//        } else if(!startDisable){
+//            if(!spindexer.getServoImplEx().isPwmEnabled()) {
+//                spindexer.getServoImplEx().setPwmEnable();
+//            }
+//        }
+        if(gamepad2.dpad_up){
+            if (spindexer.getServoImplEx().isPwmEnabled()) spindexer.getServoImplEx().setPwmDisable();
+        } else{
             if(!spindexer.getServoImplEx().isPwmEnabled()) {
                 spindexer.getServoImplEx().setPwmEnable();
             }
         }
 
         if (gamepad2.dpadUpWasPressed()) {
-            spindexer.getServoImplEx().setPwmDisable();//TODO: SEE IF WORKS CHANGE
-            startDisable = true;
-            startTimeServo = timer.getTime();
+            //TODO: SEE IF WORKS CHANGE
             if (autoSpindexer) {
                 if (spindexerGotoPosition != null) {
                     CommandScheduler.getInstance().cancel(spindexerGotoPosition);

@@ -50,7 +50,7 @@ public class SpindexerNonCR extends SubsystemBase {
     public GobildaDistance ranger1;
     public GobildaDistance ranger2;
     //0 - 4 for swyft distance sensor
-    public static double distSensorLowerThreshold = 0;
+    public static double distSensorLowerThreshold = 0.5;
     public static double distSensorUpperThreshold = 2.5;
     IncrementalEncoderNonCR turnerEncoder;
     double cachingTolerance = 0.01;

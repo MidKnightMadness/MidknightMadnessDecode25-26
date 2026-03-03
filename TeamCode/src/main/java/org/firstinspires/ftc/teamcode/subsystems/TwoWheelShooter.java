@@ -120,8 +120,8 @@ public class TwoWheelShooter extends SubsystemBase {
         //ticks in sec for 3: 1 direct driven gear ratios
         public static int iterations = 10; // For tuning targetDistance
         public static double[] dist = {60, 70, 80, 90, 100, 112, 128, 149.5, 156.0};//inches
-        public static double[] bottomVel = {1350, 1350, 1400, 1425, 1500, 1550, 1700, 1750, 1800};
-        public static double[] topVel = {1500, 1550, 1600, 1650, 1700, 1800, 1900, 2000, 2050};
+        public static double[] bottomVel = {1350, 1350, 1400, 1425, 1500, 1550, 1700, 1800, 1850};
+        public static double[] topVel = {1500, 1550, 1600, 1650, 1700, 1800, 1900, 2000, 2100};
         public static double[] velCorrectionFactor = {0.7, 0.75, 0.8, 0.85, 0.9, 0.97, 1.05, 1.15, 1.2}; // take time in the air and then subtract a bit
 
         public AimCalculator() {
@@ -208,7 +208,7 @@ public class TwoWheelShooter extends SubsystemBase {
     }
 
 
-    public static double shotDropThreshold = 100;
+    public static double shotDropThreshold = 50;
     public double bottomError;
     public double topError;
     public void updateRecoveryState() {
