@@ -143,7 +143,7 @@ public class AprilTagCameraTesting extends OpMode {
 
             double theta = Math.toRadians(tagFieldHeadingDeg);
 
-            // === Rotate relative pose into field coordinates ===
+            //rotate relative pose into field coordinates
             double fieldOffsetX = relX * Math.cos(theta) - relY * Math.sin(theta);
             double fieldOffsetY = relX * Math.sin(theta) + relY * Math.cos(theta);
 
