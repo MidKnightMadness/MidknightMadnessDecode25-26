@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode.templates;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.graph.GraphManager;
-import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.hardware.lynx.LynxModule;
@@ -23,7 +21,6 @@ import java.util.concurrent.TimeUnit;
 public class CommandOpModeTemplate extends CommandOpMode {
     GamepadEx gp1;
     TelemetryManager telemetryM;
-    GraphManager graphM;
     Timer timer;
 
     @Override
@@ -35,7 +32,6 @@ public class CommandOpModeTemplate extends CommandOpMode {
 
         timer = new Timer();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
-        graphM = PanelsGraph.INSTANCE.getManager();
         gp1 = new GamepadEx(gamepad1);
     }
 
@@ -48,12 +44,10 @@ public class CommandOpModeTemplate extends CommandOpMode {
 
     public void addDataTelemetryGraph(String key, Number value) {
         telemetryM.addData(key, value);
-        graphM.addData(key, value);
     }
 
     public void updateTelemetry() {
         addDataTelemetryGraph("Loop time (ms)", timer.getDeltaTime(TimeUnit.MILLISECONDS));
         telemetryM.update(telemetry);
-        graphM.update();
     }
 }

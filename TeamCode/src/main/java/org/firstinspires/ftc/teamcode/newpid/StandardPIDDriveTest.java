@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode.newpid;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.graph.GraphManager;
-import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.ftc.localization.localizers.PinpointLocalizer;
@@ -27,7 +25,6 @@ public class StandardPIDDriveTest extends OpMode {
     public static Pose endPose = new Pose(72, 0, 0);
     PIDController controller;
     TelemetryManager telemetryM;
-    GraphManager graphM;
     DcMotorEx BL, BR, FL, FR;
     Timer timer;
     Buffer buffer;
@@ -36,7 +33,6 @@ public class StandardPIDDriveTest extends OpMode {
     @Override
     public void init() {
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
-        graphM = PanelsGraph.INSTANCE.getManager();
         controller = new PIDController(kp, ki, kd);
         BL = hardwareMap.get(DcMotorEx.class, ConfigNames.BL);
         BR = hardwareMap.get(DcMotorEx.class, ConfigNames.BR);
@@ -59,7 +55,7 @@ public class StandardPIDDriveTest extends OpMode {
         Pose position = pinpoint.getPose();
         Pose velocity = pinpoint.getVelocity();
         double acceleration = buffer.getDerivative();
-        double power = controller.calculate(position.getX(), endPose.getX());
+        double power = controller.calculate(endPose.getX() - position.getX());
         BL.setPower(power);
         BR.setPower(power);
         FL.setPower(power);
@@ -72,10 +68,7 @@ public class StandardPIDDriveTest extends OpMode {
         telemetryM.addData("accel", acceleration);
         telemetryM.addData("target", endPose);
         telemetryM.addData("error", position.getX() - endPose.getX());
-        graphM.addData("error", position.getX() - endPose.getX());
-        graphM.addData("loop time", loopTime);
 
         telemetryM.update(telemetry);
-        graphM.update();
     }
 }

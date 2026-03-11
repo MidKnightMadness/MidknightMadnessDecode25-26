@@ -19,7 +19,7 @@ import java.util.Map;
 @Config
 @Configurable
 public class Intake extends SubsystemBase {
-    MotorEx intakeMotor;
+    MotorEx intakeMotorLeft;
 
     public static double reference_voltage = 12.5;
     public static boolean motorDirectionForward = false;
@@ -38,60 +38,60 @@ public class Intake extends SubsystemBase {
 
 
     public Intake(HardwareMap hardwareMap, RunMode runMode){
-        intakeMotor = new MotorEx(hardwareMap, ConfigNames.intakeMotor);
+        intakeMotorLeft = new MotorEx(hardwareMap, ConfigNames.intakeMotorLeft);
         setRunMode(runMode);
-        intakeMotor.motor.setDirection(motorDirectionForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);
+        intakeMotorLeft.motor.setDirection(motorDirectionForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);
     }
 
 
     public MotorEx getMotor(){
-        return intakeMotor;
+        return intakeMotorLeft;
     }
     public void setPid(double kp, double ki, double kd) {
-        intakeMotor.setVeloCoefficients(kp, ki, kd);
+        intakeMotorLeft.setVeloCoefficients(kp, ki, kd);
     }
     public void setFeedforward(double kS, double kV, double kA){
-        intakeMotor.setFeedforwardCoefficients(kS, kV, kA);
+        intakeMotorLeft.setFeedforwardCoefficients(kS, kV, kA);
     }
     public void setRunMode(RunMode runMode){
         this.runMode = runMode;
         if(runMode == RunMode.RawPower){
-            intakeMotor.setRunMode(MotorEx.RunMode.RawPower);
+            intakeMotorLeft.setRunMode(MotorEx.RunMode.RawPower);
         }
         else{
-            intakeMotor.setRunMode(MotorEx.RunMode.VelocityControl);
+            intakeMotorLeft.setRunMode(MotorEx.RunMode.VelocityControl);
         }
     }
 
     public void setDirectPower(double power){
         double motorPower = Math.clampOutput(power, -1, 1);
-        intakeMotor.motor.setPower(motorPower);
+        intakeMotorLeft.motor.setPower(motorPower);
     }
 
 
     public void setDirectPower(double power, double currVolt){
         double motorPower = Math.clampOutput(power, -1, 1);
-        intakeMotor.setPower(motorPower * reference_voltage / currVolt);
+        intakeMotorLeft.setPower(motorPower * reference_voltage / currVolt);
     }
 
     public void setVelocity(double vel){
         double correctedVelocity = vel * grToMultiplier.get(motorGearRatio);
         if(runMode == RunMode.VelocityControl){
-            intakeMotor.set(correctedVelocity);
+            intakeMotorLeft.set(correctedVelocity);
         }
         else{
-            intakeMotor.set(correctedVelocity / intakeMotor.ACHIEVABLE_MAX_TICKS_PER_SECOND);
+            intakeMotorLeft.set(correctedVelocity / intakeMotorLeft.ACHIEVABLE_MAX_TICKS_PER_SECOND);
         }
     }
 
     public void stopPower(){
-        intakeMotor.motor.setPower(0);
+        intakeMotorLeft.motor.setPower(0);
     }
     public void resetEncoder(){
-        intakeMotor.encoder.reset();
+        intakeMotorLeft.encoder.reset();
     }
 
     public double getMotorVelocity(){
-        return intakeMotor.getCorrectedVelocity();
+        return intakeMotorLeft.getCorrectedVelocity();
     }
 }

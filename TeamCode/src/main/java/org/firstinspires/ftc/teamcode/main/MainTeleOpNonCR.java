@@ -13,11 +13,9 @@ import com.outoftheboxrobotics.photoncore.PhotonCore;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ReadWriteFile;
@@ -31,16 +29,14 @@ import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
+import org.firstinspires.ftc.teamcode.commands.Robot;
 import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommandNonCR;
 import org.firstinspires.ftc.teamcode.commands.shooter.ShootSeqCommand;
-import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommand2;
 import org.firstinspires.ftc.teamcode.commands.spindexer.OutakeSpotsRotation;
 import org.firstinspires.ftc.teamcode.commands.spindexer.SpindexerGotoPosition;
 import org.firstinspires.ftc.teamcode.commands.spindexer.SpindexerGotoPositionSmooth;
-import org.firstinspires.ftc.teamcode.commands.spindexer.SpindexerGotoSpot;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.MotifEnums;
-import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpotNonCR;
 import org.firstinspires.ftc.teamcode.game.SpotType;
 import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
@@ -49,7 +45,6 @@ import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 import org.firstinspires.ftc.teamcode.pedroPathing.robotDrive.WheelControl;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.PushUpServo;
-import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexerNonCR;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
@@ -248,6 +243,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
 //       ConstantsBot.motifIsBusy = false; -> meant for pinpointAprilTagLocalizer
         timer = new Timer();
 //        arducamTimer = new Timer();
+        Robot.loadConfig(hardwareMap.appContext, "config.mainBot");
 
         if (readPoseFile) {
             pattern = readMotifFromFile(motifFileName);
@@ -708,8 +704,8 @@ public class MainTeleOpNonCR extends CommandOpMode {
         //MODIFY so that the heading is facing the outake side, not the intake side
         if (autoAlign) {
             double[] aimData = shooter.aimCalculator.targetPowersHeading(follower.getPose(), follower.getVelocity(), shooter.getShootPose(shootSide));
-            double targetHeading = aimData[2];
-            Pose outakePose = new Pose(currentPose.getX(), currentPose.getY(), normAngle(Math.toRadians(currentPose.getHeading()) + Math.PI));
+            targetHeading = aimData[2];
+            Pose outakePose = new Pose(currentPose.getX(), currentPose.getY(), normAngle(currentPose.getHeading() + Math.PI));
             headingError = getAngleError(outakePose, targetHeading);
 
             turnPower = calculateGamepadPID(prevHeadingError, headingError);
@@ -1135,7 +1131,8 @@ public class MainTeleOpNonCR extends CommandOpMode {
         currentShootDist = shootDist;
         if (!setCustomPower) {
             if (useLUT) {
-                shooter.setFlywheelLUT(follower, shootSide, voltageCompensation, currVolt);
+                shooter.setFlywheelNew(follower.getPose(), follower.getVelocity(), shootSide, currVolt);
+//                shooter.setFlywheelLUT(follower, shootSide, voltageCompensation, currVolt);
             } else {
 //                shooter.resetDefaultGains();
                 shooter.setFlywheelPresets(shootDist, follower, shootSide, voltageCompensation, currVolt);

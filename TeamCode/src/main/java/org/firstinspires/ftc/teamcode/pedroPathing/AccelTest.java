@@ -2,8 +2,6 @@ package org.firstinspires.ftc.teamcode.pedroPathing;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.field.Style;
-import com.bylazar.graph.GraphManager;
-import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
@@ -31,7 +29,6 @@ public class AccelTest extends OpMode {
     );
 
     TelemetryManager telemetryM;
-    GraphManager graphM;
     Follower follower;
     WheelControl wheelControl;
     Timer timer;
@@ -60,7 +57,6 @@ public class AccelTest extends OpMode {
         follower.setStartingPose(startPose);
         wheelControl = new WheelControl(hardwareMap);
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
-        graphM = PanelsGraph.INSTANCE.getManager();
         accelHistory = new ArrayList<>();
         decelHistory = new ArrayList<>();
         state = State.accel;
@@ -114,7 +110,6 @@ public class AccelTest extends OpMode {
 
     public void addDataTeleGraph(String key, Number value) {
         telemetryM.addData(key, value);
-        graphM.addData(key, value);
     }
 
     public void updateTelemetry() {
@@ -135,6 +130,5 @@ public class AccelTest extends OpMode {
         addDataTeleGraph("Acceleration (in/s^2)", acceleration);
 
         telemetryM.update(telemetry);
-        graphM.update();
     }
 }

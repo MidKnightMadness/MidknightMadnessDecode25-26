@@ -16,6 +16,13 @@ public class ExtraFns {
         return new Angle(heading + position.getHeading(), AngleUnit.RADIANS);
     }
 
+    public static double getTargetAngle(Pose position, Pose target) {
+        double deltaY = target.getY() - position.getY();
+        double deltaX = target.getX() - position.getX();
+        double heading = Math.atan2(deltaY, deltaX);
+        return normAngle(heading);
+    }
+
     public static double getAngleError(Pose position, Pose target){
         double deltaY = target.getY() - position.getY();
         double deltaX = target.getX() - position.getX();
@@ -58,5 +65,15 @@ public class ExtraFns {
 
     public static double dotPose(Pose a, Pose b) {
         return a.getX() * b.getX() + a.getY() * b.getY();
+    }
+
+    public static double normAnglePlusMinusPI(double error) {
+        while (error < -Math.PI) {
+            error += Math.PI * 2;
+        }
+        while (error > Math.PI) {
+            error -= Math.PI * 2;
+        }
+        return error;
     }
 }

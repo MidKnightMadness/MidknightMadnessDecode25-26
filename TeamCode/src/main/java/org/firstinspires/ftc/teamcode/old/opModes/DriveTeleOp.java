@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode.old.opModes;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.graph.GraphManager;
-import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
@@ -22,7 +20,6 @@ public class DriveTeleOp extends OpMode {
     public static Pose startPose = new Pose(72, 8, Math.toRadians(90));
 
     TelemetryManager telemetryM;
-    GraphManager graphM;
 
     @Override
     public void init() {
@@ -32,8 +29,6 @@ public class DriveTeleOp extends OpMode {
         follower = ConstantsBot.createPinpointFollower(hardwareMap);
         follower.setStartingPose(startPose);
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
-        graphM = PanelsGraph.INSTANCE.getManager();
-
     }
     public static double maxSpeed = 0.8;
     public static double midSpeed = 0.5;
@@ -81,6 +76,5 @@ public class DriveTeleOp extends OpMode {
 
         // Updates
         telemetryM.update(telemetry);
-        graphM.update();
     }
 }

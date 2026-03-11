@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode.tests.subsystems;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.graph.GraphManager;
-import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -36,7 +34,6 @@ public class SpindexerGotoSpotTest extends CommandOpMode {
     Spindexer spindexer;
     GamepadEx gp1;
     TelemetryManager telemetryM;
-    GraphManager graphM;
     Timer timer;
     int targetSpot = 0;
     int nearestIntakeSpot = 0;
@@ -50,7 +47,6 @@ public class SpindexerGotoSpotTest extends CommandOpMode {
 
         timer = new Timer();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
-        graphM = PanelsGraph.INSTANCE.getManager();
         spindexer = new Spindexer(hardwareMap, false);
         spindexer.initAngle(); // would put this later but oh well
         gp1 = new GamepadEx(gamepad1);
@@ -118,7 +114,6 @@ public class SpindexerGotoSpotTest extends CommandOpMode {
 
     public void addDataTelemetryGraph(String key, Number value) {
         telemetryM.addData(key, value);
-        graphM.addData(key, value);
     }
 
     public void updateTelemetry() {
@@ -145,6 +140,5 @@ public class SpindexerGotoSpotTest extends CommandOpMode {
         telemetry.addData("Loop time (ms)", timer.getDeltaTime());
 
         telemetry.update();
-        graphM.update();
     }
 }

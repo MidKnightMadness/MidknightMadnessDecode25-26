@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode.old.opModes;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.graph.GraphManager;
-import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
@@ -37,7 +35,6 @@ public class BackSixBallAutoFSM extends OpMode {
     }
 
     TelemetryManager telemetryM;
-    GraphManager graphM;
     Follower follower;
     Timer timer;
 
@@ -60,7 +57,6 @@ public class BackSixBallAutoFSM extends OpMode {
         PanelsDrawing.init();
         timer = new Timer();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
-        graphM = PanelsGraph.INSTANCE.getManager();
 
         follower = ConstantsBot.createPinpointFollower(hardwareMap);
         follower.setStartingPose(startPose);
@@ -95,7 +91,6 @@ public class BackSixBallAutoFSM extends OpMode {
 
     public void addDataTelemetryGraph(String key, Number value) {
         telemetryM.addData(key, value);
-        graphM.addData(key, value);
     }
 
     public void updateTelemetry() {
@@ -114,7 +109,6 @@ public class BackSixBallAutoFSM extends OpMode {
 
         // Updates
         telemetryM.update(telemetry);
-        graphM.update();
     }
 
     public void setPathState(PathState newPathState) {

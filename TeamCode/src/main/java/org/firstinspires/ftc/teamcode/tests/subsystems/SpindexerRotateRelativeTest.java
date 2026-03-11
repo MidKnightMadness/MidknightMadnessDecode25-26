@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode.tests.subsystems;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.graph.GraphManager;
-import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.hardware.lynx.LynxModule;
@@ -25,7 +23,6 @@ public class SpindexerRotateRelativeTest extends CommandOpMode {
     Spindexer spindexer;
     GamepadEx gp1;
     TelemetryManager telemetryM;
-    GraphManager graphM;
     Timer timer;
     boolean first = true;
 
@@ -41,7 +38,6 @@ public class SpindexerRotateRelativeTest extends CommandOpMode {
 
         timer = new Timer();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
-        graphM = PanelsGraph.INSTANCE.getManager();
         gp1 = new GamepadEx(gamepad1);
 
         gp1.getGamepadButton(GamepadKeys.Button.A).whenPressed(
@@ -62,7 +58,6 @@ public class SpindexerRotateRelativeTest extends CommandOpMode {
 
     public void addDataTelemetryGraph(String key, Number value) {
         telemetryM.addData(key, value);
-        graphM.addData(key, value);
     }
 
     public void updateTelemetry() {
@@ -70,6 +65,5 @@ public class SpindexerRotateRelativeTest extends CommandOpMode {
         addDataTelemetryGraph("Raw Angle", spindexer.getEncoder().getAngleUnnormalized());
         telemetryM.addData("Runmode", spindexer.getTurner().getRunmode());
         telemetryM.update(telemetry);
-        graphM.update();
     }
 }

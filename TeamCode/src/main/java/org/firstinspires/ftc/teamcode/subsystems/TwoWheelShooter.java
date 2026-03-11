@@ -150,23 +150,26 @@ public class TwoWheelShooter extends SubsystemBase {
          * @return bottom velocity, top velocity, heading
          */
         public double[] targetPowersHeading(Pose pose, Vector velocity, Pose targetPose) {
-            Pose gap = targetPose.minus(pose);
-            Vector dirParallel = gap.getAsVector().normalize();
-            Vector dirPerp = gap.rotate(Math.PI / 2, false).getAsVector().normalize();
+            Vector gap = targetPose.minus(pose).getAsVector();
+            Vector dirParallel = gap.normalize();
+            Vector dirPerp = dirParallel.copy();
+            dirPerp.rotateVector(-Math.PI / 2);
             double velParallel = velocity.dot(dirParallel); // component parallel to line from robot to target pose
-            double velPerp = velocity.dot(dirPerp); // left is positive, right is negative
+            double velPerp = velocity.dot(dirPerp); // left is negative, right is positive
 
             double realDist = targetPose.distanceFrom(pose);
             double targetDist = realDist;
             double headingCorrection = 0;
             for (int i = 0; i < iterations; i++) {
                 // Steps 1-2: simulation
-                targetDist = MathUtils.clamp(targetDist, dist[0], dist[dist.length - 1]); // find a better way later
+                targetDist = MathUtils.clamp(targetDist, dist[0]+0.01, dist[dist.length - 1]-0.01); // find a better way later
                 double kCorr = distToKCorrection.get(targetDist);
                 double predict = targetDist + kCorr * velParallel;
                 double predictPerp = kCorr * velPerp;
-                double predictParallel = Math.sqrt(predict * predict - predictPerp * predictPerp);
-                headingCorrection = Math.atan2(predictPerp, predictParallel);
+                double predictParallel = Math.sqrt(
+                        Math.max(0, predict * predict - predictPerp * predictPerp)
+                );
+                headingCorrection = -Math.atan2(predictPerp, predictParallel);
                 // Steps 3-4: error and update
                 double distanceIdeal = (realDist / predictParallel) * predict;
                 // d + correction + error = ideal d
@@ -174,33 +177,12 @@ public class TwoWheelShooter extends SubsystemBase {
                 targetDist += distanceIdeal - predict;
             }
 
-            return new double[]{
-                    distToLowVel.get(targetDist),
-                    distToHighVel.get(targetDist),
-                    MathFunctions.normalizeAngle(gap.getHeading() + headingCorrection)
-            };
-        }
-
-        /**
-         * Calculate target powers, no heading.<br>
-         */
-        public double[] targetPowers(Pose pose, Vector velocity, Pose targetPose) {
-            Pose gap = targetPose.minus(pose);
-            Vector dirParallel = gap.getAsVector().normalize();
-            double velParallel = velocity.dot(dirParallel); // component parallel to line from robot to target pose
-
-            double realDist = targetPose.distanceFrom(pose);
-            double targetDist = realDist;
-            for (int i = 0; i < iterations; i++) {
-                targetDist = MathUtils.clamp(targetDist, dist[0], dist[dist.length - 1]); // find a better way later
-                double kCorr = distToKCorrection.get(targetDist);
-                double predict = targetDist + kCorr * velParallel;
-                targetDist += realDist - predict;
-            }
+            targetDist = MathUtils.clamp(targetDist, dist[0]+0.01, dist[dist.length - 1]-0.01); // find a better way later
 
             return new double[]{
                     distToLowVel.get(targetDist),
                     distToHighVel.get(targetDist),
+                    MathFunctions.normalizeAngle(gap.getTheta() - headingCorrection)
             };
         }
     }
@@ -548,9 +530,24 @@ public class TwoWheelShooter extends SubsystemBase {
         return Math.hypot(xDist, yDist);
     }
 
-    public Pose getShootPose(ShootSide shootSide){
+    public static Pose getShootPose(ShootSide shootSide){
         return shootSide == ShootSide.LEFT ? leftShootPose : rightShootPose;
     }
+//
+//    public Pose getShootPoseNew(Pose position, ShootSide shootSide) {
+//        Pose control1, control2;
+//        if (shootSide == ShootSide.LEFT) {
+//            control1 = new Pose(14, 144);
+//            control2 = new Pose(0, 130);
+//        } else {
+//            control1 = new Pose(130, 144);
+//            control2 = new Pose(144, 130);
+//        }
+//
+//        double angle1 = ExtraFns.getTargetAngle(position, control1);
+//        double angle2 = ExtraFns.getTargetAngle(position, control2);
+//        return getAngleError(position, normAngle((angle1 + angle2) / 2));
+//    }
 
     public void stopFlywheels() {
         low.motorEx.setPower(0);

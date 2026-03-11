@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode.tests.subsystems;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.graph.GraphManager;
-import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
@@ -28,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 public class SpindexerHardcodeTest extends CommandOpMode {
     GamepadEx gp1;
     TelemetryManager telemetryM;
-    GraphManager graphM;
     Timer timer;
     Spindexer spindexer;
     TwoWheelShooter shooter;
@@ -48,7 +45,6 @@ public class SpindexerHardcodeTest extends CommandOpMode {
 
         timer = new Timer();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
-        graphM = PanelsGraph.INSTANCE.getManager();
         gp1 = new GamepadEx(gamepad1);
 
 
@@ -69,7 +65,6 @@ public class SpindexerHardcodeTest extends CommandOpMode {
 
     public void addDataTelemetryGraph(String key, Number value) {
         telemetryM.addData(key, value);
-        graphM.addData(key, value);
     }
 
     public void updateTelemetry() {
@@ -84,6 +79,5 @@ public class SpindexerHardcodeTest extends CommandOpMode {
         telemetryM.addData("Encoder postioin", spindexer.getEncoder().getAngle());
         telemetryM.addData("Spindexer position", spindexer.getCurrentAngle());
         telemetryM.update(telemetry);
-        graphM.update();
     }
 }

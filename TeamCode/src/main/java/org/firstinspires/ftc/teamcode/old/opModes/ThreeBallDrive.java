@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.old.opModes;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.graph.GraphManager;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
@@ -26,7 +25,6 @@ import java.util.concurrent.TimeUnit;
 @Autonomous
 public class ThreeBallDrive extends CommandOpMode {
     TelemetryManager telemetryM;
-    GraphManager graphM;
     Follower follower;
     Timer timer;
 
@@ -74,7 +72,6 @@ public class ThreeBallDrive extends CommandOpMode {
 
     public void addDataTelemetryGraph(String key, Number value) {
         telemetryM.addData(key, value);
-        graphM.addData(key, value);
     }
 
     public void updateTelemetry() {
@@ -94,7 +91,6 @@ public class ThreeBallDrive extends CommandOpMode {
 
         // Updates
         telemetryM.update(telemetry);
-        graphM.update();
     }
 
     public void buildPaths() {

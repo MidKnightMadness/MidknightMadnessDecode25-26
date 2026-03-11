@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.pedroPathing.robotDrive;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.graph.GraphManager;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -14,7 +13,6 @@ import org.firstinspires.ftc.teamcode.util.PanelsDrawing;
 public class DriveNoLocalizer extends OpMode {
     WheelControl wheelControl;
     TelemetryManager telemetryM;
-    GraphManager graphM;
     public static double currSpeed = 1;
 
     @Override
@@ -68,6 +66,5 @@ public class DriveNoLocalizer extends OpMode {
 
         // Updates
         telemetryM.update(telemetry);
-        graphM.update();
     }
 }

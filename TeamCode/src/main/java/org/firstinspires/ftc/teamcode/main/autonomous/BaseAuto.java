@@ -70,7 +70,6 @@ public class BaseAuto extends CommandOpMode {
 //        dashboardPacket = new TelemetryPacket();
 //
 //        telemetryManager = PanelsTelemetry.INSTANCE.getTelemetry();
-//        graphManager = PanelsGraph.INSTANCE.getManager();
         initializeMechanisms();
         buildPaths();
         setupVision();

@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode.newpid;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.graph.GraphManager;
-import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -24,7 +22,6 @@ public class StandardPIDTest extends OpMode {
     private double trueTarget;
     PIDController controller;
     TelemetryManager telemetryM;
-    GraphManager graphM;
     DcMotorEx motor;
     Timer timer;
     Buffer buffer;
@@ -32,7 +29,6 @@ public class StandardPIDTest extends OpMode {
     @Override
     public void init() {
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
-        graphM = PanelsGraph.INSTANCE.getManager();
         controller = new PIDController(kp, ki, kd);
         motor = hardwareMap.get(DcMotorEx.class, motorName);
         timer = new Timer(TimeUnit.MILLISECONDS);
@@ -46,7 +42,7 @@ public class StandardPIDTest extends OpMode {
         double position = motor.getCurrentPosition();
         double velocity = motor.getVelocity();
         double acceleration = buffer.getDerivative();
-        double power = controller.calculate(position, trueTarget);
+        double power = controller.calculate(trueTarget - position);
         motor.setPower(power);
         buffer.add(velocity, timer.getTime());
 
@@ -56,10 +52,7 @@ public class StandardPIDTest extends OpMode {
         telemetryM.addData("accel", acceleration);
         telemetryM.addData("target", trueTarget);
         telemetryM.addData("error", position-trueTarget);
-        graphM.addData("error", position-trueTarget);
-        graphM.addData("loop time", loopTime);
 
         telemetryM.update(telemetry);
-        graphM.update();
     }
 }

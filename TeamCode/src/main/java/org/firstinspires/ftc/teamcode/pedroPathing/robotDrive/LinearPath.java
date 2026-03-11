@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode.pedroPathing.robotDrive;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.graph.GraphManager;
-import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
@@ -26,7 +24,6 @@ import java.util.concurrent.TimeUnit;
 @Autonomous(name = "LinearPath", group = "Tuning")
 public class LinearPath extends CommandOpMode {
     TelemetryManager telemetryM;
-    GraphManager graphM;
     Follower follower;
     Timer timer;
     Path path1;
@@ -98,7 +95,6 @@ public class LinearPath extends CommandOpMode {
 
     public void addDataTelemetryGraph(String key, Number value) {
         telemetryM.addData(key, value);
-        graphM.addData(key, value);
     }
 
     public void updateTelemetry() {

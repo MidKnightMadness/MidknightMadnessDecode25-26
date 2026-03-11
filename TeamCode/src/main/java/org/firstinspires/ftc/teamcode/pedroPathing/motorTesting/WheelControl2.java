@@ -2,8 +2,10 @@ package org.firstinspires.ftc.teamcode.pedroPathing.motorTesting;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.teamcode.hardware.Motor;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 
 //
@@ -12,9 +14,6 @@ public class WheelControl2 {
     public DcMotorEx BL;
     public DcMotorEx FR;
     public DcMotorEx FL;
-    public double vf = 0;
-    public double hf = 0;
-    public double rf = 0;
 
     public WheelControl2(HardwareMap hardwareMap) {
         this.BR = hardwareMap.get(DcMotorEx.class, ConfigNames.BR);
@@ -25,12 +24,6 @@ public class WheelControl2 {
         this.BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         this.FL = hardwareMap.get(DcMotorEx.class, ConfigNames.FL);
         this.FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-    }
-
-    public void setF(double vf, double hf, double rf) {
-        this.vf = vf;
-        this.hf = hf;
-        this.rf = rf;
     }
 
     public void setPowers(double BL, double BR, double FL, double FR, double power) {
@@ -63,24 +56,39 @@ public class WheelControl2 {
         double power_scale = max_power / Math.max(
                 max_power, Math.max(Math.abs(forward), Math.abs(right))
         );
+        double rotate_scale = max_power / Math.max(max_power, Math.abs(rotate_power));
+
         forward *= power_scale;
         right *= power_scale;
-
-        double rotate_scale = max_power / Math.max(max_power, Math.abs(rotate_power));
         rotate_power *= rotate_scale;
 
-        // Add feedforwards
-        forward += Math.signum(forward)*vf;
-        right += Math.signum(right)*hf;
-        rotate_power += Math.signum(rotate_power)*rf;
-
         // Calculate motor powers
-        double BLPower = forward - right - rotate_power;
-        double BRPower = forward + right + rotate_power;
-        double FLPower = forward + right - rotate_power;
-        double FRPower = forward - right + rotate_power;
+        double BLPower = forward - right + rotate_power;
+        double BRPower = forward + right - rotate_power;
+        double FLPower = forward + right + rotate_power;
+        double FRPower = forward - right - rotate_power;
 
         setPowers(BLPower, BRPower, FLPower, FRPower, 1);
+    }
+
+    public WheelControl2 setBLDirection(DcMotorSimple.Direction direction) {
+        this.BL.setDirection(direction);
+        return this;
+    }
+
+    public WheelControl2 setBRDirection(DcMotorSimple.Direction direction) {
+        this.BR.setDirection(direction);
+        return this;
+    }
+
+    public WheelControl2 setFLDirection(DcMotorSimple.Direction direction) {
+        this.FL.setDirection(direction);
+        return this;
+    }
+
+    public WheelControl2 setFRDirection(DcMotorSimple.Direction direction) {
+        this.FR.setDirection(direction);
+        return this;
     }
 
     public void stop() {

@@ -62,7 +62,10 @@ public class WheelControl {
          */
 
         // Make sure forward and right are <= 1
-        double power_scale = max_power/Math.max(max_power, Math.max(forward, right));
+        double power_scale = max_power / Math.max(
+                max_power,
+                Math.max(Math.abs(forward), Math.abs(right))
+        );
         forward *= power_scale;
         right *= power_scale;
 

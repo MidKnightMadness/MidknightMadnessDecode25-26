@@ -4,14 +4,12 @@ import static java.lang.Math.clamp;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.graph.GraphManager;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
@@ -34,7 +32,6 @@ public class DoubleFlywheelCustomPID extends OpMode {
     final double fiveToOneGR = 5.23;
 
     ButtonToggle toggle;
-    GraphManager graph;
     TelemetryManager panelsTelemetry;
 
     public static double mode = 1;
@@ -80,8 +77,6 @@ public class DoubleFlywheelCustomPID extends OpMode {
         left.setDirection(leftForward ? DcMotorEx.Direction.FORWARD : DcMotorSimple.Direction.REVERSE);
         right.setDirection(rightForward ? DcMotorEx.Direction.FORWARD : DcMotorSimple.Direction.REVERSE);
 
-
-        graph = PanelsGraph.INSTANCE.getManager();
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
         timer = new Timer();
 
@@ -150,27 +145,6 @@ public class DoubleFlywheelCustomPID extends OpMode {
         double wheelCircumference = Math.PI * wheelDiameter;
         double leftExitVel = currLeftRpm / 60 * wheelCircumference;
         double rightExitVel = currRightRpm / 60 * wheelCircumference;
-
-
-        //Display data on Ftc Panels: navigate to 192.168.43.1:8001 on robot wifi
-        graph.addData("Left Current RPM", currLeftRpm);
-        graph.addData("Right Current RPM", currRightRpm);
-
-
-        //PID values
-        graph.addData("Left Error", leftError);
-        graph.addData("Right Error", rightError);
-        graph.addData("Left Integral", leftIntegralComponent);
-        graph.addData("Right Integral", rightIntegralComponent);
-        graph.addData("Left Derivative", leftDerivative);
-        graph.addData("Right Derivative", rightDerivative);
-        graph.addData("Left Output", leftOutput);
-        graph.addData("Right Output", rightOutput);
-
-        graph.addData("Update rate", 1/ deltaTime);
-        graph.addData("Average Exit Velocity", (leftExitVel + rightExitVel) / 2);
-        graph.update();
-
 
         panelsTelemetry.addData("Left Target RPM", targetLeftRpm);
         panelsTelemetry.addData("Left Current RPM", currLeftRpm);

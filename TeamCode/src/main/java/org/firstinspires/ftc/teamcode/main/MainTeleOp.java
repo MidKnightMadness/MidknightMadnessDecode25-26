@@ -6,7 +6,6 @@ import android.os.Environment;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.graph.GraphManager;
 import com.bylazar.telemetry.TelemetryManager;
 import com.outoftheboxrobotics.photoncore.PhotonCore;
 import com.pedropathing.follower.Follower;
@@ -28,6 +27,7 @@ import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
+import org.firstinspires.ftc.teamcode.commands.Robot;
 import org.firstinspires.ftc.teamcode.commands.shooter.ShootSeqCommand;
 import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommand2;
 import org.firstinspires.ftc.teamcode.commands.spindexer.SpindexerGotoSpot;
@@ -89,7 +89,6 @@ public class MainTeleOp extends CommandOpMode {
     double intakeTargetVel = 3;
     public static double minHeadingError = Math.toRadians(1);
     TelemetryManager telemetryM;
-    GraphManager graphM;
 
     public static double autoIntakePower = 1;
     public static double[] pidIntakeGains = new double[]{0.0004, 0.0, 0.00001};
@@ -394,7 +393,6 @@ public class MainTeleOp extends CommandOpMode {
     public void addDataTelemetryGraph(String key, Number value) {
         telemetry.addData(key, value);
         telemetryM.addData(key, value);
-        graphM.addData(key, value);
     }
 
 

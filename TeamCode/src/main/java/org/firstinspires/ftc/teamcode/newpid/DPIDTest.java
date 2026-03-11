@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.newpid;
 
-import com.bylazar.graph.GraphManager;
-import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -20,7 +18,6 @@ public class DPIDTest extends OpMode {
     public static String motorName = "FL";
     DPIDController<NearestPointInterpolator> controller;
     TelemetryManager telemetryM;
-    GraphManager graphM;
     DcMotorEx motor;
     Timer timer;
     Buffer buffer;
@@ -31,7 +28,6 @@ public class DPIDTest extends OpMode {
                 NearestPointInterpolator::new, kp, ki, kd
         );
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
-        graphM = PanelsGraph.INSTANCE.getManager();
         motor = hardwareMap.get(DcMotorEx.class, motorName);
         target = motor.getCurrentPosition() + 10000;
         timer = new Timer(TimeUnit.MILLISECONDS);
@@ -54,10 +50,7 @@ public class DPIDTest extends OpMode {
         telemetryM.addData("accel", acceleration);
         telemetryM.addData("target", target);
         telemetryM.addData("error", position-target);
-        graphM.addData("error", position-target);
-        graphM.addData("loop time", loopTime);
 
         telemetryM.update(telemetry);
-        graphM.update();
     }
 }

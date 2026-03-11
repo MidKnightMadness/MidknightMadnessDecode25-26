@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode.templates;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.graph.GraphManager;
-import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -19,7 +17,6 @@ import java.util.concurrent.TimeUnit;
 @Autonomous
 public class PanelsTemplate extends OpMode {
     TelemetryManager telemetryM;
-    GraphManager graphM;
     Timer timer;
 
     @Override
@@ -27,7 +24,6 @@ public class PanelsTemplate extends OpMode {
         PanelsDrawing.init();
         timer = new Timer();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
-        graphM = PanelsGraph.INSTANCE.getManager();
     }
 
     @Override
@@ -47,12 +43,10 @@ public class PanelsTemplate extends OpMode {
 
     public void addDataTelemetryGraph(String key, Number value) {
         telemetryM.addData(key, value);
-        graphM.addData(key, value);
     }
 
     public void updateTelemetry() {
         addDataTelemetryGraph("Loop time (ms)", timer.getDeltaTime(TimeUnit.MILLISECONDS));
         telemetryM.update(telemetry);
-        graphM.update();
     }
 }

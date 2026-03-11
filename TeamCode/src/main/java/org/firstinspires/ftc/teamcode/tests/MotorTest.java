@@ -1,23 +1,27 @@
 package org.firstinspires.ftc.teamcode.tests;
 
+import com.acmerobotics.dashboard.config.Config;
+import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 
-@TeleOp(name = "motor test", group = "General")
+@Config
+@Configurable
+@TeleOp(name = "MotorTest", group = "General")
 public class MotorTest extends OpMode {
-    DcMotorEx FR;
-
+    public static String motorName = "FR";
+    DcMotorEx motor;
 
     @Override
     public void init() {
-        FR = hardwareMap.get(DcMotorEx.class, ConfigNames.FR);
+        motor = hardwareMap.get(DcMotorEx.class, motorName);
     }
 
     @Override
     public void loop() {
-        FR.setPower(1);
+        motor.setPower(1);
     }
 }

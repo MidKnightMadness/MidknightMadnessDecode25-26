@@ -131,7 +131,7 @@ public class DPIDTuner extends OpMode {
                 }
                 double currentVel = derivSupplier.getAsDouble();
                 double currentPos = stateSupplier.getAsDouble();
-                double power = controller.calculate(currentPos, target);
+                double power = controller.calculate(target - currentPos);
                 velAndErrors.add(new Double[]{ currentVel, target - currentPos });
                 buffer.add(currentVel, timer.getTime());
 //                motor.setPower(power);

@@ -6,8 +6,6 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.graph.GraphManager;
-import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
@@ -49,7 +47,6 @@ public class ColorIntakeAutoTest extends CommandOpMode {
     TwoWheelShooter shooter;
     Intake intake;
     TelemetryManager telemetryManager;
-    GraphManager graphManager;
     boolean prevVisionComplete = false;
     public static Pose leftTargetPose = new Pose(12, 132, 0);
     public static Pose rightTargetPose = new Pose(132, 132, 0);
@@ -93,7 +90,6 @@ public class ColorIntakeAutoTest extends CommandOpMode {
         dashboardPacket = new TelemetryPacket();
 
         telemetryManager = PanelsTelemetry.INSTANCE.getTelemetry();
-        graphManager = PanelsGraph.INSTANCE.getManager();
 
         path = new Path(new BezierLine(intakeOnePose, intakeOneEndPose));
         path.setLinearHeadingInterpolation(intakeOnePose.getHeading(), intakeOneEndPose.getHeading());
