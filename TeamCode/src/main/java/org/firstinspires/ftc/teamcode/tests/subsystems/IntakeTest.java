@@ -29,19 +29,12 @@ public class IntakeTest extends OpMode {
     public void init() {
         telemetry.addLine("Mode 0 : RawPower, Mode 1: VelocityControl");
         intake = new Intake(hardwareMap, runMode);
-        if(runMode == Intake.RunMode.VelocityControl){
-            intake.setPid(kP, kI, kD);
-            intake.setFeedforward(kS, kV, kA);
-        }
     }
 
     @Override
     public void loop() {
         if(runMode == Intake.RunMode.RawPower){
             intake.setDirectPower(motorPower);
-        }
-        else{
-            intake.setVelocity(targetVelocity);
         }
 
         telemetry.addData("RunMode", runMode);

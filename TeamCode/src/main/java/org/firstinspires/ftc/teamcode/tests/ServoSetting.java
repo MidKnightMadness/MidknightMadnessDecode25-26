@@ -12,7 +12,6 @@ import com.qualcomm.robotcore.hardware.ServoImplEx;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 
 @Configurable
-@Disabled
 @TeleOp(name = "Servo Setting", group = "General")
 public class ServoSetting extends OpMode {
     Servo pushUpServo;

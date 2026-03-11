@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.game;
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 
+import org.firstinspires.ftc.teamcode.subsystems.SpindexerNonCR;
 import org.firstinspires.ftc.teamcode.util.Angle;
 
 import java.util.ArrayList;
@@ -14,28 +15,28 @@ public enum SpindexerSpotNonCR {
     SPOT0(
             0,
             0,
-            (double)180/439,
+            180d / SpindexerNonCR.degreesPerRevolution,
             (double)360/439,
             Double.NaN
     ),
     SPOT1(
             1,
-            (double)120/439,
-            (double)300/439,
+            120 / SpindexerNonCR.degreesPerRevolution,
+            300d / SpindexerNonCR.degreesPerRevolution,
             Double.NaN,
             Double.NaN
     ),
     SPOT2(
             2,
-            (double)240/439,
-            (double)420/439,
+            240d / SpindexerNonCR.degreesPerRevolution,
+            420d / SpindexerNonCR.degreesPerRevolution,
             Double.NaN,
-            (double)60/439
+            60d / SpindexerNonCR.degreesPerRevolution
     ),
     SPOT3(
             3,
-            (double)360/439,
-            (double)60/439,
+            360d / SpindexerNonCR.degreesPerRevolution,
+            60d / SpindexerNonCR.degreesPerRevolution,
             Double.NaN,
             Double.NaN
     );

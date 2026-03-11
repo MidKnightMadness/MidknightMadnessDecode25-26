@@ -3,10 +3,12 @@ package org.firstinspires.ftc.teamcode.subsystems;
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
-import com.seattlesolvers.solverslib.hardware.motors.Motor;
+
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import  org.firstinspires.ftc.teamcode.hardware.MotorEx;
 
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
@@ -19,10 +21,12 @@ import java.util.Map;
 @Config
 @Configurable
 public class Intake extends SubsystemBase {
-    MotorEx intakeMotor;
+    DcMotorEx intakeMotorLeft;
+    DcMotorEx intakeMotorRight;
 
     public static double reference_voltage = 12.5;
-    public static boolean motorDirectionForward = false;
+    public static boolean leftMotorDirectionForward = false;
+    public static boolean rightMotorDirectionForward = false;
 
 
     public enum RunMode{
@@ -38,60 +42,44 @@ public class Intake extends SubsystemBase {
 
 
     public Intake(HardwareMap hardwareMap, RunMode runMode){
-        intakeMotor = new MotorEx(hardwareMap, ConfigNames.intakeMotor);
-        setRunMode(runMode);
-        intakeMotor.motor.setDirection(motorDirectionForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);
+        intakeMotorLeft = hardwareMap.get(DcMotorEx.class, ConfigNames.intakeMotorLeft);
+        intakeMotorRight = hardwareMap.get(DcMotorEx.class, ConfigNames.intakeMotorRight);
+
+        intakeMotorLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        intakeMotorRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        intakeMotorLeft.setDirection(leftMotorDirectionForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);
+        intakeMotorRight.setDirection(rightMotorDirectionForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);
     }
 
 
-    public MotorEx getMotor(){
-        return intakeMotor;
+    public DcMotorEx getLeftMotor(){
+        return intakeMotorLeft;
     }
-    public void setPid(double kp, double ki, double kd) {
-        intakeMotor.setVeloCoefficients(kp, ki, kd);
+
+    public DcMotorEx getRightMotor() {
+        return intakeMotorRight;
     }
-    public void setFeedforward(double kS, double kV, double kA){
-        intakeMotor.setFeedforwardCoefficients(kS, kV, kA);
-    }
-    public void setRunMode(RunMode runMode){
-        this.runMode = runMode;
-        if(runMode == RunMode.RawPower){
-            intakeMotor.setRunMode(MotorEx.RunMode.RawPower);
-        }
-        else{
-            intakeMotor.setRunMode(MotorEx.RunMode.VelocityControl);
-        }
-    }
+
 
     public void setDirectPower(double power){
         double motorPower = Math.clampOutput(power, -1, 1);
-        intakeMotor.motor.setPower(motorPower);
+        intakeMotorLeft.setPower(motorPower);
+        intakeMotorRight.setPower(motorPower);
     }
-
 
     public void setDirectPower(double power, double currVolt){
         double motorPower = Math.clampOutput(power, -1, 1);
-        intakeMotor.setPower(motorPower * reference_voltage / currVolt);
+        intakeMotorLeft.setPower(motorPower * reference_voltage / currVolt);
     }
 
-    public void setVelocity(double vel){
-        double correctedVelocity = vel * grToMultiplier.get(motorGearRatio);
-        if(runMode == RunMode.VelocityControl){
-            intakeMotor.set(correctedVelocity);
-        }
-        else{
-            intakeMotor.set(correctedVelocity / intakeMotor.ACHIEVABLE_MAX_TICKS_PER_SECOND);
-        }
-    }
 
     public void stopPower(){
-        intakeMotor.motor.setPower(0);
-    }
-    public void resetEncoder(){
-        intakeMotor.encoder.reset();
+        intakeMotorLeft.setPower(0);
+        intakeMotorRight.setPower(0);
     }
 
     public double getMotorVelocity(){
-        return intakeMotor.getCorrectedVelocity();
+        return intakeMotorLeft.getVelocity(AngleUnit.RADIANS);
     }
 }

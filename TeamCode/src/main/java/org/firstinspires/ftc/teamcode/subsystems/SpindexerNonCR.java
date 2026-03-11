@@ -34,7 +34,7 @@ public class SpindexerNonCR extends SubsystemBase {
     public double startOutakePosition = 1;
     public double endOutakePosition = 0;
     public double startTeleOpIntakePosition = SpindexerSpotNonCR.fromIndex(1).getIntakePositions().get(0);
-    public double degreesPerRevolution = 439;
+    public static double degreesPerRevolution = 439;
     public static AngleNonCR defaultFinishedThreshold = AngleNonCR.fromDegrees(5); // Threshold at which it's finished turning to a spot
     public static AngleNonCR finishedThreshold = AngleNonCR.fromDegrees(15);//TODO: Change to 15 for auto?
     public static AngleNonCR strictFinished = AngleNonCR.fromDegrees(10);
@@ -78,6 +78,7 @@ public class SpindexerNonCR extends SubsystemBase {
         turnerEncoder = new IncrementalEncoderNonCR(
                 hardwareMap, ConfigNames.turnerEncoder, 8192, AngleUnit.DEGREES
         ).setReversed(false);
+
         turner = hardwareMap.get(ServoImplEx.class, ConfigNames.turner);
         turner.setPwmRange(new PwmControl.PwmRange(500, 2500));
         turner.setDirection(Servo.Direction.REVERSE);

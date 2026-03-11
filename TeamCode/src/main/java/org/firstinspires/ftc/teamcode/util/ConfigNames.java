@@ -8,7 +8,7 @@ import com.bylazar.configurables.annotations.Configurable;
 public class ConfigNames {
     public static String turner = "spindexerServo";
     public static String turner2 = "spindexerServo2";
-    public static String turnerEncoder = "spindexerEncoder";
+    public static String turnerEncoder = "intakeMotorLeft";
     public static String pushUpServo = "pushUpServo";
     public static String imu = "imu";
     public static String pinpointOld = "pinpoint";
@@ -18,7 +18,8 @@ public class ConfigNames {
     public static String arducam = "arducam";
     public static String lowFlywheelMotor = "lowFlywheelMotor";
     public static String highFlywheelMotor = "highFlywheelMotor";
-    public static String intakeMotor = "intakeMotor";
+    public static String intakeMotorLeft = "intakeMotorLeft";
+    public static String intakeMotorRight = "intakeMotorRight";
     public static String FL = "FL";
     public static String FR = "FR";
     public static String BL = "BL";
@@ -35,4 +36,7 @@ public class ConfigNames {
     public static String bottomColor = "colorsensor3";
     public static String intakeDist1 = "distSensor1";
     public static String intakeDist2 = "distSensor2";
+    public static String turretServoLeft = "turretServoLeft";
+    public static String turretServoRight = "turretServoRight";
+    public static String turretEncoder = "FR";
 }
