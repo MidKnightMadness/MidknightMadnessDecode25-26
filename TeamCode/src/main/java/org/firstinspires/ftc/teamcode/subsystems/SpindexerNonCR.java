@@ -11,6 +11,7 @@ import com.seattlesolvers.solverslib.command.SubsystemBase;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpotNonCR;
+import org.firstinspires.ftc.teamcode.hardware.GobildaDistance;
 import org.firstinspires.ftc.teamcode.hardware.IncrementalEncoderNonCR;
 import org.firstinspires.ftc.teamcode.hardware.color.BallDetector;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
@@ -35,7 +36,7 @@ public class SpindexerNonCR extends SubsystemBase {
     public double startTeleOpIntakePosition = SpindexerSpotNonCR.fromIndex(1).getIntakePositions().get(0);
     public double degreesPerRevolution = 439;
     public static AngleNonCR defaultFinishedThreshold = AngleNonCR.fromDegrees(5); // Threshold at which it's finished turning to a spot
-    public static AngleNonCR finishedThreshold = AngleNonCR.fromDegrees(20);//changed from 20
+    public static AngleNonCR finishedThreshold = AngleNonCR.fromDegrees(15);//TODO: Change to 15 for auto?
     public static AngleNonCR strictFinished = AngleNonCR.fromDegrees(10);
     public static AngleNonCR detectThreshold = AngleNonCR.fromDegrees(15);
     private static final int NUM_SPOTS = 3;
@@ -46,9 +47,11 @@ public class SpindexerNonCR extends SubsystemBase {
     boolean shootOn = false;
     BallColor newBallType = null;
     boolean useDistanceSensor;
-    public SwyftRanger ranger;
-    public static double distSensorLowerThreshold = 0;
-    public static double distSensorUpperThreshold = 4;
+    public GobildaDistance ranger1;
+    public GobildaDistance ranger2;
+    //0 - 4 for swyft distance sensor
+    public static double distSensorLowerThreshold = 0.5;
+    public static double distSensorUpperThreshold = 2.5;
     IncrementalEncoderNonCR turnerEncoder;
     double cachingTolerance = 0.01;
 
@@ -67,6 +70,10 @@ public class SpindexerNonCR extends SubsystemBase {
         return turner;
     }
 
+    public ServoImplEx getServoImplEx(){
+        return turner;
+    }
+
     public SpindexerNonCR(HardwareMap hardwareMap, boolean useDistanceSensors, BallColor[] ballColors) {
         turnerEncoder = new IncrementalEncoderNonCR(
                 hardwareMap, ConfigNames.turnerEncoder, 8192, AngleUnit.DEGREES
@@ -82,7 +89,33 @@ public class SpindexerNonCR extends SubsystemBase {
 
 
         if(useDistanceSensor){
-            ranger = new SwyftRanger(hardwareMap, ConfigNames.intakeDist1, RangerMode.DEG15);
+            ranger1 = new GobildaDistance(hardwareMap, ConfigNames.intakeDist1, RangerMode.DEG15);
+            ranger2 = new GobildaDistance(hardwareMap, ConfigNames.intakeDist2, RangerMode.DEG15);
+        }
+
+        if(ballColors!= null){
+            setBallColors(ballColors);
+        }
+    }
+    public SpindexerNonCR(HardwareMap hardwareMap, boolean useDistanceSensors, BallColor[] ballColors, boolean setPosition) {
+        turnerEncoder = new IncrementalEncoderNonCR(
+                hardwareMap, ConfigNames.turnerEncoder, 8192, AngleUnit.DEGREES
+        ).setReversed(false);
+        turner = hardwareMap.get(ServoImplEx.class, ConfigNames.turner);
+        turner.setPwmRange(new PwmControl.PwmRange(500, 2500));
+        turner.setDirection(Servo.Direction.REVERSE);
+        if(setPosition) {
+            turner.setPosition(0);
+        }
+
+
+
+        this.useDistanceSensor = useDistanceSensors;
+
+
+        if(useDistanceSensor){
+            ranger1 = new GobildaDistance(hardwareMap, ConfigNames.intakeDist1, RangerMode.DEG15);
+            ranger2 = new GobildaDistance(hardwareMap, ConfigNames.intakeDist2, RangerMode.DEG15);
         }
 
         if(ballColors!= null){
@@ -205,9 +238,31 @@ public class SpindexerNonCR extends SubsystemBase {
         return false;
     }
 
+    double distance1;
+    double distance2;
+    boolean dist1Check;
+    boolean dist2Check;
+
+    public double getDistance1(){
+        return distance1;
+    }
+    public double getDistance2(){
+        return distance2;
+    }
+    public boolean getDist1Check(){
+        return dist1Check;
+    }
+    public boolean getDist2Check(){
+        return dist2Check;
+    }
+
+
     boolean checkDist() {
-        double distance = ranger.getDistance();
-        return distance > distSensorLowerThreshold && distance < distSensorUpperThreshold;
+        distance1 = ranger1.getDistance();
+        distance2 = ranger2.getDistance();
+        dist1Check = distance1 > distSensorLowerThreshold && distance1 < distSensorUpperThreshold;
+        dist2Check = distance2 > distSensorLowerThreshold && distance2 < distSensorUpperThreshold;
+        return dist1Check || dist2Check;
     }
 
 //    private int computeMomentum(SpindexerSpot[] seq, SpotType spotType, int i) {

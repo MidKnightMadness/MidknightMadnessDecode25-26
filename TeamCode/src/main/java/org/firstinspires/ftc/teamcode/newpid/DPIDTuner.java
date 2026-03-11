@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.newpid;
 
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.function.DoubleSupplier;
 
 @TeleOp
+@Disabled
 public class DPIDTuner extends OpMode {
     public ArrayList<Double[]> velAndErrors;
     public ArrayList<Point3D> allData;

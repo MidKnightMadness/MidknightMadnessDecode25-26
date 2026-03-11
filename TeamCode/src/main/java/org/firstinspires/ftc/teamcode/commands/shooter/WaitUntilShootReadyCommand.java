@@ -19,6 +19,7 @@ public class WaitUntilShootReadyCommand extends CommandBase {
         this.lowTolerance = lowTolerance;
         this.highTolerance = highTolerance;
         timer = new Timer();
+        addRequirements(shooter);
     }
 
 
@@ -31,14 +32,14 @@ public class WaitUntilShootReadyCommand extends CommandBase {
 
     @Override
     public void execute() {
-        if(shooter.readyToShoot(lowTolerance, highTolerance)){
-            ready = true;
-        }
+//        if(shooter.readyToShoot(lowTolerance, highTolerance)){
+//            ready = true;
+//        }
     }
 
     @Override
     public boolean isFinished(){
-        return (ready || timer.getTime() >= endTime);
+        return (shooter.readyToShoot(lowTolerance, highTolerance) || timer.getTime() >= endTime);
     }
 
     @Override

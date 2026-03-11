@@ -31,7 +31,7 @@ public class AutoIntakeCommandNonCR extends CommandBase {
     boolean useDistanceSensor = true;
     double maxSwapTime1 = 500;
     double maxSwapTime2 = 500;
-    boolean atSpot = false;
+    public boolean atSpot = false;
 
     boolean ballDetected = false;
     boolean exitTime = false;
@@ -45,6 +45,9 @@ public class AutoIntakeCommandNonCR extends CommandBase {
     boolean thirdBall;
     public SpindexerSpotNonCR startSpot;
     public int dir;
+
+    double lastTimeDuration = 500;
+    double lastTimeStart = 0;
     public AutoIntakeCommandNonCR(SpindexerNonCR spindexer, Intake intake, double power, double inBetweenTime, boolean useDistanceSensor, HardwareMap hardwareMap, SpindexerSpotNonCR startSpot, int dir){
         this.spindexer = spindexer;
         this.intake = intake;
@@ -96,6 +99,7 @@ public class AutoIntakeCommandNonCR extends CommandBase {
 //            currNumSpot = 0;
 //            currRev = 1;
 //        }
+        intake.setDirectPower(power);
         spindexer.setDirectPosition(startSpot.getIntakePositionSolo());
     }
 
@@ -105,8 +109,8 @@ public class AutoIntakeCommandNonCR extends CommandBase {
     double currVolt;
     @Override
     public void execute(){
-        currVolt = hardwareMap.voltageSensor.iterator().next().getVoltage();
-        intake.setDirectPower(power, currVolt);
+//        currVolt = hardwareMap.voltageSensor.iterator().next().getVoltage();
+//        intake.setDirectPower(power, currVolt);
 
         if (!atSpot && spindexer.isAtPosition(SpindexerSpotNonCR.fromIndex(currNumSpot).getIntakePositionSolo())) {
             atSpot = true;
@@ -114,21 +118,23 @@ public class AutoIntakeCommandNonCR extends CommandBase {
 
         if(atSpot){
             ballDetected = spindexer.updateBallSpot(currNumSpot % 3);
-
             if(ballDetected && !updateStartTime) {
                 ballDetectionTime = timer.getTime();
                 updateStartTime = true;
             }
         }
 
-        time = timer.getTime();
-        exitTime = timeExit && (numBall == 1) ? time - ballDetectionTime >= maxSwapTime1 : timeExit && (numBall == 2) ? time - ballDetectionTime >= maxSwapTime2 : false;
-
-        if (ballDetected && ((time - ballDetectionTime >= waitSettle)) || exitTime) {
+//        time = timer.getTime();
+//        exitTime = timeExit && (numBall == 1) ? time - ballDetectionTime >= maxSwapTime1 : timeExit && (numBall == 2) ? time - ballDetectionTime >= maxSwapTime2 : false;
+//
+        if (ballDetected || exitTime) {
             currNumSpot += dir;
-            if(currNumSpot == -1 || currNumSpot == 4){
-               exit = true;
+            if(currNumSpot == -1 || spindexer.allOccuppiedBallColors()){//TODO:CHANGED
+//               exit = true;//TODO:CHANGED
                currNumSpot -= dir;
+               if(lastTimeStart == 0) {//last time not alr triggered
+                   lastTimeStart = timer.getTime();
+               }
             }
             spindexer.setDirectPosition(SpindexerSpotNonCR.fromIndex(currNumSpot).getIntakePositionSolo());
 
@@ -136,6 +142,11 @@ public class AutoIntakeCommandNonCR extends CommandBase {
             ballDetected = false;
             updateStartTime = false;
             numBall++;
+        }
+
+        //TODO: CHANGED
+        if(lastTimeStart != 0 && timer.getTime() > lastTimeStart + lastTimeDuration){
+            exit = true;
         }
     }
 
@@ -145,7 +156,10 @@ public class AutoIntakeCommandNonCR extends CommandBase {
 
     @Override
     public boolean isFinished(){
-        if(spindexer.allOccuppiedBallColors() || numBall == 4 || exit){
+//        if(spindexer.allOccuppiedBallColors() || numBall == 4 || exit){
+//            return true;
+//        }
+        if(exit){//TODO:CHANGED
             return true;
         }
         return false;

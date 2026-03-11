@@ -6,6 +6,7 @@ import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 
 @Configurable
 @TeleOp(name = "AccelTest", group = "Pathing")
+@Disabled
 public class AccelTest extends OpMode {
     public static double accelSpeed = 1;
     public static double decelSpeed = -1;

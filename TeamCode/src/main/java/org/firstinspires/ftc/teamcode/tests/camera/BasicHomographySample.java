@@ -6,6 +6,7 @@ import java.util.List;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.opencv.core.Point;
@@ -16,6 +17,7 @@ import org.opencv.core.Point;
  */ //nice chatgpt allen (i know where u live)(nuh uh)
     //this was not chatgpt its copied from mset cuttlefish homography guide ok
 @TeleOp(name = "BasicHomographySample", group = "Linear OpMode")
+@Disabled
 public class BasicHomographySample extends LinearOpMode {
 
     // Offset constants in inches

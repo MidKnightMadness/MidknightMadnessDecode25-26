@@ -12,9 +12,11 @@ import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 
+import org.firstinspires.ftc.teamcode.game.SpindexerSpotNonCR;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
+import org.firstinspires.ftc.teamcode.subsystems.SpindexerNonCR;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.tests.camera.AprilTagWebcam;
@@ -32,7 +34,7 @@ public class BaseAuto extends CommandOpMode {
     Pose startPose;
 
     protected Limelight3A limelight;
-    protected Spindexer spindexer;
+    protected SpindexerNonCR spindexer;
     protected TwoWheelShooter shooter;
     protected Intake intake;
     boolean prevVisionComplete = false;
@@ -50,15 +52,10 @@ public class BaseAuto extends CommandOpMode {
 
     @Override
     public void initialize() {
-
-//        CommandScheduler.getInstance().setBulkReading(
-//                hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
-//        );
         CommandScheduler.getInstance().cancelAll();
         super.reset();
 
         gameTimer = new Timer();
-
 
 
 
@@ -70,6 +67,7 @@ public class BaseAuto extends CommandOpMode {
 //        dashboardPacket = new TelemetryPacket();
 //
 //        telemetryManager = PanelsTelemetry.INSTANCE.getTelemetry();
+//        graphManager = PanelsGraph.INSTANCE.getManager();
         initializeMechanisms();
         buildPaths();
         setupVision();
@@ -81,9 +79,14 @@ public class BaseAuto extends CommandOpMode {
             preMotifNull = true;
         }
 
+        setBulkReading();
+
     }
 
 
+
+    protected void setBulkReading(){
+    }
 
 
     protected void initializeMechanisms() {
@@ -102,7 +105,6 @@ public class BaseAuto extends CommandOpMode {
         }
         update();
         if(preMotifNull || (!prevVisionComplete && isVisionComplete())){
-//            if(postMotifSequence() != null) {
             if(!preMotifNull) {
                 preMotifSeq.cancel();
                 follower.breakFollowing();
@@ -111,13 +113,6 @@ public class BaseAuto extends CommandOpMode {
             prevVisionComplete = true;
             preMotifNull = false;
         }
-
-     //   if(postMotifSequence().isFinished()){
-//            if(goToIntakeLine()!= null){
-//                schedule(goToIntakeLine());
-//            }
-    //    }
-//        if (timer.getTime() >= maxTimeMs) requestOpModeStop();
         endCommands();
         updateTelemetry();
     }
@@ -153,7 +148,6 @@ public class BaseAuto extends CommandOpMode {
 //                                new PoseWriteCommand(follower.getPose(), maxWritePoseTimeMs),
 //                                new SideWriteCommand(getSide(), maxSideWriteTimeMs))), null));
 //        stopEnd = true;
-
             xFile = createFile(xFileName, directoryName);
             yFile = createFile(yFileName, directoryName);
             headingFile = createFile(headingFileName, directoryName);
@@ -174,44 +168,44 @@ public class BaseAuto extends CommandOpMode {
             }
             follower.update();
             Pose pose = follower.getPose();
-        String xLine = String.format("%.4f", pose.getX());
-        String yLine = String.format("%.4f", pose.getY());
-        String headingLine = String.format("%.4f", pose.getHeading());
-        writeToFile(xFileWriter, xLine);
-        closeFileWriter(xFileWriter);
+            String xLine = String.format("%.4f", pose.getX());
+            String yLine = String.format("%.4f", pose.getY());
+            String headingLine = String.format("%.4f", pose.getHeading());
+            writeToFile(xFileWriter, xLine);
+            closeFileWriter(xFileWriter);
 
-        writeToFile(yFileWriter, yLine);
-        closeFileWriter(yFileWriter);
+            writeToFile(yFileWriter, yLine);
+            closeFileWriter(yFileWriter);
 
-        writeToFile(headingFileWriter, headingLine);
-        closeFileWriter(headingFileWriter);
+            writeToFile(headingFileWriter, headingLine);
+            closeFileWriter(headingFileWriter);
 
-        sideFile = createFile(sideFileName, directoryName);
-        if(getSide() == ShootSide.LEFT){
-            outputString = "Left";
-        }
-        else{
-            outputString = "Right";
-        }
-        try {
-            sideFileWriter = new FileWriter(sideFile);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+            sideFile = createFile(sideFileName, directoryName);
+            if(getSide() == ShootSide.LEFT){
+                outputString = "Left";
+            }
+            else{
+                outputString = "Right";
+            }
+            try {
+                sideFileWriter = new FileWriter(sideFile);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
 
-        //write shoot side
-        try {
-            sideFileWriter.write(outputString);
-            sideFileWriter.flush();
-        } catch (IOException e) {
-            RobotLog.ee("Log", "No file writer detected: " + e.getMessage());
-        }
-        //close shoot side
-        try {
-            sideFileWriter.close();
-        } catch (IOException e) {
-            RobotLog.ee("Log", "Cannot close file writer: " + e.getMessage());
-        }
+            //write shoot side
+            try {
+                sideFileWriter.write(outputString);
+                sideFileWriter.flush();
+            } catch (IOException e) {
+                RobotLog.ee("Log", "No file writer detected: " + e.getMessage());
+            }
+            //close shoot side
+            try {
+                sideFileWriter.close();
+            } catch (IOException e) {
+                RobotLog.ee("Log", "Cannot close file writer: " + e.getMessage());
+            }
     }
     private static File createFile(String fileName, String dirName){
         File dir = new File(Environment.getExternalStorageDirectory(), dirName);
@@ -244,24 +238,16 @@ public class BaseAuto extends CommandOpMode {
         if(gameTimer.getTime() >= maxTimeMs && !stopEnd) {
             CommandScheduler.getInstance().cancelAll();
             follower.breakFollowing();
-//            writeMotif();
-//            schedule(new DeferredCommand(() ->
-//                new SequentialCommandGroup(
-//                        new InstantCommand(()-> follower.update()),
-//                        new WaitCommand(200),
-//                new ParallelCommandGroup(
-//                    new PoseWriteCommand(follower.getPose(), maxWritePoseTimeMs),
-//                    new SideWriteCommand(getSide(), maxSideWriteTimeMs))), null));
             stopEnd = true;
+        }
+        if(gameTimer.getTime() >= maxTimeMs){
+            follower.update();
         }
     }
 
     public void writeMotif(){
     }
 
-//    public Command goToIntakeLine(){
-//        return null;
-//    }
 
 
     protected Command postMotifSequence() {

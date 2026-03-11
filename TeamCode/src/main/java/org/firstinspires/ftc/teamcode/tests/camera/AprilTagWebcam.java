@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 @Configurable
 @Config
+
 public class AprilTagWebcam {
     public static int resolutionX = 1280;//640;
     public static int resolutionY = 800;//480;
@@ -46,7 +47,7 @@ public class AprilTagWebcam {
 
     public static int exposure = 255;
     public static int gain = 40;
-    public static boolean changeExposure = true;
+    public static boolean changeExposure = false;
 
     private List<org.firstinspires.ftc.vision.apriltag.AprilTagDetection> detectedTags = new ArrayList<>();
     private Telemetry telemetry;

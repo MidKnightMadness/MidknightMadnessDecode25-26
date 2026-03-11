@@ -38,7 +38,7 @@ public class ConstantsBot {
             .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.01, 0, 0, 0.6, 0.07))
             .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(0.015, 0, 0, 0.6, 0.07))
             .mass(29.1 * 0.454)
-            .centripetalScaling(0.0005);
+            .centripetalScaling(0);
 
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
 

@@ -5,7 +5,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 
 public class GobildaLightBlock {
-    public static double cachingTolerance = 0.01;
 
     public enum Color{
         RED,
@@ -19,17 +18,17 @@ public class GobildaLightBlock {
         VIOLET,
         WHITE
     }
-    Servo lightControl;
+    public Servo lightControl;
     BallColor lastColor;
-    double currPower = 0;
-
-    public GobildaLightBlock(Servo servo){
+    public GobildaLightBlock(Servo servo){//consturctor
         lightControl = servo;
-        lastColor = BallColor.NONE;
     }
-
     //for spindexer
     public void setColor(BallColor color){
+//        if(color.equals(lastColor)){
+//            return;
+//        }
+//        lastColor = color;
         if(color.equals(BallColor.PURPLE)){
             setColor(Color.VIOLET);
         } else if(color.equals(BallColor.GREEN)){
@@ -37,47 +36,31 @@ public class GobildaLightBlock {
         } else if(color.equals(BallColor.UNKNOWN)){
             setColor(Color.ORANGE);
         } else{
-            setPosition(0);
+            lightControl.setPosition(0);
         }
     }
     //anything else
     public void setColor(Color color){
-        double targetPower;
-        switch (color){
-            case RED:
-                targetPower = 0.297;
-            case ORANGE:
-                targetPower = 0.333;
-            case YELLOW:
-                targetPower = 0.388;
-            case SAGE:
-                targetPower = 0.444;
-            case GREEN:
-                targetPower = 0.500;
-            case AZURE:
-                targetPower = 0.555;
-            case BLUE:
-                targetPower = 0.611;
-            case INDIGO:
-                targetPower = 0.666;
-            case VIOLET:
-                targetPower = 0.722;
-            case WHITE:
-                targetPower = 1.0;
-            default:
-                targetPower = 0;
+        if(color.equals(Color.RED)){
+            lightControl.setPosition(0.277);
+        } else if(color.equals(Color.ORANGE)){
+            lightControl.setPosition(0.333);
+        } else if(color.equals(Color.YELLOW)){
+            lightControl.setPosition(0.388);
+        } else if(color.equals(Color.SAGE)){
+            lightControl.setPosition(0.444);
+        } else if(color.equals(Color.GREEN)){
+            lightControl.setPosition(0.500);
+        } else if(color.equals(Color.AZURE)){
+            lightControl.setPosition(0.555);
+        } else if(color.equals(Color.BLUE)){
+            lightControl.setPosition(0.611);
+        } else if(color.equals(Color.INDIGO)){
+            lightControl.setPosition(0.666);
+        } else if(color.equals(Color.VIOLET)){
+            lightControl.setPosition(0.722);
+        } else if(color.equals(Color.WHITE)){
+            lightControl.setPosition(1.0);
         }
-        if(targetPower != currPower){
-           setPosition(targetPower);
-            currPower = targetPower;
-        }
-
-
-    }
-
-    public void setPosition(double position){
-//        if ((Math.abs(position - lightControl.getPosition()) > cachingTolerance) || (position == 0 && lightControl.getPosition() != 0)) {
-            lightControl.setPosition(position);
-//        }
     }
 }

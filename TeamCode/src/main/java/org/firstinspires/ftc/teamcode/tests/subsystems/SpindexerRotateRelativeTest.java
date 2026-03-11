@@ -4,6 +4,7 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
@@ -19,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 @Configurable
 @TeleOp(name = "SpindexerSpinAngleTest", group = "Spindexer")
+@Disabled
 public class SpindexerRotateRelativeTest extends CommandOpMode {
     Spindexer spindexer;
     GamepadEx gp1;

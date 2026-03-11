@@ -1,6 +1,9 @@
 
 package org.firstinspires.ftc.teamcode.tests.sensors;
 
+import androidx.annotation.DeprecatedSinceApi;
+
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.AnalogInput;
@@ -22,6 +25,7 @@ import com.qualcomm.robotcore.hardware.AnalogInput;
  * - Driver Station telemetry shows voltage and distance (mm).
  */
 @TeleOp(name = "laserAnalog")
+@Disabled
 public class GobildaDistanceTest extends LinearOpMode {
     private AnalogInput laserAnalog;
 

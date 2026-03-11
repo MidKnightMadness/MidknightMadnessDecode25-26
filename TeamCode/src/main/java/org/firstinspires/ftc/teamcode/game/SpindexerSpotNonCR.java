@@ -40,6 +40,10 @@ public enum SpindexerSpotNonCR {
             Double.NaN
     );
 
+    public static int numSpots(){
+        return 3;
+    }
+
 
     final double NUM_SPOTS = 3;
     double intakePosition1;

@@ -74,6 +74,8 @@ public class ConceptAprilTagOptimizeExposure extends LinearOpMode
     private AprilTagProcessor aprilTag;              // Used for managing the AprilTag detection process.
     private int     myExposure  ;
     private int     minExposure ;
+    ;
+
     private int     maxExposure ;
     private int     myGain      ;
     private int     minGain ;

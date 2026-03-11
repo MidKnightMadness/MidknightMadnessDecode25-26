@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.tests.subsystems;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -19,6 +20,7 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 
 
 @TeleOp(name = "Shooter Test")
+@Disabled
 @Configurable
 public class ShooterTest extends OpMode {
     TwoWheelShooter shooter;

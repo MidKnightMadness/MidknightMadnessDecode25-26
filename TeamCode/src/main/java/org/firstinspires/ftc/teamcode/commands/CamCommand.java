@@ -85,7 +85,6 @@ public class CamCommand extends CommandBase {
 
     }
     private Pose coordRobotToField(Follower follower, Pose poseBall){
-        follower.update();
         Pose botPose = follower.getPose();
 //        double dist = distanceBot(poseBall);
 
@@ -173,10 +172,6 @@ public class CamCommand extends CommandBase {
         if(finalGlobalPoseList != null && finalGlobalPoseList.size() >= minBallDetect){
             return true;
         } return false;
-//            start = true;
-//            startTime = timer.getTime();
-//        }
-//        return (start && timer.getDeltaTime() - startTime >= minWaitTime);
     }
 
     public Pose getMinBallPose(){

@@ -6,6 +6,7 @@ import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
@@ -23,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 @Configurable
 @TeleOp(name = "SpindexerHardcodetest", group = "Spindexer")
+@Disabled
 public class SpindexerHardcodeTest extends CommandOpMode {
     GamepadEx gp1;
     TelemetryManager telemetryM;

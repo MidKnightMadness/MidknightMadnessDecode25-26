@@ -68,6 +68,7 @@ public class MotorEx extends Motor {
             setPower(output);
         }
     }
+    public static double shotDropThreshold = 100;
 
     // default 12.5V
     public void set(double output) {
@@ -76,6 +77,10 @@ public class MotorEx extends Motor {
 
     public void set(double output, double multiplier, double currVoltage) {
         if (runmode == RunMode.VelocityControl) {
+            double error = output - getCorrectedVelocity();
+            if(error >= shotDropThreshold ){
+
+            }
             setPower(veloController.calculate(getCorrectedVelocity(), output) + feedforward.calculate(output, getAcceleration(), currVoltage));
         } else if (runmode == RunMode.PositionControl) {
             double error = positionController.calculate(encoder.getPosition());

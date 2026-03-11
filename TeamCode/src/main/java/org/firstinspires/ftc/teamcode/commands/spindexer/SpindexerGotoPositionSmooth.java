@@ -44,12 +44,14 @@ public class SpindexerGotoPositionSmooth extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return spindexer.isAtPositionStrict(targetPosition);
+        return timer.getTime() / 1000.0 > totalTime || spindexer.isAtPositionStrict(targetPosition);
     }
 
     @Override
     public void end(boolean interrupted){
-        spindexer.setDirectPosition(targetPosition);
+        if(!interrupted) {//TODO: SEE IF WORKS
+            spindexer.setDirectPosition(targetPosition);
+        }
     }
 
 

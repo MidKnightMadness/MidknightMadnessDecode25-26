@@ -21,6 +21,13 @@ public class PushUpServo extends SubsystemBase {
 //        pushUpServo.setDirection(dir);
         pushUpServo.setPosition(initPos);
     }
+    public PushUpServo(HardwareMap hardwareMap, boolean setStart){
+        pushUpServo = hardwareMap.get(Servo.class, ConfigNames.pushUpServo);
+//        pushUpServo.setDirection(dir);
+        if(setStart) {
+            pushUpServo.setPosition(initPos);
+        }
+    }
 
     public void setDown(){
         setPosition(minPos);
