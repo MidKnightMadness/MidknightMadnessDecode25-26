@@ -30,16 +30,11 @@ public class IntakeTimeCommand extends CommandBase {
         timer = new Timer();
         timer.restart();
 
-        if(runMode == Intake.RunMode.VelocityControl){
-            intake.setPid(pGain, iGain, dGain);
-            intake.setFeedforward(kSGain, kVGain, kAGain);
-        }
     }
 
 
     @Override
     public void initialize(){
-        intake.setRunMode(runMode);
         intake.setDirectPower(motorPower);
         timer.restart();
 //        intake.resetEncoder();
@@ -47,12 +42,6 @@ public class IntakeTimeCommand extends CommandBase {
 
     @Override
     public void execute(){
-        if(runMode == Intake.RunMode.VelocityControl){
-            intake.setVelocity(motorVelocity);
-        }
-        else{
-            intake.setDirectPower(motorPower);
-        }
     }
 
     @Override

@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 @Config
 @Configurable
-public class GobildaDistance {
+public class  GobildaDistance {
     AnalogInput analogInput;
     DigitalChannel digitalInput;
     RangerMode mode;

@@ -324,9 +324,6 @@ public class MainTeleOpNonCR extends CommandOpMode {
         spindexer = new SpindexerNonCR(hardwareMap, useDistanceSensor, new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE}, false);
 //        spindexer.setMode(spindexerRunMode);
         intake = new Intake(hardwareMap, intakeRunMode);
-        if (intakeRunMode == Intake.RunMode.VelocityControl) {
-            resetVelocityGains(intake, pidIntakeGains, kIntakeGains);
-        }
 
         shooter = new TwoWheelShooter(hardwareMap, shooterRunMode);
 
@@ -356,12 +353,6 @@ public class MainTeleOpNonCR extends CommandOpMode {
 //        }
 
 
-    }
-
-
-    public void resetVelocityGains(Intake intake, double[] pidIntakeGains, double[] kIntakeGains) {
-        intake.setPid(pidIntakeGains[0], pidIntakeGains[1], pidIntakeGains[2]);
-        intake.setFeedforward(kIntakeGains[0], kIntakeGains[1], kIntakeGains[2]);
     }
 
 

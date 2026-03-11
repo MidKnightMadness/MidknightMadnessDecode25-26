@@ -140,10 +140,6 @@ public class SinglePlayerControls extends CommandOpMode {
         follower = ConstantsBot.createPinpointFollower(hardwareMap);
         follower.setPose(startPose);
         intake = new Intake(hardwareMap, intakeRunMode);
-        if(intakeRunMode == Intake.RunMode.VelocityControl){
-            intake.setPid(pidIntakeGains[0], pidIntakeGains[1], pidIntakeGains[2]);
-            intake.setFeedforward(kIntakeGains[0], kIntakeGains[1], kIntakeGains[2]);
-        }
 
         if(shooterRunMode == TwoWheelShooter.RunMode.VelocityControl) {
             shooter.setPid(pidGainsShooter[0], pidGainsShooter[1], pidGainsShooter[2]);

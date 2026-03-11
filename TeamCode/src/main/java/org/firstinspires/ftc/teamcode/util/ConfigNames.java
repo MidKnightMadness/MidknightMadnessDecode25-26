@@ -36,4 +36,7 @@ public class ConfigNames {
     public static String bottomColor = "colorsensor3";
     public static String intakeDist1 = "distSensor1";
     public static String intakeDist2 = "distSensor2";
+    public static String turretServoLeft = "turretServoLeft";
+    public static String turretServoRight = "turretServoRight";
+    public static String turretEncoder = "FR";
 }

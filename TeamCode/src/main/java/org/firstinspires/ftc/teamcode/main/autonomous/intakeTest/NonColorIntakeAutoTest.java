@@ -243,7 +243,7 @@ public class NonColorIntakeAutoTest extends CommandOpMode {
 
         //Intake
         if(intake != null){
-            telemetry.addData("Intake Power", intake.getMotor().get());
+            telemetry.addData("Intake Power", intake.getLeftMotor().getPower());
             telemetry.addData("Intake Velocity", intake.getMotorVelocity());
         }
 

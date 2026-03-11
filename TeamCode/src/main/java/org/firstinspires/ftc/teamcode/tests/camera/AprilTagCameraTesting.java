@@ -114,6 +114,7 @@ public class AprilTagCameraTesting extends OpMode {
                 tag = detection;
                 break;
             }
+            aprilTagWebcam.displayDetectionTelemetry(detection);
         }
 
         telemetry.addData("Exposure (ms)", currentExposureMs);
