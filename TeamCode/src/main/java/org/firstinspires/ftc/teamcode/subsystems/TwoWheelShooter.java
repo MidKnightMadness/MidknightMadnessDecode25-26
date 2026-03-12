@@ -122,7 +122,7 @@ public class TwoWheelShooter extends SubsystemBase {
         public static double[] dist = {60, 70, 80, 90, 100, 112, 128, 149.5, 156.0};//inches
         public static double[] bottomVel = {1350, 1350, 1400, 1450, 1500, 1500, 1700, 1700, 1800};
         public static double[] topVel = {1550, 1600, 1650, 1650, 1750, 1800, 1900, 2100, 2100};
-        public static double[] velCorrectionFactor = {0.7, 0.75, 0.8, 0.85, 0.9, 0.97, 1.05, 1.15, 1.2}; // take time in the air and then subtract a bit
+        public static double[] velCorrectionFactor = {0.8, 0.85, 0.9, 0.95, 1.0, 1.07, 1.15, 1.25, 1.3}; // take time in the air and then subtract a bit
 
         public AimCalculator() {
             distToLowVel = new InterpLUT();
@@ -169,7 +169,7 @@ public class TwoWheelShooter extends SubsystemBase {
                 double predictParallel = Math.sqrt(
                         Math.max(0, predict * predict - predictPerp * predictPerp)
                 );
-                headingCorrection = -Math.atan2(predictPerp, predictParallel);
+                headingCorrection = Math.atan2(predictPerp, predictParallel);
                 // Steps 3-4: error and update
                 double distanceIdeal = (realDist / predictParallel) * predict;
                 // d + correction + error = ideal d
@@ -182,7 +182,7 @@ public class TwoWheelShooter extends SubsystemBase {
             return new double[]{
                     distToLowVel.get(targetDist),
                     distToHighVel.get(targetDist),
-                    MathFunctions.normalizeAngle(gap.getTheta() - headingCorrection)
+                    MathFunctions.normalizeAngle(gap.getTheta() + headingCorrection)
             };
         }
     }
@@ -434,7 +434,7 @@ public class TwoWheelShooter extends SubsystemBase {
         double[] aimData = aimCalculator.targetPowersHeading(
                 robotPose,
                 robotVel,
-                getShootPose(shootSide)
+                getShootPoseNew(robotPose, shootSide)
         );
         botVelocity = aimData[0];
         topVelocity = aimData[1];
@@ -534,6 +534,27 @@ public class TwoWheelShooter extends SubsystemBase {
 
     public static Pose getShootPose(ShootSide shootSide){
         return shootSide == ShootSide.LEFT ? leftShootPose : rightShootPose;
+    }
+
+    public static Pose getShootPoseNew(Pose robotPose, ShootSide shootSide) {
+        Pose control1, control2;
+        if (shootSide == ShootSide.LEFT) {
+            control1 = new Pose(14, 144);
+            control2 = new Pose(0, 130);
+        } else {
+            control1 = new Pose(130, 144);
+            control2 = new Pose(144, 130);
+        }
+        double angle1 = ExtraFns.getTargetAngle(robotPose, control1);
+        double angle2 = ExtraFns.getTargetAngle(robotPose, control2);
+        Vector displacement = new Vector(
+                robotPose.distanceFrom(getShootPose(shootSide)),
+                (angle1 + angle2) / 2
+        );
+        return robotPose.plus(new Pose(
+                displacement.getXComponent(),
+                displacement.getYComponent()
+        ));
     }
 //
 //    public Pose getShootPoseNew(Pose position, ShootSide shootSide) {

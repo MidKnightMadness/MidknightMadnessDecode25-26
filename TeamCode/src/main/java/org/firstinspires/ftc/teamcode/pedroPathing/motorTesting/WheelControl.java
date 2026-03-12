@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 
-//
+@Deprecated
 public class WheelControl {
     public DcMotorEx BR;
     public DcMotorEx BL;

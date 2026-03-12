@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.hardware.Motor;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 
@@ -69,6 +70,22 @@ public class WheelControl2 {
         double FRPower = forward - right - rotate_power;
 
         setPowers(BLPower, BRPower, FLPower, FRPower, 1);
+    }
+
+    public void driveFieldCentric(double driveX, double driveY, double rotate, double maxPower, double robotHeadingRad, ShootSide shootSide) {
+
+        //if right shoot side: forward = +x, left = +y, right = -y, back = -x
+        //if left shoot side: forward = -x, left = -y, right = +y, back = +x
+
+        double forward = driveY * Math.cos(robotHeadingRad) - driveX * Math.sin(robotHeadingRad);
+        double right   = driveY * Math.sin(robotHeadingRad) + driveX * Math.cos(robotHeadingRad);
+
+        forward *= -1;//bc gamepad reversed for some reason
+        if(shootSide == ShootSide.RIGHT){
+            forward *= -1;
+            right *= -1;
+        }
+        drive_relative(forward, right, rotate, maxPower);
     }
 
     public WheelControl2 setBLDirection(DcMotorSimple.Direction direction) {

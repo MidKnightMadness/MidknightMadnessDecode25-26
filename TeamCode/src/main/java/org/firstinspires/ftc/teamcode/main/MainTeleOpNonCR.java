@@ -4,7 +4,6 @@ import static org.firstinspires.ftc.teamcode.util.ExtraFns.normAngle;
 
 import android.os.Environment;
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 //import com.bylazar.graph.GraphManager;
@@ -13,6 +12,7 @@ import com.outoftheboxrobotics.photoncore.PhotonCore;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.math.MathFunctions;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.lynx.LynxModule;
@@ -41,9 +41,10 @@ import org.firstinspires.ftc.teamcode.game.MotifEnums;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpotNonCR;
 import org.firstinspires.ftc.teamcode.game.SpotType;
 import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
+import org.firstinspires.ftc.teamcode.newpid.PIDController;
+import org.firstinspires.ftc.teamcode.pedroPathing.motorTesting.WheelControl2;
 import org.firstinspires.ftc.teamcode.subsystems.GobildaLightBlock;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
-import org.firstinspires.ftc.teamcode.pedroPathing.robotDrive.WheelControl;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.PushUpServo;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexerNonCR;
@@ -51,6 +52,7 @@ import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.tests.camera.AprilTagWebcam;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
+import org.firstinspires.ftc.teamcode.util.ExtraFns;
 import org.firstinspires.ftc.teamcode.util.Timer;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
@@ -102,7 +104,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
     public static double[] kIntakeGains = new double[]{0, 0, 0};
     double topShooterPower = 0.8;
     double botShooterPower = 0.6;
-    WheelControl wheelControl;
+    WheelControl2 wheelControl;
     public static int optimalNum = 8;
     Pose toCloseLeftShoot = new Pose(57, 94, Math.toRadians(310));
     Pose toCloseRightShoot = new Pose(87, 94, Math.toRadians(230));
@@ -128,7 +130,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
 
     boolean autoAlign = false;
-    public boolean useArducam = true;
+    public boolean useArducam = false;
     public static double cameraAlignThresholdDegrees = 5;
     boolean autoSpindexer = false;
     boolean autoDriveToShoot = false;
@@ -145,7 +147,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
     TwoWheelShooter.RunMode shooterRunMode = TwoWheelShooter.RunMode.VelocityControl;
 //    VelocityControl
 
-    public static double[] pidAutoAlign = new double[]{1.0, 0, 0.1};//1.5, 0, 0.1
+    PIDController pidAutoAlign = new PIDController(1.0, 0, 0.1);
 //    public static double[] pidAutoAlignAgressive = new double[]{2, 0, 0.1};
     public static double alignmentWeight = 0.2;
     FollowPathCommand followPathCommand;
@@ -236,7 +238,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
     public static double fastSmoothTime = 0.7;
     public static double slowSmoothTime = 1;
     public static double inBetweenOutakeTime = 250;
-    boolean driveFieldOreinted = false;
+    boolean driveFieldOriented = false;
     Limelight3A limelight;
 
     @Override
@@ -280,7 +282,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
         initializeSubsystems();
 
-        wheelControl = new WheelControl(hardwareMap);
+        wheelControl = new WheelControl2(hardwareMap);
 //        spindexerServo = spindexer.getServo();
 //        spindexerServo2 = spindexer.getTurner2().getServo();
 
@@ -643,8 +645,8 @@ public class MainTeleOpNonCR extends CommandOpMode {
         double pGain;
         double dGain;
 //        if(Math.abs(headingError) > headingThresholdSwap) {
-            pGain = pidAutoAlign[0] * filteredHeadingError;
-            dGain = pidAutoAlign[2] * (filteredHeadingError - prevHeadingError) / timer.getDeltaTime();
+            pGain = pidAutoAlign.kp * filteredHeadingError;
+            dGain = pidAutoAlign.kd * (filteredHeadingError - prevHeadingError) / timer.getDeltaTime();
 //        }
 
         double power = pGain + dGain;
@@ -672,28 +674,25 @@ public class MainTeleOpNonCR extends CommandOpMode {
         return normAngle(heading);
     }
 
+    public double calculateAlignTurnPower() {
+        double[] aimData = shooter.aimCalculator.targetPowersHeading(
+                follower.getPose(),
+                follower.getVelocity(),
+                TwoWheelShooter.getShootPoseNew(currentPose, shootSide)
+        );
+        targetHeading = MathFunctions.normalizeAngle(aimData[2] + Math.PI);
+        headingError = getAngleError(
+                follower.getPose().getHeading(),
+                targetHeading
+        );
 
-    public double getAngleError(Pose position) {
-        Pose control1, control2;
-        if (shootSide == ShootSide.LEFT) {
-            control1 = new Pose(14, 144);
-            control2 = new Pose(0, 130);
-        } else {
-            control1 = new Pose(130, 144);
-            control2 = new Pose(144, 130);
-        }
+        return -pidAutoAlign.calculate(headingError);
+    }
 
-        double angle1 = getTargetAngle(position, control1);
-        double angle2 = getTargetAngle(position, control2);
-        this.targetHeading = normAngle((angle1 + angle2) / 2);
+    public double getAngleError(double currentHeading, double targetHeading) {
         //heading is in absolute radians
-        double error = targetHeading - position.getHeading();
-        double errorSign = (error > 0) ? -1 : 1;
-        if (Math.abs(error) > Math.PI) {
-            error = errorSign * (2 * Math.PI - Math.abs(position.getHeading() - targetHeading));
-        }
-
-        error = normAnglePlusMinusPI(error);
+        double error = targetHeading - currentHeading;
+        error = ExtraFns.normAnglePlusMinusPI(error);
         return error;
     }
 
@@ -723,7 +722,6 @@ public class MainTeleOpNonCR extends CommandOpMode {
                 if (detected) detection = tag;
             }
         }
-        Pose outakePose = new Pose(currentPose.getX(), currentPose.getY(), normAngle(Math.toRadians(currentPose.getHeading()) + Math.PI));
 
         if (detected && detection != null) {
             aprilTagBearing = Math.toRadians(detection.ftcPose.elevation);
@@ -736,11 +734,8 @@ public class MainTeleOpNonCR extends CommandOpMode {
         if (cameraAlign) {
             headingError = aprilTagBearing;
         }
-        else {
-            headingError = getAngleError(outakePose);
-        }
 
-        turnPower = calculateGamepadPID(prevHeadingError, headingError);
+        turnPower = calculateAlignTurnPower();
         prevHeadingError = headingError;
     }
 
@@ -910,13 +905,13 @@ public class MainTeleOpNonCR extends CommandOpMode {
         }
 
 
-        if (!autoDriveToShoot && !driveFieldOreinted) {
-            wheelControl.drive_relative(gamepad1.left_stick_y, gamepad1.left_stick_x, !autoAlign ? -gamepad1.right_stick_x : turnPower, currSpeed);
-        } else if(!autoDriveToShoot && driveFieldOreinted){
+        if (!autoDriveToShoot && !driveFieldOriented) {
+            wheelControl.drive_relative(-gamepad1.left_stick_y, gamepad1.left_stick_x, !autoAlign ? gamepad1.right_stick_x : turnPower, currSpeed);
+        } else if(!autoDriveToShoot && driveFieldOriented){
             wheelControl.driveFieldCentric(
                     gamepad1.left_stick_x,
                     gamepad1.left_stick_y,
-                    !autoAlign ? -gamepad1.right_stick_x : turnPower,
+                    !autoAlign ? gamepad1.right_stick_x : turnPower,
                     currSpeed,
                     currentPose.getHeading(),
                     shootSide
@@ -926,7 +921,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
         follower.update();
 
         if(gamepad1.rightStickButtonWasPressed()){
-            driveFieldOreinted = !driveFieldOreinted;
+            driveFieldOriented = !driveFieldOriented;
         }
     }
 
@@ -1206,8 +1201,8 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
             telemetry.addLine("------------------------------------");
             telemetry.addData("Auto Align", autoAlign);
-            telemetry.addData("Target Heading", convertRadToDegrees(targetHeading));
-            telemetry.addData("Heading Error(Alignment)", convertRadToDegrees(headingError));
+            telemetry.addData("Target Heading", targetHeading);
+            telemetry.addData("Heading Error(Alignment)", headingError);
             telemetry.addData("Turn Power", turnPower);
             telemetry.addData("Camera Yaw Global", cameraYawGlobal);
             telemetry.addData("Camera Yaw Rel", cameraYawRelative);
