@@ -164,7 +164,7 @@ public class ShooterTestNonCR extends CommandOpMode {
     }
 
     public void initializeSubsystems() {
-        spindexer = new SpindexerNonCR(hardwareMap, useDistanceSensor, new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE});
+        spindexer = new SpindexerNonCR(hardwareMap, useDistanceSensor, new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE}, true);
         shooter = new TwoWheelShooter(hardwareMap, shooterRunMode);
         pushUpServo = new PushUpServo(hardwareMap);
 

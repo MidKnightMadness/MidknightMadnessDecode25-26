@@ -19,7 +19,8 @@ public class MotorEx extends Motor {
     public DcMotorEx motorEx;
 
     // The minimum difference between the current and requested motor power between motor writes
-    private double cachingTolerance = 0.001;
+    private double cachingTolerance = 0.0001;
+    public static double REFERENCE_VOLTAGE = 13;
 
     /**
      * Constructs the instance motor for the wrapper
@@ -60,7 +61,7 @@ public class MotorEx extends Motor {
     @Override
     public void set(double output, double currVoltage) {
         if (runmode == RunMode.VelocityControl) {
-            setPower(veloController.calculate(getCorrectedVelocity(), output) + feedforward.calculate(output, getAcceleration(), currVoltage));
+            setPower((veloController.calculate(getCorrectedVelocity(), output) + feedforward.calculate(output, getAcceleration()) * REFERENCE_VOLTAGE / currVoltage));
         } else if (runmode == RunMode.PositionControl) {
             double error = positionController.calculate(encoder.getPosition());
             setPower(output * error);
@@ -68,20 +69,15 @@ public class MotorEx extends Motor {
             setPower(output);
         }
     }
-    public static double shotDropThreshold = 100;
 
     // default 12.5V
     public void set(double output) {
-        set(output, SimpleMotorFeedforward.REFERENCE_VOLTAGE);
+        set(output, REFERENCE_VOLTAGE);
     }
 
     public void set(double output, double multiplier, double currVoltage) {
         if (runmode == RunMode.VelocityControl) {
-            double error = output - getCorrectedVelocity();
-            if(error >= shotDropThreshold ){
-
-            }
-            setPower(veloController.calculate(getCorrectedVelocity(), output) + feedforward.calculate(output, getAcceleration(), currVoltage));
+            setPower((veloController.calculate(getCorrectedVelocity(), output) + feedforward.calculate(output, getAcceleration())) * REFERENCE_VOLTAGE / currVoltage);
         } else if (runmode == RunMode.PositionControl) {
             double error = positionController.calculate(encoder.getPosition());
             setPower(output * error);

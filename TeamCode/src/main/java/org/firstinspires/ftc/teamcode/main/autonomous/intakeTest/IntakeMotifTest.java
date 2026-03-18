@@ -91,7 +91,7 @@ public class IntakeMotifTest extends CommandOpMode {
         path.setHeadingConstraint(headingError);
     }
     private void initializeMechanisms() {
-        spindexer = new SpindexerNonCR(hardwareMap, true).setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE});
+        spindexer = new SpindexerNonCR(hardwareMap, true, new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE}, true);
         intake = new Intake(hardwareMap, Intake.RunMode.RawPower);
         register(spindexer, intake);
     }

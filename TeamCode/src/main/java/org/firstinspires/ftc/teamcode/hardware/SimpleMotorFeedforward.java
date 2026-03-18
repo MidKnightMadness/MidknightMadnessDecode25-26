@@ -16,7 +16,6 @@ import com.bylazar.configurables.annotations.Configurable;
 @Config
 @Configurable
 public class SimpleMotorFeedforward {
-    public static final double REFERENCE_VOLTAGE = 12.5;
 
     public final double ks;
     public final double kv;
@@ -54,8 +53,8 @@ public class SimpleMotorFeedforward {
      * @param acceleration The acceleration setpoint.
      * @return The computed feedforward.
      */
-    public double calculate(double velocity, double acceleration, double currVoltage) {
-        return (ks * Math.signum(velocity) + kv * velocity + ka * acceleration) * REFERENCE_VOLTAGE / currVoltage;
+    public double calculate(double velocity, double acceleration) {
+        return (ks * Math.signum(velocity) + kv * velocity + ka * acceleration);
     }
 
     // Rearranging the main equation from the calculate() method yields the
@@ -69,7 +68,7 @@ public class SimpleMotorFeedforward {
      * @return The computed feedforward.
      */
     public double calculate(double velocity) {
-        return calculate(velocity, 0, 12.5);
+        return calculate(velocity, 0);
     }
 
     /**

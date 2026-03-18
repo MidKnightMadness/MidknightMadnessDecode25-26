@@ -22,12 +22,13 @@ public class IncrementalEncoderNonCR extends EncoderBase<IncrementalEncoderNonCR
      * @param id the ID of the encoder as configured
      * @param countsPerRevolution the number of encoder ticks per full revolution, aka cycles per revolution
      */
-    public IncrementalEncoderNonCR(HardwareMap hwMap, String id, double countsPerRevolution, AngleUnit angleUnit) {
+    public IncrementalEncoderNonCR(HardwareMap hwMap, String id, double countsPerRevolution, AngleUnit angleUnit, boolean resetEncoder) {
         this(hwMap.get(DcMotor.class, id), countsPerRevolution, angleUnit);
-        encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        encoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        encoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        //THIS IS WHAT IS LIKELY CAUSING ERROR
+        if(resetEncoder) {
+            encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            encoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            encoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
     }
 
     /**

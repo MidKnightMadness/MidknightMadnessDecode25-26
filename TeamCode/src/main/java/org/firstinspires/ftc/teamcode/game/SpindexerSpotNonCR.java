@@ -46,7 +46,8 @@ public enum SpindexerSpotNonCR {
     }
 
 
-    final double NUM_SPOTS = 3;
+    public static int NUM_SPOTS = 3;//in one revolution
+    public static int MAX_SPOTS = (int) SpindexerNonCR.degreesPerRevolution / 120;
     double intakePosition1;
     double outakePosition1;
     double outakePosition2;
@@ -85,10 +86,15 @@ public enum SpindexerSpotNonCR {
         }
     }
 
+    public static int getMaxSpots(){
+        return SPOT1.MAX_SPOTS;
+    }
+
 
     public int getIndex(){
         return index;
     }
+
 
     public ArrayList<Double> getIntakePositions(){
         ArrayList<Double> list = new ArrayList<>();
@@ -118,4 +124,30 @@ public enum SpindexerSpotNonCR {
         return outakePosition1;
     }
 
+    public double applyLayer(double position, int layer){
+        return position + layer * 360 / SpindexerNonCR.degreesPerRevolution;
+    }
+
+    public static double getAngleFromIndex(int globalIndex, SpotType type) {
+        int baseIndex = globalIndex % NUM_SPOTS;//base spot
+        int layer = globalIndex / NUM_SPOTS;//layering
+
+        SpindexerSpotNonCR spot = fromIndex(baseIndex);
+
+        double baseAngle;
+        if (type == SpotType.INTAKE) {
+            baseAngle = spot.getIntakePositionSolo();
+        } else {
+            baseAngle = spot.getOuttakePositionSolo();
+        }
+
+        double offset = layer * 360 / SpindexerNonCR.degreesPerRevolution;
+
+        return baseAngle + offset;
+    }
+
+    public static double getPositionFromIndex(int globalIndex, SpotType type){
+        double angle = getAngleFromIndex(globalIndex, type);
+        return Math.min(Math.max(angle / SpindexerNonCR.degreesPerRevolution, 0), 1);
+    }
 }

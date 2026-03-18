@@ -15,6 +15,8 @@ import org.firstinspires.ftc.teamcode.util.ConfigNames;
 @TeleOp(name = "Servo Setting", group = "General")
 public class ServoSetting extends OpMode {
     Servo pushUpServo;
+    Servo turret1Servo;
+    Servo turret2Servo;
     double setPos = 0.5;
     double increment = 0.001;
     ServoImplEx spindexerServo;
@@ -27,12 +29,12 @@ public class ServoSetting extends OpMode {
         spindexerServo = hardwareMap.get(ServoImplEx.class, ConfigNames.turner);
         spindexerServo.setPwmRange(new PwmControl.PwmRange(500, 2500));
         currentServo = pushUpServo;
+        turret1Servo = hardwareMap.get(Servo.class, ConfigNames.turretServoLeft);
+        turret2Servo = hardwareMap.get(Servo.class, ConfigNames.turretServoRight);
     }
 
     @Override
     public void loop() {
-
-
         if(useSpindexer) {
             spindexerServo.setPosition(setPos);
         } else{

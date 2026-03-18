@@ -25,7 +25,6 @@ public class ConfigNames {
     public static String BL = "BL";
     public static String BR = "BR";
     public static String rampServo = "rampServo";
-    public static String camServo = "cameraServo";
     public static String spindexerLights1 = "spinLight1";
     public static String spindexerLights2 = "spinLight2";
     public static String spindexerLights3 = "spinLight3";
@@ -38,5 +37,6 @@ public class ConfigNames {
     public static String intakeDist2 = "distSensor2";
     public static String turretServoLeft = "turretServoLeft";
     public static String turretServoRight = "turretServoRight";
-    public static String turretEncoder = "FR";
+    public static String turretEncoder = "FR";//TODO: UPDATE
+    public static String transferMotor = "transferMotor";
 }

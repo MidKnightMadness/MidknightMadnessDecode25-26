@@ -91,35 +91,6 @@ public class ShooterTest extends OpMode {
         spindexer.updateShootOn(shootOn);
 
 
-        if(!shootOn){
-            return;
-        }
-
-
-        if(!velAgressiveComp && spindexer.isAtSpot(SpindexerSpot.SPOT0, SpotType.OUTTAKE)){
-            triggeredSpot = 0;
-            recentTriggeredSpot = triggeredSpot;
-            velAgressiveComp = true;
-        } else if(!velAgressiveComp && spindexer.isAtSpot(SpindexerSpot.SPOT1, SpotType.OUTTAKE)){
-            triggeredSpot = 1;
-            recentTriggeredSpot = triggeredSpot;
-            velAgressiveComp = true;
-        } else if(!velAgressiveComp && spindexer.isAtSpot(SpindexerSpot.SPOT2, SpotType.OUTTAKE)){
-            triggeredSpot = 2;
-            recentTriggeredSpot = triggeredSpot;
-            velAgressiveComp = true;
-        } else{
-            triggeredSpot = -1;
-            triggerBallShot = false;
-        }
-        if(!triggerBallShot && triggeredSpot != -1){
-            shooter.triggerBallShot();
-            spindexer.removeBall(triggeredSpot);
-            triggerBallShot = true;
-        }
-
-
-
 
 
     }
