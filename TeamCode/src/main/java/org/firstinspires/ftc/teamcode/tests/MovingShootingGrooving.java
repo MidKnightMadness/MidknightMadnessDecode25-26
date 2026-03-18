@@ -8,7 +8,6 @@ import com.pedropathing.math.MathFunctions;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
-import com.seattlesolvers.solverslib.command.Robot;
 
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.newpid.PIDController;
@@ -56,9 +55,9 @@ public class MovingShootingGrooving extends CommandOpMode {
 
         turnPower = calculateAlignTurnPower();
         if (!autoAlign) {
-            wheelControl.drive_relative(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, currSpeed);
+            wheelControl.driveRelative(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, currSpeed);
         } else {
-            wheelControl.drive_relative(-gamepad1.left_stick_y, gamepad1.left_stick_x, turnPower, currSpeed);
+            wheelControl.driveRelative(-gamepad1.left_stick_y, gamepad1.left_stick_x, turnPower, currSpeed);
         }
 
         telemetryM.addData("Left stick y (forward)", gamepad1.left_stick_y);

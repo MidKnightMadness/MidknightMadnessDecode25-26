@@ -30,7 +30,6 @@ import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-import org.firstinspires.ftc.teamcode.commands.Robot;
 import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommandNonCR;
 import org.firstinspires.ftc.teamcode.commands.shooter.ShootSeqCommand;
 import org.firstinspires.ftc.teamcode.commands.spindexer.OutakeSpotsRotation;
@@ -905,7 +904,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
 
         if (!autoDriveToShoot && !driveFieldOriented) {
-            wheelControl.drive_relative(gamepad1.left_stick_y, -gamepad1.left_stick_x, !autoAlign ? gamepad1.right_stick_x : turnPower, currSpeed);
+            wheelControl.driveRelative(gamepad1.left_stick_y, -gamepad1.left_stick_x, !autoAlign ? gamepad1.right_stick_x : turnPower, currSpeed);
         } else if(!autoDriveToShoot && driveFieldOriented){
             wheelControl.driveFieldCentric(
                     -gamepad1.left_stick_x,

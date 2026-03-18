@@ -7,18 +7,15 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.Vector;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.LambdaCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
-import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.util.Timing;
 
 import org.firstinspires.ftc.teamcode.commands.Robot;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
-import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.pedroPathing.motorTesting.WheelControl2;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
@@ -26,18 +23,24 @@ import org.firstinspires.ftc.teamcode.util.AllConfigs;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 @Autonomous
 @Configurable
 public class DanielCloseAuto extends CommandOpMode {
     public static Pose startPose = new Pose(12, 130, Math.toRadians(135));
+    public static double shootTimeout = 700;
+    public static double rowXInner = 60;
+    public static double rowXOuter = 25;
+    public static double row1Y = 100;
+    public static double row2Y = 70;
+    public static double row3Y = 40;
 
     Follower follower;
     ShootSide shootSide = ShootSide.LEFT;
     TelemetryManager telemetryM;
-    WheelControl2 wheelControl;
+    WheelControl2 drive;
     Timer timer = new Timer(TimeUnit.MILLISECONDS);
-    Timing.Timer firstTimeout;
     TwoWheelShooter shooter;
     SequentialCommandGroup main;
     Pose robotPose;
@@ -45,10 +48,10 @@ public class DanielCloseAuto extends CommandOpMode {
     double currVolt;
     boolean started = false;
 
-    Command backUp;
     enum State {
         init,
-        firstBack,
+        balls3,
+        balls6,
         end
     }
     State state;
@@ -59,9 +62,8 @@ public class DanielCloseAuto extends CommandOpMode {
         state = State.init;
         follower = ConstantsOldBot.createPinpointFollower(hardwareMap);
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
-        wheelControl = new WheelControl2(hardwareMap);
+        drive = new WheelControl2(hardwareMap);
 
-        firstTimeout = new Timing.Timer(1);
         follower.setStartingPose(startPose);
 //        shooter = new TwoWheelShooter(hardwareMap, TwoWheelShooter.RunMode.VelocityControl);
         initCommands();
@@ -92,25 +94,61 @@ public class DanielCloseAuto extends CommandOpMode {
     }
 
     public void initCommands() {
-        backUp = new LambdaCommand()
-                .setInitialize(() -> {
-                    timer.restart();
-                    state = State.firstBack;
-                })
-                .setExecute(() -> {
-                    wheelControl.drive_relative(-1, 0, 0, 1);
-                    if (distToGoal() > 50 || timer.getTime() > 700) {
-                        firstTimeout.start();
+        Supplier<Command> balls1To3 = () -> {
+            Timing.Timer shootTimer = new Timing.Timer(400, TimeUnit.MILLISECONDS);
+            return new LambdaCommand()
+                    .setInitialize(() -> {
+                        timer.restart();
+                        state = State.balls3;
+                    })
+                    .setExecute(() -> {
+                        drive.driveRelative(-1, 0, 0, 1);
+                        if (distToGoal() > 50 || timer.getTime() > 700) {
+                            shootTimer.start();
 //                        shooter.setFlywheelNew(robotPose, robotVel, shootSide, currVolt);
-                    }
-                })
-                .setIsFinished(() -> (firstTimeout.done() || distToGoal() > 100))
-                .addRequirements(shooter);
+                        }
+                    })
+                    .setIsFinished(() -> (shootTimer.done() || distToGoal() > 100))
+                    .addRequirements(shooter);
+        };
+
+        Command balls4To6 = new SequentialCommandGroup(
+                new InstantCommand(() -> state = State.balls6),
+                // Full send to almost there
+                new LambdaCommand()
+                    .setInitialize(() -> timer.restart())
+                    .setExecute(() -> drive.pid(
+                            robotPose, new Pose(rowXInner + 15, row2Y), 1)
+                    )
+                    .setIsFinished(() -> robotPose.getY() < row2Y + 10),
+                // Adjust position and power
+                new LambdaCommand()
+                        .setInitialize(() -> timer.restart())
+                        .setExecute(() -> drive.pid(
+                                robotPose, new Pose(rowXInner, row2Y), 0.5)
+                        )
+                        .setIsFinished(() -> robotPose.getX() < rowXInner),
+                // Drive straight forward
+                new LambdaCommand()
+                        .setInitialize(() -> timer.restart())
+                        .setExecute(() -> drive.pid(
+                                robotPose, new Pose(rowXOuter, row2Y), 0.5)
+                        )
+                        .setIsFinished(() -> robotPose.getX() < rowXOuter),
+                // Drive straight back
+                new LambdaCommand()
+                        .setInitialize(() -> timer.restart())
+                        .setExecute(() -> drive.pid(
+                                robotPose, new Pose(rowXOuter, row2Y), 1)
+                        )
+                        .setIsFinished(() -> robotPose.getX() > rowXOuter - 5)
+        );
 
         main = new SequentialCommandGroup(
-                backUp,
+                balls1To3.get(),
+                balls4To6,
                 new InstantCommand(() -> {
-                    wheelControl.stop();
+                    drive.stop();
                     state = State.end;
                 })
         );
