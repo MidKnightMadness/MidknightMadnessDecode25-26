@@ -1,12 +1,14 @@
 package org.firstinspires.ftc.teamcode.pedroPathing.motorTesting;
 
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.math.MathFunctions;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.game.ShootSide;
-import org.firstinspires.ftc.teamcode.hardware.Motor;
+import org.firstinspires.ftc.teamcode.newpid.PIDController;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 
 //
@@ -15,6 +17,9 @@ public class WheelControl2 {
     public DcMotorEx BL;
     public DcMotorEx FR;
     public DcMotorEx FL;
+
+    PIDController driveController;
+    PIDController headingController;
 
     public WheelControl2(HardwareMap hardwareMap) {
         this.BR = hardwareMap.get(DcMotorEx.class, ConfigNames.BR);
@@ -25,6 +30,11 @@ public class WheelControl2 {
         this.BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         this.FL = hardwareMap.get(DcMotorEx.class, ConfigNames.FL);
         this.FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+    }
+
+    public void setPidControllers(PIDController drive, PIDController heading) {
+        this.driveController = drive;
+        this.headingController = heading;
     }
 
     public void setPowers(double BL, double BR, double FL, double FR, double power) {
@@ -39,7 +49,7 @@ public class WheelControl2 {
         this.FR.setPower(power * (FR/max)); // We divide all values by the maximum one so they do not reach one.
     }
 
-    public void drive_relative(double forward, double right, double rotate_power, double max_power) {
+    public void driveRelative(double forward, double right, double rotate_power, double max_power) {
         /*3z
         Positive rotate_power is CCW, negative is CW
 
@@ -80,12 +90,11 @@ public class WheelControl2 {
         double forward = driveY * Math.cos(robotHeadingRad) - driveX * Math.sin(robotHeadingRad);
         double right   = driveY * Math.sin(robotHeadingRad) + driveX * Math.cos(robotHeadingRad);
 
-        forward *= -1;//bc gamepad reversed for some reason
         if(shootSide == ShootSide.RIGHT){
             forward *= -1;
             right *= -1;
         }
-        drive_relative(forward, right, rotate, maxPower);
+        driveRelative(forward, right, rotate, maxPower);
     }
 
     public WheelControl2 setBLDirection(DcMotorSimple.Direction direction) {
@@ -115,47 +124,29 @@ public class WheelControl2 {
         this.FR.setPower(0);
     }
 
-    public void drive_angle(double strafe_angle, double rotate_power, double drive_power, double robot_heading) {
-        /*
-        Everything is in degrees
-        Strafe angle is relative to field, not robot
-        Power only comes from variable and not forward/right
-        Useful if you want to drive at an exact power
-        Rotation is added after drive
-        Angles are standard (0 is positive x-axis, 90 is positive y-axis)
-        Useful for driving given power and angle (polar)
-        */
-
-        // Turn strafe angle heading clockwise
-        double theta = Math.toRadians(strafe_angle-robot_heading);
-
-        // Convert angle and power to relative drive
-        double forward = drive_power*Math.cos(theta);
-        double right = -drive_power*Math.sin(theta);
-
-        // Drive relatively
-        drive_relative(forward, right, rotate_power, 1);
+    public void driveAngle(double strafeAngle, double rotatePower, double drivePower, double robotHeading) {
+        double theta = strafeAngle - robotHeading;
+        double forward = drivePower*Math.cos(theta);
+        double right = -drivePower*Math.sin(theta);
+        driveRelative(forward, right, rotatePower, 1);
     }
 
-    public void drive_limit_power(double drive_x, double drive_y, double rotate_power, double max_drive_power, double robot_heading) {
-        /*
-        Everything is in degrees
-        Similar to drive but power is used as max
-        Rotation is added after drive
-        Angles are standard (0 is positive x-axis, 90 is positive y-axis)
-        Useful for driving given x and y powers (rectangular)
-         */
-
-        // Convert x and y relative to robot forward and right
-        robot_heading = Math.toRadians(robot_heading);
-        double forward = drive_x*Math.cos(robot_heading) + drive_y*Math.sin(robot_heading);
-        double right = drive_x*Math.sin(robot_heading) - drive_y*Math.cos(robot_heading);
-
-        // Drive relatively
-        drive_relative(forward, right, rotate_power, max_drive_power);
+    public void pid(Pose robotPose, Pose target) {
+        double drivePower = driveController.calculate(robotPose.distanceFrom(target));
+        pid(robotPose, target, drivePower);
     }
 
-    public void change_mode(DcMotor.ZeroPowerBehavior mode){
+    public void pid(Pose robotPose, Pose target, double targetPower) {
+        double strafeAngle = robotPose.minus(target).getAsVector().getTheta();
+        double headingPower = headingController.calculate(
+                MathFunctions.normalizeAngleSigned(
+                        target.getHeading() - robotPose.getHeading()
+                )
+        );
+        driveAngle(strafeAngle, targetPower, headingPower, robotPose.getHeading());
+    }
+
+    public void changeMode(DcMotor.ZeroPowerBehavior mode){
         this.BR.setZeroPowerBehavior(mode);
         this.FR.setZeroPowerBehavior(mode);
         this.BL.setZeroPowerBehavior(mode);

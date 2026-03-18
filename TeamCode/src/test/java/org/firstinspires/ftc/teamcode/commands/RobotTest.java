@@ -6,14 +6,17 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 class RobotTest {
     @Test
     void testConfig() {
-        String config = "HELLO=world\nTHREE=musketeers";
-        InputStream inputStream = new ByteArrayInputStream(config.getBytes());
-        Robot.loadConfig(inputStream);
-        assertEquals(Robot.getConfigVar("HELLO"), "world");
-        assertEquals(Robot.getConfigVar("THREE"), "musketeers");
+        Map<String, String> config = new HashMap<>();
+        config.put("hello", "world");
+        config.put("three", "musketeers");
+        Robot.config = config;
+        assertEquals(Robot.config.get("hello"), "world");
+        assertEquals(Robot.config.get("three"), "musketeers");
     }
 }

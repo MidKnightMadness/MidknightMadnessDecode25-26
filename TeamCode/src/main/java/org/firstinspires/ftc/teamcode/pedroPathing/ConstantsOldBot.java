@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.commands.Robot;
 import org.firstinspires.ftc.teamcode.localization.kalmanFilter.KalmanPinpointAprilConstants;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 
@@ -43,7 +44,7 @@ public class ConstantsOldBot {
             .forwardPodY(-5.875)
             .strafePodX(1.50)
             .distanceUnit(DistanceUnit.INCH)
-            .hardwareMapName(ConfigNames.pinpoint1)
+            .hardwareMapName(Robot.config.get("pinpoint"))
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
             .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
             .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD);
@@ -53,7 +54,7 @@ public class ConstantsOldBot {
             .setLeftPipelineNum(0)
             .setRightPipelineNum(2)
             .setStartPipeline(2)
-            .setPinpointHardwareConfig(ConfigNames.pinpoint1)
+            .setPinpointHardwareConfig(Robot.config.get("pinpoint"))
             .setQ(0.01)
             .setR(2)
             .setMotifTrue(true)
@@ -68,13 +69,13 @@ public class ConstantsOldBot {
             .maxPower(1)
             .xVelocity(78)
             .yVelocity(54.5)
-            .rightFrontMotorName(ConfigNames.FR)
-            .rightRearMotorName(ConfigNames.BR)
-            .leftRearMotorName(ConfigNames.BL)
-            .leftFrontMotorName(ConfigNames.FL)
-            .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
+            .rightFrontMotorName(Robot.config.get("FR"))
+            .rightRearMotorName(Robot.config.get("BR"))
+            .leftRearMotorName(Robot.config.get("BL"))
+            .leftFrontMotorName(Robot.config.get("FL"))
+            .leftFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
             .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
-            .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
+            .rightFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
             .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD);
 
     public static Follower createKalmanPinpointAprilFollower(HardwareMap hardwareMap, Pose startPose, Telemetry telemetry){//global startPose
@@ -88,7 +89,7 @@ public class ConstantsOldBot {
     }
 
     public static Follower createPinpointFollower(HardwareMap hardwareMap) {
-        return new FollowerBuilder(followerConstants, hardwareMap)
+        return new com.pedropathing.ftc.FollowerBuilder(followerConstants, hardwareMap)
                 .pinpointLocalizer(pinpointLocalizerConstants)
                 .mecanumDrivetrain(driveConstants)
                 .pathConstraints(pathConstraints)

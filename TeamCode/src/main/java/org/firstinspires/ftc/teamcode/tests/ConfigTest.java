@@ -19,14 +19,14 @@ public class ConfigTest extends OpMode {
 
     @Override
     public void init() {
-        Robot.loadConfig(hardwareMap.appContext, "config.test");
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
     }
 
     @Override
     public void loop() {
-        telemetryM.addData("HELLO", Robot.getConfigVar("HELLO"));
-        telemetryM.addData("THREE", Robot.getConfigVar("THREE"));
+        telemetryM.addLine("test");
+        telemetryM.addData("HELLO", Robot.config.get("HELLO"));
+        telemetryM.addData("THREE", Robot.config.get("THREE"));
         telemetryM.update(telemetry);
     }
 }
