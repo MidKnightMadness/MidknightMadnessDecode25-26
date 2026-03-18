@@ -80,7 +80,6 @@ public class WheelControl2 {
         double forward = driveY * Math.cos(robotHeadingRad) - driveX * Math.sin(robotHeadingRad);
         double right   = driveY * Math.sin(robotHeadingRad) + driveX * Math.cos(robotHeadingRad);
 
-        forward *= -1;//bc gamepad reversed for some reason
         if(shootSide == ShootSide.RIGHT){
             forward *= -1;
             right *= -1;

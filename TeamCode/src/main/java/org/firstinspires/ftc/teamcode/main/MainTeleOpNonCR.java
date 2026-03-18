@@ -147,7 +147,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
     TwoWheelShooter.RunMode shooterRunMode = TwoWheelShooter.RunMode.VelocityControl;
 //    VelocityControl
 
-    PIDController pidAutoAlign = new PIDController(1.0, 0, 0.1);
+    PIDController pidAutoAlign = new PIDController(1.3, 0, 0.1);
 //    public static double[] pidAutoAlignAgressive = new double[]{2, 0, 0.1};
     public static double alignmentWeight = 0.2;
     FollowPathCommand followPathCommand;
@@ -256,7 +256,6 @@ public class MainTeleOpNonCR extends CommandOpMode {
 //       ConstantsBot.motifIsBusy = false; -> meant for pinpointAprilTagLocalizer
         timer = new Timer();
 //        arducamTimer = new Timer();
-        Robot.loadConfig(hardwareMap.appContext, "config.mainBot");
 
         if (readPoseFile) {
             pattern = readMotifFromFile(motifFileName);
@@ -906,14 +905,14 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
 
         if (!autoDriveToShoot && !driveFieldOriented) {
-            wheelControl.drive_relative(-gamepad1.left_stick_y, gamepad1.left_stick_x, !autoAlign ? gamepad1.right_stick_x : turnPower, currSpeed);
+            wheelControl.drive_relative(gamepad1.left_stick_y, -gamepad1.left_stick_x, !autoAlign ? gamepad1.right_stick_x : turnPower, currSpeed);
         } else if(!autoDriveToShoot && driveFieldOriented){
             wheelControl.driveFieldCentric(
-                    gamepad1.left_stick_x,
+                    -gamepad1.left_stick_x,
                     gamepad1.left_stick_y,
                     !autoAlign ? gamepad1.right_stick_x : turnPower,
                     currSpeed,
-                    currentPose.getHeading(),
+                    Math.toRadians(currentPose.getHeading()),
                     shootSide
             );
         }
