@@ -206,7 +206,6 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
 
         timer = new Timer();
-        Robot.loadConfig(hardwareMap.appContext, "config.mainBot");
 
         if (readPoseFile) {
             pattern = readMotifFromFile(motifFileName);
@@ -678,7 +677,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
 
         if (!autoDriveToShoot && !driveFieldOriented) {
-            wheelControl.drive_relative(-gamepad1.left_stick_y, gamepad1.left_stick_x, !autoAlign ? gamepad1.right_stick_x : turnPower, currSpeed);
+            wheelControl.driveRelative (-gamepad1.left_stick_y, gamepad1.left_stick_x, !autoAlign ? gamepad1.right_stick_x : turnPower, currSpeed);
         } else if(!autoDriveToShoot && driveFieldOriented){
             wheelControl.driveFieldCentric(
                     gamepad1.left_stick_x,

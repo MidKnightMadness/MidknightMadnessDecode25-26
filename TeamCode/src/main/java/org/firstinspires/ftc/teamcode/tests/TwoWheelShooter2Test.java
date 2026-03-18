@@ -44,8 +44,6 @@ public class TwoWheelShooter2Test extends OpMode {
     Timer timer;
     @Override
     public void init() {
-        Robot.loadConfig(hardwareMap.appContext, "config.mainBot");
-
         shooter = new TwoWheelShooter2(hardwareMap, shooterRunMode, transferRunMode);
         shooter.setAggressiveRecovery(useAgressiveRecovery);
         turret = new Turret(hardwareMap, true);

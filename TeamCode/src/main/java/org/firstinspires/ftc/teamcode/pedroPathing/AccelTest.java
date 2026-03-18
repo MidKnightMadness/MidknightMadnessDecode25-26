@@ -80,7 +80,7 @@ public class AccelTest extends OpMode {
         updateData();
         switch (state) {
             case accel:
-                wheelControl.drive_relative(accelSpeed, 0, 0, 1);
+                wheelControl.driveRelative (accelSpeed, 0, 0, 1);
                 accelHistory.add(pose);
                 if (distanceFromStart > 70) {
                     state = State.decel;
@@ -88,7 +88,7 @@ public class AccelTest extends OpMode {
                 break;
 
             case decel:
-                wheelControl.drive_relative(decelSpeed, 0, 0, 1);
+                wheelControl.driveRelative (decelSpeed, 0, 0, 1);
                 decelHistory.add(pose);
                 if (distanceFromStart < 20) {
                     state = State.stop;

@@ -36,7 +36,7 @@ public class ServoTest extends OpMode {
         forward = -gamepad1.left_stick_y;
         leftRight = gamepad1.left_stick_x;
         angle = -gamepad1.right_stick_x;
-        drive.drive_relative(forward, leftRight, angle, power);
+        drive.driveRelative (forward, leftRight, angle, power);
         if(gamepad1.leftBumperWasPressed()){
             if (thing){
                 power = 0.5;

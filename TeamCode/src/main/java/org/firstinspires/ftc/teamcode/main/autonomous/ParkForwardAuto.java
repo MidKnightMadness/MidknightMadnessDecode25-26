@@ -35,7 +35,7 @@ public class ParkForwardAuto extends CommandOpMode {
     public void run(){
         super.run();
         if (timer.getTime() < driveForwardTime) {
-            wheelControl.drive_relative(1, 0, 0, 1);
+            wheelControl.driveRelative (1, 0, 0, 1);
         } else {
             wheelControl.stop();
         }

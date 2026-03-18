@@ -168,13 +168,13 @@ public class BoxAlignTest {
         if (inLimit) {
             drive.stop();
         } else if (!leftLimit && !rightLimit) {
-            //drive.drive_relative(0.25, 0, 0, 1); // small forward
+            //drive.driveRelative (0.25, 0, 0, 1); // small forward
             drive.setPowers(0.3, 0.3, 0.3, 0.3, 1);
         } else if (!leftLimit && rightLimit) {
-            //drive.drive_relative(0, 0, -0.25, 1); // small turn right
+            //drive.driveRelative (0, 0, -0.25, 1); // small turn right
             drive.setPowers(0.3, 0, 0.3, 0, 1);
         } else if (leftLimit && !rightLimit) {
-            //drive.drive_relative(0, 0, 0.25, 1); // small turn left
+            //drive.driveRelative (0, 0, 0.25, 1); // small turn left
             drive.setPowers(0, 0.3, 0, 0.3, 1);
         }
     }

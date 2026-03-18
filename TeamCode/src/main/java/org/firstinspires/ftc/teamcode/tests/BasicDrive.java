@@ -18,6 +18,6 @@ public class BasicDrive extends OpMode {
 
     @Override
     public void loop() {
-        wheelControl.drive_relative(-gamepad1.left_stick_y, gamepad1.left_stick_x, -gamepad1.right_stick_x, 1);
+        wheelControl.driveRelative (-gamepad1.left_stick_y, gamepad1.left_stick_x, -gamepad1.right_stick_x, 1);
     }
 }

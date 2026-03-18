@@ -866,9 +866,9 @@ public class MainTeleOp extends CommandOpMode {
                 }
             } else {
                 if (!autoAlign) {
-                    wheelControl.drive_relative(gamepad1.left_stick_y, gamepad1.left_stick_x, -gamepad1.right_stick_x * currSpeed, currSpeed);
+                    wheelControl.driveRelative (gamepad1.left_stick_y, gamepad1.left_stick_x, -gamepad1.right_stick_x * currSpeed, currSpeed);
                 } else {
-                    wheelControl.drive_relative(gamepad1.left_stick_y, gamepad1.left_stick_x, turnPower, currSpeed);
+                    wheelControl.driveRelative (gamepad1.left_stick_y, gamepad1.left_stick_x, turnPower, currSpeed);
                 }
             }
         }

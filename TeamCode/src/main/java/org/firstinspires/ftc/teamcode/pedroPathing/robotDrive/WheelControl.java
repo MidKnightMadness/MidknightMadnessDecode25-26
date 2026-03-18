@@ -49,7 +49,7 @@ public class WheelControl {
         this.FR.setPower(power * (FR/max)); // We divide all values by the maximum one so they do not reach one.
     }
 
-    public void drive_relative(double forward, double right, double rotate_power, double max_power) {
+    public void driveRelative (double forward, double right, double rotate_power, double max_power) {
         /*3z
         Positive rotate_power is CCW, negative is CW
 
@@ -131,7 +131,7 @@ public class WheelControl {
             forward *= -1;
             right *= -1;
         }
-        drive_relative(forward, right, rotate, maxPower);
+        driveRelative (forward, right, rotate, maxPower);
     }
 
     public void stop() {
@@ -160,7 +160,7 @@ public class WheelControl {
         double right = -drive_power*Math.sin(theta);
 
         // Drive relatively
-        drive_relative(forward, right, rotate_power, 1);
+        driveRelative (forward, right, rotate_power, 1);
     }
 
     public void drive_limit_power(double drive_x, double drive_y, double rotate_power, double max_drive_power, double robot_heading) {
@@ -178,7 +178,7 @@ public class WheelControl {
         double right = drive_x*Math.sin(robot_heading) - drive_y*Math.cos(robot_heading);
 
         // Drive relatively
-        drive_relative(forward, right, rotate_power, max_drive_power);
+        driveRelative (forward, right, rotate_power, max_drive_power);
     }
 
     public void change_mode(DcMotor.ZeroPowerBehavior mode){
