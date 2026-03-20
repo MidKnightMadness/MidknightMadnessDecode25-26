@@ -37,6 +37,6 @@ public class ConfigNames {
     public static String intakeDist2 = "distSensor2";
     public static String turretServoLeft = "turretServoLeft";
     public static String turretServoRight = "turretServoRight";
-    public static String turretEncoder = "FR";//TODO: UPDATE
+    public static String turretEncoder = "BL";//TODO: UPDATE
     public static String transferMotor = "transferMotor";
 }

@@ -21,7 +21,7 @@ import java.util.Map;
 @Config
 @Configurable
 public class Intake extends SubsystemBase {
-    DcMotorEx intakeMotorLeft;
+//    DcMotorEx intakeMotorLeft;
     DcMotorEx intakeMotorRight;
 
     public static double reference_voltage = 12.5;
@@ -42,20 +42,20 @@ public class Intake extends SubsystemBase {
 
 
     public Intake(HardwareMap hardwareMap, RunMode runMode){
-        intakeMotorLeft = hardwareMap.get(DcMotorEx.class, ConfigNames.intakeMotorLeft);
+//        intakeMotorLeft = hardwareMap.get(DcMotorEx.class, ConfigNames.intakeMotorLeft);
         intakeMotorRight = hardwareMap.get(DcMotorEx.class, ConfigNames.intakeMotorRight);
 
-        intakeMotorLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//        intakeMotorLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         intakeMotorRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        intakeMotorLeft.setDirection(leftMotorDirectionForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);
+//        intakeMotorLeft.setDirection(leftMotorDirectionForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);
         intakeMotorRight.setDirection(rightMotorDirectionForward ? DcMotorEx.Direction.FORWARD : DcMotorEx.Direction.REVERSE);
     }
 
 
-    public DcMotorEx getLeftMotor(){
-        return intakeMotorLeft;
-    }
+//    public DcMotorEx getLeftMotor(){
+//        return intakeMotorLeft;
+//    }
 
     public DcMotorEx getRightMotor() {
         return intakeMotorRight;
@@ -64,22 +64,23 @@ public class Intake extends SubsystemBase {
 
     public void setDirectPower(double power){
         double motorPower = Math.clampOutput(power, -1, 1);
-        intakeMotorLeft.setPower(motorPower);
+//        intakeMotorLeft.setPower(motorPower);
         intakeMotorRight.setPower(motorPower);
     }
 
     public void setDirectPower(double power, double currVolt){
         double motorPower = Math.clampOutput(power, -1, 1);
-        intakeMotorLeft.setPower(motorPower * reference_voltage / currVolt);
+//        intakeMotorLeft.setPower(motorPower * reference_voltage / currVolt);
+        intakeMotorRight.setPower(motorPower * reference_voltage / currVolt);
     }
 
 
     public void stopPower(){
-        intakeMotorLeft.setPower(0);
+//        intakeMotorLeft.setPower(0);
         intakeMotorRight.setPower(0);
     }
 
     public double getMotorVelocity(){
-        return intakeMotorLeft.getVelocity(AngleUnit.RADIANS);
+        return intakeMotorRight.getVelocity(AngleUnit.RADIANS);
     }
 }

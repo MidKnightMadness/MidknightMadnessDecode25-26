@@ -550,6 +550,7 @@ public class TwoWheelShooter extends SubsystemBase {
                 displacement.getYComponent()
         ));
     }
+
 //
 //    public Pose getShootPoseNew(Pose position, ShootSide shootSide) {
 //        Pose control1, control2;

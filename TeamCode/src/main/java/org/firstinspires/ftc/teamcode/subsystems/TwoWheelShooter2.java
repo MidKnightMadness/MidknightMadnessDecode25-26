@@ -41,6 +41,8 @@ public class TwoWheelShooter2 extends SubsystemBase {
     }
 
 
+    public static double transferPower = 0.7;
+    public static double transferVelocity = 850;
     //DEFAULT GAINS
     public static double[] kTransferGains = new double[]{0.04057, 0.000363, 0};
     public static double[] pidTransferGains = new double[]{0.0012, 0, 0};
@@ -78,9 +80,9 @@ public class TwoWheelShooter2 extends SubsystemBase {
     ); // Unused for now
     public static double gearRatio = 3;
 
-    public static boolean lowMotorDirForward = true;
+    public static boolean lowMotorDirForward = false;
     public static boolean highMotorDirForward = true;
-    public static boolean transferMotorDirForward = false;
+    public static boolean transferMotorDirForward = true;
     double predictedTopVel = 2000;
     double predictedBotVel = 2000;
     double predictedTransferVel = 2000;
@@ -523,8 +525,8 @@ public class TwoWheelShooter2 extends SubsystemBase {
         predictedBotVel = lowPower;
         predictedTopVel = highPower;
         if(shooterRunMode == RunMode.VelocityControl){
-            low.set(lowPower, 1, currVolt);
-            high.set(highPower, 1, currVolt);//account for belted motor
+            low.set(lowPower, currVolt);
+            high.set(highPower, currVolt);//account for belted motor
         }
         else {
             low.set(lowPower);
@@ -581,7 +583,8 @@ public class TwoWheelShooter2 extends SubsystemBase {
         );
         return robotPose.plus(new Pose(
                 displacement.getXComponent(),
-                displacement.getYComponent()
+                displacement.getYComponent(),
+                displacement.getTheta()
         ));
     }
 //
@@ -601,7 +604,7 @@ public class TwoWheelShooter2 extends SubsystemBase {
 //    }
 
     public void stopFlywheels() {
-        low.motorEx.setPower(0);
-        high.motorEx.setPower(0);
+        low.setPower(0);
+        high.setPower(0);
     }
 }

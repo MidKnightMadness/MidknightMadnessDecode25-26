@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
+import com.qualcomm.robotcore.hardware.CRServoImplEx;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PwmControl;
@@ -9,9 +10,11 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.util.Range;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
+import com.seattlesolvers.solverslib.hardware.AbsoluteAnalogEncoder;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.hardware.IncrementalEncoder;
 import org.firstinspires.ftc.teamcode.hardware.IncrementalEncoderNonCR;
 import org.firstinspires.ftc.teamcode.util.Angle;
@@ -25,13 +28,14 @@ public class Turret extends SubsystemBase {
     private ServoImplEx leftServo;
     private ServoImplEx rightServo;
     private IncrementalEncoderNonCR encoder;
-    public static double totalRangeDegrees = 400;
-    public static double halfRange = totalRangeDegrees / 2.0;
+    public static double totalRangeRadians = 400;
+    public static double halfRange = totalRangeRadians / 2.0;
     //if degrees per revolution is 420, 210 degrees from turret(180 degrees position), -210 from turret
     Servo.Direction directionLeft = Servo.Direction.FORWARD;
     Servo.Direction directionRight = Servo.Direction.FORWARD;
     public static AngleNonCR finishedThreshold = AngleNonCR.fromDegrees(5);//TODO: Change to 15 for auto?
     public static AngleNonCR strictFinished = AngleNonCR.fromDegrees(2);
+    public static Angle offsetAngle = Angle.fromDegrees(90);
     //turret assumes the servos are at 0.5 and should be facing opposite direction as intake
     AngleNonCR currentAngle;
     double currLeftPosition;
@@ -42,7 +46,7 @@ public class Turret extends SubsystemBase {
     double lastPosRight = -1;
     public Turret(HardwareMap hardwareMap, boolean resetEncoder) {
         encoder = new IncrementalEncoderNonCR(
-                hardwareMap, ConfigNames.turretEncoder, 8192, AngleUnit.DEGREES, resetEncoder
+                hardwareMap, ConfigNames.turretEncoder, 8192, AngleUnit.RADIANS, resetEncoder
         ).setReversed(false);
 
         leftServo = hardwareMap.get(ServoImplEx.class, ConfigNames.turretServoLeft);
@@ -52,7 +56,6 @@ public class Turret extends SubsystemBase {
 
         leftServo.setDirection(directionLeft);
         rightServo.setDirection(directionRight);
-
 
         if(resetEncoder){
             //set to 0.5 to make sure both sides have same # of degrees
@@ -81,7 +84,7 @@ public class Turret extends SubsystemBase {
     @Override
     public void periodic(){
         //current angle returns from -210 to 210
-        currentAngle = AngleNonCR.fromDegrees(encoder.getAngleUnormalizedEncoder());
+        currentAngle = AngleNonCR.fromRadians(encoder.getAngleUnormalizedEncoder());
         currLeftPosition = leftServo.getPosition();
         currRightPosition = rightServo.getPosition();
     }
@@ -92,13 +95,13 @@ public class Turret extends SubsystemBase {
         return encoder;
     }
     public boolean isAtPosition(double position, boolean strict){
-        double angle = position * totalRangeDegrees;
-        return isAtAngle(AngleNonCR.fromDegrees(angle), strict);
+        double angle = position * totalRangeRadians;
+        return isAtAngle(AngleNonCR.fromRadians(angle), strict);
     }
 
     public boolean isAtAngle(AngleNonCR angle, boolean strict){
-        return Math.abs(angle.diff(currentAngle).toDegrees()) <
-                (strict ? strictFinished.toDegrees() : finishedThreshold.toDegrees());
+        return Math.abs(angle.diff(currentAngle).toRadians()) <
+                (strict ? strictFinished.toRadians() : finishedThreshold.toRadians());
     }
 
 
@@ -114,22 +117,22 @@ public class Turret extends SubsystemBase {
     *@params: angleNormalized 0–360 degrees
     */
     public boolean isAtAngle(Angle angleNormalized){
-        double target = angleNormalized.toDegrees(); // 0–360
+        double target = angleNormalized.toRadians(); // 0–2PI
         double current = currentAngle.getValue();    // -halfRange -> +halfRange
 
         double error = shortestAngleDifference(target, current);
 
-        return Math.abs(error) < finishedThreshold.toDegrees();
+        return Math.abs(error) < finishedThreshold.toRadians();
     }
 
     private double shortestAngleDifference(double target, double current){
         // bring current into 0–360 for computation
-        double current360 = (current + 360) % 360;
+        double current360 = (current + 2 * Math.PI) % 2 * Math.PI;
 
         // compute difference
         double diff = target - current360;
-        if (diff > 180) diff -= 360;
-        if (diff < -180) diff += 360;
+        if (diff > Math.PI) diff -= 2 * Math.PI;
+        if (diff < -Math.PI) diff += 2 * Math.PI;
         return diff;
     }
 
@@ -138,24 +141,25 @@ public class Turret extends SubsystemBase {
     public static double centerAngle = 0;
     public static double servoCenter = 0.5;
     public double angleToServo(AngleNonCR angle){
-        return servoCenter + angle.toDegrees() / totalRangeDegrees;
+        return servoCenter + angle.add(offsetAngle).toRadians() / totalRangeRadians;
     }
 
     public double servoToAngle(double servoPosition){
-        return (servoPosition - servoCenter) * totalRangeDegrees;
+        return Angle.fromRadians((servoPosition - servoCenter) * totalRangeRadians).sub(offsetAngle).toRadians();
     }
 
-    //takes in an angle from 0 - 360(target angle) and current angle(-half, + half) and finds optimal angle to set servo to
+    //takes in an angle from 0 - 2PI(target angle) and current angle(-half, + half) and finds optimal angle to set servo to
     private double angleToServoOptimized(Angle targetAngle, AngleNonCR currentAngle) {
         double current = currentAngle.getValue();
+        targetAngle.add(offsetAngle);
 
-        double target = ((targetAngle.getValue() + 180) % 360) - 180;
+        double target = ((targetAngle.getValue() + Math.PI) % (2 * Math.PI)) - Math.PI;
 
         double minAngle = -halfRange;
         double maxAngle = +halfRange;
 
-        //candidates +-360
-        double[] candidates = {target, target + 360, target - 360};
+        //candidates +-2PI
+        double[] candidates = {target, target + 2 * Math.PI, target - 2 * Math.PI};
         double bestCandidate = current; //default
         double minDistance = Double.MAX_VALUE;
 
@@ -168,7 +172,7 @@ public class Turret extends SubsystemBase {
                 }
             }
         }
-        return angleToServo(AngleNonCR.fromDegrees(bestCandidate));
+        return angleToServo(AngleNonCR.fromRadians(bestCandidate));
     }
     private void setServos(AngleNonCR targetTurretAngle){
         setServos(angleToServo(targetTurretAngle));
@@ -193,8 +197,7 @@ public class Turret extends SubsystemBase {
         setServos(angleToServoOptimized(target, currentAngle));
     }
 
-    public double getTotalRangeDegrees(){
-        return totalRangeDegrees;
-    }
+
+
 
 }

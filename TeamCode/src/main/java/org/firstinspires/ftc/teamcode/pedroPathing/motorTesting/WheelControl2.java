@@ -79,7 +79,7 @@ public class WheelControl2 {
         double FLPower = forward + right + rotate_power;
         double FRPower = forward - right - rotate_power;
 
-        setPowers(BLPower, BRPower, FLPower, FRPower, 1);
+        setPowers(BLPower, BRPower, FLPower, FRPower, max_power);
     }
 
     public void driveFieldCentric(double driveX, double driveY, double rotate, double maxPower, double robotHeadingRad, ShootSide shootSide) {
