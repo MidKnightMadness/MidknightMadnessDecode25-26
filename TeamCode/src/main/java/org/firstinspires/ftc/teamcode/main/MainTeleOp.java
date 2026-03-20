@@ -1072,17 +1072,17 @@ public class MainTeleOp extends CommandOpMode {
     }
 
     private void setCurrentShootDist (TwoWheelShooter.ShootDist shootDist, double currVolt){
-        currentShootDist = shootDist;
-        if (!setCustomPower) {
-            if (useLUT) {
-                shooter.setFlywheelLUT(follower, shootSide, voltageCompensation, currVolt);
-            } else {
-//                shooter.resetDefaultGains();
-                shooter.setFlywheelPresets(shootDist, follower, shootSide, voltageCompensation, currVolt);
-            }
-        } else {
-            shooter.setCustomPower(customBotTargetVel, customTopTargetVel, currVolt);
-        }
+//        currentShootDist = shootDist;
+//        if (!setCustomPower) {
+//            if (useLUT) {
+//                shooter.setFlywheelLUT(follower, shootSide, voltageCompensation, currVolt);
+//            } else {
+////                shooter.resetDefaultGains();
+//                shooter.setFlywheelPresets(shootDist, follower, shootSide, voltageCompensation, currVolt);
+//            }
+//        } else {
+//            shooter.setCustomPower(customBotTargetVel, customTopTargetVel, currVolt);
+//        }
 
     }
     //TODO: REORGANIZE TELEMETRY

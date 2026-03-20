@@ -37,7 +37,6 @@ public class Spindexer extends SubsystemBase {
     public BallColor color2 = null;
 //    public BallColor color3 = null;
     int loopNum = 0;
-   /// public static PIDFCoefficients turnerCoefficients = new PIDFCoefficients(0.01, 0, 0.001, 0.001);
     // 0 is defined as the position of the shooter
     public static Angle detectRange = Angle.fromDegrees(25); // How far off from the center of the spot that you detect. You don't want to trust measurements that are too off from the center
     public static Angle defaultFinishedThreshold = Angle.fromDegrees(5); // Threshold at which it's finished turning to a spot
@@ -252,7 +251,7 @@ public class Spindexer extends SubsystemBase {
             newBallType = null;
             return;//assume ball stays in position
         }
-        if (!(currentAngle.smallestAbsDifferenceDegrees(spot.getSpotAngle(SpotType.INTAKE)).toDegrees()
+        if (!(currentAngle.distance(spot.getSpotAngle(SpotType.INTAKE)).toDegrees()
                 < detectThreshold.abs().toDegrees())){
             //don't know with complete certainty which one the ball went into
 //            ballColors[spot.getIndex()] = BallColor.NONE;
@@ -328,7 +327,7 @@ public class Spindexer extends SubsystemBase {
         SpindexerSpot closestSpot = getNearestSpot(currentAngle, SpotType.OUTTAKE);
         if(ballColors[closestSpot.getIndex()] != BallColor.NONE)
 
-        if(!shootOn && closestSpot.getOuttakeAngle().smallestAbsDifferenceDegrees(currentAngle).toDegrees() < dangerZoneDeg){
+        if(!shootOn && closestSpot.getOuttakeAngle().distance(currentAngle).toDegrees() < dangerZoneDeg){
             if(closestSpot != null) {
                 nearWheel = ballColors[closestSpot.getIndex()] != BallColor.NONE;
             }
@@ -412,7 +411,7 @@ public class Spindexer extends SubsystemBase {
         double maxDiff = -1;
 
         for (SpindexerSpot spot : SpindexerSpot.values()) {
-            double diff = currentAngle.absGap(spot.getSpotAngle(spotType)).toDegrees();
+            double diff = currentAngle.distance(spot.getSpotAngle(spotType)).toDegrees();
             if (diff > maxDiff) {
                 maxDiff = diff;
                 farthestSpot = spot;
@@ -426,7 +425,7 @@ public class Spindexer extends SubsystemBase {
 
     // The current angle of a spot relative to the outtake
     public Angle getRelativeAngle(SpindexerSpot spot, SpotType spotType) {
-        return currentAngle.sub(getAbsoluteAngle(spot, spotType));
+        return currentAngle.sub(getAbsoluteAngle(spot, spotType)).wrap();
     }
 
 
@@ -440,7 +439,7 @@ public class Spindexer extends SubsystemBase {
         for (int i = 0; i < SpindexerSpot.values().length; i++) {
             SpindexerSpot spot = SpindexerSpot.fromIndex(i);
             if (matchColorOrNull != null && ballColors[i] != matchColorOrNull) continue;
-            double gap = query.absGap(spot.getSpotAngle(spotType)).toDegrees();
+            double gap = query.distance(spot.getSpotAngle(spotType)).toDegrees();
             if (gap < smallestGap) {
                 smallestGap = gap;
                 bestSpot = spot;
@@ -474,16 +473,16 @@ public class Spindexer extends SubsystemBase {
     }
 
     public boolean isAtAngle(Angle angle, Angle finishedThreshold) {
-        return currentAngle.smallestAbsDifferenceDegrees(angle).toDegrees()
+        return currentAngle.distance(angle).toDegrees()
                 < finishedThreshold.abs().toDegrees() && Math.abs(turner.power) < 0.01;
     }
 
     public boolean isAtSpot(SpindexerSpot spot, SpotType spotType) {
-        return currentAngle.smallestAbsDifferenceDegrees(spot.getSpotAngle(spotType)).toDegrees()
+        return currentAngle.distance(spot.getSpotAngle(spotType)).toDegrees()
                 < finishedThreshold.abs().toDegrees() && Math.abs(turner.power) < 0.05;
     }
     public boolean isAtSpotDetection(SpindexerSpot spot, SpotType spotType) {
-        return currentAngle.smallestAbsDifferenceDegrees(spot.getSpotAngle(spotType)).toDegrees()
+        return currentAngle.distance(spot.getSpotAngle(spotType)).toDegrees()
                 < detectThreshold.abs().toDegrees();
     }
     public void removeBall(int spot) {
@@ -507,7 +506,7 @@ public class Spindexer extends SubsystemBase {
         if (runMode == CRServoEx2.RunMode.OptimizedPositionalControl) {
             turner.set(angle.toDegrees(), nearWheel);
         } else {
-            turner.set(currentAngle.add(angle).sign() * shootRawPower); // Careful signs work out
+            turner.set(currentAngle.add(angle).wrap().sign() * shootRawPower); // Careful signs work out
         }
 //        turner2.setRunMode(runMode);
 //        if (runMode == CRServoEx2.RunMode.OptimizedPositionalControl) {
@@ -520,7 +519,7 @@ public class Spindexer extends SubsystemBase {
         if (turner.getRunmode() == CRServoEx2.RunMode.OptimizedPositionalControl) {
             turner.set(angle.toDegrees(), nearWheel);
         } else {
-            turner.set(currentAngle.add(angle).sign() * shootRawPower); // Careful signs work out
+            turner.set(currentAngle.add(angle).wrap().sign() * shootRawPower); // Careful signs work out
         }
 //        if (turner2.getRunmode() == CRServoEx2.RunMode.OptimizedPositionalControl) {
 //            turner2.set(angle.toDegrees(), nearWheel);

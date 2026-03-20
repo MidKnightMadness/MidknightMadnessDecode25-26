@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.util;
 import androidx.annotation.NonNull;
 import java.lang.Math;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.subsystems.SpindexerNonCR;
 
 public class AngleNonCR {
     private double value;
@@ -53,7 +54,7 @@ public class AngleNonCR {
         double wrapped;
         switch (unit) {
             case RADIANS:
-                wrapped = value % (480 * Math.PI / 180);
+                wrapped = value % (SpindexerNonCR.degreesPerRevolution * Math.PI / 180);
                 break;
             case DEGREES:
                 wrapped = value % 480;

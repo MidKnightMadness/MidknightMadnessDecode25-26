@@ -5,9 +5,11 @@ import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.math.MathFunctions;
 import com.pedropathing.math.Vector;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.Command;
+import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.LambdaCommand;
@@ -16,18 +18,21 @@ import com.seattlesolvers.solverslib.util.Timing;
 
 import org.firstinspires.ftc.teamcode.commands.Robot;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
+import org.firstinspires.ftc.teamcode.newpid.PIDController;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.pedroPathing.motorTesting.WheelControl2;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
 import org.firstinspires.ftc.teamcode.util.AllConfigs;
+import org.firstinspires.ftc.teamcode.util.ExtraFns;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
+import java.util.function.BooleanSupplier;
 
 @Autonomous
 @Configurable
 public class DanielCloseAuto extends CommandOpMode {
+    public static Pose shootPose = new Pose(58, 82);
     public static Pose startPose = new Pose(12, 130, Math.toRadians(135));
     public static double shootTimeout = 700;
     public static double rowXInner = 60;
@@ -36,6 +41,7 @@ public class DanielCloseAuto extends CommandOpMode {
     public static double row2Y = 70;
     public static double row3Y = 40;
 
+    PIDController pidAutoAlign = new PIDController(1.0, 0, 0.1);
     Follower follower;
     ShootSide shootSide = ShootSide.LEFT;
     TelemetryManager telemetryM;
@@ -47,6 +53,9 @@ public class DanielCloseAuto extends CommandOpMode {
     Vector robotVel;
     double currVolt;
     boolean started = false;
+    double targetHeading;
+    double headingError;
+    double[] aimData;
 
     enum State {
         init,
@@ -86,6 +95,18 @@ public class DanielCloseAuto extends CommandOpMode {
         updateTelemetry();
     }
 
+    public void calculateAlign() {
+        aimData = shooter.aimCalculator.targetPowersHeading(
+                follower.getPose(),
+                follower.getVelocity(),
+                TwoWheelShooter.getShootPose(shootSide)
+        );
+        targetHeading = aimData[2];
+        headingError = MathFunctions.normalizeAngleSigned(
+                follower.getPose().getHeading() - targetHeading
+        );
+    }
+
     public void updateData() {
         follower.update();
         robotPose = follower.getPose();
@@ -94,22 +115,27 @@ public class DanielCloseAuto extends CommandOpMode {
     }
 
     public void initCommands() {
-        Supplier<Command> balls1To3 = () -> {
-            Timing.Timer shootTimer = new Timing.Timer(400, TimeUnit.MILLISECONDS);
-            return new LambdaCommand()
-                    .setInitialize(() -> {
-                        timer.restart();
-                        state = State.balls3;
-                    })
-                    .setExecute(() -> {
-                        drive.driveRelative(-1, 0, 0, 1);
-                        if (distToGoal() > 50 || timer.getTime() > 700) {
-                            shootTimer.start();
-//                        shooter.setFlywheelNew(robotPose, robotVel, shootSide, currVolt);
-                        }
-                    })
-                    .setIsFinished(() -> (shootTimer.done() || distToGoal() > 100))
-                    .addRequirements(shooter);
+        Command balls1To3 = new CommandBase() {
+            final BooleanSupplier shootSupplier = ExtraFns.risingEdge(
+                    () -> distToGoal() > 50 || timer.getTime() > 700
+            );
+            final Timing.Timer shootTimer = new Timing.Timer(400, TimeUnit.MILLISECONDS);
+            public void initialize() {
+                timer.restart();
+                state = State.balls3;
+                addRequirements(shooter);
+            }
+            public void execute() {
+                calculateAlign();
+                drive.driveRelative(-1, 0, pidAutoAlign.calculate(robotPose.getHeading() - targetHeading), 1);
+                if (shootSupplier.getAsBoolean()) {
+                    shootTimer.start();
+                    shooter.setCustomPower(aimData[0], aimData[1], currVolt);
+                }
+            }
+            public boolean isFinished() {
+                return shootTimer.done() || distToGoal() > 100;
+            }
         };
 
         Command balls4To6 = new SequentialCommandGroup(
@@ -128,7 +154,7 @@ public class DanielCloseAuto extends CommandOpMode {
                                 robotPose, new Pose(rowXInner, row2Y), 0.5)
                         )
                         .setIsFinished(() -> robotPose.getX() < rowXInner),
-                // Drive straight forward
+                // Drive straight forward and intake
                 new LambdaCommand()
                         .setInitialize(() -> timer.restart())
                         .setExecute(() -> drive.pid(
@@ -141,11 +167,19 @@ public class DanielCloseAuto extends CommandOpMode {
                         .setExecute(() -> drive.pid(
                                 robotPose, new Pose(rowXOuter, row2Y), 1)
                         )
-                        .setIsFinished(() -> robotPose.getX() > rowXOuter - 5)
+                        .setIsFinished(() -> robotPose.getX() > rowXOuter - 5),
+                // Drive to shoot
+                new LambdaCommand()
+                        .setInitialize(() -> timer.restart())
+                        .setExecute(() -> {
+                            calculateAlign();
+                            drive.pid(robotPose, new Pose(shootPose.getX(), shootPose.getY(), targetHeading), 1);
+                        })
+                        .setIsFinished(() -> ExtraFns.closeZoneDist(robotPose) < 8)
         );
 
         main = new SequentialCommandGroup(
-                balls1To3.get(),
+                balls1To3,
                 balls4To6,
                 new InstantCommand(() -> {
                     drive.stop();

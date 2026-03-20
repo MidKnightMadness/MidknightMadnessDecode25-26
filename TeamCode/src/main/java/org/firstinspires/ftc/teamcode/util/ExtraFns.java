@@ -1,13 +1,12 @@
 package org.firstinspires.ftc.teamcode.util;
 
-import static com.pedropathing.math.MathFunctions.normalizeAngle;
-
 import com.pedropathing.geometry.Pose;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 import java.util.Map;
 import java.lang.Math;
+import java.util.function.BooleanSupplier;
 
 public class ExtraFns {
     public static Angle getAngle(Pose position, Pose target) {
@@ -75,5 +74,46 @@ public class ExtraFns {
             error -= Math.PI * 2;
         }
         return error;
+    }
+
+    public static BooleanSupplier risingEdge(BooleanSupplier condition) {
+        return new BooleanSupplier() {
+            private boolean hasRun = false;
+            @Override
+            public boolean getAsBoolean() {
+                if (!hasRun && condition.getAsBoolean()) {
+                    hasRun = true;
+                    return true;
+                }
+                return false;
+            }
+        };
+    }
+
+    public static double distToLine(Pose robotPose, Pose c1, Pose c2) {
+        double numerator = (c2.getX() - c1.getX()) * (robotPose.getY() - c1.getY())
+                - (c2.getY() - c1.getY()) * (robotPose.getX() - c1.getX());
+        double denominator = c2.minus(c1).getAsVector().getMagnitude();
+        return numerator / denominator;
+    }
+
+    public static double closeZoneDist(Pose robotPose) {
+        Pose c1 = new Pose(70.75, 70.75), c2;
+        if (robotPose.getX() < 70.75) {
+            c2 = new Pose(0, 141.5);
+        } else {
+            c2 = new Pose(141.5, 141.5);
+        }
+        return distToLine(robotPose, c1, c2);
+    }
+
+    public static double farZoneDist(Pose robotPose) {
+        Pose c1 = new Pose(70.75, 24), c2;
+        if (robotPose.getX() < 70.75) {
+            c2 = new Pose(48, 0);
+        } else {
+            c2 = new Pose(96, 0);
+        }
+        return distToLine(robotPose, c1, c2);
     }
 }

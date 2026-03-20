@@ -25,8 +25,10 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 @Configurable
 public class TwoWheelShooter2Test extends OpMode {
     TwoWheelShooter2 shooter;
-    Turret turret;
+//    Turret turret;
     ServoImplEx turner;
+    private ServoImplEx leftServo;
+    private ServoImplEx rightServo;
     TwoWheelShooter2.RunMode shooterRunMode = TwoWheelShooter2.RunMode.VelocityControl;
     TwoWheelShooter2.RunMode transferRunMode = TwoWheelShooter2.RunMode.VelocityControl;
     public static double lowVelocity = 1150;
@@ -46,12 +48,17 @@ public class TwoWheelShooter2Test extends OpMode {
     public void init() {
         shooter = new TwoWheelShooter2(hardwareMap, shooterRunMode, transferRunMode);
         shooter.setAggressiveRecovery(useAgressiveRecovery);
-        turret = new Turret(hardwareMap, true);
+        leftServo = hardwareMap.get(ServoImplEx.class, ConfigNames.turretServoLeft);
+        rightServo = hardwareMap.get(ServoImplEx.class, ConfigNames.turretServoRight);
+//        turret = new Turret(hardwareMap, true);
         timer = new Timer();
 
         turner = hardwareMap.get(ServoImplEx.class, ConfigNames.turner);
         turner.setPwmRange(new PwmControl.PwmRange(500, 2500));
         turner.setDirection(Servo.Direction.REVERSE);
+
+        leftServo.setPosition(0.5);
+        rightServo.setPosition(0.5);
 
         FtcDashboard dashboard = FtcDashboard.getInstance();
         dashboardTelemetry = dashboard.getTelemetry();
@@ -62,7 +69,7 @@ public class TwoWheelShooter2Test extends OpMode {
                     hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
             );
         }
-        else{
+        else {
             CommandScheduler.getInstance().setBulkReading(
                     hardwareMap, LynxModule.BulkCachingMode.OFF // Scheduler will clean cache for you
             );
@@ -89,6 +96,8 @@ public class TwoWheelShooter2Test extends OpMode {
             shooter.updateRecoveryState();
         }
 
+        leftServo.setPosition((1 + gamepad1.left_stick_x) / 2);
+        rightServo.setPosition((1 + gamepad1.left_stick_x) / 2);
 
         if(gamepad1.leftBumperWasPressed()){
             turner.setPosition(0);
@@ -97,7 +106,7 @@ public class TwoWheelShooter2Test extends OpMode {
             turner.setPosition(1);
         }
 
-        turret.setServos(turret.angleToServo(AngleNonCR.fromDegrees(targetTurretAngle)));
+//        turret.setServos(turret.angleToServo(AngleNonCR.fromDegrees(targetTurretAngle)));
 
 
 

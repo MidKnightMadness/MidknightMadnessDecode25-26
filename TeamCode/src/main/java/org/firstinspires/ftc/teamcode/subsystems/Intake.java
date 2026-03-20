@@ -9,10 +9,9 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import  org.firstinspires.ftc.teamcode.hardware.MotorEx;
 
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
-import org.firstinspires.ftc.teamcode.util.Math;
+import org.firstinspires.ftc.teamcode.util.MathFuncs;
 
 import java.util.Map;
 
@@ -63,13 +62,13 @@ public class Intake extends SubsystemBase {
 
 
     public void setDirectPower(double power){
-        double motorPower = Math.clampOutput(power, -1, 1);
+        double motorPower = MathFuncs.clampOutput(power, -1, 1);
         intakeMotorLeft.setPower(motorPower);
         intakeMotorRight.setPower(motorPower);
     }
 
     public void setDirectPower(double power, double currVolt){
-        double motorPower = Math.clampOutput(power, -1, 1);
+        double motorPower = MathFuncs.clampOutput(power, -1, 1);
         intakeMotorLeft.setPower(motorPower * reference_voltage / currVolt);
     }
 

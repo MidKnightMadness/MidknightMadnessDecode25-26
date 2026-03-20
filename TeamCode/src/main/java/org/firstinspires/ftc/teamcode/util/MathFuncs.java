@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.util;
 
-public class Math {
+public class MathFuncs {
 
     public static double clampOutput(double val, double minVal, double maxVal){
         if(val <= minVal) return minVal;

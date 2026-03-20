@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
-import org.firstinspires.ftc.teamcode.util.AngleNonCR;
+import org.firstinspires.ftc.teamcode.util.Angle;
 
 @TeleOp(name = "Turret Prototype Test", group = "Test")
 @Config
@@ -29,7 +29,7 @@ public class NewTurretTest extends OpMode {
         if (targetHeading > turret.getTotalRangeDegrees()) targetHeading = turret.getTotalRangeDegrees();
         if (targetHeading < 0) targetHeading = 0;
 
-        turret.angleToServo(AngleNonCR.fromDegrees(targetHeading));
+//        turret.angleToServo(Angle.fromDegrees(targetHeading));
 
         telemetry.addData("Target Heading", targetHeading);
         telemetry.update();
