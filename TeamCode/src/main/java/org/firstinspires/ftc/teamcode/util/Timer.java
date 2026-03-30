@@ -27,7 +27,7 @@ public class Timer {
 
     public double getTime(TimeUnit unit) {
         long elapsed = System.nanoTime() - startTime;
-        return convert(elapsed, unit);
+        return fromNanos(elapsed, unit);
     }
 
     public double getDeltaTime() {
@@ -38,7 +38,7 @@ public class Timer {
         long now = System.nanoTime();
         long delta = now - previousTime;
         previousTime = now;
-        return convert(delta, unit);
+        return fromNanos(delta, unit);
     }
 
     public double getPreviousTime() {
@@ -47,10 +47,10 @@ public class Timer {
 
     public double getPreviousTime(TimeUnit unit) {
         long elapsed = previousTime - startTime;
-        return convert(elapsed, unit);
+        return fromNanos(elapsed, unit);
     }
 
-    private double convert(long nanos, TimeUnit unit) {
+    private static double fromNanos(long nanos, TimeUnit unit) {
         switch (unit) {
             case NANOSECONDS: return nanos;
             case MICROSECONDS: return nanos / 1_000.0;

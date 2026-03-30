@@ -16,20 +16,22 @@ import org.firstinspires.ftc.teamcode.util.Range;
 
 @Config
 @Configurable
-//Turret Range [-halfRange, halfRange] -> [0, 1], middle pt of 0.5
 public class Turret extends SubsystemBase {
+    // 0 degrees is facing intake
+    // Clockwise is negative
     public static Range servoRange = new Range(0, 1);
-    public static Range angleRange = new Range(Math.toRadians(-200), Math.toRadians(200));
+    public static Range angleRange = new Range(Math.toRadians(-210), Math.toRadians(210));
     public static boolean leftInverted = false, rightInverted = false;
-    public static Angle finishedThreshold = Angle.fromDegrees(5);//TODO: Change to 15 for auto?
+
+    public static Angle finishedThreshold = Angle.fromDegrees(5); // TODO: Change to 15 for auto?
     public static Angle strictFinished = Angle.fromDegrees(2);
 
     public ServoExGroup servos;
     public IncrementalEncoder encoder;
+
     //turret assumes the servos are at 0.5 and should be facing opposite direction as intake
     Angle currentAngle;
     double servoPosition;
-    public static double cachingTolerance = 0.001;
 
     public Turret(HardwareMap hardwareMap, boolean resetEncoder) {
         encoder = new IncrementalEncoder(
@@ -45,7 +47,7 @@ public class Turret extends SubsystemBase {
     }
 
     public void reset() {
-        servos.set(0); // 0 degrees is facing intake
+        servos.set(0.5);
 
         try {
             Thread.sleep(2000);
@@ -73,7 +75,7 @@ public class Turret extends SubsystemBase {
     }
 
     public boolean isAtPosition(double position, boolean strict){
-        double angle = servoRange.convert(position, angleRange);
+        double angle = servoRange.toRange(position, angleRange);
         return isAtAngle(Angle.fromRadians(angle), strict);
     }
 
@@ -111,11 +113,27 @@ public class Turret extends SubsystemBase {
     }
 
     public void setAngle(Angle angle){
-        setPosition(angleRange.convert(angle.toRadians(), servoRange));
+        setPosition(angleRange.toRange(angle.toRadians(), servoRange));
     }
 
     public void setAngleOptimized(Angle target){
         setAngle(optimizeAngle(target));
+    }
+
+    public double getPosition() {
+        return servos.get();
+    }
+
+    public Angle getAngle() {
+        return Angle.fromRadians(servoRange.toRange(getPosition(), angleRange));
+    }
+
+    public double getPositionActual() {
+        return servoRange.toRange(getAngleActual().toRadians(), angleRange);
+    }
+
+    public Angle getAngleActual() {
+        return currentAngle;
     }
 
     public double getTotalRangeDegrees(){

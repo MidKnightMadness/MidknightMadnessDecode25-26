@@ -18,10 +18,10 @@ class RangeTest {
     }
 
     @Test
-    void convert() {
+    void toRange() {
         Range range = new Range(-10, 10);
         Range newRange = new Range(-1, 1);
-        assertEquals(range.convert(4, newRange), 0.4, 0.001);
+        assertEquals(range.toRange(4, newRange), 0.4, 0.001);
     }
 
     @Test

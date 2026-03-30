@@ -76,7 +76,7 @@ public class ExtraFns {
         return error;
     }
 
-    public static BooleanSupplier risingEdge(BooleanSupplier condition) {
+    public static BooleanSupplier firstSupplier(BooleanSupplier condition) {
         return new BooleanSupplier() {
             private boolean hasRun = false;
             @Override

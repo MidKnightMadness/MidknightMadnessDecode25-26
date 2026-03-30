@@ -41,7 +41,7 @@ public class ConstantsOldBot {
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1.1, 1);
 
     public static PinpointConstants pinpointLocalizerConstants = new PinpointConstants()
-            .forwardPodY(-5.875)
+            .forwardPodY(5.875)
             .strafePodX(1.50)
             .distanceUnit(DistanceUnit.INCH)
             .hardwareMapName(Robot.config.get("pinpoint"))

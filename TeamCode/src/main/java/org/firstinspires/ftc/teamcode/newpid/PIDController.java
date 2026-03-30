@@ -24,7 +24,12 @@ public class PIDController {
 
     public double calculate(double error) {
         integralSum = integralSum + (error * timer.seconds());
-        double derivative = (error - lastError) / timer.seconds();
+        double derivative;
+        if (lastError != 0) {
+            derivative = (error - lastError) / timer.seconds();
+        } else {
+            derivative = 0;
+        }
         double power = this.kp*error + this.ki*integralSum + this.kd*derivative;
         lastError = error;
         this.timer.reset();

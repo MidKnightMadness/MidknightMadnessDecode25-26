@@ -17,7 +17,7 @@ public class Range {
         return low + (high - low) * ratio;
     }
 
-    public double convert(double value, Range newRange) {
+    public double toRange(double value, Range newRange) {
         double ratio = this.getValueRatio(value);
         return newRange.getValueFromRatio(ratio);
     }

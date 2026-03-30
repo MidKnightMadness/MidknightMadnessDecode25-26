@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.tests.subsystems;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -12,24 +14,19 @@ import org.firstinspires.ftc.teamcode.util.Angle;
 @Config
 @Configurable
 public class NewTurretTest extends OpMode {
-
-    Turret turret;
-
     public static double targetHeading = 0;
-
+    TelemetryManager telemetryM;
+    Turret turret;
 
     @Override
     public void init() {
+        telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         turret = new Turret(hardwareMap, true);
     }
 
     @Override
     public void loop() {
-        // Clamp heading range
-        if (targetHeading > turret.getTotalRangeDegrees()) targetHeading = turret.getTotalRangeDegrees();
-        if (targetHeading < 0) targetHeading = 0;
-
-//        turret.angleToServo(Angle.fromDegrees(targetHeading));
+        turret.setAngleOptimized(Angle.fromDegrees(targetHeading));
 
         telemetry.addData("Target Heading", targetHeading);
         telemetry.update();

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.pedroPathing.motorTesting;
 
+import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.MathFunctions;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -18,8 +19,8 @@ public class WheelControl2 {
     public DcMotorEx FR;
     public DcMotorEx FL;
 
-    PIDController driveController;
-    PIDController headingController;
+    PIDController driveController = new PIDController(0.1, 0, 0.001);
+    PIDController headingController = new PIDController(1.0, 0, 0.01);
 
     public WheelControl2(HardwareMap hardwareMap) {
         this.BR = hardwareMap.get(DcMotorEx.class, ConfigNames.BR);
@@ -32,9 +33,10 @@ public class WheelControl2 {
         this.FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
-    public void setPidControllers(PIDController drive, PIDController heading) {
+    public WheelControl2 setPidControllers(PIDController drive, PIDController heading) {
         this.driveController = drive;
         this.headingController = heading;
+        return this;
     }
 
     public void setPowers(double BL, double BR, double FL, double FR, double power) {
@@ -137,13 +139,23 @@ public class WheelControl2 {
     }
 
     public void pid(Pose robotPose, Pose target, double targetPower) {
-        double strafeAngle = robotPose.minus(target).getAsVector().getTheta();
+        double strafeAngle = target.minus(robotPose).getAsVector().getTheta();
         double headingPower = headingController.calculate(
                 MathFunctions.normalizeAngleSigned(
-                        target.getHeading() - robotPose.getHeading()
+                        robotPose.getHeading() - target.getHeading()
                 )
         );
-        driveAngle(strafeAngle, targetPower, headingPower, robotPose.getHeading());
+        driveAngle(strafeAngle, headingPower, targetPower, robotPose.getHeading());
+    }
+
+    public void pidNoHeading(Pose robotPose, Pose target) {
+        double drivePower = driveController.calculate(robotPose.distanceFrom(target));
+        pidNoHeading(robotPose, target, drivePower);
+    }
+
+    public void pidNoHeading(Pose robotPose, Pose target, double targetPower) {
+        double strafeAngle = target.minus(robotPose).getAsVector().getTheta();
+        driveAngle(strafeAngle, 0, targetPower, robotPose.getHeading());
     }
 
     public void changeMode(DcMotor.ZeroPowerBehavior mode){
