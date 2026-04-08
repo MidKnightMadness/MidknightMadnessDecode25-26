@@ -62,6 +62,7 @@ import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.teamcode.util.ExtraFns;
 import org.firstinspires.ftc.teamcode.util.Timer;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+import org.firstinspires.ftc.teamcode.commands.TurretGotoPositionSmooth;
 
 import java.io.File;
 import java.util.Map;
@@ -336,6 +337,7 @@ public class MainTeleOpTurret extends CommandOpMode {
     boolean rumbledLastFive = false;
     boolean start;
 
+    TurretGotoPositionSmooth turretGotoPositionSmooth;
     @Override
     public void run() {
 
@@ -363,7 +365,9 @@ public class MainTeleOpTurret extends CommandOpMode {
         updateTelem();
 
         if(gamepad2.dpadDownWasPressed()){
-            turret.setAngle(AngleNonCR.fromRadians(turretAngleTest));
+            clearExistingTurretCommand();
+            turretGotoPositionSmooth = new TurretGotoPositionSmooth(turret, turret.angleToServo(AngleNonCR.fromRadians(turretAngleTest)), 1.0);
+            schedule(turretGotoPositionSmooth);
         }
 
         if (velAgressiveComp && !shooter.inRecoveryMode) {
@@ -801,6 +805,11 @@ public class MainTeleOpTurret extends CommandOpMode {
     private void clearExistingSpindexerCommand() {
         if (spindexerGotoPositionSeq != null) {
             CommandScheduler.getInstance().cancel(spindexerGotoPositionSeq);
+        }
+    }
+    private void clearExistingTurretCommand() {
+        if (turretGotoPositionSmooth != null) {
+            CommandScheduler.getInstance().cancel(turretGotoPositionSmooth);
         }
     }
 
