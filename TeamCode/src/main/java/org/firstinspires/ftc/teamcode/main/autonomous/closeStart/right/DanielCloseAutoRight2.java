@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.main.autonomous.closeStart.base;
+package org.firstinspires.ftc.teamcode.main.autonomous.closeStart.right;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -7,6 +7,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.MathFunctions;
 import com.pedropathing.math.Vector;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
@@ -31,18 +32,19 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 
 @Configurable
-public abstract class DanielCloseAutoClean extends CommandOpMode {
-    public static Pose shootAtPose1 = new Pose(48, 92);
-    public static Pose shootAtPose2 = new Pose(55, 83);
-    public static Pose gateIntakePose = new Pose(3, 60, Math.toRadians(150));
-    public static Pose startPose = new Pose(22, 120, Math.toRadians(142));
+@TeleOp
+public class DanielCloseAutoRight2 extends CommandOpMode {
+    public static Pose shootAtPose1 = new Pose(48, 92).mirror();
+    public static Pose shootAtPose2 = new Pose(55, 83).mirror();
+    public static Pose gateIntakePose = new Pose(3, 60, Math.toRadians(150)).mirror();
+    public static Pose startPose = new Pose(22, 120, Math.toRadians(142)).mirror();
     public static double shootTimeout = 700;
-    public static double rowXInner = 40;
-    public static double rowXOuter = 25;
+    public static double rowXInner = 141.5 - 40;
+    public static double rowXOuter = 141.5 - 25;
     public static double row1Y = 38;
     public static double row2Y = 62;
     public static double row3Y = 85;
-    public static double headingFacingEdge = -Math.PI;
+    public static double headingFacingEdge = 0;
     PIDController driveController = new PIDController(0.05, 0, 0.001);
     PIDController headingController = new PIDController(1.0, 0, 0.01);
 
@@ -65,6 +67,12 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
         init,
         balls3,
         balls6,
+        jank1,
+        jank2,
+        jank3,
+        jank4,
+        jank5,
+        jank6,
         balls9,
         balls12,
         balls15,
@@ -74,7 +82,9 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
     }
     State state;
 
-    public abstract ShootSide getShootSide();
+    public ShootSide getShootSide() {
+        return ShootSide.RIGHT;
+    }
 
     @Override
     public void initialize() {
@@ -88,7 +98,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
         drive = new WheelControl2(hardwareMap)
                 .setPidControllers(driveController, headingController);
 
-        follower.setStartingPose(side.fromLeftPose(startPose));
+        follower.setStartingPose(startPose);
         initCommands();
     }
 
@@ -149,7 +159,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                 drive.pid(
                         robotPose,
                         new Pose(
-                                side.fromLeftX(shootAtPose1.getX()),
+                                shootAtPose1.getX(),
                                 shootAtPose1.getY(),
                                 targetHeading
                         )
@@ -168,47 +178,47 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                 new InstantCommand(() -> state = State.balls6),
                 // Full send to almost there
                 new LambdaCommand()
-                        .setInitialize(() -> timer.restart())
+                        .setInitialize(() -> {timer.restart(); state = State.jank1;})
                         .setExecute(() -> drive.pid(
                                 robotPose, new Pose(
-                                        side.fromLeftX(rowXInner),
+                                        rowXInner,
                                         row2Y,
-                                        side.fromLeftHeading(headingFacingEdge)
+                                        headingFacingEdge
                                 ), 1)
                         )
                         .setIsFinished(() -> robotPose.getY() < row2Y + 10),
                 // Adjust position and power
                 new LambdaCommand()
-                        .setInitialize(() -> timer.restart())
+                        .setInitialize(() -> {timer.restart(); state = State.jank2;})
                         .setExecute(() -> drive.pid(
                                 robotPose, new Pose(
-                                        side.fromLeftX(rowXInner),
+                                        rowXInner,
                                         row2Y,
-                                        side.fromLeftHeading(headingFacingEdge)
+                                        headingFacingEdge
                                 ), 0.5)
                         )
-                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) < rowXInner + 1),
+                        .setIsFinished(() -> robotPose.getX() > rowXInner - 1),
                 // Drive straight forward and intake
                 new LambdaCommand()
-                        .setInitialize(() -> timer.restart())
+                        .setInitialize(() -> {timer.restart(); state = State.jank3;})
                         .setExecute(() -> drive.pid(
-                                robotPose, new Pose(side.fromLeftX(rowXOuter), row2Y, side.fromLeftHeading(headingFacingEdge)), 0.5)
+                                robotPose, new Pose(rowXOuter, row2Y, headingFacingEdge), 0.5)
                         )
-                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) < rowXOuter),
+                        .setIsFinished(() -> robotPose.getX() > rowXOuter),
                 // Drive straight back
                 new LambdaCommand()
-                        .setInitialize(() -> timer.restart())
+                        .setInitialize(() -> {timer.restart(); state = State.jank4;})
                         .setExecute(() -> drive.pid(
-                                robotPose, new Pose(side.fromLeftX(rowXInner), row2Y, side.fromLeftHeading(headingFacingEdge)), 1)
+                                robotPose, new Pose(rowXInner, row2Y, headingFacingEdge), 1)
                         )
-                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) > rowXInner - 14),
+                        .setIsFinished(() -> robotPose.getX() < rowXInner + 14),
                 // Drive to shoot
                 new LambdaCommand()
-                        .setInitialize(() -> timer.restart())
+                        .setInitialize(() -> {timer.restart(); state = State.jank5;})
                         .setExecute(() -> {
                             calculateAlign();
                             drive.pid(robotPose, new Pose(
-                                    side.fromLeftX(shootAtPose2.getX()),
+                                    shootAtPose2.getX(),
                                     shootAtPose2.getY(),
                                     targetHeading
                             ), 1);
@@ -219,112 +229,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                         .setInitialize(() -> {
                             timer.restart();
                             drive.stop();
-                        })
-                        .setIsFinished(() -> timer.getTime() > 500)
-        );
-
-        Function<State, Command> gateIntakeShoot = state -> new SequentialCommandGroup(
-                new InstantCommand(() -> this.state = state),
-                // Full send to almost there
-                new LambdaCommand()
-                        .setInitialize(() -> timer.restart())
-                        .setExecute(() -> drive.pid(
-                                robotPose, new Pose(
-                                        side.fromLeftX(rowXInner),
-                                        gateIntakePose.getY(),
-                                        side.fromLeftHeading(gateIntakePose.getHeading())
-                                ), 1)
-                        )
-                        .setIsFinished(() -> robotPose.getY() < gateIntakePose.getY() + 10),
-                // Drive to gate
-                new LambdaCommand()
-                        .setInitialize(() -> timer.restart())
-                        .setExecute(() -> drive.pid(robotPose, side.fromLeftPose(gateIntakePose)))
-                        .setIsFinished(() -> timer.getTime() > 850 || follower.getVelocity().getMagnitude() < 5),
-                // Wait for gate intake
-                new InstantCommand(() -> drive.stop()),
-                new WaitCommand(700),
-                // Drive straight back
-                new LambdaCommand()
-                        .setInitialize(() -> timer.restart())
-                        .setExecute(() -> drive.pidNoHeading(
-                                robotPose, new Pose(side.fromLeftX(rowXInner), row2Y), 1)
-                        )
-                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) > rowXInner - 9),
-                // Drive to shoot
-                new LambdaCommand()
-                        .setInitialize(() -> timer.restart())
-                        .setExecute(() -> {
-                            calculateAlign();
-                            drive.pid(robotPose, new Pose(
-                                    side.fromLeftX(shootAtPose2.getX()),
-                                    shootAtPose2.getY(),
-                                    targetHeading
-                            ), 1);
-                        })
-                        .setIsFinished(() -> ExtraFns.closeZoneDist(robotPose) < 7),
-                // TODO: actually shoot
-                new LambdaCommand()
-                        .setInitialize(() -> {
-                            timer.restart();
-                            drive.stop();
-                        })
-                        .setIsFinished(() -> timer.getTime() > 500)
-        );
-
-        Command balls7To9 = gateIntakeShoot.apply(State.balls9);
-        Command balls10To12 = gateIntakeShoot.apply(State.balls12);
-        Command balls13To15 = gateIntakeShoot.apply(State.balls15);
-        Command balls16To18 = gateIntakeShoot.apply(State.balls18);
-
-        Command balls19To21 = new SequentialCommandGroup(
-                new InstantCommand(() -> state = State.balls21),
-                // Drive just before intake
-                new LambdaCommand()
-                        .setInitialize(() -> timer.restart())
-                        .setExecute(() -> drive.pid(
-                                robotPose, new Pose(
-                                        side.fromLeftX(rowXInner + 2),
-                                        row3Y,
-                                        side.fromLeftHeading(headingFacingEdge)
-                                ), 0.5)
-                        )
-                        .setIsFinished(() -> robotPose.getY() < row3Y + 1),
-                // Drive straight forward and intake
-                new LambdaCommand()
-                        .setInitialize(() -> timer.restart())
-                        .setExecute(() -> drive.pid(
-                                robotPose, new Pose(
-                                        side.fromLeftX(rowXOuter),
-                                        row3Y,
-                                        side.fromLeftHeading(headingFacingEdge)
-                                ), 0.5)
-                        )
-                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) < rowXOuter),
-                // Drive straight back
-                new LambdaCommand()
-                        .setInitialize(() -> timer.restart())
-                        .setExecute(() -> drive.pid(
-                                robotPose, new Pose(side.fromLeftX(rowXInner), row3Y, side.fromLeftHeading(headingFacingEdge)), 1)
-                        )
-                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) > rowXInner - 14),
-                // Drive to shoot
-                new LambdaCommand()
-                        .setInitialize(() -> timer.restart())
-                        .setExecute(() -> {
-                            calculateAlign();
-                            drive.pid(robotPose, new Pose(
-                                    side.fromLeftX(shootAtPose2.getX()),
-                                    shootAtPose2.getY(),
-                                    targetHeading
-                            ), 1);
-                        })
-                        .setIsFinished(() -> ExtraFns.closeZoneDist(robotPose) < 7),
-                // TODO: actually shoot
-                new LambdaCommand()
-                        .setInitialize(() -> {
-                            timer.restart();
-                            drive.stop();
+                            state = State.jank6;
                         })
                         .setIsFinished(() -> timer.getTime() > 500)
         );
@@ -337,11 +242,6 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
         main = new SequentialCommandGroup(
                 balls1To3,
                 balls4To6,
-                balls7To9,
-                balls10To12,
-                balls13To15,
-                balls16To18,
-                balls19To21,
                 stop
         );
     }

@@ -179,6 +179,7 @@ public class BaseAutoFarFunctions extends BaseAuto {
     }
 
 
+    @Override
     public ShootSide getShootSide(){
         return shootSide;
     }
@@ -199,11 +200,6 @@ public class BaseAutoFarFunctions extends BaseAuto {
         limelight.pipelineSwitch(objectDetectionPipeline);
         limelight.start();
 
-    }
-
-    @Override
-    protected ShootSide getSide(){
-        return shootSide;
     }
 
     boolean useDistanceSensor = true;
@@ -687,7 +683,13 @@ public class BaseAutoFarFunctions extends BaseAuto {
         return new InstantCommand(() -> spindexer.setBallColors(startBallColors));
     }
 
-
+    protected Command intakeUnsorted() {
+        return new SequentialCommandGroup(
+                new InstantCommand(() -> pushUpServo.setDown()),
+                new AutoIntakeCommandNonCR(spindexer, intake, intakePower, inBetweenTime, true, hardwareMap, SpindexerSpotNonCR.SPOT1, 1),
+                new InstantCommand(()-> intake.setDirectPower(0))
+        );
+    }
 
     protected Command intake(IntakeLine lineNum, boolean sort){
         autoIntakeCommand = new AutoIntakeCommandNonCR(spindexer, intake, intakePower, inBetweenTime, true, hardwareMap, SpindexerSpotNonCR.SPOT1, 1);

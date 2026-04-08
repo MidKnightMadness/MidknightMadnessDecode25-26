@@ -35,6 +35,7 @@ public abstract class DanielCloseAuto extends CommandOpMode {
     public static Pose shootAtPose2 = new Pose(55, 83);
     public static Pose gateIntakePose = new Pose(3, 60, Math.toRadians(150));
     public static Pose startPose = new Pose(22, 120, Math.toRadians(142));
+    public static double headingToEdge = -Math.PI;
     public static double shootTimeout = 700;
     public static double rowXInner = 40;
     public static double rowXOuter = 25;
@@ -46,7 +47,7 @@ public abstract class DanielCloseAuto extends CommandOpMode {
 
     PIDController pidAutoAlign = new PIDController(1.0, 0, 0.1);
     Follower follower;
-    ShootSide shootSide = ShootSide.LEFT;
+    ShootSide side;
     TelemetryManager telemetryM;
     WheelControl2 drive;
     Timer timer = new Timer(TimeUnit.MILLISECONDS);
@@ -80,15 +81,7 @@ public abstract class DanielCloseAuto extends CommandOpMode {
     public void initialize() {
         Robot.config = AllConfigs.oldBot;
 
-        shootSide = getShootSide();
-        if (shootSide == ShootSide.RIGHT) {
-            startPose.mirror();
-            shootAtPose1 = shootAtPose1.mirror();
-            shootAtPose2 = shootAtPose2.mirror();
-            gateIntakePose = gateIntakePose.mirror();
-            rowXInner = 141.5 - rowXInner;
-            rowXOuter = 141.5 - rowXOuter;
-        }
+        side = getShootSide();
 
         state = State.init;
         follower = ConstantsOldBot.createPinpointFollower(hardwareMap);
@@ -129,7 +122,7 @@ public abstract class DanielCloseAuto extends CommandOpMode {
 //        headingError = MathFunctions.normalizeAngleSigned(
 //                follower.getPose().getHeading() - targetHeading
 //        );
-        targetHeading = TwoWheelShooter.getShootPose(shootSide).minus(robotPose).getAsVector().getTheta();
+        targetHeading = TwoWheelShooter.getShootPose(side).minus(robotPose).getAsVector().getTheta();
         headingError = MathFunctions.normalizeAngleSigned(
                 follower.getPose().getHeading() - targetHeading
         );
@@ -158,7 +151,7 @@ public abstract class DanielCloseAuto extends CommandOpMode {
                 drive.pid(
                         robotPose,
                         new Pose(
-                            shootAtPose1.getX(),
+                            side.fromLeftX(shootAtPose1.getX()),
                             shootAtPose1.getY(),
                             targetHeading
                         )
@@ -179,30 +172,34 @@ public abstract class DanielCloseAuto extends CommandOpMode {
                 new LambdaCommand()
                     .setInitialize(() -> timer.restart())
                     .setExecute(() -> drive.pid(
-                            robotPose, new Pose(rowXInner, row2Y, -Math.PI), 1)
+                            robotPose, new Pose(
+                                    side.fromLeftX(rowXInner), row2Y, headingToEdge
+                            ), 1)
                     )
                     .setIsFinished(() -> robotPose.getY() < row2Y + 10),
                 // Adjust position and power
                 new LambdaCommand()
                         .setInitialize(() -> timer.restart())
                         .setExecute(() -> drive.pid(
-                                robotPose, new Pose(rowXInner, row2Y, -Math.PI), 0.5)
+                                robotPose, new Pose(
+                                        side.fromLeftX(rowXInner), row2Y, headingToEdge
+                                ), 0.5)
                         )
-                        .setIsFinished(() -> robotPose.getX() < rowXInner + 1),
+                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) < rowXInner + 1),
                 // Drive straight forward and intake
                 new LambdaCommand()
                         .setInitialize(() -> timer.restart())
                         .setExecute(() -> drive.pid(
-                                robotPose, new Pose(rowXOuter, row2Y, -Math.PI), 0.5)
+                                robotPose, new Pose(side.fromLeftX(rowXOuter), row2Y, headingToEdge), 0.5)
                         )
-                        .setIsFinished(() -> robotPose.getX() < rowXOuter),
+                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) < rowXOuter),
                 // Drive straight back
                 new LambdaCommand()
                         .setInitialize(() -> timer.restart())
                         .setExecute(() -> drive.pid(
-                                robotPose, new Pose(rowXInner, row2Y, -Math.PI), 1)
+                                robotPose, new Pose(side.fromLeftX(rowXInner), row2Y, headingToEdge), 1)
                         )
-                        .setIsFinished(() -> robotPose.getX() > rowXInner - 16),
+                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) > rowXInner - 16),
                 // Drive to shoot
                 new LambdaCommand()
                         .setInitialize(() -> timer.restart())
@@ -390,21 +387,21 @@ public abstract class DanielCloseAuto extends CommandOpMode {
                 new LambdaCommand()
                         .setInitialize(() -> timer.restart())
                         .setExecute(() -> drive.pid(
-                                robotPose, new Pose(rowXInner + 2, row3Y, -Math.PI), 0.5)
+                                robotPose, new Pose(rowXInner + 2, row3Y, headingToEdge), 0.5)
                         )
                         .setIsFinished(() -> robotPose.getY() < row3Y + 1),
                 // Drive straight forward and intake
                 new LambdaCommand()
                         .setInitialize(() -> timer.restart())
                         .setExecute(() -> drive.pid(
-                                robotPose, new Pose(rowXOuter, row3Y, -Math.PI), 0.5)
+                                robotPose, new Pose(rowXOuter, row3Y, headingToEdge), 0.5)
                         )
                         .setIsFinished(() -> robotPose.getX() < rowXOuter),
                 // Drive straight back
                 new LambdaCommand()
                         .setInitialize(() -> timer.restart())
                         .setExecute(() -> drive.pid(
-                                robotPose, new Pose(rowXInner, row3Y, -Math.PI), 1)
+                                robotPose, new Pose(rowXInner, row3Y, headingToEdge), 1)
                         )
                         .setIsFinished(() -> robotPose.getX() > rowXInner - 16),
                 // Drive to shoot
@@ -440,10 +437,11 @@ public abstract class DanielCloseAuto extends CommandOpMode {
     }
 
     public double distToGoal() {
-        return TwoWheelShooter.getShootPose(shootSide).distanceFrom(robotPose);
+        return TwoWheelShooter.getShootPose(side).distanceFrom(robotPose);
     }
 
     public void updateTelemetry() {
+        telemetryM.addData("start pose", startPose);
         telemetryM.addData("Auto time elapsed", autoElapsed.getTime());
         telemetryM.addData("Timer", timer.getTime());
         telemetryM.addData("Robot pose X", robotPose.getX());

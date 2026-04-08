@@ -15,6 +15,7 @@ import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.ConditionalCommand;
 import com.seattlesolvers.solverslib.command.DeferredCommand;
 import com.seattlesolvers.solverslib.command.InstantCommand;
+import com.seattlesolvers.solverslib.command.LambdaCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.ParallelDeadlineGroup;
 import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
@@ -164,6 +165,7 @@ public class BaseAutoCloseFunctions extends BaseAuto {
     }
 
 
+    @Override
     public ShootSide getShootSide(){
         return shootSide;
     }
@@ -184,11 +186,6 @@ public class BaseAutoCloseFunctions extends BaseAuto {
         limelight.pipelineSwitch(objectDetectionPipeline);
         limelight.start();
 
-    }
-
-    @Override
-    protected ShootSide getSide(){
-        return shootSide;
     }
 
     boolean useDistanceSensor = true;
@@ -383,7 +380,7 @@ public class BaseAutoCloseFunctions extends BaseAuto {
         intake = new Intake(hardwareMap, Intake.RunMode.RawPower);
         pushUpServo = new PushUpServo(hardwareMap);
         register(intake, shooter, spindexer, pushUpServo);
-        telemetry.setMsTransmissionInterval(500);
+        telemetry.setMsTransmissionInterval(100);
         PhotonCore.disable();
     }
 
@@ -469,6 +466,12 @@ public class BaseAutoCloseFunctions extends BaseAuto {
     }
 
     protected Command shootFromGate(){
+        Command shoot = new LambdaCommand()
+                .setExecute(() -> {
+                    double currVolt = hardwareMap.voltageSensor.iterator().next().getVoltage();
+                    shooter.setFlywheelNew(follower.getPose(), follower.getVelocity(), getShootSide(), currVolt);
+                });
+
         return new SequentialCommandGroup(
                 new ParallelDeadlineGroup(
                         new FollowPathCommand(follower, gateIntakeToShoot, 1),
@@ -572,7 +575,15 @@ public class BaseAutoCloseFunctions extends BaseAuto {
         return new InstantCommand(() -> spindexer.setBallColors(startBallColors));
     }
 
-
+    protected Command intakeRaw() {
+        autoIntakeCommand = new AutoIntakeCommandNonCR(spindexer, intake, intakePower, inBetweenTime, true, hardwareMap, SpindexerSpotNonCR.SPOT1, 1);
+        return new SequentialCommandGroup(
+                new InstantCommand(() -> pushUpServo.setDown()),
+                new InstantCommand(() -> spindexer.setBallColors(new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE})),
+                autoIntakeCommand,
+                new InstantCommand(() -> intake.setDirectPower(0))
+        );
+    }
 
     protected Command intake(IntakeLine lineNum, boolean sort){
         autoIntakeCommand = new AutoIntakeCommandNonCR(spindexer, intake, intakePower, inBetweenTime, true, hardwareMap, SpindexerSpotNonCR.SPOT1, 1);
