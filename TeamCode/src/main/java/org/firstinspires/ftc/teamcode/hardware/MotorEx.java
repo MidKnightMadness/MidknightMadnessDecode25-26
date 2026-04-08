@@ -20,7 +20,7 @@ public class MotorEx extends Motor {
 
     // The minimum difference between the current and requested motor power between motor writes
     private double cachingTolerance = 0.0001;
-    public static double REFERENCE_VOLTAGE = 13;
+    public static double REFERENCE_VOLTAGE = 12.5;
 
     /**
      * Constructs the instance motor for the wrapper

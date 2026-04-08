@@ -50,7 +50,7 @@ public class TwoWheelShooter2Test extends CommandOpMode {
     public static long waitTime = 3;
     @Override
     public void initialize() {
-        super.run();
+        super.reset();
         shooter = new TwoWheelShooter2(hardwareMap, shooterRunMode, transferRunMode);
         shooter.setAggressiveRecovery(useAgressiveRecovery);
 //        turret = new Turret(hardwareMap, true);
@@ -111,7 +111,6 @@ public class TwoWheelShooter2Test extends CommandOpMode {
         try{
             Thread.sleep(waitTime);
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
         }
 
         telemetry.addData("Update Rate", 1000.0 / timer.getDeltaTime());

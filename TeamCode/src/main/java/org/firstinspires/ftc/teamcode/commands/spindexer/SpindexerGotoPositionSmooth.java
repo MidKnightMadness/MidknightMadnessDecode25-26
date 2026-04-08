@@ -30,8 +30,8 @@ public class SpindexerGotoPositionSmooth extends CommandBase {
 
     @Override
     public void initialize(){
-        previousSetPosition = spindexer.getServo().getPosition();
-        startValue = spindexer.getServo().getPosition();
+        previousSetPosition = spindexer.getServo1().getPosition();
+        startValue = spindexer.getServo1().getPosition();
         timer.restart();
     }
 

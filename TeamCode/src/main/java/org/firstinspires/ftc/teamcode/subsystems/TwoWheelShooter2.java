@@ -44,7 +44,7 @@ public class TwoWheelShooter2 extends SubsystemBase {
     public static double transferPower = 0.7;
     public static double transferVelocity = 850;
     //DEFAULT GAINS
-    public static double[] kTransferGains = new double[]{0.04057, 0.000363, 0};
+    public static double[] kTransferGains = new double[]{0.0313141, 0.000353782, 0};
     public static double[] pidTransferGains = new double[]{0.0012, 0, 0};
     public static double[] kBotGains = new double[]{0.04057, 0.000363, 0};
     public static double[] pidTopGains = new double[]{0.0012, 0, 0};
@@ -588,20 +588,24 @@ public class TwoWheelShooter2 extends SubsystemBase {
         ));
     }
 //
-//    public Pose getShootPoseNew(Pose position, ShootSide shootSide) {
-//        Pose control1, control2;
-//        if (shootSide == ShootSide.LEFT) {
-//            control1 = new Pose(14, 144);
-//            control2 = new Pose(0, 130);
-//        } else {
-//            control1 = new Pose(130, 144);
-//            control2 = new Pose(144, 130);
-//        }
-//
-//        double angle1 = ExtraFns.getTargetAngle(position, control1);
-//        double angle2 = ExtraFns.getTargetAngle(position, control2);
-//        return getAngleError(position, normAngle((angle1 + angle2) / 2));
-//    }
+    public static double getShootHeading(Pose robotPose, ShootSide shootSide) {
+        Pose control1, control2;
+        if (shootSide == ShootSide.LEFT) {
+            control1 = new Pose(14, 144);
+            control2 = new Pose(0, 130);
+        } else {
+            control1 = new Pose(130, 144);
+            control2 = new Pose(144, 130);
+        }
+
+        double angle1 = ExtraFns.getTargetAngle(robotPose, control1);
+        double angle2 = ExtraFns.getTargetAngle(robotPose, control2);
+        Vector displacement = new Vector(
+                robotPose.distanceFrom(getShootPose(shootSide)),
+                (angle1 + angle2) / 2
+        );
+        return displacement.getTheta();
+    }
 
     public void stopFlywheels() {
         low.setPower(0);

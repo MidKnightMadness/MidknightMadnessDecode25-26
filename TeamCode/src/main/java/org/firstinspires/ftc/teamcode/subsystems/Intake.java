@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.subsystems;
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 
+import com.pedropathing.math.MathFunctions;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -34,6 +35,7 @@ public class Intake extends SubsystemBase {
     }
     RunMode runMode;
     double motorGearRatio = 5.31;
+    public static double cachingTolerance = 0.0001;
     public static Map<Double, Double> grToMultiplier = Map.of(
             3., 2.89,
             4., 3.61,
@@ -65,19 +67,24 @@ public class Intake extends SubsystemBase {
     public void setDirectPower(double power){
         double motorPower = Math.clampOutput(power, -1, 1);
 //        intakeMotorLeft.setPower(motorPower);
-        intakeMotorRight.setPower(motorPower);
+        setPower(motorPower);
     }
 
     public void setDirectPower(double power, double currVolt){
         double motorPower = Math.clampOutput(power, -1, 1);
 //        intakeMotorLeft.setPower(motorPower * reference_voltage / currVolt);
-        intakeMotorRight.setPower(motorPower * reference_voltage / currVolt);
+        setPower(motorPower * reference_voltage / currVolt);
     }
 
 
+    public void setPower(double power){
+        if ((java.lang.Math.abs(power - intakeMotorRight.getPower()) > cachingTolerance) || (power == 0 && intakeMotorRight.getPower() != 0)) {
+            intakeMotorRight.setPower(power);
+        }
+    }
     public void stopPower(){
 //        intakeMotorLeft.setPower(0);
-        intakeMotorRight.setPower(0);
+        setPower(0);
     }
 
     public double getMotorVelocity(){

@@ -268,19 +268,19 @@ public class MainTeleOpNonCR extends CommandOpMode {
     }
 
     public void initializeSubsystems() {
-        spindexer = new SpindexerNonCR(hardwareMap, useDistanceSensor, new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE}, false);
+        spindexer = new SpindexerNonCR(hardwareMap, useDistanceSensor, new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE});
 //        spindexer.setMode(spindexerRunMode);
         intake = new Intake(hardwareMap, intakeRunMode);
 
         shooter = new TwoWheelShooter(hardwareMap, shooterRunMode);
 
         spindexerLights = new GobildaLightBlock[3];
-        spindexerLights[0] = new GobildaLightBlock(hardwareMap.get(Servo.class, ConfigNames.spindexerLights1));
-        spindexerLights[1] = new GobildaLightBlock(hardwareMap.get(Servo.class, ConfigNames.spindexerLights2));
-        spindexerLights[2] = new GobildaLightBlock(hardwareMap.get(Servo.class, ConfigNames.spindexerLights3));
+//        spindexerLights[0] = new GobildaLightBlock(hardwareMap.get(Servo.class, ConfigNames.spindexerLights1));
+//        spindexerLights[1] = new GobildaLightBlock(hardwareMap.get(Servo.class, ConfigNames.spindexerLights2));
+//        spindexerLights[2] = new GobildaLightBlock(hardwareMap.get(Servo.class, ConfigNames.spindexerLights3));
 
         pushUpLight = new GobildaLightBlock(hardwareMap.get(Servo.class, ConfigNames.light4));
-        readyToShootLight = new GobildaLightBlock(hardwareMap.get(Servo.class, ConfigNames.light5));
+        readyToShootLight = new GobildaLightBlock(hardwareMap.get(Servo.class, ConfigNames.light3));
 
         pushUpServo = new PushUpServo(hardwareMap, false);
         if (useArducam) {
@@ -437,10 +437,10 @@ public class MainTeleOpNonCR extends CommandOpMode {
     private void emergencyStops() {
         //PWM Disable servo if emergency servo is held
         if(gamepad2.dpad_up){
-            if (spindexer.getServoImplEx().isPwmEnabled()) spindexer.getServoImplEx().setPwmDisable();
+            if (spindexer.getServoImplEx1().isPwmEnabled()) spindexer.getServoImplEx1().setPwmDisable();
         } else{
-            if(!spindexer.getServoImplEx().isPwmEnabled()) {
-                spindexer.getServoImplEx().setPwmEnable();
+            if(!spindexer.getServoImplEx1().isPwmEnabled()) {
+                spindexer.getServoImplEx1().setPwmEnable();
             }
         }
 
@@ -709,10 +709,6 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
     //MUST Manually reset spindexer at position of 0
     private void resetSpindexer() {
-        if (gamepad2.optionsWasPressed()) {
-            spindexer.getTurnerEncoder().encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            spindexer.getTurnerEncoder().encoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        }
     }
 
     boolean aligned = false;
@@ -776,6 +772,11 @@ public class MainTeleOpNonCR extends CommandOpMode {
             clearExistingSpindexerCommand();//goes to position of 0 directly
             activeSpindexerSpot = 0;
             setSpindexerActiveSpot(activeSpindexerSpot);
+        }
+        else if(gamepad2.backWasPressed() && !autoIntake){
+            clearExistingSpindexerCommand();//goes to position of 0 directly
+            activeSpindexerSpot = SpindexerSpotNonCR.MAX_SPOTS;
+            spindexer.setDirectPosition(1);
         }
 
         //SHOOTING BUTTONS

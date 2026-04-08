@@ -233,7 +233,6 @@ public class BaseAutoCloseFunctions extends BaseAuto {
             motifPattern = idMap.getOrDefault(aprilTagID, MotifEnums.Motif.NONE);
         }
         telemetry.addData("Motif Pattern", motifPattern);
-        telemetry.addData("Spindexer angle", spindexer.getTurner().getAngle());
         telemetry.addData("Spindexer spot", spindexer.getNearestIntakePosition(SpotType.INTAKE));
         telemetry.update();
     }
@@ -378,7 +377,7 @@ public class BaseAutoCloseFunctions extends BaseAuto {
 
     @Override
     protected void initializeMechanisms() {
-        spindexer = new SpindexerNonCR(hardwareMap, useDistanceSensor, startBallColors, true);
+        spindexer = new SpindexerNonCR(hardwareMap, useDistanceSensor, startBallColors);
         shooter = new TwoWheelShooter(hardwareMap, shooterRunMode);
         intake = new Intake(hardwareMap, Intake.RunMode.RawPower);
         pushUpServo = new PushUpServo(hardwareMap);
@@ -397,8 +396,7 @@ public class BaseAutoCloseFunctions extends BaseAuto {
         waitThread(2000);
 
         //reset spindexer encoders then wait 2 seconds
-        spindexer.getTurnerEncoder().encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        spindexer.getTurnerEncoder().encoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
 
         waitThread(2000);
         spindexer.setDirectPosition(SpindexerSpotNonCR.fromIndex(1).getIntakePositionSolo());
@@ -670,8 +668,6 @@ public class BaseAutoCloseFunctions extends BaseAuto {
         telemetry.addData("Current Follower Pose", currentPose.getPose());
         telemetry.addData("Follower Velocity", follower.getVelocity());
 
-        telemetry.addData("Encoder position", spindexer.getEncoder().getPosition());
-        telemetry.addData("Encoder angle", spindexer.getEncoder().getAngle());
 
         telemetry.addData("Cam detect", camDetect);
 

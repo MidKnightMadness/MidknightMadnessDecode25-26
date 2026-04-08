@@ -12,7 +12,7 @@ public class PushUpServo extends SubsystemBase {
     public static double minPos = 0.25;
     public static double maxPos = 0.57;
     public static double initPos = minPos;
-    public static double cachingTolerance = 0.01;
+    public static double cachingTolerance = 0.001;
     public static Servo.Direction dir = Servo.Direction.FORWARD;
     Servo pushUpServo;
 

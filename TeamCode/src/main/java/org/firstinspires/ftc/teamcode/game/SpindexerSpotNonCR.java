@@ -15,28 +15,28 @@ public enum SpindexerSpotNonCR {
     SPOT0(
             0,
             0,
-            180d / SpindexerNonCR.degreesPerRevolution,
+            180d / SpindexerNonCR.totalDegrees,
             (double)360/439,
             Double.NaN
     ),
     SPOT1(
             1,
-            120 / SpindexerNonCR.degreesPerRevolution,
-            300d / SpindexerNonCR.degreesPerRevolution,
+            120 / SpindexerNonCR.totalDegrees,
+            300d / SpindexerNonCR.totalDegrees,
             Double.NaN,
             Double.NaN
     ),
     SPOT2(
             2,
-            240d / SpindexerNonCR.degreesPerRevolution,
-            420d / SpindexerNonCR.degreesPerRevolution,
+            240d / SpindexerNonCR.totalDegrees,
+            420d / SpindexerNonCR.totalDegrees,
             Double.NaN,
-            60d / SpindexerNonCR.degreesPerRevolution
+            60d / SpindexerNonCR.totalDegrees
     ),
     SPOT3(
             3,
-            360d / SpindexerNonCR.degreesPerRevolution,
-            60d / SpindexerNonCR.degreesPerRevolution,
+            360d / SpindexerNonCR.totalDegrees,
+            60d / SpindexerNonCR.totalDegrees,
             Double.NaN,
             Double.NaN
     );
@@ -46,8 +46,8 @@ public enum SpindexerSpotNonCR {
     }
 
 
-    public static int NUM_SPOTS = 3;//in one revolution
-    public static int MAX_SPOTS = (int) SpindexerNonCR.degreesPerRevolution / 120;
+    public static int NUM_SPOTS = SpindexerNonCR.NUM_SPOTS;//in one revolution
+    public static int MAX_SPOTS = SpindexerNonCR.TOTAL_SPOTS;
     double intakePosition1;
     double outakePosition1;
     double outakePosition2;
@@ -125,7 +125,7 @@ public enum SpindexerSpotNonCR {
     }
 
     public double applyLayer(double position, int layer){
-        return position + layer * 360 / SpindexerNonCR.degreesPerRevolution;
+        return position + layer * 360 / SpindexerNonCR.totalDegrees;
     }
 
     public static double getAngleFromIndex(int globalIndex, SpotType type) {
@@ -141,13 +141,13 @@ public enum SpindexerSpotNonCR {
             baseAngle = spot.getOuttakePositionSolo();
         }
 
-        double offset = layer * 360 / SpindexerNonCR.degreesPerRevolution;
+        double offset = layer * 360 / SpindexerNonCR.totalDegrees;
 
         return baseAngle + offset;
     }
 
     public static double getPositionFromIndex(int globalIndex, SpotType type){
         double angle = getAngleFromIndex(globalIndex, type);
-        return Math.min(Math.max(angle / SpindexerNonCR.degreesPerRevolution, 0), 1);
+        return Math.min(Math.max(angle, 0), 1);
     }
 }

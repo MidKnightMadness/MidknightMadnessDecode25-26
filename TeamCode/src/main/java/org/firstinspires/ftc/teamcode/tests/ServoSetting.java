@@ -21,25 +21,25 @@ public class ServoSetting extends OpMode {
     double increment = 0.001;
     ServoImplEx spindexerServo;
     Servo currentServo = pushUpServo;
-    boolean useSpindexer = true;
+    Servo stopItServo;
+    boolean useSpindexer = false;
 
     @Override
     public void init() {
         pushUpServo = hardwareMap.get(Servo.class, ConfigNames.pushUpServo);
         spindexerServo = hardwareMap.get(ServoImplEx.class, ConfigNames.turner);
         spindexerServo.setPwmRange(new PwmControl.PwmRange(500, 2500));
-        currentServo = pushUpServo;
-        turret1Servo = hardwareMap.get(Servo.class, ConfigNames.turretServoLeft);
-        turret2Servo = hardwareMap.get(Servo.class, ConfigNames.turretServoRight);
+        stopItServo = hardwareMap.get(Servo.class, ConfigNames.stopItServo);
+
+        currentServo = stopItServo;
+//        turret1Servo = hardwareMap.get(Servo.class, ConfigNames.turretServoLeft);
+//        turret2Servo = hardwareMap.get(Servo.class, ConfigNames.turretServoRight);
     }
 
     @Override
     public void loop() {
-        if(useSpindexer) {
-            spindexerServo.setPosition(setPos);
-        } else{
-            pushUpServo.setPosition(setPos);
-        }
+
+        stopItServo.setPosition(setPos);
 
         if(gamepad1.dpad_up){
             setPos+= increment;
@@ -52,6 +52,12 @@ public class ServoSetting extends OpMode {
             useSpindexer = !useSpindexer;
         }
 
+        if(gamepad1.leftBumperWasPressed()){
+            spindexerServo.setPosition(0);
+        }
+        if(gamepad1.rightBumperWasPressed()){
+            spindexerServo.setPosition(1);
+        }
 
         telemetry.addData("Current Pos", setPos);
 //        telemetry.addData("Current Servo", currentServo.toString());1

@@ -26,13 +26,13 @@ public class NewTurretTest extends OpMode {
     @Override
     public void loop() {
         // Clamp heading range
-        if (targetHeading > turret.getTotalRangeDegrees()) targetHeading = turret.getTotalRangeDegrees();
-        if (targetHeading < 0) targetHeading = 0;
-
-        turret.angleToServo(AngleNonCR.fromDegrees(targetHeading));
-
-        telemetry.addData("Target Heading", targetHeading);
-        telemetry.update();
+//        if (targetHeading > turret.getTotalRangeDegrees()) targetHeading = turret.getTotalRangeDegrees();
+//        if (targetHeading < 0) targetHeading = 0;
+//
+//        turret.angleToServo(AngleNonCR.fromDegrees(targetHeading));
+//
+//        telemetry.addData("Target Heading", targetHeading);
+//        telemetry.update();
     }
 
 

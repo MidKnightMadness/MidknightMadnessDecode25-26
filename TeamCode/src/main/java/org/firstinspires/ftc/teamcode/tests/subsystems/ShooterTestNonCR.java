@@ -164,7 +164,7 @@ public class ShooterTestNonCR extends CommandOpMode {
     }
 
     public void initializeSubsystems() {
-        spindexer = new SpindexerNonCR(hardwareMap, useDistanceSensor, new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE}, true);
+        spindexer = new SpindexerNonCR(hardwareMap, useDistanceSensor, new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE});
         shooter = new TwoWheelShooter(hardwareMap, shooterRunMode);
         pushUpServo = new PushUpServo(hardwareMap);
 
@@ -175,8 +175,6 @@ public class ShooterTestNonCR extends CommandOpMode {
     @Override
     public void run() {
         if(!start){
-            spindexer.getTurnerEncoder().encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            spindexer.getTurnerEncoder().encoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             start = true;
         }
         super.run();
@@ -432,7 +430,7 @@ public class ShooterTestNonCR extends CommandOpMode {
             telemetry.addLine("--------------------------------");
             telemetry.addData("Spindexer Mode", spindexerRunMode);
             telemetry.addData("Spindexer Angle", spindexer.getCurrentAngle());
-            telemetry.addData("Current Set Position", spindexer.getServo().getPosition());
+            telemetry.addData("Current Set Position", spindexer.getServo1().getPosition());
             telemetry.addData("Curr Active Spot", activeSpindexerSpot);
             telemetry.addData("Auto Intake Spot", autoIntakeSpot);
 //            telemetry.addData("Spindexer Auto Spindxer", autoSpindexer);
