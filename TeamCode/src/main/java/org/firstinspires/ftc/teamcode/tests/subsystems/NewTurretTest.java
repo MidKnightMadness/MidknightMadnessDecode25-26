@@ -26,11 +26,16 @@ public class NewTurretTest extends OpMode {
 
     @Override
     public void loop() {
-        turret.setAngleOptimized(Angle.fromDegrees(targetHeading));
+        turret.periodic();
+//        turret.setPosition(1);
+        turret.setAngle(Angle.fromDegrees(targetHeading));
 
-        telemetry.addData("Target Heading", targetHeading);
-        telemetry.update();
+        telemetryM.addData("Actual angle", turret.getAngle().toDegrees());
+        telemetryM.addData("Actual angle (direct)", turret.encoder.getAngleUnnormalized());
+        telemetryM.addData("Actual position (raw)", turret.encoder.encoder.getCurrentPosition());
+        telemetryM.addData("Target angle", targetHeading);
+        telemetryM.addData("Target angle (measured)", turret.getTargetAngle().toDegrees());
+        telemetryM.addData("Target position (measured)", turret.getTargetPosition());
+        telemetryM.update(telemetry);
     }
-
-
 }

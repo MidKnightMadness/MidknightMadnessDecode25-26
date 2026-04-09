@@ -56,10 +56,11 @@ public class TurretSetAngleTest extends OpMode {
 
     @Override
     public void loop() {
+        turret.periodic();
         robotPose = follower.getPose();
         wheelControl.driveRelative(
-                gamepad1.left_stick_x,
-                -gamepad1.left_stick_y,
+                gamepad1.left_stick_y,
+                -gamepad1.left_stick_x,
                 gamepad1.right_stick_x,
                 1
         );
@@ -97,7 +98,7 @@ public class TurretSetAngleTest extends OpMode {
         telemetryM.addData("Pose Y", robotPose.getY());
         telemetryM.addData("Pose heading", robotPose.getHeading());
         telemetryM.addData("Turret position", turret.getPosition());
-        telemetryM.addData("Turret angle (degrees)", turret.getAngleActual().toDegrees());
+        telemetryM.addData("Turret angle (degrees)", turret.getAngle().toDegrees());
         telemetryM.addData("Turret target angle (degrees)", Math.toDegrees(turretTargetAngle));
         telemetryM.addData("Heading to goal", goalHeading);
         telemetryM.addData("Manual mode", manualMode);

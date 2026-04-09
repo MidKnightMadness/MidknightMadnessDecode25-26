@@ -11,8 +11,6 @@ public class IncrementalEncoder extends EncoderBase<IncrementalEncoder> {
     //is the dcmotor encoder
     public final DcMotor encoder;
     private final double cpr;
-
-
     private int lastPosition;
     private double lastTimeStamp, veloEstimate, dpp, accel, lastVelo;
 
@@ -50,13 +48,13 @@ public class IncrementalEncoder extends EncoderBase<IncrementalEncoder> {
      */
     public int getPosition() {
         int currentPosition = encoder.getCurrentPosition();
+        double currentTime = (double) System.nanoTime() / 1E9;
         if (currentPosition != lastPosition) {
-            double currentTime = (double) System.nanoTime() / 1E9;
             double dt = currentTime - lastTimeStamp;
             veloEstimate = (currentPosition - lastPosition) / dt;
             lastPosition = currentPosition;
-            lastTimeStamp = currentTime;
         }
+        lastTimeStamp = currentTime;
         return getDirectionMultiplier() * currentPosition - (int) offset;
     }
 

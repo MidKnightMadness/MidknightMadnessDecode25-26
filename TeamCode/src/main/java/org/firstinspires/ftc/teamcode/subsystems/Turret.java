@@ -20,8 +20,8 @@ public class Turret extends SubsystemBase {
     // 0 degrees is facing intake
     // Clockwise is negative
     public static Range servoRange = new Range(0, 1);
-    public static Range angleRange = new Range(Math.toRadians(-210), Math.toRadians(210));
-    public static boolean leftInverted = false, rightInverted = false;
+    public static Range angleRange = new Range(Math.toRadians(-180), Math.toRadians(180));
+    public static boolean leftInverted = true, rightInverted = true;
 
     public static Angle finishedThreshold = Angle.fromDegrees(5); // TODO: Change to 15 for auto?
     public static Angle strictFinished = Angle.fromDegrees(2);
@@ -50,7 +50,7 @@ public class Turret extends SubsystemBase {
         servos.set(0.5);
 
         try {
-            Thread.sleep(2000);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -58,7 +58,6 @@ public class Turret extends SubsystemBase {
         resetEncoderPosition();
     }
 
-    //reset encoder position to 0(pedro field zero)
     public void resetEncoderPosition(){
         encoder.encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         encoder.encoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -69,7 +68,6 @@ public class Turret extends SubsystemBase {
 
     @Override
     public void periodic(){
-        //current angle returns from -210 to 210
         currentAngle = Angle.fromRadians(encoder.getAngleUnnormalized());
         servoPosition = servos.get();
     }
@@ -120,19 +118,19 @@ public class Turret extends SubsystemBase {
         setAngle(optimizeAngle(target));
     }
 
+    public double getTargetPosition() {
+        return servoPosition;
+    }
+
+    public Angle getTargetAngle() {
+        return Angle.fromRadians(servoRange.toRange(getTargetPosition(), angleRange));
+    }
+
     public double getPosition() {
-        return servos.get();
+        return servoRange.toRange(getAngle().toRadians(), angleRange);
     }
 
     public Angle getAngle() {
-        return Angle.fromRadians(servoRange.toRange(getPosition(), angleRange));
-    }
-
-    public double getPositionActual() {
-        return servoRange.toRange(getAngleActual().toRadians(), angleRange);
-    }
-
-    public Angle getAngleActual() {
         return currentAngle;
     }
 
