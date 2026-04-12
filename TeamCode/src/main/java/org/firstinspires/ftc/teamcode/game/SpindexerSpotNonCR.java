@@ -11,31 +11,32 @@ import java.util.ArrayList;
 @Config
 @Configurable
 public enum SpindexerSpotNonCR {
+
     //-1 = not possible
     SPOT0(
             0,
-            0,
+            0 + SpindexerNonCR.SPINDEXER_OFFSET_DEGREES / SpindexerNonCR.totalDegrees,
             180d / SpindexerNonCR.totalDegrees,
             (double)360/439,
             Double.NaN
     ),
     SPOT1(
             1,
-            120 / SpindexerNonCR.totalDegrees,
+            (120 + + SpindexerNonCR.SPINDEXER_OFFSET_DEGREES) / SpindexerNonCR.totalDegrees,
             300d / SpindexerNonCR.totalDegrees,
             Double.NaN,
             Double.NaN
     ),
     SPOT2(
             2,
-            240d / SpindexerNonCR.totalDegrees,
+            (240d+ + SpindexerNonCR.SPINDEXER_OFFSET_DEGREES) / SpindexerNonCR.totalDegrees,
             420d / SpindexerNonCR.totalDegrees,
             Double.NaN,
             60d / SpindexerNonCR.totalDegrees
     ),
     SPOT3(
             3,
-            360d / SpindexerNonCR.totalDegrees,
+            (360d+ + SpindexerNonCR.SPINDEXER_OFFSET_DEGREES) / SpindexerNonCR.totalDegrees,
             60d / SpindexerNonCR.totalDegrees,
             Double.NaN,
             Double.NaN
@@ -44,6 +45,7 @@ public enum SpindexerSpotNonCR {
     public static int numSpots(){
         return 3;
     }
+
 
 
     public static int NUM_SPOTS = SpindexerNonCR.NUM_SPOTS;//in one revolution
@@ -128,26 +130,22 @@ public enum SpindexerSpotNonCR {
         return position + layer * 360 / SpindexerNonCR.totalDegrees;
     }
 
-    public static double getAngleFromIndex(int globalIndex, SpotType type) {
+    public static double getPositionFromIndex(int globalIndex, SpotType type) {
         int baseIndex = globalIndex % NUM_SPOTS;//base spot
         int layer = globalIndex / NUM_SPOTS;//layering
 
         SpindexerSpotNonCR spot = fromIndex(baseIndex);
 
-        double baseAngle;
+        double basePosition;
         if (type == SpotType.INTAKE) {
-            baseAngle = spot.getIntakePositionSolo();
+            basePosition = spot.getIntakePositionSolo();
         } else {
-            baseAngle = spot.getOuttakePositionSolo();
+            basePosition = spot.getOuttakePositionSolo();
         }
 
-        double offset = layer * 360 / SpindexerNonCR.totalDegrees;
+        double offset = layer * 360.0 / SpindexerNonCR.totalDegrees;
 
-        return baseAngle + offset;
+        return Math.min(Math.max(basePosition + offset, 0), 1);
     }
 
-    public static double getPositionFromIndex(int globalIndex, SpotType type){
-        double angle = getAngleFromIndex(globalIndex, type);
-        return Math.min(Math.max(angle, 0), 1);
-    }
 }

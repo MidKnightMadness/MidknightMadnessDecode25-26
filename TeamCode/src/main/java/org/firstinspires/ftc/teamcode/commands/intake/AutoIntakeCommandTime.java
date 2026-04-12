@@ -70,27 +70,31 @@ public class AutoIntakeCommandTime extends CommandBase {
         spindexer.setDirectPosition(SpindexerSpotNonCR.getPositionFromIndex(startSpot, SpotType.INTAKE));
     }
 
+
     boolean exit = false;
     boolean waitingToSettle;
+    boolean start = false;
 
     @Override
     public void execute() {
+        if(!start){
+            timer.restart();
+            start = true;
+        }
+
         if (voltageCompensated) {
             intake.setDirectPower(power, voltageSensor.getVoltage());
         }
 
 
-        if (!atSpot && timer.getTime() >= spindexer.getTimeForRotation(120)) {
-            atSpot = true;
+        if (!atSpot && timer.getTime() >= spindexer.SPOT_CHANGE_TIME) {
+            waitingToSettle = true;
             timer.restart();
         }
 
-        if (waitingToSettle && atSpot) {
-            if (timer.getTime() >= settleTime) {
-                waitingToSettle = false;
-                atSpot = true;
-            }
-            return;
+        if (waitingToSettle && timer.getTime() >= settleTime) {
+            waitingToSettle = false;
+            atSpot = true;
         }
 
         if (atSpot) {
@@ -102,7 +106,7 @@ public class AutoIntakeCommandTime extends CommandBase {
         if (ballDetected) {
             currNumSpot += dir;
 
-            spindexer.setDirectPosition(
+            spindexer.setPosition(
                     SpindexerSpotNonCR.getPositionFromIndex(currNumSpot, SpotType.INTAKE)
             );
 
@@ -110,11 +114,12 @@ public class AutoIntakeCommandTime extends CommandBase {
                 intake.setDirectPower(-1);
                 exit = true;
             }
+
             ballDetected = false;
             atSpot = false;
 
             // start settle again after movement
-            waitingToSettle = true;
+            waitingToSettle = false;
             timer.restart();
         }
     }
@@ -130,6 +135,5 @@ public class AutoIntakeCommandTime extends CommandBase {
     @Override
     public void end(boolean interrupted){
         swapSpots = false;
-
     }
 }

@@ -24,6 +24,8 @@ public class Turret extends SubsystemBase {
     private IncrementalEncoder encoder;
     public static double totalRangeRadians = Math.toRadians(396);
     public static double halfRange = totalRangeRadians / 2.0;
+    public static double cappedRangeRadians = Math.toRadians(340);
+    //Nihao -MrFiso 4/10/2026 6:12 pm PST
     //if degrees per revolution is 420, 210 degrees from turret, -210 from turret
     Servo.Direction directionLeft = Servo.Direction.REVERSE;
     Servo.Direction directionRight = Servo.Direction.REVERSE;
@@ -128,7 +130,7 @@ public class Turret extends SubsystemBase {
 
     private double shortestAngleDifference(double target, double current){
         // bring current into 0–360 for computation
-        double current360 = (current + 2 * Math.PI) % 2 * Math.PI;
+        double current360 = (current + 2 * Math.PI) % (2 * Math.PI);
 
         // compute difference
         double diff = target - current360;
@@ -136,9 +138,12 @@ public class Turret extends SubsystemBase {
         if (diff < -Math.PI) diff += 2 * Math.PI;
         return diff;
     }
-    public static double servoCenter = 0.495;
+    public static double servoCenter = 0.505;
     public double angleToServo(AngleNonCR angle){
-        return servoCenter + angle.getValue() / totalRangeRadians;
+        return servoCenter + Math.min(Math.max(-cappedRangeRadians / 2, angle.getValue()), cappedRangeRadians / 2) / totalRangeRadians;
+    }
+    public double angleToServo(Angle angle){
+        return servoCenter + Math.min(Math.max(-cappedRangeRadians / 2, angle.getValue()), cappedRangeRadians / 2) / totalRangeRadians;
     }
 
     public double servoToAngle(double servoPosition){
@@ -178,6 +183,7 @@ public class Turret extends SubsystemBase {
         setServos(angleToServo(targetTurretAngle));
     }
 
+
     public void setServos(double servoPosition){
 //        if(Math.abs(servoPosition - lastPosLeft) > cachingTolerance || lastPosLeft == -1){
             leftServo.setPosition(servoPosition);
@@ -189,8 +195,20 @@ public class Turret extends SubsystemBase {
 //        }
     }
 
-    public void setAngle(AngleNonCR angle){
+    public void setAngle(Angle angle){
         setServos(angleToServo(angle));
+    }
+
+    //plug in angle -2PI <-> 2PI angle and restrict to -PI to PI
+    public void setFieldAngleToServo(Angle angle){
+        double angleValue = angle.getValue();
+        if(angleValue < -Math.PI){
+            angleValue += 2 * Math.PI;
+        }
+        if(angleValue > Math.PI){
+            angleValue -= 2 * Math.PI;
+        }
+        setServos(angleToServo(Angle.fromRadians(angleValue)));
     }
 
     public void setAngleOptimized(Angle target){

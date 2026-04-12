@@ -23,6 +23,7 @@ import java.util.ArrayList;
 public class SpindexerNonCR extends SubsystemBase {
     public double startOutakePosition = 1;
     public double endOutakePosition = 0;
+    public static double SPINDEXER_OFFSET_DEGREES = 20d;
     public double startTeleOpIntakePosition = SpindexerSpotNonCR.fromIndex(1).getIntakePositions().get(0);
     public static int totalDegrees = 791;//817 extended gr?
     public static AngleNonCR defaultFinishedThreshold = AngleNonCR.fromDegrees(5); // Threshold at which it's finished turning to a spot
@@ -43,8 +44,8 @@ public class SpindexerNonCR extends SubsystemBase {
     public static double distSensorLowerThreshold = 0.5;
     public static double distSensorUpperThreshold = 2.5;
     double cachingTolerance = 0.01;
-    public final double DEGREES_PER_SECOND = 120.0 / SPOT_CHANGE_TIME;
-    public static double SPOT_CHANGE_TIME = 0.15;
+    public final double DEGREES_PER_SECOND = 120.0 / SPOT_CHANGE_TIME;//deg per ms
+    public static double SPOT_CHANGE_TIME = 150;
 
 
     double currentTurnerPosition = 0;
@@ -220,6 +221,16 @@ public class SpindexerNonCR extends SubsystemBase {
         return dist1Check || dist2Check;
     }
 
+    public int numBallsFilled(){
+        int ct = 0;
+        for(int i = 0; i < NUM_SPOTS; i++){
+            if(ballColors[i] == BallColor.UNKNOWN){
+                ct++;
+            }
+        }
+        return ct;
+    }
+
 
 
     public void updateShootOn(boolean shootOn){
@@ -371,7 +382,13 @@ public class SpindexerNonCR extends SubsystemBase {
             currentSpot+=1;
         }
 
-        currentSpot = (currentSpot < NUM_SPOTS) ? currentSpot + NUM_SPOTS : (currentSpot > TOTAL_SPOTS) ? currentSpot - NUM_SPOTS : currentSpot;
+        if(currentSpot < 0){
+            currentSpot+=3;
+        }
+        if(currentSpot > TOTAL_SPOTS){
+            currentSpot-=3;
+        }
+
         return currentSpot;
     }
 

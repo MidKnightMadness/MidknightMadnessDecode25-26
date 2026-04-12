@@ -584,7 +584,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
 
     private void runGamepad1Comands() {
-        currentPose = new Pose(follower.getPose().getX(), follower.getPose().getY(), Math.toDegrees(follower.getPose().getHeading()));
+        currentPose = new Pose(follower.getPose().getX(), follower.getPose().getY(), follower.getPose().getHeading());
 
         if(gamepad1.startWasPressed()){
             useArducam = !useArducam;
@@ -876,6 +876,7 @@ public class MainTeleOpNonCR extends CommandOpMode {
 
     private void setCurrentShootDist(double currVolt) {
         if (!setCustomPower) {
+
             shooter.setFlywheelNew(follower.getPose(), follower.getVelocity(), shootSide, currVolt);
 //                shooter.setFlywheelLUT(follower, shootSide, voltageCompensation, currVolt);
         } else {

@@ -20,6 +20,7 @@ public class SpindexerGotoPositionSmooth extends CommandBase {
 
     Timer timer;
     double startValue;
+    //total time in sec
     public SpindexerGotoPositionSmooth(SpindexerNonCR spindexer, double position, double totalTime) {
         this.targetPosition = position;
         this.spindexer = spindexer;
@@ -44,7 +45,7 @@ public class SpindexerGotoPositionSmooth extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return timer.getTime() / 1000.0 > totalTime || spindexer.isAtPositionStrict(targetPosition);
+        return timer.getTime() / 1000.0 > totalTime;
     }
 
     @Override

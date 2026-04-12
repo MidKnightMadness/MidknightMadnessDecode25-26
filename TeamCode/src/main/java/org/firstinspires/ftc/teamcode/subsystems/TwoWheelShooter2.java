@@ -42,19 +42,19 @@ public class TwoWheelShooter2 extends SubsystemBase {
 
 
     public static double transferPower = 0.7;
-    public static double transferVelocity = 850;
+    public static double transferVelocity = 1300;
     //DEFAULT GAINS
     public static double[] kTransferGains = new double[]{0.0313141, 0.000353782, 0};
-    public static double[] pidTransferGains = new double[]{0.0012, 0, 0};
-    public static double[] kBotGains = new double[]{0.04057, 0.000363, 0};
-    public static double[] pidTopGains = new double[]{0.0012, 0, 0};
-    public static double[] pidBotGains = new double[]{0.0012, 0, 0};
-    public static double[] kTopGains = new double[]{0.04386, 0.000346, 0};
+    public static double[] pidTransferGains = new double[]{0.002, 0, 0};
+    public static double[] kBotGains = new double[]{0.058, 0.000393, 0};
+    public static double[] pidTopGains = new double[]{0.008, 0, 0};
+    public static double[] pidBotGains = new double[]{0.008, 0, 0};
+    public static double[] kTopGains = new double[]{0.033, 0.000427, 0};
 
     //AGGRESSIVE GAINS
-    public static double[] pidBotAggressiveGains = new double[]{0.0020, 0, 0};
-    public static double[] pidTopAggressiveGains = new double[]{0.0020, 0, 0};
-    public static double[] pidTransferAggressiveGains = new double[]{0.0020, 0, 0};
+    public static double[] pidBotAggressiveGains = new double[]{0.01, 0, 0};
+    public static double[] pidTopAggressiveGains = new double[]{0.01, 0, 0};
+    public static double[] pidTransferAggressiveGains = new double[]{0.003, 0, 0};
     public boolean useAggressiveRecovery = true;
     public boolean inRecoveryMode = false;
     //AGGRESSIVE GAINS: FOR RECOVERY - gain scheduling
@@ -125,8 +125,8 @@ public class TwoWheelShooter2 extends SubsystemBase {
         //ticks in sec for 3: 1 direct driven gear ratios
         public static int iterations = 10; // For tuning targetDistance
         public static double[] dist = {60, 70, 80, 90, 100, 112, 128, 149.5, 156.0};//inches
-        public static double[] bottomVel = {1350, 1350, 1400, 1450, 1500, 1500, 1700, 1700, 1800};
-        public static double[] topVel = {1550, 1600, 1650, 1650, 1750, 1800, 1900, 2100, 2100};
+        public static double[] bottomVel = {700, 740, 790, 820, 860, 900, 930, 980, 1000};
+        public static double[] topVel = {800, 820, 860, 890, 905, 940, 980, 1000};
         public static double[] velCorrectionFactor = {0.8, 0.85, 0.9, 0.95, 1.0, 1.07, 1.15, 1.25, 1.3}; // take time in the air and then subtract a bit
 
         public AimCalculator() {
@@ -280,11 +280,6 @@ public class TwoWheelShooter2 extends SubsystemBase {
         inRecoveryMode = false;
         transfer.setVeloCoefficients(pidTransferGains[0], pidTransferGains[1], pidTransferGains[2]);
         transfer.setFeedforwardCoefficients(kTransferGains[0], kTransferGains[1], kTransferGains[2]);
-    }
-    public void setAggressiveGains(){
-        inRecoveryMode = true;
-        low.setVeloCoefficients(pidBotAggressiveGains[0], pidBotAggressiveGains[1], pidBotAggressiveGains[2]);
-        high.setVeloCoefficients(pidTopAggressiveGains[0], pidTopAggressiveGains[1], pidTopAggressiveGains[2]);
     }
     public void setAggressiveGainsBottom(){
         inRecoveryMode = true;
@@ -548,11 +543,6 @@ public class TwoWheelShooter2 extends SubsystemBase {
     public void setRawPower(double lowPower, double highPower){
         low.set(lowPower, 0);
         high.set(highPower, 0);
-    }
-
-    public void resetRecoveryFactors(){
-        currBotFactor = 1;
-        currTopFactor = 1;
     }
 
 
