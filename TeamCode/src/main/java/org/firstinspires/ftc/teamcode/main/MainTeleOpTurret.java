@@ -315,7 +315,7 @@ public class MainTeleOpTurret extends CommandOpMode {
         }
     }
 
-    public static boolean arducamAvailable = false;
+    public static boolean arducamAvailable = true;
 
     boolean rumbledLastFive = false;
     boolean start;
@@ -365,7 +365,7 @@ public class MainTeleOpTurret extends CommandOpMode {
     //1 for ready to shoot
     int spindexerBallCt = 0;
     int previousSpindexerBallCt = 0;
-    boolean arducamUse = false;
+    boolean arducamUse = true;
     boolean previousArducamUse = false;
     boolean readyToShoot = false;
     boolean previousReadyToShoot = false;
@@ -633,9 +633,9 @@ public class MainTeleOpTurret extends CommandOpMode {
 
             cameraAlign = Math.abs(aprilTagBearing) < Math.toRadians(rejectReadingThreshold);
         }
-        if(cameraAlign){
-            follower.setHeading(robotHeadingCam);
-        }
+//        if(cameraAlign){
+//            follower.setHeading(robotHeadingCam);
+//        }
 
 
         if(sotmEnabled) {
@@ -648,11 +648,11 @@ public class MainTeleOpTurret extends CommandOpMode {
             targetHeading = MathFunctions.normalizeAngle(aimData[2]);
         }
         else{
-//            if(!cameraAlign){
+            if(!cameraAlign){
                 targetHeading = TwoWheelShooter2.getShootHeading(currentPose, shootSide);
-//            } else{
-//                targetHeading = turret.getEncoder().getAngle() + aprilTagBearing;
-//            }
+            } else{
+                targetHeading = turret.getEncoder().getAngle() + aprilTagBearing;
+            }
         }
         //wants wrapped turret angle between -2PI & 2 PI
         diffRadians = targetHeading - currentPose.getHeading();
