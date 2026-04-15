@@ -23,7 +23,7 @@ import java.util.ArrayList;
 public class SpindexerNonCR extends SubsystemBase {
     public double startOutakePosition = 1;
     public double endOutakePosition = 0;
-    public static double SPINDEXER_OFFSET_DEGREES = 20d;
+    public static double SPINDEXER_OFFSET_DEGREES = 40d;
     public double startTeleOpIntakePosition = SpindexerSpotNonCR.fromIndex(1).getIntakePositions().get(0);
     public static int totalDegrees = 791;//817 extended gr?
     public static AngleNonCR defaultFinishedThreshold = AngleNonCR.fromDegrees(5); // Threshold at which it's finished turning to a spot
@@ -38,14 +38,16 @@ public class SpindexerNonCR extends SubsystemBase {
     boolean shootOn = false;
     BallColor newBallType = null;
     boolean useDistanceSensor;
-    public GobildaDistance ranger1;
-    public GobildaDistance ranger2;
+    public GobildaDistance distanceSensor1;
+    public GobildaDistance distanceSensor2;
     //0 - 4 for swyft distance sensor
     public static double distSensorLowerThreshold = 0.5;
     public static double distSensorUpperThreshold = 2.5;
     double cachingTolerance = 0.01;
     public final double DEGREES_PER_SECOND = 120.0 / SPOT_CHANGE_TIME;//deg per ms
     public static double SPOT_CHANGE_TIME = 150;
+
+    public static double STRICT_SPOT_TIME = 120;
 
 
     double currentTurnerPosition = 0;
@@ -63,8 +65,8 @@ public class SpindexerNonCR extends SubsystemBase {
 
 
         if(useDistanceSensor){
-            ranger1 = new GobildaDistance(hardwareMap, ConfigNames.intakeDist1, RangerMode.DEG15);
-            ranger2 = new GobildaDistance(hardwareMap, ConfigNames.intakeDist2, RangerMode.DEG15);
+            distanceSensor1 = new GobildaDistance(hardwareMap, ConfigNames.intakeDist1, RangerMode.DEG15);
+            distanceSensor2 = new GobildaDistance(hardwareMap, ConfigNames.intakeDist2, RangerMode.DEG15);
         }
 
         if(ballColors!= null){
@@ -214,24 +216,12 @@ public class SpindexerNonCR extends SubsystemBase {
 
 
     boolean checkDist() {
-        distance1 = ranger1.getDistance();
-        distance2 = ranger2.getDistance();
+        distance1 = distanceSensor1.getDistance();
+        distance2 = distanceSensor2.getDistance();
         dist1Check = distance1 > distSensorLowerThreshold && distance1 < distSensorUpperThreshold;
         dist2Check = distance2 > distSensorLowerThreshold && distance2 < distSensorUpperThreshold;
         return dist1Check || dist2Check;
     }
-
-    public int numBallsFilled(){
-        int ct = 0;
-        for(int i = 0; i < NUM_SPOTS; i++){
-            if(ballColors[i] == BallColor.UNKNOWN){
-                ct++;
-            }
-        }
-        return ct;
-    }
-
-
 
     public void updateShootOn(boolean shootOn){
         this.shootOn = shootOn;

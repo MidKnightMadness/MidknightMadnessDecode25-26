@@ -106,9 +106,16 @@ public class AutoIntakeCommandTime extends CommandBase {
         if (ballDetected) {
             currNumSpot += dir;
 
-            spindexer.setPosition(
-                    SpindexerSpotNonCR.getPositionFromIndex(currNumSpot, SpotType.INTAKE)
-            );
+//            if(currNumSpot == startSpot - 3){
+//                spindexer.setPosition(
+//                        SpindexerSpotNonCR.getPositionFromIndex(currNumSpot, SpotType.INTAKE) + SpindexerSpotNonCR.OUTAKE_OFFSET_DEGREES / SpindexerNonCR.totalDegrees
+//                );
+//            }
+//            else {
+                spindexer.setPosition(
+                        SpindexerSpotNonCR.getPositionFromIndex(currNumSpot, SpotType.INTAKE)
+                );
+//            }
 
             if (spindexer.allOccuppiedBallColors()) {
                 intake.setDirectPower(-1);

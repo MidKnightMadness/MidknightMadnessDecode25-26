@@ -55,6 +55,7 @@ public enum SpindexerSpotNonCR {
     double outakePosition2;
     double intakePosition2;
     int index;
+    public static double OUTAKE_OFFSET_DEGREES = 20;
     SpindexerSpotNonCR(int index, double intakePosition, double outakePosition, double intake2Position, double outake2Position){
         this.intakePosition1 = intakePosition;
         this.outakePosition1 = outakePosition;

@@ -61,7 +61,7 @@ public class MotorEx extends Motor {
     @Override
     public void set(double output, double currVoltage) {
         if (runmode == RunMode.VelocityControl) {
-            setPower((veloController.calculate(getCorrectedVelocity(), output) + feedforward.calculate(output, getAcceleration()) * REFERENCE_VOLTAGE / currVoltage));
+            setPower((veloController.calculate(getCorrectedVelocity(), output) + feedforward.calculate(output, getAcceleration())) * REFERENCE_VOLTAGE / currVoltage);
         } else if (runmode == RunMode.PositionControl) {
             double error = positionController.calculate(encoder.getPosition());
             setPower(output * error);

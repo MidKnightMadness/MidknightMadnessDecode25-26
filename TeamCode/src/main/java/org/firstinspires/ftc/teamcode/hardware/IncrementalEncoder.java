@@ -9,7 +9,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 public class IncrementalEncoder extends EncoderBase<IncrementalEncoder> {
     //is the dcmotor encoder
-    public final DcMotor encoder;
+    public final DcMotorEx encoder;
     private final double cpr;
 
 
@@ -23,7 +23,7 @@ public class IncrementalEncoder extends EncoderBase<IncrementalEncoder> {
      * @param countsPerRevolution the number of encoder ticks per full revolution, aka cycles per revolution
      */
     public IncrementalEncoder(HardwareMap hwMap, String id, double countsPerRevolution, AngleUnit angleUnit) {
-        this(hwMap.get(DcMotor.class, id), countsPerRevolution, angleUnit);
+        this(hwMap.get(DcMotorEx.class, id), countsPerRevolution, angleUnit);
         encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         encoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         encoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -35,7 +35,7 @@ public class IncrementalEncoder extends EncoderBase<IncrementalEncoder> {
      * @param encoder the DcMotor which encoder is bound to
      * @param countsPerRevolution the number of encoder ticks per full revolution, aka cycles per revolution
      */
-    public IncrementalEncoder(DcMotor encoder, double countsPerRevolution, AngleUnit angleUnit) {
+    public IncrementalEncoder(DcMotorEx encoder, double countsPerRevolution, AngleUnit angleUnit) {
         this.encoder = encoder;
         this.cpr = countsPerRevolution;
         this.angleUnit = angleUnit;
