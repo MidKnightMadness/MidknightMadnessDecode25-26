@@ -14,7 +14,6 @@ import java.util.concurrent.TimeUnit;
 @Autonomous(name = "AprilTag Field Localization Test")
 @Config
 @Configurable
-
 public class AprilTagCameraTesting extends OpMode {
 
     AprilTagWebcam aprilTagWebcam = new AprilTagWebcam();
@@ -52,7 +51,6 @@ public class AprilTagCameraTesting extends OpMode {
 
     @Override
     public void init() {
-
         aprilTagWebcam.init(hardwareMap, ConfigNames.arducam, telemetry);
         portal = aprilTagWebcam.getVisionPortal();
 

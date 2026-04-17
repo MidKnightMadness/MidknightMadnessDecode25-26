@@ -99,13 +99,13 @@ public class MainTeleOpTurret extends CommandOpMode {
     double currSpeed = maxSpeed;
     double intakePower = 1.0;
     double maxIntakePower = 1.0;
-    public static double leftOffsetShoot = Math.toRadians(3);
+    public static double leftOffsetShoot = Math.toRadians(4);
     WheelControl2 wheelControl;
     Pose parkRight = new Pose(104, 33, Math.toRadians(90));
     Pose parkLeft = new Pose(144 - 104, 33, Math.toRadians(90));
     ShootSide shootSide = ShootSide.LEFT;
-    double rightAprilAngle = Math.toRadians(38.565 + 180);
-    double leftAprilAngle = Math.toRadians(360 - 38.565);
+    double rightAprilAngle = Math.toRadians(38.565);
+    double leftAprilAngle = Math.toRadians(180 - 38.565);
 
     boolean autoAlign = false;
     public static double cameraAlignThresholdDegrees = 5;
@@ -113,7 +113,7 @@ public class MainTeleOpTurret extends CommandOpMode {
     boolean autoDriveToShoot = false;
     boolean autoIntake = false;
 
-    public static double rejectReadingThreshold = 7;
+    public static double rejectReadingThreshold = 20;
     boolean shootOn;
     int spindexerDirection;
 
@@ -127,8 +127,8 @@ public class MainTeleOpTurret extends CommandOpMode {
     public static boolean sotmEnabled = false;
     SpotType activeSpotType = null;
     public static boolean setCustomPower = false;
-    public static double customTopTargetVel = 1050;
-    public static double customBotTargetVel = 700;
+    public static double customTopTargetVel = 850;
+    public static double customBotTargetVel = 850;
     public static double offsetRadians = Math.toRadians(0);
     AutoIntakeCommandTime autoIntakeCommand;
     SequentialCommandGroup seqAutoIntakeCommand;
@@ -161,7 +161,7 @@ public class MainTeleOpTurret extends CommandOpMode {
     AprilTagWebcam arducam;
     double cameraYawRelative = 0;
     double cameraYawGlobal = 0;
-    Angle wrappedTurretValue;
+    Angle wrappedTurretValue = Angle.fromDegrees(0);
     boolean velAgressiveComp = false;
     public static boolean useBulkMode = true;
     PushUpServo pushUpServo;
@@ -178,7 +178,7 @@ public class MainTeleOpTurret extends CommandOpMode {
     public static double slowSmoothTime = 0.7;
     boolean driveFieldOriented = true;
     Limelight3A limelight;
-    public static boolean intakeVoltageCompensated = false;
+    public static boolean intakeVoltageCompensated = true;
     VoltageSensor voltageSensor;
 
     @Override
@@ -264,10 +264,8 @@ public class MainTeleOpTurret extends CommandOpMode {
 
         pushUpServo = new PushUpServo(hardwareMap, false);
         doneShootingTimer = new Timer();
-        if (arducamAvailable) {
-            arducam = new AprilTagWebcam();
-            arducam.init(hardwareMap, ConfigNames.arducam, telemetry);
-        }
+        arducam = new AprilTagWebcam();
+        arducam.init(hardwareMap, ConfigNames.arducam, telemetry);
         turret = new Turret(hardwareMap, false);
         stopItServo = new StopItServo(hardwareMap, false);
         directSpinShootTimer = new Timer();
@@ -314,8 +312,6 @@ public class MainTeleOpTurret extends CommandOpMode {
             return ShootSide.LEFT;
         }
     }
-
-    public static boolean arducamAvailable = true;
 
     boolean rumbledLastFive = false;
     boolean start;
@@ -590,12 +586,16 @@ public class MainTeleOpTurret extends CommandOpMode {
         }
     }
     double diffRadians;
-    double robotHeadingCam;
+    public static double velocityMovingThreshold = 0.5;//in/sec
+    public static double turretVelocityTheshold = Math.toRadians(3);//rad/s
+    boolean driveStationary = true;
+    boolean turretStationary = true;
+    double stableVisionHeading = 0;//RAD
+    public double leftAprilOffset = Math.toRadians(2);
     private void autoAlign() {
         if (gamepad1.leftBumperWasPressed()) {
             autoAlign = !autoAlign;
         }
-
 
         turnPower = 0;
         if (!autoAlign) return;
@@ -604,7 +604,11 @@ public class MainTeleOpTurret extends CommandOpMode {
         cameraAlign = false;
         AprilTagDetection detection = null;
 
-        if (arducamUse) {
+        driveStationary = Math.abs(follower.getVelocity().getMagnitude()) < velocityMovingThreshold;
+        turretStationary = Math.abs(turret.getEncoder().getRawVelocity()) < turretVelocityTheshold;;
+
+        //only read arducam bearing if stationary, use same correct turret heading as long as drivebase stationary
+        if (driveStationary && turretStationary && arducamUse && stableVisionHeading == 0) {
             arducam.update();
             for (AprilTagDetection tag : arducam.getDetectedTags()) {
                 detected = (shootSide == ShootSide.LEFT) ? (tag.id == 20) : (tag.id == 24);
@@ -613,52 +617,60 @@ public class MainTeleOpTurret extends CommandOpMode {
                     break;
                 }
             }
-        }
-
-        if (detected && detection != null) {
-            aprilTagBearing = Math.toRadians(detection.ftcPose.elevation);
+            if (!detected || detection == null) {
+                return;
+            }
+            tag = detection;
+            aprilTagBearing = -Math.toRadians(detection.ftcPose.elevation);
+            stableVisionHeading = turret.getCurrentAngle().getValue() + aprilTagBearing;
             if(shootSide == ShootSide.LEFT){
-                aprilTagBearing += leftOffsetShoot;
+                stableVisionHeading += leftAprilOffset;
             }
-
-
-            cameraYawRelative = -Math.toRadians(detection.ftcPose.pitch);
-            cameraYawGlobal = (cameraYawRelative + ((shootSide == ShootSide.LEFT) ? leftAprilAngle : rightAprilAngle));//degrees
-
-            double angularVelocity = turret.getEncoder().encoder.getVelocity(AngleUnit.RADIANS) + follower.getAngularVelocity();
-            cameraYawGlobal += angularVelocity * arducam.getLatencyMs() / 1000.0;
-            //correct for camera latency
-            robotHeadingCam = cameraYawGlobal - turret.getCurrentAngle().getValue(); //radians
-            robotHeadingCam = ExtraFns.normAngle(robotHeadingCam);
-
-            cameraAlign = Math.abs(aprilTagBearing) < Math.toRadians(rejectReadingThreshold);
         }
-//        if(cameraAlign){
-//            follower.setHeading(robotHeadingCam);
-//        }
 
-
-        if(sotmEnabled) {
-            double[] aimData;
-            aimData = shooter.aimCalculator.targetPowersHeading(
-                    follower.getPose(),
-                    follower.getVelocity(),
-                    TwoWheelShooter2.getShootPoseNew(currentPose, shootSide)
-            );
-            targetHeading = MathFunctions.normalizeAngle(aimData[2]);
+        if(!driveStationary){//robot base is moving, then arducam reading now wrong
+            stableVisionHeading = 0;
         }
-        else{
-            if(!cameraAlign){
+
+        if(driveStationary){
+            //use vision based if already have value
+            if(stableVisionHeading != 0){
+                wrappedTurretValue = Angle.fromRadians(stableVisionHeading);
+                turret.setFieldAngleToServo(wrappedTurretValue);
+            }
+            //if don't have vision value, use default face point algorithm
+            else{
                 targetHeading = TwoWheelShooter2.getShootHeading(currentPose, shootSide);
-            } else{
-                targetHeading = turret.getEncoder().getAngle() + aprilTagBearing;
+                diffRadians = targetHeading - currentPose.getHeading();
+                wrappedTurretValue = Angle.fromRadians(diffRadians);
+                turret.setFieldAngleToServo(wrappedTurretValue);
             }
         }
-        //wants wrapped turret angle between -2PI & 2 PI
-        diffRadians = targetHeading - currentPose.getHeading();
-        wrappedTurretValue = Angle.fromRadians(diffRadians);
-        turret.setFieldAngleToServo(wrappedTurretValue);
+        else{//moving
+            if(sotmEnabled) {
+                double[] aimData;
+                aimData = shooter.aimCalculator.targetPowersHeading(
+                        follower.getPose(),
+                        follower.getVelocity(),
+                        TwoWheelShooter2.getShootPoseNew(currentPose, shootSide)
+                );
+                targetHeading = MathFunctions.normalizeAngle(aimData[2]);
+                diffRadians = targetHeading - currentPose.getHeading();
+                wrappedTurretValue = Angle.fromRadians(diffRadians);
+                turret.setFieldAngleToServo(wrappedTurretValue);
+            } else{//default back to face point algorithm
+                targetHeading = TwoWheelShooter2.getShootHeading(currentPose, shootSide);
+                diffRadians = targetHeading - currentPose.getHeading();
+                wrappedTurretValue = Angle.fromRadians(diffRadians);
+                turret.setFieldAngleToServo(wrappedTurretValue);
+            }
 
+        }
+
+
+
+
+        //wants wrapped turret angle between -2PI & 2 PI
         //270 current robot, want it to face 0:  0 - 270 + 360 = 90+ = ccw
         //240 current robot, want it to facing 180: 180 - 240 = 60- = cc
         //180 current robot, want it to face 5: 5 - 180 = 175- = cc
@@ -941,7 +953,6 @@ public class MainTeleOpTurret extends CommandOpMode {
         telemetry.addData("Current Encoder To Servo Position", turret.getCurrLeftPosition());
 
 
-        telemetry.addData("Relocalized", relocalized);
         telemetry.addData("ball detected", spindexer.distCheck);
         telemetry.addData("update rate", 1000.0 / gameTimer.getDeltaTime());
 
@@ -953,7 +964,6 @@ public class MainTeleOpTurret extends CommandOpMode {
         telemetry.addData("Start Pose", startPose.getPose().toString());
         telemetry.addData("Start Heading(Deg)", "%.4f", Math.toDegrees(startPose.getHeading()));
         telemetry.addLine("Current Pose" + currentPose.getX() + "; " + currentPose.getY() + "; " + Math.toDegrees(currentPose.getHeading()));
-
         telemetry.addLine("------------------------------------");
 
 
@@ -975,11 +985,19 @@ public class MainTeleOpTurret extends CommandOpMode {
         telemetry.addData("Auto Align", autoAlign);
         telemetry.addData("Heading Error(Alignment)", headingError);
         telemetry.addData("Turn Power", turnPower);
-        telemetry.addData("Camera Yaw Global", cameraYawGlobal);
-        telemetry.addData("Camera Yaw Rel", cameraYawRelative);
+        telemetry.addData("Camera Yaw Global", Math.toDegrees(cameraYawGlobal));
+        telemetry.addData("Camera Yaw Rel", Math.toDegrees(cameraYawRelative));
         telemetry.addData("Tag", tag == null ? "NONE" : tag.id);
         telemetry.addData("AprilTag Detected", detected);
-        telemetry.addData("Bearing", aprilTagBearing);
+        telemetry.addData("Bearing", Math.toDegrees(aprilTagBearing));
+        telemetry.addData("Latency", arducam.getLatencyMs());
+        telemetry.addData("Camera Align", cameraAlign);
+        telemetry.addData("Target Heading Bearing Base", Math.toDegrees(targetHeading));
+        telemetry.addData("Turret Stationary", turretStationary);
+        telemetry.addData("Robot Stationary", driveStationary);
+        telemetry.addData("Vision Value", Math.toDegrees(stableVisionHeading));
+        telemetry.addData("Robot velocity Magnitude(in/sec)", follower.getVelocity().getMagnitude());//in/sec
+        telemetry.addData("Turret velocity(deg/sec)", Math.toRadians(turret.getEncoder().getRawVelocity()));//deg/sec
 
 
 
@@ -997,8 +1015,10 @@ public class MainTeleOpTurret extends CommandOpMode {
         telemetry.addData("Shooter Bot Power", shooter.low.get());
         telemetry.addData("Shooter Top Vel", shooter.high.getVelocity());
         telemetry.addData("Shooter Bot Vel", shooter.low.getVelocity());
+        telemetry.addData("Shooter Transfer Vel", shooter.transfer.getVelocity());
         telemetry.addData("Corr Shooter Top", shooter.high.getCorrectedVelocity());
         telemetry.addData("Corr Shooter Bot", shooter.low.getCorrectedVelocity());
+
 
         telemetry.addData("Distance From Goal", shooter.getDistance(currentPose, shootSide));
 
@@ -1022,6 +1042,7 @@ public class MainTeleOpTurret extends CommandOpMode {
         telemetry.addData("Low Error", (shooter.bottomError));
         telemetry.addData("High Error", (shooter.topError));
         telemetry.addData("Transfer Error", (shooter.transferError));
+
 
         if(autoAlign) {
             telemetry.addData("Diff(Deg)", Math.toDegrees(diffRadians));

@@ -41,19 +41,19 @@ public class TwoWheelShooter2 extends SubsystemBase {
 
 
     public static double transferPower = 1.0;
-    public static double transferVelocity = 2200;
+    public static double transferVelocity = 1300;//1300
     //DEFAULT GAINS
     public static double[] kTransferGains = new double[]{0.0313141, 0.000353782, 0};
-    public static double[] pidTransferGains = new double[]{0.002, 0, 0};
+    public static double[] pidTransferGains = new double[]{0.004, 0, 0};
     public static double[] kBotGains = new double[]{0.058, 0.000393, 0};
     public static double[] pidTopGains = new double[]{0.008, 0, 0};
     public static double[] pidBotGains = new double[]{0.008, 0, 0};
     public static double[] kTopGains = new double[]{0.033, 0.000427, 0};
 
     //AGGRESSIVE GAINS
-    public static double[] pidBotAggressiveGains = new double[]{0.03, 0, 0};
-    public static double[] pidTopAggressiveGains = new double[]{0.03, 0, 0};
-    public static double[] pidTransferAggressiveGains = new double[]{0.005, 0, 0};
+    public static double[] pidBotAggressiveGains = new double[]{0.035, 0, 0};
+    public static double[] pidTopAggressiveGains = new double[]{0.035, 0, 0};
+    public static double[] pidTransferAggressiveGains = new double[]{0.01, 0, 0};
     public boolean useAggressiveRecovery = true;
     public boolean inRecoveryMode = false;
     //AGGRESSIVE GAINS: FOR RECOVERY - gain scheduling
@@ -108,8 +108,8 @@ public class TwoWheelShooter2 extends SubsystemBase {
         //ticks in sec for 3: 1 direct driven gear ratios
         public static int iterations = 10; // For tuning targetDistance
         public static double[] dist = {60, 70, 80, 90, 100, 112, 128, 145, 156.0};//inches
-        public static double[] bottomVel = {520, 550, 570, 590, 620, 640, 670, 700, 730};
-        public static double[] topVel = {700, 750, 800, 850, 900, 950, 1000, 1050, 1100};
+        public static double[] bottomVel = {610, 630, 650, 700, 730, 760, 820, 850, 870};
+        public static double[] topVel = {610, 630, 650, 700, 720, 750, 820, 850, 870};
         public static double[] velCorrectionFactor = {0.8, 0.85, 0.9, 0.95, 1.0, 1.07, 1.15, 1.25, 1.3}; // take time in the air and then subtract a bit
 
         public AimCalculator() {
@@ -207,8 +207,8 @@ public class TwoWheelShooter2 extends SubsystemBase {
         }
     }
 
-    public void setAggressiveRecovery(boolean agressiveUse){
-        useAggressiveRecovery = agressiveUse;
+    public void setAggressiveRecovery(boolean aggressiveUse){
+        useAggressiveRecovery = aggressiveUse;
     }
 
 
@@ -484,18 +484,20 @@ public class TwoWheelShooter2 extends SubsystemBase {
     public static double getShootHeading(Pose robotPose, ShootSide shootSide) {
         Pose control1, control2;
         if (shootSide == ShootSide.LEFT) {
-            control1 = new Pose(10, 144);
-            control2 = new Pose(0, 134);
+//            control1 = new Pose(10, 144);
+//            control2 = new Pose(0, 134);
+            control1 = new Pose(0,144);
         } else {
-            control1 = new Pose(134, 144);
-            control2 = new Pose(144, 134);
+//            control1 = new Pose(134, 144);
+//            control2 = new Pose(144, 134);
+            control1 = new Pose(144, 144);
         }
 
         double angle1 = ExtraFns.getTargetAngle(robotPose, control1);
-        double angle2 = ExtraFns.getTargetAngle(robotPose, control2);
+//        double angle2 = ExtraFns.getTargetAngle(robotPose, control2);
         Vector displacement = new Vector(
                 robotPose.distanceFrom(getShootPose(shootSide)),
-                (angle1 + angle2) / 2
+                angle1
         );
         return displacement.getTheta();
     }
