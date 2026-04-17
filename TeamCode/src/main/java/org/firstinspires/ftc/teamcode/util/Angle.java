@@ -7,6 +7,10 @@ public class Angle {
     private double value;
     private AngleUnit unit;
 
+    public Angle() {
+        this(0, AngleUnit.RADIANS);
+    }
+
     public Angle(double value, AngleUnit unit) {
         this.value = value;
         this.unit = unit;
@@ -63,28 +67,41 @@ public class Angle {
         return new Angle(wrapped, unit);
     }
 
+    public Angle wrapUnsigned() {
+        double wrapped;
+        switch (unit) {
+            case RADIANS:
+                wrapped = AngleUnit.normalizeRadians(value);
+                if (wrapped < 0) wrapped += 2 * Math.PI;
+                break;
+            case DEGREES:
+                wrapped = AngleUnit.normalizeDegrees(value);
+                if (wrapped < 0) wrapped += 360;
+                break;
+            default: throw new IllegalStateException("Unknown unit");
+        }
+        return new Angle(wrapped, unit);
+    }
+
     // Arithmetic operations
     public Angle add(Angle other) {
         double sum = this.to(unit) + other.to(unit);
-        return new Angle(sum, unit).wrap();
+        return new Angle(sum, unit);
     }
 
     public Angle sub(Angle other) {
         double diff = this.to(unit) - other.to(unit);
-        return new Angle(diff, unit).wrap();
+        return new Angle(diff, unit);
     }
 
-    public Angle absGap(Angle other) {
-        return this.sub(other).abs();
+    public Angle delta(Angle other) {
+        return this.sub(other).wrap();
     }
 
-    public Angle smallestAbsDifferenceDegrees(Angle b) {
-        Angle diff = Angle.fromDegrees(Math.abs(this.toDegrees() - b.toDegrees()) % 360.0);
-        if (diff.toDegrees() > 180) {
-            return Angle.fromDegrees(360 - diff.toDegrees());
-        }
-        return diff;
+    public Angle distance(Angle other) {
+        return this.delta(other).abs();
     }
+
     public Angle abs() {
         return new Angle(java.lang.Math.abs(value), unit);
     }
@@ -95,6 +112,26 @@ public class Angle {
 
     public int sign() {
         return (int) Math.signum(value);
+    }
+
+    public boolean less(Angle other) {
+        return this.toRadians() < other.toRadians();
+    }
+
+    public boolean greater(Angle other) {
+        return this.toRadians() > other.toRadians();
+    }
+
+    public boolean le(Angle other) {
+        return this.toRadians() <= other.toRadians();
+    }
+
+    public boolean ge(Angle other) {
+        return this.toRadians() >= other.toRadians();
+    }
+
+    public boolean atAngle(Angle other, Angle tolerance) {
+        return this.distance(other).le(tolerance);
     }
 
     @NonNull

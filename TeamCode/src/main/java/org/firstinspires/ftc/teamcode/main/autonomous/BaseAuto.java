@@ -92,7 +92,7 @@ public class BaseAuto extends CommandOpMode {
     protected void initializeMechanisms() {
     }
 
-    protected ShootSide getSide(){
+    protected ShootSide getShootSide(){
         return ShootSide.LEFT;
     }
 
@@ -181,7 +181,7 @@ public class BaseAuto extends CommandOpMode {
             closeFileWriter(headingFileWriter);
 
             sideFile = createFile(sideFileName, directoryName);
-            if(getSide() == ShootSide.LEFT){
+            if(getShootSide() == ShootSide.LEFT){
                 outputString = "Left";
             }
             else{
