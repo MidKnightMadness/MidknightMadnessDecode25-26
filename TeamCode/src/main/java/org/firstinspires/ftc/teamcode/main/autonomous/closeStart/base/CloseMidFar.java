@@ -41,7 +41,6 @@ public class CloseMidFar extends BaseAutoCloseFunctions{
     @Override
     public void initialize_loop(){
         telemetry.addData("Motif Pattern", motifPattern);
-        telemetry.addData("Spindexer angle", spindexer.getTurner().getAngle());
         telemetry.addData("Spindexer spot", spindexer.getNearestIntakePosition(SpotType.INTAKE));
         telemetry.update();
     }

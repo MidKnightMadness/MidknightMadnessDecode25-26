@@ -27,7 +27,6 @@ import java.util.Map;
 
 @Configurable
 @Config
-//naohs custom shooter w/ transfer wheel
 public class TwoWheelShooter2 extends SubsystemBase {
 
     public enum RunMode {
@@ -41,25 +40,23 @@ public class TwoWheelShooter2 extends SubsystemBase {
     }
 
 
+    public static double transferPower = 1.0;
+    public static double transferVelocity = 2200;
     //DEFAULT GAINS
-    public static double[] kTransferGains = new double[]{0.04057, 0.000363, 0};
-    public static double[] pidTransferGains = new double[]{0.0012, 0, 0};
-    public static double[] kBotGains = new double[]{0.04057, 0.000363, 0};
-    public static double[] pidTopGains = new double[]{0.0012, 0, 0};
-    public static double[] pidBotGains = new double[]{0.0012, 0, 0};
-    public static double[] kTopGains = new double[]{0.04386, 0.000346, 0};
+    public static double[] kTransferGains = new double[]{0.0313141, 0.000353782, 0};
+    public static double[] pidTransferGains = new double[]{0.002, 0, 0};
+    public static double[] kBotGains = new double[]{0.058, 0.000393, 0};
+    public static double[] pidTopGains = new double[]{0.008, 0, 0};
+    public static double[] pidBotGains = new double[]{0.008, 0, 0};
+    public static double[] kTopGains = new double[]{0.033, 0.000427, 0};
 
     //AGGRESSIVE GAINS
-    public static double[] pidBotAggressiveGains = new double[]{0.0020, 0, 0};
-    public static double[] pidTopAggressiveGains = new double[]{0.0020, 0, 0};
-    public static double[] pidTransferAggressiveGains = new double[]{0.0020, 0, 0};
+    public static double[] pidBotAggressiveGains = new double[]{0.03, 0, 0};
+    public static double[] pidTopAggressiveGains = new double[]{0.03, 0, 0};
+    public static double[] pidTransferAggressiveGains = new double[]{0.005, 0, 0};
     public boolean useAggressiveRecovery = true;
     public boolean inRecoveryMode = false;
     //AGGRESSIVE GAINS: FOR RECOVERY - gain scheduling
-
-
-    InterpLUT distToLowVel;
-    InterpLUT distToHighVel;
 
 
     public final MotorEx low;
@@ -71,34 +68,23 @@ public class TwoWheelShooter2 extends SubsystemBase {
     public static double minDistanceThreshold = 10;//INCH
     public static Pose leftShootPose = new Pose(0, 144, Math.toRadians(90));
     public static Pose rightShootPose = new Pose(144, 144, Math.toRadians(90));
-    public static Map<Double, Double> grToMultiplier = Map.of(
-            3., 2.89,
-            4., 3.61,
-            5., 5.23
-    ); // Unused for now
+
     public static double gearRatio = 3;
 
-    public static boolean lowMotorDirForward = true;
+    public static boolean lowMotorDirForward = false;
     public static boolean highMotorDirForward = true;
-    public static boolean transferMotorDirForward = false;
+    public static boolean transferMotorDirForward = true;
     double predictedTopVel = 2000;
     double predictedBotVel = 2000;
     double predictedTransferVel = 2000;
     double predictedTopPower = 0.8;
     double predictedBotPower = 0.8;
-
-    public static double topRecoveryFactor = 1.1;//TUNE
-    public static double botRecoveryFactor = 1.1;//TUNE
     double currTopFactor = 1;
     double currBotFactor = 1;
 
     double actualRecoveryTime = 0;
-    double recoveryStartTime = 0;
-    double recoveryEndTime = 0;
 
     public static double targetVoltage = 12.5;
-
-    //    public static double[] closeTargetVelocities = new double[] {1800, 1900};
     public static double[] closeTargetVelocities = new double[] {1600, 1750};
     public static double[] farTargetVelocities = new double[]{1700, 2000};
     public static double[] closeTargetPowers = new double[]{0.7, 0.8};
@@ -110,7 +96,6 @@ public class TwoWheelShooter2 extends SubsystemBase {
     public static double kTopShootMovingFactor = 1;
     public static double velBotTolerance = 100;
     public static double velTopTolerance = 100;
-    public static double velMovingThreshold = 2;//in per sec
     double topMultiplier = 0;
     double botMultiplier = 0;
     public AimCalculator aimCalculator;
@@ -122,9 +107,9 @@ public class TwoWheelShooter2 extends SubsystemBase {
 
         //ticks in sec for 3: 1 direct driven gear ratios
         public static int iterations = 10; // For tuning targetDistance
-        public static double[] dist = {60, 70, 80, 90, 100, 112, 128, 149.5, 156.0};//inches
-        public static double[] bottomVel = {1350, 1350, 1400, 1450, 1500, 1500, 1700, 1700, 1800};
-        public static double[] topVel = {1550, 1600, 1650, 1650, 1750, 1800, 1900, 2100, 2100};
+        public static double[] dist = {60, 70, 80, 90, 100, 112, 128, 145, 156.0};//inches
+        public static double[] bottomVel = {520, 550, 570, 590, 620, 640, 670, 700, 730};
+        public static double[] topVel = {700, 750, 800, 850, 900, 950, 1000, 1050, 1100};
         public static double[] velCorrectionFactor = {0.8, 0.85, 0.9, 0.95, 1.0, 1.07, 1.15, 1.25, 1.3}; // take time in the air and then subtract a bit
 
         public AimCalculator() {
@@ -192,6 +177,7 @@ public class TwoWheelShooter2 extends SubsystemBase {
 
 
     public static double shotDropThreshold = 50;
+    public static double transferShotDropThreshold = 100;
     public double bottomError;
     public double topError;
     public double transferError;
@@ -199,6 +185,7 @@ public class TwoWheelShooter2 extends SubsystemBase {
         bottomError = low.getVelocity() - predictedBotVel;
         topError = high.getVelocity() - predictedTopVel;
         transferError = transfer.getVelocity() - predictedTransferVel;
+
         if(useAggressiveRecovery) {
             if (Math.abs(bottomError) > shotDropThreshold) {
                 setAggressiveGainsBottom();
@@ -212,7 +199,7 @@ public class TwoWheelShooter2 extends SubsystemBase {
                 resetDefaultGainsTop();
             }
 
-            if(Math.abs(transferError) > shotDropThreshold){
+            if(Math.abs(transferError) > transferShotDropThreshold){
                 setAggressiveGainsTransfer();
             } else{
                 resetDefaultGainsTransfer();
@@ -279,11 +266,6 @@ public class TwoWheelShooter2 extends SubsystemBase {
         transfer.setVeloCoefficients(pidTransferGains[0], pidTransferGains[1], pidTransferGains[2]);
         transfer.setFeedforwardCoefficients(kTransferGains[0], kTransferGains[1], kTransferGains[2]);
     }
-    public void setAggressiveGains(){
-        inRecoveryMode = true;
-        low.setVeloCoefficients(pidBotAggressiveGains[0], pidBotAggressiveGains[1], pidBotAggressiveGains[2]);
-        high.setVeloCoefficients(pidTopAggressiveGains[0], pidTopAggressiveGains[1], pidTopAggressiveGains[2]);
-    }
     public void setAggressiveGainsBottom(){
         inRecoveryMode = true;
         low.setVeloCoefficients(pidBotAggressiveGains[0], pidBotAggressiveGains[1], pidBotAggressiveGains[2]);
@@ -311,84 +293,17 @@ public class TwoWheelShooter2 extends SubsystemBase {
         transfer.setRunMode(transferRunMode == RunMode.RawPower ? Motor.RunMode.RawPower : Motor.RunMode.VelocityControl);
     }
 
-    public void setPid(double kp, double ki, double kd) {
-        low.setVeloCoefficients(kp, ki, kd);
-        high.setVeloCoefficients(kp, ki, kd);
-        transfer.setVeloCoefficients(kp, ki, kd);
-    }
-    public void setFeedforward(double kS, double kV, double kA){
-        low.setFeedforwardCoefficients(kS, kV, kA);
-        high.setFeedforwardCoefficients(kS, kV, kA);
-        transfer.setFeedforwardCoefficients(kS, kV, kA);
+    public void setFlywheelLUT(Follower follower, ShootSide shootSide, double currVolt){
+        setFlywheelStaticLUT(getDistance(follower.getPose(), shootSide), currVolt);
     }
 
-
-    //thresholds whether robot is currently moving
-    public void setFlywheelPresets(ShootDist shootDist, Follower follower, ShootSide shootSide,  boolean voltageUse, double currVolt){
-//        Vector robotVelocity = follower.getVelocity();
-//        boolean isMoving = true;
-//        if(robotVelocity.getMagnitude() <= velMovingThreshold){
-//            isMoving = false;
-//        }
-//        if(!isMoving){
-        setFlywheelStaticPresets(shootDist, voltageUse, currVolt);
-//        } else{
-//            setFlywheelMovingPresets(follower.getPose(), shootDist, shootSide, robotVelocity, voltageUse);
-//        }
+    public void setFlywheelStaticPresets(ShootDist shootDist, double currVolt) {//assuming facing the shooting area
+        setFlywheel(0, shootDist, 0, false, currVolt);
     }
-
-    //thresholds whether robot is currently moving
-    public void setFlywheelLUT(Follower follower, ShootSide shootSide, boolean voltageUse, double currVolt){
-//        Vector robotVelocity = follower.getVelocity();
-//        boolean isMoving = true;
-//        if(robotVelocity.getMagnitude() <= velMovingThreshold){
-//            isMoving = false;
-//        }
-//        if(!isMoving){
-//            setFlywheelMovingLUT(follower.getPose(), shootSide, robotVelocity, voltageUse, currVolt);
-//        } else{
-        setFlywheelStaticLUT(getDistance(follower.getPose(), shootSide), voltageUse, currVolt);
-//        }
+    public void setFlywheelStaticLUT(double distToGoal, double currVolt){
+        setFlywheel(distToGoal, null, 0, true, currVolt);
     }
-
-
-
-    public void setFlywheelStaticPresets(ShootDist shootDist, boolean voltageUse, double currVolt) {//assuming facing the shooting area
-        setFlywheel(0, shootDist, 0, voltageUse, false, currVolt);
-    }
-    public void setFlywheelStaticLUT(Pose robotPose, ShootSide shootSide, boolean voltageUse, double currVolt){
-        setFlywheel(getDistance(robotPose, shootSide), null, 0, voltageUse, true, currVolt);
-    }
-    public void setFlywheelStaticLUT(double distToGoal, boolean voltageUse, double currVolt){
-        setFlywheel(distToGoal, null, 0, voltageUse, true, currVolt);
-    }
-    public void setFlywheelMovingLUT(Pose robotPose, ShootSide shootSide, Vector velVector, boolean voltageUse, double currVolt){
-        double dist = getDistance(robotPose, shootSide);
-        Pose targetPose = getShootPose(shootSide);
-        double dx = targetPose.getX() - robotPose.getX();
-        double dy = targetPose.getY() - robotPose.getY();
-
-        double vparallel = (velVector.getXComponent() * dx + velVector.getYComponent() * dy)
-                / dist;
-
-        setFlywheel(dist, null, vparallel, voltageUse, true, currVolt);
-    }
-
-    public void setFlywheelMovingPresets(Pose robotPose, ShootDist shootDist, ShootSide shootSide, Vector velVector, boolean voltageUse, double currVolt){
-
-        double dist = getDistance(robotPose, shootSide);
-        Pose targetPose = getShootPose(shootSide);
-        double dx = targetPose.getX() - robotPose.getX();
-        double dy = targetPose.getY() - robotPose.getY();
-
-        double vparallel = (velVector.getXComponent() * dx + velVector.getYComponent() * dy)
-                / dist;
-
-        setFlywheel(dist, shootDist, vparallel, voltageUse, false, currVolt);
-    }
-    public void setFlywheel(double dist, ShootDist shootDist, double vParallel, boolean voltageUse, boolean useLUT, double currVolt){
-//        double ratio = voltageUse ? (targetVoltage / currVolt) : 1;
-//        ratio = Math.min(ratio, 1.35);
+    public void setFlywheel(double dist, ShootDist shootDist, double vParallel, boolean useLUT, double currVolt){
         double ratio = 1;
 
         double botVelocity, topVelocity;
@@ -503,14 +418,6 @@ public class TwoWheelShooter2 extends SubsystemBase {
     }
 
 
-    public double getTopRecoveryFactor(){
-        return topRecoveryFactor;
-    }
-    public double getBotRecoveryFactor(){
-        return botRecoveryFactor;
-    }
-
-
     public double getPredictedTopVel(){
         return predictedTopVel;
     }
@@ -523,7 +430,7 @@ public class TwoWheelShooter2 extends SubsystemBase {
         predictedBotVel = lowPower;
         predictedTopVel = highPower;
         if(shooterRunMode == RunMode.VelocityControl){
-            low.set(lowPower, 1, currVolt);
+            low.set(lowPower, 1,currVolt);
             high.set(highPower, 1, currVolt);//account for belted motor
         }
         else {
@@ -541,18 +448,6 @@ public class TwoWheelShooter2 extends SubsystemBase {
             transfer.set(power);
         }
     }
-
-
-    public void setRawPower(double lowPower, double highPower){
-        low.set(lowPower, 0);
-        high.set(highPower, 0);
-    }
-
-    public void resetRecoveryFactors(){
-        currBotFactor = 1;
-        currTopFactor = 1;
-    }
-
 
     public double getDistance(Pose robotPose, ShootSide side){
         double xDist = Math.abs(robotPose.getX() - ((side == ShootSide.LEFT) ? leftShootPose.getX() : rightShootPose.getX()));
@@ -581,27 +476,32 @@ public class TwoWheelShooter2 extends SubsystemBase {
         );
         return robotPose.plus(new Pose(
                 displacement.getXComponent(),
-                displacement.getYComponent()
+                displacement.getYComponent(),
+                displacement.getTheta()
         ));
     }
 //
-//    public Pose getShootPoseNew(Pose position, ShootSide shootSide) {
-//        Pose control1, control2;
-//        if (shootSide == ShootSide.LEFT) {
-//            control1 = new Pose(14, 144);
-//            control2 = new Pose(0, 130);
-//        } else {
-//            control1 = new Pose(130, 144);
-//            control2 = new Pose(144, 130);
-//        }
-//
-//        double angle1 = ExtraFns.getTargetAngle(position, control1);
-//        double angle2 = ExtraFns.getTargetAngle(position, control2);
-//        return getAngleError(position, normAngle((angle1 + angle2) / 2));
-//    }
+    public static double getShootHeading(Pose robotPose, ShootSide shootSide) {
+        Pose control1, control2;
+        if (shootSide == ShootSide.LEFT) {
+            control1 = new Pose(10, 144);
+            control2 = new Pose(0, 134);
+        } else {
+            control1 = new Pose(134, 144);
+            control2 = new Pose(144, 134);
+        }
+
+        double angle1 = ExtraFns.getTargetAngle(robotPose, control1);
+        double angle2 = ExtraFns.getTargetAngle(robotPose, control2);
+        Vector displacement = new Vector(
+                robotPose.distanceFrom(getShootPose(shootSide)),
+                (angle1 + angle2) / 2
+        );
+        return displacement.getTheta();
+    }
 
     public void stopFlywheels() {
-        low.motorEx.setPower(0);
-        high.motorEx.setPower(0);
+        low.setPower(0);
+        high.setPower(0);
     }
 }

@@ -15,7 +15,7 @@ public class SingleLightTest extends OpMode {
     GobildaLightBlock light1;
     @Override
     public void init() {
-        light1 = new GobildaLightBlock(hardwareMap.get(Servo.class, ConfigNames.spindexerLights1));
+        light1 = new GobildaLightBlock(hardwareMap.get(Servo.class, ConfigNames.light1));
     }
 
     @Override

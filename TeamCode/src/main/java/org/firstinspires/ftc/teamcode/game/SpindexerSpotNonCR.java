@@ -11,32 +11,33 @@ import java.util.ArrayList;
 @Config
 @Configurable
 public enum SpindexerSpotNonCR {
+
     //-1 = not possible
     SPOT0(
             0,
-            0,
-            180d / SpindexerNonCR.degreesPerRevolution,
+            0 + SpindexerNonCR.SPINDEXER_OFFSET_DEGREES / SpindexerNonCR.totalDegrees,
+            180d / SpindexerNonCR.totalDegrees,
             (double)360/439,
             Double.NaN
     ),
     SPOT1(
             1,
-            120 / SpindexerNonCR.degreesPerRevolution,
-            300d / SpindexerNonCR.degreesPerRevolution,
+            (120 + + SpindexerNonCR.SPINDEXER_OFFSET_DEGREES) / SpindexerNonCR.totalDegrees,
+            300d / SpindexerNonCR.totalDegrees,
             Double.NaN,
             Double.NaN
     ),
     SPOT2(
             2,
-            240d / SpindexerNonCR.degreesPerRevolution,
-            420d / SpindexerNonCR.degreesPerRevolution,
+            (240d+ + SpindexerNonCR.SPINDEXER_OFFSET_DEGREES) / SpindexerNonCR.totalDegrees,
+            420d / SpindexerNonCR.totalDegrees,
             Double.NaN,
-            60d / SpindexerNonCR.degreesPerRevolution
+            60d / SpindexerNonCR.totalDegrees
     ),
     SPOT3(
             3,
-            360d / SpindexerNonCR.degreesPerRevolution,
-            60d / SpindexerNonCR.degreesPerRevolution,
+            (360d+ + SpindexerNonCR.SPINDEXER_OFFSET_DEGREES) / SpindexerNonCR.totalDegrees,
+            60d / SpindexerNonCR.totalDegrees,
             Double.NaN,
             Double.NaN
     );
@@ -46,13 +47,15 @@ public enum SpindexerSpotNonCR {
     }
 
 
-    public static int NUM_SPOTS = 3;//in one revolution
-    public static int MAX_SPOTS = (int) SpindexerNonCR.degreesPerRevolution / 120;
+
+    public static int NUM_SPOTS = SpindexerNonCR.NUM_SPOTS;//in one revolution
+    public static int MAX_SPOTS = SpindexerNonCR.TOTAL_SPOTS;
     double intakePosition1;
     double outakePosition1;
     double outakePosition2;
     double intakePosition2;
     int index;
+    public static double OUTAKE_OFFSET_DEGREES = 20;
     SpindexerSpotNonCR(int index, double intakePosition, double outakePosition, double intake2Position, double outake2Position){
         this.intakePosition1 = intakePosition;
         this.outakePosition1 = outakePosition;
@@ -125,29 +128,25 @@ public enum SpindexerSpotNonCR {
     }
 
     public double applyLayer(double position, int layer){
-        return position + layer * 360 / SpindexerNonCR.degreesPerRevolution;
+        return position + layer * 360 / SpindexerNonCR.totalDegrees;
     }
 
-    public static double getAngleFromIndex(int globalIndex, SpotType type) {
+    public static double getPositionFromIndex(int globalIndex, SpotType type) {
         int baseIndex = globalIndex % NUM_SPOTS;//base spot
         int layer = globalIndex / NUM_SPOTS;//layering
 
         SpindexerSpotNonCR spot = fromIndex(baseIndex);
 
-        double baseAngle;
+        double basePosition;
         if (type == SpotType.INTAKE) {
-            baseAngle = spot.getIntakePositionSolo();
+            basePosition = spot.getIntakePositionSolo();
         } else {
-            baseAngle = spot.getOuttakePositionSolo();
+            basePosition = spot.getOuttakePositionSolo();
         }
 
-        double offset = layer * 360 / SpindexerNonCR.degreesPerRevolution;
+        double offset = layer * 360.0 / SpindexerNonCR.totalDegrees;
 
-        return baseAngle + offset;
+        return Math.min(Math.max(basePosition + offset, 0), 1);
     }
 
-    public static double getPositionFromIndex(int globalIndex, SpotType type){
-        double angle = getAngleFromIndex(globalIndex, type);
-        return Math.min(Math.max(angle / SpindexerNonCR.degreesPerRevolution, 0), 1);
-    }
 }

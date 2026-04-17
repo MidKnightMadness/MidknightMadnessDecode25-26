@@ -24,9 +24,9 @@ public class MultlLightsTest extends OpMode {
     BallColor[] setY = {BallColor.NONE, BallColor.NONE, BallColor.NONE};
     @Override
     public void init() {
-        light1 = new GobildaLightBlock(hardwareMap.get(Servo.class, ConfigNames.spindexerLights1));//initiating everything
-        light2 = new GobildaLightBlock(hardwareMap.get(Servo.class,  ConfigNames.spindexerLights2));
-        light3 = new GobildaLightBlock(hardwareMap.get(Servo.class, ConfigNames.spindexerLights3));
+        light1 = new GobildaLightBlock(hardwareMap.get(Servo.class, ConfigNames.light1));//initiating everything
+        light2 = new GobildaLightBlock(hardwareMap.get(Servo.class,  ConfigNames.light2));
+        light3 = new GobildaLightBlock(hardwareMap.get(Servo.class, ConfigNames.light3));
         spindexer = new Spindexer(hardwareMap, false, new BallColor[]{BallColor.NONE, BallColor.NONE, BallColor.NONE});
         spindexer.initAngle();
     }

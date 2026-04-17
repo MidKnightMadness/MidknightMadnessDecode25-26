@@ -1,17 +1,18 @@
-package org.firstinspires.ftc.teamcode.commands.spindexer;
+package org.firstinspires.ftc.teamcode.commands;
 
 import com.seattlesolvers.solverslib.command.CommandBase;
 
 import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexerNonCR;
+import org.firstinspires.ftc.teamcode.subsystems.Turret;
 import org.firstinspires.ftc.teamcode.util.Angle;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
 
-public class SpindexerGotoPositionSmooth extends CommandBase {
+public class TurretGotoPositionSmooth extends CommandBase {
     private final double targetPosition;//position in 0-1
-    private final SpindexerNonCR spindexer;
+    private final Turret turret;
     boolean first;
 
     double totalTime = 0;
@@ -20,44 +21,36 @@ public class SpindexerGotoPositionSmooth extends CommandBase {
 
     Timer timer;
     double startValue;
-    //total time in sec
-    public SpindexerGotoPositionSmooth(SpindexerNonCR spindexer, double position, double totalTime) {
+    public TurretGotoPositionSmooth(Turret turret, double position, double totalTime) {
         this.targetPosition = position;
-        this.spindexer = spindexer;
+        this.turret = turret;
         this.totalTime = totalTime;
-        addRequirements(this.spindexer);
+        addRequirements(this.turret);
         timer = new Timer();
     }
 
     @Override
     public void initialize(){
-        previousSetPosition = spindexer.getServo1().getPosition();
-        startValue = spindexer.getServo1().getPosition();
+        previousSetPosition = turret.getServoLeftPosition();
+        startValue = previousSetPosition;
         timer.restart();
     }
 
-    boolean start = false;
     @Override
     public void execute() {
-        if(!start){
-            timer.restart();
-            start = true;
-        }
-
         double time = timer.getTime() / 1000.0;
-
-        spindexer.setDirectPosition(startValue + (targetPosition - startValue) * time/totalTime);
+        turret.setServos(startValue + (targetPosition - startValue) * time/totalTime);
     }
 
     @Override
     public boolean isFinished() {
-        return timer.getTime() / 1000.0 > totalTime;
+        return timer.getTime() / 1000.0 > totalTime || turret.isAtPosition(targetPosition, true);
     }
 
     @Override
     public void end(boolean interrupted){
         if(!interrupted) {//TODO: SEE IF WORKS
-            spindexer.setDirectPosition(targetPosition);
+            turret.setServos(targetPosition);
         }
     }
 

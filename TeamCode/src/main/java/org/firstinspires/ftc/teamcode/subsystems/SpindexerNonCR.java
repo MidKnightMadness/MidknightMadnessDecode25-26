@@ -1,28 +1,18 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpotNonCR;
 import org.firstinspires.ftc.teamcode.hardware.GobildaDistance;
-import org.firstinspires.ftc.teamcode.hardware.IncrementalEncoderNonCR;
-import org.firstinspires.ftc.teamcode.hardware.color.BallDetector;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
 import org.firstinspires.ftc.teamcode.game.SpotType;
-import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
-import org.firstinspires.ftc.teamcode.hardware.IncrementalEncoder;
-import org.firstinspires.ftc.teamcode.game.MotifEnums;
 
 import org.firstinspires.ftc.teamcode.hardware.RangerMode;
-import org.firstinspires.ftc.teamcode.hardware.SwyftRanger;
-import org.firstinspires.ftc.teamcode.util.Angle;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.util.AngleNonCR;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
@@ -33,64 +23,74 @@ import java.util.ArrayList;
 public class SpindexerNonCR extends SubsystemBase {
     public double startOutakePosition = 1;
     public double endOutakePosition = 0;
+    public static double SPINDEXER_OFFSET_DEGREES = 40d;
     public double startTeleOpIntakePosition = SpindexerSpotNonCR.fromIndex(1).getIntakePositions().get(0);
-    public static double degreesPerRevolution = 817;//439
+    public static int totalDegrees = 791;//817 extended gr?
     public static AngleNonCR defaultFinishedThreshold = AngleNonCR.fromDegrees(5); // Threshold at which it's finished turning to a spot
     public static AngleNonCR finishedThreshold = AngleNonCR.fromDegrees(15);//TODO: Change to 15 for auto?
     public static AngleNonCR strictFinished = AngleNonCR.fromDegrees(10);
-    public static AngleNonCR detectThreshold = AngleNonCR.fromDegrees(15);
-    private static final int NUM_SPOTS = 3;
+    public static final int NUM_SPOTS = 3;//for one rotation
+    public static int TOTAL_SPOTS = Math.floorDiv(totalDegrees, 120);
     ServoImplEx turner;
+    ServoImplEx turner2;
     AngleNonCR currentAngle;
     BallColor[] ballColors;
-    SpindexerSpotNonCR[] sequence;
     boolean shootOn = false;
     BallColor newBallType = null;
     boolean useDistanceSensor;
-    public GobildaDistance ranger1;
-    public GobildaDistance ranger2;
+    public GobildaDistance distanceSensor1;
+    public GobildaDistance distanceSensor2;
     //0 - 4 for swyft distance sensor
     public static double distSensorLowerThreshold = 0.5;
     public static double distSensorUpperThreshold = 2.5;
-    IncrementalEncoderNonCR turnerEncoder;
     double cachingTolerance = 0.01;
+    public final double DEGREES_PER_SECOND = 120.0 / SPOT_CHANGE_TIME;//deg per ms
+    public static double SPOT_CHANGE_TIME = 150;
+
+    public static double STRICT_SPOT_TIME = 120;
+
 
     double currentTurnerPosition = 0;
-    public SpindexerNonCR(HardwareMap hardwareMap, boolean useDistanceSensors, BallColor[] ballColors, boolean resetEncoder) {
-        turnerEncoder = new IncrementalEncoderNonCR(
-                hardwareMap, ConfigNames.turnerEncoder, 8192, AngleUnit.DEGREES, resetEncoder
-        ).setReversed(false);
+    public SpindexerNonCR(HardwareMap hardwareMap, boolean useDistanceSensors, BallColor[] ballColors) {
         turner = hardwareMap.get(ServoImplEx.class, ConfigNames.turner);
         turner.setPwmRange(new PwmControl.PwmRange(500, 2500));
         turner.setDirection(Servo.Direction.REVERSE);
 
-
+        turner2 = hardwareMap.get(ServoImplEx.class, ConfigNames.turner2);
+        turner2.setPwmRange(new PwmControl.PwmRange(500, 2500));
+        turner2.setDirection(Servo.Direction.REVERSE);
 
 
         this.useDistanceSensor = useDistanceSensors;
 
 
         if(useDistanceSensor){
-            ranger1 = new GobildaDistance(hardwareMap, ConfigNames.intakeDist1, RangerMode.DEG15);
-            ranger2 = new GobildaDistance(hardwareMap, ConfigNames.intakeDist2, RangerMode.DEG15);
+            distanceSensor1 = new GobildaDistance(hardwareMap, ConfigNames.intakeDist1, RangerMode.DEG15);
+            distanceSensor2 = new GobildaDistance(hardwareMap, ConfigNames.intakeDist2, RangerMode.DEG15);
         }
 
         if(ballColors!= null){
             setBallColors(ballColors);
         }
     }
-    public IncrementalEncoderNonCR getTurnerEncoder(){
-        return turnerEncoder;
-    }
 
-    public Servo getServo(){
+    public Servo getServo1(){
         return turner;
     }
 
-    public ServoImplEx getServoImplEx(){
+    public Servo getServo2(){
+        return turner2;
+    }
+
+
+
+    public ServoImplEx getServoImplEx1(){
         return turner;
     }
 
+    public ServoImplEx getServoImplEx2(){
+        return turner2;
+    }
 
 
     public void setTeleOpStartIntake(){
@@ -105,16 +105,19 @@ public class SpindexerNonCR extends SubsystemBase {
     }
 
     public void setPosition(double position) {
-        if ((Math.abs(position - getCurrentSpindexerPosition()) > cachingTolerance) || (position == 0 && getCurrentSpindexerPosition() != 0)) {
-            turner.setPosition(position);
-        }
+        turner.setPosition(position);
+        turner2.setPosition(position);
     }
 
     public void setDirectPosition(double position){
         turner.setPosition(position);
+        turner2.setPosition(position);
     }
 
 
+    public double getTimeForRotation(double degrees) {
+        return Math.abs(degrees) / DEGREES_PER_SECOND;
+    }
 
 
 
@@ -123,14 +126,10 @@ public class SpindexerNonCR extends SubsystemBase {
     }
     @Override
     public void periodic() {
-        currentAngle = AngleNonCR.fromDegrees(turnerEncoder.getAngle());
         currentTurnerPosition = turner.getPosition();
+        currentAngle = AngleNonCR.fromDegrees(currentTurnerPosition / totalDegrees);
     }
 
-
-//    public SpindexerSpot[] getSequence(){
-//        return sequence;
-//    }
 
     public SpindexerNonCR initAngle() {
         return initAngle(AngleNonCR.fromDegrees(0));
@@ -140,19 +139,10 @@ public class SpindexerNonCR extends SubsystemBase {
 
     // angle is relative to spot 0, so take negative
     public SpindexerNonCR initAngle(AngleNonCR angle) {
-        turnerEncoder.setAngle(angle.toDegrees());
         currentAngle = angle;
         return this;
     }
 
-    public IncrementalEncoderNonCR getTurner() {
-        return turnerEncoder;
-    }
-
-
-    public IncrementalEncoderNonCR getEncoder() {
-        return turnerEncoder;
-    }
 
     public AngleNonCR getCurrentAngle() {
         return currentAngle;
@@ -187,8 +177,6 @@ public class SpindexerNonCR extends SubsystemBase {
         return newBallType;
     }
 
-
-    public boolean nearWheel = false;
     public boolean distCheck = false;
 
     public boolean updateBallSpot(int spotIndex){
@@ -228,49 +216,12 @@ public class SpindexerNonCR extends SubsystemBase {
 
 
     boolean checkDist() {
-        distance1 = ranger1.getDistance();
-        distance2 = ranger2.getDistance();
+        distance1 = distanceSensor1.getDistance();
+        distance2 = distanceSensor2.getDistance();
         dist1Check = distance1 > distSensorLowerThreshold && distance1 < distSensorUpperThreshold;
         dist2Check = distance2 > distSensorLowerThreshold && distance2 < distSensorUpperThreshold;
         return dist1Check || dist2Check;
     }
-
-//    private int computeMomentum(SpindexerSpot[] seq, SpotType spotType, int i) {
-//        if (i == 0) return getRelativeAngle(seq[i], spotType).sign();
-//        int diff = (seq[i].getIndex() - seq[i-1].getIndex() + NUM_SPOTS) % NUM_SPOTS;
-//        if (diff == 0) return 0;
-//        return (diff <= NUM_SPOTS / 2) ? 1 : -1;
-//    }
-//
-//    private SpindexerSpot getNextOuttakeSpot(SpindexerSpot[] seq, int i, int momentum, BallColor ballColor) {
-//        SpindexerSpot spot;
-//        if (i == 0) {
-//            spot = findNearestSpot(currentAngle, SpotType.OUTTAKE, ballColor);
-//        }
-//        else {
-//            int nextIndex = (seq[i - 1].getIndex() + momentum + NUM_SPOTS) % NUM_SPOTS;
-//            while (ballColors[nextIndex] == BallColor.NONE) {
-//                nextIndex = (nextIndex + 1) % NUM_SPOTS;
-//            }
-//            spot = SpindexerSpot.fromIndex(nextIndex);
-//        }
-//        return spot;
-//    }
-//    private SpindexerSpot getNextOuttakeSpot(SpindexerSpot[] seq, int i, int momentum) {
-//        SpindexerSpot spot;
-//        if (i == 0) {
-//            spot = getNearestSpot(currentAngle, SpotType.OUTTAKE);
-//        }
-//        else {
-//            int nextIndex = (seq[i - 1].getIndex() + momentum + NUM_SPOTS) % NUM_SPOTS;
-//            while (ballColors[nextIndex] == BallColor.NONE) {
-//                nextIndex = (nextIndex + 1) % NUM_SPOTS;
-//            }
-//            spot = SpindexerSpot.fromIndex(nextIndex);
-//        }
-//        return spot;
-//    }
-
 
     public void updateShootOn(boolean shootOn){
         this.shootOn = shootOn;
@@ -316,7 +267,7 @@ public class SpindexerNonCR extends SubsystemBase {
 //        for (int i = 0; i < ballColors.length; i++) {
 //            if (ballColors[i] == BallColor.GREEN) {
 //                greenCount++;
-//                greenSpot = i;
+//                greenSpot = i;`
 //            }
 //            else if (ballColors[i] == BallColor.PURPLE) purpleCount++;
 //            else noneCount++;
@@ -343,7 +294,7 @@ public class SpindexerNonCR extends SubsystemBase {
 
 
     public AngleNonCR getAbsoluteAngle(SpindexerSpot spot, SpotType spotType, int num) {
-        return AngleNonCR.fromDegrees(spot.getSpotAngle(spotType).getValue() * 360 * degreesPerRevolution);
+        return AngleNonCR.fromDegrees(spot.getSpotAngle(spotType).getValue()  * totalDegrees);
     }
 
 //    public SpindexerSpotNonCR findNearestSpot(AngleNonCR query, SpotType spotType, BallColor matchColorOrNull) {
@@ -389,11 +340,11 @@ public class SpindexerNonCR extends SubsystemBase {
     }
 
     public boolean isAtPosition(double position){
-        double angle = position * degreesPerRevolution;
+        double angle = position * totalDegrees;
         return isAtAngle(AngleNonCR.fromDegrees(angle), finishedThreshold);
     }
     public boolean isAtPositionStrict(double position){
-        double angle = position * degreesPerRevolution;
+        double angle = position * totalDegrees;
         return isAtAngleStrict(AngleNonCR.fromDegrees(angle));
     }
     public boolean isAtAngle(AngleNonCR angle, AngleNonCR finishedThreshold) {
@@ -411,6 +362,25 @@ public class SpindexerNonCR extends SubsystemBase {
         ballColors[spot] = BallColor.NONE;
     }
 
+    public int getSpotOptimal(int swapNumber, int currentSpot){
+        //swapNumber either -1 or 1 positive spot increase, negative spot decrease
+        //determines optimal spot to set to for sorting
+        //bounds: 3<= X <= #Spots
+        if(swapNumber == -1){
+            currentSpot-= 1;
+        } else if(swapNumber == 1){
+            currentSpot+=1;
+        }
+
+        if(currentSpot < 0){
+            currentSpot+=3;
+        }
+        if(currentSpot > TOTAL_SPOTS){
+            currentSpot-=3;
+        }
+
+        return currentSpot;
+    }
 
 
     public int getBallCount() {
