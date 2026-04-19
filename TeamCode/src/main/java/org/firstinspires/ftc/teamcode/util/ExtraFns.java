@@ -102,10 +102,10 @@ public class ExtraFns {
         Pose c1 = new Pose(70.75, 70.75), c2;
         if (robotPose.getX() < 70.75) {
             c2 = new Pose(0, 141.5);
-            return distToLine(robotPose, c1, c2);
+            return Math.abs(distToLine(robotPose, c1, c2));
         } else {
             c2 = new Pose(141.5, 141.5);
-            return -distToLine(robotPose, c1, c2);
+            return Math.abs(distToLine(robotPose, c1, c2));
         }
     }
 
@@ -113,10 +113,10 @@ public class ExtraFns {
         Pose c1 = new Pose(70.75, 24), c2;
         if (robotPose.getX() < 70.75) {
             c2 = new Pose(48, 0);
-            return distToLine(robotPose, c1, c2);
+            return Math.abs(distToLine(robotPose, c1, c2));
         } else {
             c2 = new Pose(96, 0);
-            return -distToLine(robotPose, c1, c2);
+            return Math.abs(distToLine(robotPose, c1, c2));
         }
     }
 }
