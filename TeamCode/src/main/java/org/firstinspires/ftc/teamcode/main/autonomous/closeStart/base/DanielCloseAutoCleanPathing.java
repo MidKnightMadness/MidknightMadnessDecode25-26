@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.main.autonomous.closeStart.base;
 
+import android.os.Environment;
+
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
@@ -7,6 +9,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.MathFunctions;
 import com.pedropathing.math.Vector;
+import com.qualcomm.robotcore.util.RobotLog;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
@@ -27,6 +30,9 @@ import org.firstinspires.ftc.teamcode.util.AllConfigs;
 import org.firstinspires.ftc.teamcode.util.ExtraFns;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
@@ -46,6 +52,21 @@ public abstract class DanielCloseAutoCleanPathing extends CommandOpMode {
     public static double headingFacingEdge = -Math.PI;
     PIDController driveController = new PIDController(0.05, 0, 0.001);
     PIDController headingController = new PIDController(1.0, 0, 0.01);
+    String directoryName = "competition";
+    FileWriter xFileWriter;
+    FileWriter yFileWriter;
+    FileWriter headingFileWriter;
+    File xFile;
+    File yFile;
+    File headingFile;
+
+    String sideFileName = "side.txt";
+    String xFileName = "robot_x.txt";
+    String yFileName = "robot_y.txt";
+    String headingFileName = "robot_heading.txt";
+    FileWriter sideFileWriter;
+    File sideFile;
+    String outputString;
 
     Follower follower;
     ShootSide side;
@@ -133,6 +154,7 @@ public abstract class DanielCloseAutoCleanPathing extends CommandOpMode {
         robotVel = follower.getVelocity();
         currVolt = hardwareMap.voltageSensor.iterator().next().getVoltage();
     }
+
 
     public void initCommands() {
         Command balls1To3 = new CommandBase() {
@@ -363,4 +385,95 @@ public abstract class DanielCloseAutoCleanPathing extends CommandOpMode {
         telemetryM.addData("Distance to goal", distToGoal());
         telemetryM.update(telemetry);
     }
+    @Override
+    public void end(){
+
+        xFile = createFile(xFileName, directoryName);
+        yFile = createFile(yFileName, directoryName);
+        headingFile = createFile(headingFileName, directoryName);
+        try {
+            xFileWriter = new FileWriter(xFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            yFileWriter = new FileWriter(yFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            headingFileWriter = new FileWriter(headingFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        follower.update();
+        Pose pose = follower.getPose();
+        String xLine = String.format("%.4f", pose.getX());
+        String yLine = String.format("%.4f", pose.getY());
+        String headingLine = String.format("%.4f", pose.getHeading());
+        writeToFile(xFileWriter, xLine);
+        closeFileWriter(xFileWriter);
+
+        writeToFile(yFileWriter, yLine);
+        closeFileWriter(yFileWriter);
+
+        writeToFile(headingFileWriter, headingLine);
+        closeFileWriter(headingFileWriter);
+
+        sideFile = createFile(sideFileName, directoryName);
+        if(getShootSide() == ShootSide.LEFT){
+            outputString = "Left";
+        }
+        else{
+            outputString = "Right";
+        }
+        try {
+            sideFileWriter = new FileWriter(sideFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        //write shoot side
+        try {
+            sideFileWriter.write(outputString);
+            sideFileWriter.flush();
+        } catch (IOException e) {
+            RobotLog.ee("Log", "No file writer detected: " + e.getMessage());
+        }
+        //close shoot side
+        try {
+            sideFileWriter.close();
+        } catch (IOException e) {
+            RobotLog.ee("Log", "Cannot close file writer: " + e.getMessage());
+        }
+    }
+
+
+    private static File createFile(String fileName, String dirName){
+        File dir = new File(Environment.getExternalStorageDirectory(), dirName);
+        if(!dir.exists()){
+            dir.mkdirs();
+        }
+        File file = new File(dir, fileName);
+        return file;
+    }
+
+
+    private void writeToFile(FileWriter fileWriter, String s){
+        try {
+            fileWriter.write(s);
+            fileWriter.flush();
+        } catch (IOException e) {
+            RobotLog.ee("Log", "No file writer detected: " + e.getMessage());
+        }
+    }
+
+    private void closeFileWriter(FileWriter fileWriter){
+        try {
+            fileWriter.close();
+        } catch (IOException e) {
+            RobotLog.ee("Log", "Cannot close file writer: " + e.getMessage());
+        }
+    }
+
 }
