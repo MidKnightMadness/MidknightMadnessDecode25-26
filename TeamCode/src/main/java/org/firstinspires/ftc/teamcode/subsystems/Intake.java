@@ -13,7 +13,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import  org.firstinspires.ftc.teamcode.hardware.MotorEx;
 
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
-import org.firstinspires.ftc.teamcode.util.Math;
 
 import java.util.Map;
 
@@ -65,15 +64,13 @@ public class Intake extends SubsystemBase {
 
 
     public void setDirectPower(double power){
-        double motorPower = Math.clampOutput(power, -1, 1);
 //        intakeMotorLeft.setPower(motorPower);
-        setPower(motorPower);
+        setPower(power);
     }
 
     public void setDirectPower(double power, double currVolt){
-        double motorPower = Math.clampOutput(power, -1, 1);
 //        intakeMotorLeft.setPower(motorPower * reference_voltage / currVolt);
-        setPower(motorPower * reference_voltage / currVolt);
+        setPower(power * reference_voltage / currVolt);
     }
 
 

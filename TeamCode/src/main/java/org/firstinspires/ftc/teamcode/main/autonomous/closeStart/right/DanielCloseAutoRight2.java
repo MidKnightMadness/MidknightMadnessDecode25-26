@@ -7,6 +7,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.MathFunctions;
 import com.pedropathing.math.Vector;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandBase;
@@ -32,7 +33,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 
 @Configurable
-@TeleOp
+@Autonomous
 public class DanielCloseAutoRight2 extends CommandOpMode {
     public static Pose shootAtPose1 = new Pose(48, 92).mirror();
     public static Pose shootAtPose2 = new Pose(55, 83).mirror();

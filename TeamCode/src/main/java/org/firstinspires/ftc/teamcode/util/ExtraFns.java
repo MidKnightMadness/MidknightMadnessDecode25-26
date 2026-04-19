@@ -76,6 +76,7 @@ public class ExtraFns {
         return error;
     }
 
+
     public static BooleanSupplier firstSupplier(BooleanSupplier condition) {
         return new BooleanSupplier() {
             private boolean hasRun = false;

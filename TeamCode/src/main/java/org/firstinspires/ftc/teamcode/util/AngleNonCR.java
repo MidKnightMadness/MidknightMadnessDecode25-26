@@ -54,7 +54,7 @@ public class AngleNonCR {
         double wrapped;
         switch (unit) {
             case RADIANS:
-                wrapped = value % (SpindexerNonCR.degreesPerRevolution * Math.PI / 180);
+                wrapped = value % (SpindexerNonCR.totalDegrees * Math.PI / 180);
                 break;
             case DEGREES:
                 wrapped = value % 480;

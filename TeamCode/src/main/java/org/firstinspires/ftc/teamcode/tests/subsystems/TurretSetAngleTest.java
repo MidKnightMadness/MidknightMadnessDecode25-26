@@ -70,11 +70,11 @@ public class TurretSetAngleTest extends OpMode {
         }
 
         if (manualMode) {
-            turretTargetAngle = Turret.angleRange.clip(
-                    turretTargetAngle
-                            + (gamepad1.right_trigger - gamepad1.left_trigger)
-                            * radPerSec * timer.getDeltaTime(TimeUnit.SECONDS)
-            );
+//            turretTargetAngle = Turret.angleRange.clip(
+//                    turretTargetAngle
+//                            + (gamepad1.right_trigger - gamepad1.left_trigger)
+//                            * radPerSec * timer.getDeltaTime(TimeUnit.SECONDS)
+//            );
         } else {
             goalHeading = TwoWheelShooter2
                     .getShootPose(shootSide)
@@ -97,8 +97,8 @@ public class TurretSetAngleTest extends OpMode {
         telemetryM.addData("Pose X", robotPose.getX());
         telemetryM.addData("Pose Y", robotPose.getY());
         telemetryM.addData("Pose heading", robotPose.getHeading());
-        telemetryM.addData("Turret position", turret.getPosition());
-        telemetryM.addData("Turret angle (degrees)", turret.getAngle().toDegrees());
+//        telemetryM.addData("Turret position", turret.getPosition());
+//        telemetryM.addData("Turret angle (degrees)", turret.getAngle().toDegrees());
         telemetryM.addData("Turret target angle (degrees)", Math.toDegrees(turretTargetAngle));
         telemetryM.addData("Heading to goal", goalHeading);
         telemetryM.addData("Manual mode", manualMode);

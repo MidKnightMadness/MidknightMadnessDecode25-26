@@ -41,19 +41,19 @@ public class TwoWheelShooter2 extends SubsystemBase {
 
 
     public static double transferPower = 1.0;
-    public static double transferVelocity = 1300;//1300
+    public static double transferVelocity = 1200;//1300
     //DEFAULT GAINS
     public static double[] kTransferGains = new double[]{0.0313141, 0.000353782, 0};
-    public static double[] pidTransferGains = new double[]{0.004, 0, 0};
+    public static double[] pidTransferGains = new double[]{0.0012, 0, 0};
     public static double[] kBotGains = new double[]{0.058, 0.000393, 0};
     public static double[] pidTopGains = new double[]{0.008, 0, 0};
     public static double[] pidBotGains = new double[]{0.008, 0, 0};
     public static double[] kTopGains = new double[]{0.033, 0.000427, 0};
 
     //AGGRESSIVE GAINS
-    public static double[] pidBotAggressiveGains = new double[]{0.035, 0, 0};
-    public static double[] pidTopAggressiveGains = new double[]{0.035, 0, 0};
-    public static double[] pidTransferAggressiveGains = new double[]{0.01, 0, 0};
+    public static double[] pidBotAggressiveGains = new double[]{0.04, 0, 0};
+    public static double[] pidTopAggressiveGains = new double[]{0.04, 0, 0};
+    public static double[] pidTransferAggressiveGains = new double[]{0.008, 0, 0};
     public boolean useAggressiveRecovery = true;
     public boolean inRecoveryMode = false;
     //AGGRESSIVE GAINS: FOR RECOVERY - gain scheduling
@@ -94,8 +94,9 @@ public class TwoWheelShooter2 extends SubsystemBase {
     HardwareMap map;
     public static double kBotShootMovingFactor = 1;
     public static double kTopShootMovingFactor = 1;
-    public static double velBotTolerance = 100;
-    public static double velTopTolerance = 100;
+    public static double velBotTolerance = 50;
+    public static double velTopTolerance = 50;
+    public static double velTransferTolerance = 50;
     double topMultiplier = 0;
     double botMultiplier = 0;
     public AimCalculator aimCalculator;
@@ -107,10 +108,10 @@ public class TwoWheelShooter2 extends SubsystemBase {
 
         //ticks in sec for 3: 1 direct driven gear ratios
         public static int iterations = 10; // For tuning targetDistance
-        public static double[] dist = {60, 70, 80, 90, 100, 112, 128, 145, 156.0};//inches
-        public static double[] bottomVel = {610, 630, 650, 700, 730, 760, 820, 850, 870};
-        public static double[] topVel = {610, 630, 650, 700, 720, 750, 820, 850, 870};
-        public static double[] velCorrectionFactor = {0.8, 0.85, 0.9, 0.95, 1.0, 1.07, 1.15, 1.25, 1.3}; // take time in the air and then subtract a bit
+        public static double[] dist = {40, 50, 60, 70, 80, 90, 100, 112, 128, 145, 156.0};//inches
+        public static double[] bottomVel = {560, 580, 610, 630, 650, 700, 730, 760, 820, 870, 870};
+        public static double[] topVel = {670, 630, 610, 630, 650, 700, 720, 750, 820, 870, 870};
+        public static double[] velCorrectionFactor = {0.4, 0.5, 0.6, 0.54, 0.85, 0.9, 0.96, 1.02, 1.1, 1.18, 1.27}; // take time in the air and then subtract a bit
 
         public AimCalculator() {
             distToLowVel = new InterpLUT();
@@ -177,7 +178,7 @@ public class TwoWheelShooter2 extends SubsystemBase {
 
 
     public static double shotDropThreshold = 50;
-    public static double transferShotDropThreshold = 100;
+    public static double transferShotDropThreshold = 50;
     public double bottomError;
     public double topError;
     public double transferError;
@@ -298,20 +299,19 @@ public class TwoWheelShooter2 extends SubsystemBase {
     }
 
     public void setFlywheelStaticPresets(ShootDist shootDist, double currVolt) {//assuming facing the shooting area
-        setFlywheel(0, shootDist, 0, false, currVolt);
+        setFlywheel(0, shootDist, false, currVolt);
     }
     public void setFlywheelStaticLUT(double distToGoal, double currVolt){
-        setFlywheel(distToGoal, null, 0, true, currVolt);
+        setFlywheel(distToGoal, null, true, currVolt);
     }
-    public void setFlywheel(double dist, ShootDist shootDist, double vParallel, boolean useLUT, double currVolt){
-        double ratio = 1;
+    public void setFlywheel(double dist, ShootDist shootDist, boolean useLUT, double currVolt){
 
         double botVelocity, topVelocity;
         if(useLUT){
-            if(dist >= 156){
+            if(dist >= AimCalculator.dist[AimCalculator.dist.length - 1]){
                 botVelocity = AimCalculator.bottomVel[AimCalculator.bottomVel.length - 1];
                 topVelocity = AimCalculator.topVel[AimCalculator.topVel.length - 1];
-            } else if(dist <= 60) {
+            } else if(dist <= AimCalculator.dist[0]) {
                 botVelocity = AimCalculator.bottomVel[0];
                 topVelocity = AimCalculator.topVel[0];
             }
@@ -332,11 +332,8 @@ public class TwoWheelShooter2 extends SubsystemBase {
             topVelocity = preset[1];
         }
 
-        botVelocity -= kBotShootMovingFactor * vParallel;
-        topVelocity -= kTopShootMovingFactor * vParallel;
-
-        topMultiplier = ratio * currTopFactor;
-        botMultiplier = ratio * currBotFactor;
+        topMultiplier = 1;
+        botMultiplier = 1;
 
         if(shooterRunMode == RunMode.VelocityControl) {
             predictedBotVel = botVelocity;
@@ -399,11 +396,13 @@ public class TwoWheelShooter2 extends SubsystemBase {
 
     public boolean readyToShoot(){
         return Math.abs(low.getVelocity() - predictedBotVel) <= velBotTolerance &&
-                Math.abs(high.getVelocity() - predictedTopVel) <= velTopTolerance;
+                Math.abs(high.getVelocity() - predictedTopVel) <= velTopTolerance &&
+                Math.abs(transfer.getVelocity() - predictedTransferVel)<= velTransferTolerance;
     }
     public boolean readyToShoot(double lowTolerance, double highTolerance){
         return Math.abs(low.getVelocity() - predictedBotVel) <= lowTolerance &&
-                Math.abs(high.getVelocity() - predictedTopVel) <= highTolerance;
+                Math.abs(high.getVelocity() - predictedTopVel) <= highTolerance &&
+                Math.abs(transfer.getVelocity() - predictedTransferVel) <= velTransferTolerance;
     }
 
     public double getRecoveryTime(){
@@ -505,5 +504,10 @@ public class TwoWheelShooter2 extends SubsystemBase {
     public void stopFlywheels() {
         low.setPower(0);
         high.setPower(0);
+    }
+    public void stopAll() {
+        low.setPower(0);
+        high.setPower(0);
+        transfer.setPower(0);
     }
 }

@@ -29,8 +29,8 @@ public class Turret extends SubsystemBase {
     //if degrees per revolution is 420, 210 degrees from turret, -210 from turret
     Servo.Direction directionLeft = Servo.Direction.REVERSE;
     Servo.Direction directionRight = Servo.Direction.REVERSE;
-    public static AngleNonCR finishedThreshold = AngleNonCR.fromDegrees(5);
-    public static AngleNonCR strictFinished = AngleNonCR.fromDegrees(2);
+    public static AngleNonCR finishedThreshold = AngleNonCR.fromDegrees(3);
+    public static AngleNonCR strictFinished = AngleNonCR.fromDegrees(1.5);
     //turret assumes the servos are at 0.5 and robot, turret facing 270 deg global position
     public static double ENCODER_GEAR_RATIO = 24.0 / 60.0;
     AngleNonCR currentAngle;
@@ -56,13 +56,6 @@ public class Turret extends SubsystemBase {
             //set to 0.5 to make sure both sides have same # of degrees
             leftServo.setPosition(servoCenter);
             rightServo.setPosition(servoCenter);
-            try{
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-
-            resetEncoderPosition();
         }
     }
 
@@ -107,6 +100,14 @@ public class Turret extends SubsystemBase {
                 (strict ? strictFinished.toRadians() : finishedThreshold.toRadians());
     }
 
+    public boolean isAtAngle(Angle angle, boolean strict){
+        return getTurretHeadingError(angle) <
+                (strict ? strictFinished.toRadians() : finishedThreshold.toRadians());
+    }
+
+    public double getTurretHeadingError(Angle angle){
+        return  Math.abs(angle.toRadians() - currentAngle.toRadians());
+    }
 
 
     public double getServoLeftPosition(){
@@ -138,7 +139,7 @@ public class Turret extends SubsystemBase {
         if (diff < -Math.PI) diff += 2 * Math.PI;
         return diff;
     }
-    public static double servoCenter = 0.505;
+    public static double servoCenter = 0.487;
     public double angleToServo(AngleNonCR angle){
         return servoCenter + Math.min(Math.max(-cappedRangeRadians / 2, angle.getValue()), cappedRangeRadians / 2) / totalRangeRadians;
     }
