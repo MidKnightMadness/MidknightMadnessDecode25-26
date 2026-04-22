@@ -124,7 +124,7 @@ public class MainTeleOpTurret extends CommandOpMode {
     double turnPower;
     double headingError;
     public static Intake.RunMode intakeRunMode = Intake.RunMode.RawPower;
-    public static boolean sotmEnabled = false;
+    public static boolean sotmEnabled = true;
     SpotType activeSpotType = null;
     public static boolean setCustomPower = false;
     public static double customTopTargetVel = 850;
@@ -178,7 +178,7 @@ public class MainTeleOpTurret extends CommandOpMode {
     public static double slowSmoothTime = 0.7;
     boolean driveFieldOriented = true;
     Limelight3A limelight;
-    public static boolean intakeVoltageCompensated = true;
+    public static boolean intakeVoltageCompensated = false;
     VoltageSensor voltageSensor;
 
     @Override
@@ -381,7 +381,7 @@ public class MainTeleOpTurret extends CommandOpMode {
             controlLight1.setColor(
                     spindexerBallCt == 0 ? GobildaLightBlock.Color.RED :
                     spindexerBallCt == 1 ? GobildaLightBlock.Color.ORANGE :
-                    spindexerBallCt == 2 ? GobildaLightBlock.Color.YELLOW :
+                    spindexerBallCt == 2 ? GobildaLightBlock.Color.BLUE :
                     GobildaLightBlock.Color.GREEN
             );
         }
@@ -586,7 +586,7 @@ public class MainTeleOpTurret extends CommandOpMode {
         }
     }
     double diffRadians;
-    public static double velocityMovingThreshold = 0.5;//in/sec
+    public static double velocityMovingThreshold = 1;//in/sec
     public static double turretVelocityTheshold = Math.toRadians(3);//rad/s
     boolean driveStationary = true;
     boolean turretStationary = true;
@@ -640,10 +640,22 @@ public class MainTeleOpTurret extends CommandOpMode {
             }
             //if don't have vision value, use default face point algorithm
             else{
-                targetHeading = TwoWheelShooter2.getShootHeading(currentPose, shootSide);
-                diffRadians = targetHeading - currentPose.getHeading();
-                wrappedTurretValue = Angle.fromRadians(diffRadians);
-                turret.setFieldAngleToServo(wrappedTurretValue);
+//                targetHeading = TwoWheelShooter2.getShootHeading(currentPose, shootSide);
+//                diffRadians = targetHeading - currentPose.getHeading();
+//                wrappedTurretValue = Angle.fromRadians(diffRadians);
+//                turret.setFieldAngleToServo(wrappedTurretValue);
+                if(sotmEnabled) {
+                    double[] aimData;
+                    aimData = shooter.aimCalculator.targetPowersHeading(
+                            follower.getPose(),
+                            follower.getVelocity(),
+                            TwoWheelShooter2.getShootPoseNew(currentPose, shootSide)
+                    );
+                    targetHeading = MathFunctions.normalizeAngle(aimData[2]);
+                    diffRadians = targetHeading - currentPose.getHeading();
+                    wrappedTurretValue = Angle.fromRadians(diffRadians);
+                    turret.setFieldAngleToServo(wrappedTurretValue);
+                }
             }
         }
         else{//moving

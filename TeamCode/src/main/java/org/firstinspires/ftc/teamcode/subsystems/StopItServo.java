@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.util.ConfigNames;
 public class StopItServo extends SubsystemBase {
     public static double activePosition = 0.37;
     public static double inactivePosition = 0.717;
-    public static double initPos = inactivePosition;
+    public static double initPos = activePosition;
     public static double cachingTolerance = 0.01;
     public static Servo.Direction dir = Servo.Direction.FORWARD;
     Servo stopItServo;
