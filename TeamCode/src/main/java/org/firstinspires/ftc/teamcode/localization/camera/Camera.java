@@ -77,7 +77,7 @@ public class Camera {
 
     // Project a pixel position to the plane
     // (0, 0) is top left corner
-    public Vec3D project(int u, int v, Plane plane) {
+    public Vec3D project(double u, double v, Plane plane) {
         Matrix directionCam = new Vec3D(fPix, centerX - u, centerY - v)
                 .toMatrix()
                 .transposed();

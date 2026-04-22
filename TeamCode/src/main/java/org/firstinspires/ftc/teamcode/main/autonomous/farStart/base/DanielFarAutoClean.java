@@ -19,7 +19,7 @@ import com.seattlesolvers.solverslib.util.Timing;
 import org.firstinspires.ftc.teamcode.commands.Robot;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.newpid.PIDController;
-import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
+import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 import org.firstinspires.ftc.teamcode.pedroPathing.motorTesting.WheelControl2;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
 import org.firstinspires.ftc.teamcode.util.AllConfigs;
@@ -36,11 +36,11 @@ public abstract class DanielFarAutoClean extends CommandOpMode {
     public static Pose shootAtPose2 = new Pose(60, 10);
     public static Pose gateIntakePose = new Pose(3, 60, Math.toRadians(150));
     public static Pose startPose = new Pose(55, 8, Math.toRadians(90));
-    public static Pose endPose = new Pose(30, 34);
+    public static Pose endPose = new Pose(45, 34);
     public static double shootTimeout = 700;
     public static double rowXInner = 35;
     public static double rowXOuter = 20;
-    public static double row1Y = 45;
+    public static double row1Y = 38;
     public static double row2Y = 62;
     public static double row3Y = 85;
     public static double headingFacingEdge = -Math.PI;
@@ -62,7 +62,7 @@ public abstract class DanielFarAutoClean extends CommandOpMode {
     double headingError;
     double[] aimData;
     double cornerX;
-    double zoneIntakeY = 27;
+    double zoneIntakeY = 15;
 
     enum State {
         init,
@@ -87,7 +87,7 @@ public abstract class DanielFarAutoClean extends CommandOpMode {
         side = getShootSide();
 
         state = State.init;
-        follower = ConstantsOldBot.createPinpointFollower(hardwareMap);
+        follower = ConstantsBot.createPinpointFollower(hardwareMap);
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         drive = new WheelControl2(hardwareMap)
                 .setPidControllers(driveController, headingController);
@@ -146,22 +146,22 @@ public abstract class DanielFarAutoClean extends CommandOpMode {
                 new LambdaCommand()
                         .setInitialize(() -> timer.restart())
                         .setExecute(() -> drive.pid(
-                                robotPose, new Pose(
-                                        side.fromLeftX(rowXInner),
+                                robotPose, side.fromLeftPose(new Pose(
+                                        rowXInner + 6,
                                         row1Y,
-                                        side.fromLeftHeading(headingFacingEdge)
-                                ), 1)
+                                        headingFacingEdge
+                                )), 1)
                         )
                         .setIsFinished(() -> robotPose.getY() > row1Y - 3),
                 // Adjust position and power
                 new LambdaCommand()
                         .setInitialize(() -> timer.restart())
                         .setExecute(() -> drive.pid(
-                                robotPose, new Pose(
-                                        side.fromLeftX(rowXInner),
+                                robotPose, side.fromLeftPose(new Pose(
+                                        rowXInner,
                                         row1Y,
-                                        side.fromLeftHeading(headingFacingEdge)
-                                ), 0.5)
+                                        headingFacingEdge
+                                )), 0.5)
                         )
                         .setIsFinished(() -> side.toLeftX(robotPose.getX()) < rowXInner + 1),
                 // Drive straight forward and intake
@@ -176,10 +176,9 @@ public abstract class DanielFarAutoClean extends CommandOpMode {
                         .setInitialize(() -> timer.restart())
                         .setExecute(() -> {
                             calculateAlign();
-                            drive.pid(robotPose, new Pose(
+                            drive.pidNoHeading(robotPose, new Pose(
                                     side.fromLeftX(shootAtPose2.getX()),
-                                    shootAtPose2.getY(),
-                                    targetHeading
+                                    shootAtPose2.getY()
                             ), 1);
                         })
                         .setIsFinished(() -> ExtraFns.farZoneDist(robotPose) < 10),
@@ -192,26 +191,26 @@ public abstract class DanielFarAutoClean extends CommandOpMode {
                         .setIsFinished(() -> timer.getTime() > 500)
         );
 
-        Function<State, Command> gateIntakeShoot = state -> new SequentialCommandGroup(
+        Function<State, Command> cornerIntakeShoot = state -> new SequentialCommandGroup(
                 new InstantCommand(() -> this.state = state),
                 // Full send to almost there
                 new LambdaCommand()
                         .setInitialize(() -> timer.restart())
                         .setExecute(() -> drive.pid(
                                 robotPose, side.fromLeftPose(new Pose(
-                                        rowXOuter,
+                                        rowXInner,
                                         zoneIntakeY,
                                         headingFacingEdge
                                 )), 1)
                         )
-                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) < rowXOuter),
+                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) < rowXInner),
                 // Drive to corner
                 new LambdaCommand()
                         .setInitialize(() -> timer.restart())
                         .setExecute(() -> drive.pid(
                                 robotPose,
                                 side.fromLeftPose(new Pose(0, zoneIntakeY, headingFacingEdge)),
-                                0.5
+                                0.4
                         ))
                         .setEnd(() -> cornerX = side.fromLeftX(robotPose.getX()))
                         .setIsFinished(() -> timer.getTime() > 850 || follower.getVelocity().getMagnitude() < 5),
@@ -223,7 +222,7 @@ public abstract class DanielFarAutoClean extends CommandOpMode {
                                 side.fromLeftPose(new Pose(cornerX + 5, zoneIntakeY, headingFacingEdge)),
                                 1
                         ))
-                        .setIsFinished(() -> robotPose.getX() > cornerX + 5),
+                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) > cornerX + 5),
                 // Drive into wall
                 new LambdaCommand()
                         .setInitialize(() -> timer.restart())
@@ -239,8 +238,8 @@ public abstract class DanielFarAutoClean extends CommandOpMode {
                         .setInitialize(() -> timer.restart())
                         .setExecute(() -> drive.pid(
                                 robotPose,
-                                side.fromLeftPose(new Pose(-100, 0, headingFacingEdge)),
-                                0.5
+                                side.fromLeftPose(new Pose(-30, 0, headingFacingEdge)),
+                                0.4
                         ))
                         .setIsFinished(() -> timer.getTime() > 300 && follower.getVelocity().getMagnitude() < 5),
 //                // Wait for gate intake
@@ -251,10 +250,9 @@ public abstract class DanielFarAutoClean extends CommandOpMode {
                         .setInitialize(() -> timer.restart())
                         .setExecute(() -> {
                             calculateAlign();
-                            drive.pid(robotPose, new Pose(
+                            drive.pidNoHeading(robotPose, new Pose(
                                     side.fromLeftX(shootAtPose2.getX()),
-                                    zoneIntakeY - 8,
-                                    targetHeading
+                                    zoneIntakeY + 8
                             ), 1);
                         })
                         .setIsFinished(() -> ExtraFns.farZoneDist(robotPose) < 7),
@@ -267,9 +265,10 @@ public abstract class DanielFarAutoClean extends CommandOpMode {
                         .setIsFinished(() -> timer.getTime() > 500)
         );
 
-        Command balls7to9 = gateIntakeShoot.apply(State.balls9);
-        Command balls9to12 = gateIntakeShoot.apply(State.balls12);
-        Command balls12to15 = gateIntakeShoot.apply(State.balls15);
+        Command balls7to9 = cornerIntakeShoot.apply(State.balls9);
+        Command balls9to12 = cornerIntakeShoot.apply(State.balls12);
+        Command balls12to15 = cornerIntakeShoot.apply(State.balls15);
+        Command balls16to18 = cornerIntakeShoot.apply(State.balls18);
 
         Command driveToEnd = new LambdaCommand()
                 .setInitialize(() -> {
@@ -290,6 +289,7 @@ public abstract class DanielFarAutoClean extends CommandOpMode {
                 balls7to9,
                 balls9to12,
                 balls12to15,
+                balls16to18,
                 driveToEnd,
                 stop
         );
