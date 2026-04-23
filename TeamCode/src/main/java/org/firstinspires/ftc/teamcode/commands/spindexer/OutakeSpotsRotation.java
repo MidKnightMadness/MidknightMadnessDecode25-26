@@ -10,43 +10,50 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 public class OutakeSpotsRotation extends CommandBase {
 
     SpindexerNonCR spindexer;
-    long spotTime;
+    long timePerShot;
     Timer shootTimer;
-    double startSpot;
+
+    double startPosition;
 
     public OutakeSpotsRotation(SpindexerNonCR spindexerNonCR, int startPosition, long spotTime){
         this.spindexer = spindexerNonCR;
-        this.spotTime = spotTime;
-        this.startSpot = startPosition;
-        this.currSpot = startPosition;
+        this.timePerShot = spotTime;
+        this.startPosition = SpindexerSpotNonCR.getPositionFromIndex(startPosition, SpotType.INTAKE) - 60.0 / SpindexerNonCR.totalDegrees;
+
         shootTimer = new Timer();
         addRequirements(this.spindexer);
     }
 
-    public int currSpot;
-
-    double shootTimerTime = 0;
-    double startPosition = SpindexerSpotNonCR.getPositionFromIndex(currSpot, SpotType.INTAKE) - 60.0 / SpindexerNonCR.totalDegrees;
+    public int rotationIndex = 0;
+    double lastShotTime = 0;
     double interval = 120.0 / SpindexerNonCR.totalDegrees;
     @Override
     public void initialize(){
         shootTimer = new Timer();
     }
 
+    boolean firstRun = true;
+
     @Override
     public void execute() {
-        if(shootTimer.getTime() - shootTimerTime >= spotTime){
-            currSpot = currSpot -1;
-            spindexer.setDirectPosition(startPosition - interval * (startSpot - currSpot));
-            shootTimerTime = shootTimer.getTime();
+        if (firstRun) {
+            shootTimer.restart();
+            firstRun = false;
         }
+
+        if(shootTimer.getTime() - lastShotTime >= timePerShot){
+            rotationIndex++;
+            lastShotTime = shootTimer.getTime();
+        }
+
+        spindexer.setPosition(startPosition - interval * rotationIndex);
     }
 
-    public double getShootTimerTime(){
+    public double getLastShotTime(){
         return shootTimer.getTime();
     }
     @Override
     public boolean isFinished() {
-        return currSpot == startSpot - 3;
+        return rotationIndex >= 2;
     }
 }
