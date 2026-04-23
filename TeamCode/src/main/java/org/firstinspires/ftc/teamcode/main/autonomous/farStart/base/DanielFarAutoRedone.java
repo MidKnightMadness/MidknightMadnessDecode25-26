@@ -271,7 +271,7 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                 stopItServo.setInactivePosition();
                 spindexer.setDefault();
                 pushUpServo.setDown();
-                shooter.stopFlywheels();
+                shooter.stopAll();
             }
         };
 
@@ -408,7 +408,7 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                                             0.4
                                     ))
                                     .setEnd(() -> cornerX = side.fromLeftX(robotPose.getX()))
-                                    .setIsFinished(() -> timer.getTime() > 850 || follower.getVelocity().getMagnitude() < 5),
+                                    .setIsFinished(() -> timer.getTime() > 1200 && follower.getVelocity().getMagnitude() < 2),
                             // Drive straight back
                             new LambdaCommand()
                                     .setInitialize(() -> timer.restart())
@@ -427,7 +427,7 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                                             1
                                     ))
                                     .setEnd(() -> zoneIntakeY = robotPose.getY() + 7)
-                                    .setIsFinished(() -> timer.getTime() > 300 && Math.abs(robotVel.getYComponent()) < 5),
+                                    .setIsFinished(() -> timer.getTime() > 300 && Math.abs(robotVel.getYComponent()) < 2),
                             // Drive forward again
                             new LambdaCommand()
                                     .setInitialize(() -> timer.restart())
@@ -436,7 +436,7 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                                             side.fromLeftPose(new Pose(-30, 0, headingFacingEdge)),
                                             0.4
                                     ))
-                                    .setIsFinished(() -> timer.getTime() > 300 && follower.getVelocity().getMagnitude() < 5),
+                                    .setIsFinished(() -> timer.getTime() > 300 && follower.getVelocity().getMagnitude() < 2),
                             new InstantCommand(()-> drive.stop()),
                             new WaitCommand(1400)
                     ),

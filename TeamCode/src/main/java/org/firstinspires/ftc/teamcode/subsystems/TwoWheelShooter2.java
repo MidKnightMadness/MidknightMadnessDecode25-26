@@ -468,7 +468,7 @@ public class TwoWheelShooter2 extends SubsystemBase {
         if (shootSide == ShootSide.LEFT) {
             control1 = close ? new Pose(0,140) : new Pose(0, 144);
         } else {
-            control1 = close ? new Pose(141.5,140) : new Pose(141.5, 144);
+            control1 = close ? new Pose(141.5,140) : new Pose(138, 144);
 
         }
         double angle1 = ExtraFns.getTargetAngle(robotPose, control1);
@@ -495,7 +495,7 @@ public class TwoWheelShooter2 extends SubsystemBase {
         if (shootSide == ShootSide.LEFT) {
             control1 = close ? new Pose(0,144) : new Pose(2, 142);//5
         } else {
-            control1 = close ? new Pose(141.5,144) : new Pose(137, 142);
+            control1 = close ? new Pose(141.5,144) : new Pose(138, 144);
 
 
         }

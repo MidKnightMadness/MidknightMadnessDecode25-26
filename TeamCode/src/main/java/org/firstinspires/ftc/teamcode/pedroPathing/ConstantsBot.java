@@ -22,7 +22,6 @@ import org.firstinspires.ftc.teamcode.util.ConfigNames;
 public class ConstantsBot {
     public static Pose robotPose = new Pose(0, 0, 0);
     public static ShootSide side = ShootSide.LEFT;
-    public static GoBildaPinpointDriver.DeviceStatus deviceStatus = GoBildaPinpointDriver.DeviceStatus.FAULT_BAD_READ;
     public static FollowerConstants followerConstants = new FollowerConstants()
             .forwardZeroPowerAcceleration(-39)//TUNED
             .lateralZeroPowerAcceleration(-70)//TUNED
