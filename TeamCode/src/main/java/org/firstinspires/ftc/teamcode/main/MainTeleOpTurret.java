@@ -507,9 +507,13 @@ public class MainTeleOpTurret extends CommandOpMode {
         }
     }
     double diffRadians;
-    public static double velocityMovingThreshold = 1;//in/sec
-    public static double turretVelocityTheshold = Math.toRadians(3);//rad/s
+    public static double velocityMovingThreshold = 0.5;//in/sec
+    public static double velocityRotationThreshold = Math.toRadians(5);//rad/sec
+    public static double turretVelocityTheshold = Math.toRadians(0.5);//rad/s
+    double cameraLastReadTime;
+
     boolean driveStationary = true;
+    boolean driveRotateStationary = true;
     boolean turretStationary = true;
     double stableVisionHeading = 0;//RAD
     private void autoAlign() {
@@ -522,11 +526,20 @@ public class MainTeleOpTurret extends CommandOpMode {
         detected = false;
         AprilTagDetection detection = null;
 
-        if(gamepad1.bWasPressed()) {
+        driveStationary = Math.hypot(follower.getVelocity().getXComponent(), follower.getVelocity().getYComponent()) < velocityMovingThreshold;
+        driveRotateStationary = Math.abs(follower.getVelocity().getTheta()) < velocityRotationThreshold;
+        turretStationary = Math.abs(turret.getEncoder().getRawVelocity()) < turretVelocityTheshold;;
+
+        //only read arducam bearing if stationary, use same correct turret heading as long as drivebase stationary
+//        if (driveStationary && turretStationary && arducamUse && stableVisionHeading == 0) {
+        boolean updateCamera = driveStationary && driveRotateStationary && turretStationary && arducamUse && timer.getTime() - cameraLastReadTime > 500;
+
+        if (gamepad1.b){
+            cameraLastReadTime = timer.getTime();
             arducam.update();
             for (AprilTagDetection tag : arducam.getDetectedTags()) {
                 detected = (shootSide == ShootSide.LEFT) ? (tag.id == 20) : (tag.id == 24);
-                if (detected) {
+                if (detected){
                     detection = tag;
                     break;
                 }
@@ -538,7 +551,7 @@ public class MainTeleOpTurret extends CommandOpMode {
             aprilTagBearing = -Math.toRadians(detection.ftcPose.elevation);
         }
 
-        if(sotmEnabled) {
+        if (sotmEnabled) {
             double[] aimData;
 
             aimData = shooter.aimCalculator.targetPowersHeading(
@@ -547,19 +560,14 @@ public class MainTeleOpTurret extends CommandOpMode {
                     TwoWheelShooter2.getShootPoseNew(currentPose, shootSide)
             );
             targetHeading = MathFunctions.normalizeAngle(aimData[2]) + aprilTagBearing;
-            diffRadians = targetHeading - currentPose.getHeading();
-            wrappedTurretValue = Angle.fromRadians(diffRadians);
-            turret.setFieldAngleToServo(wrappedTurretValue);
         }
         else{//default back to face point algorithm
             targetHeading = TwoWheelShooter2.getShootHeading(currentPose, shootSide) + aprilTagBearing;
-            diffRadians = targetHeading - currentPose.getHeading();
-            wrappedTurretValue = Angle.fromRadians(diffRadians);
-            turret.setFieldAngleToServo(wrappedTurretValue);
         }
 
-
-
+        diffRadians = targetHeading - currentPose.getHeading();
+        wrappedTurretValue = Angle.fromRadians(diffRadians);
+        turret.setFieldAngleToServo(wrappedTurretValue);
 
         //wants wrapped turret angle between -2PI & 2 PI
         //270 current robot, want it to face 0:  0 - 270 + 360 = 90+ = ccw
