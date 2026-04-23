@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.SortedSet;
+import java.util.stream.Stream;
 
 public class Pather {
     public Pose[] balls;
@@ -16,11 +17,12 @@ public class Pather {
     public double pitch, roll, z;
 
     public Pather(
-            double fov, int resX, int resY,
+            double fovX, double fovY, int resX, int resY,
             double pitch, double roll, double z
     ) {
         this.camera = new Camera(
-                fov, resX, resY,
+                fovX, fovY,
+                resX, resY,
                 pitch, 0, roll,
                 new Vec3D(0, 0, z)
         );
@@ -38,18 +40,17 @@ public class Pather {
         camera.setRot(pitch, heading, roll);
 
         return Arrays.stream(ballPixels)
-                .map(pixel -> {
-                    Vec3D point = camera.project(
-                            pixel.getX(),
-                            pixel.getY(),
-                            floor
-                    );
-                    return new Pose(x + point.x, y + point.y);
+                .flatMap(pixel -> {
+                    Vec3D point = camera.project(pixel.getX(), pixel.getY(), floor);
+                    if (point == null) {
+                        return Stream.empty();
+                    }
+                    return Stream.of(new Pose(point.x, point.y));
                 })
                 .toArray(Pose[]::new);
     }
 
-    private int closestBallIdx(Pose robotPose, Pose[] ballPoses) {
+    private static int closestBallIdx(Pose robotPose, Pose[] ballPoses) {
         int bestIdx = 0;
         double minDist = Double.MAX_VALUE;
 
@@ -89,11 +90,11 @@ public class Pather {
         return result;
     }
 
-    public Pose patherGreedy(Pose robotPose, Pose[] ballPoses) {
+    public static Pose patherGreedy(Pose robotPose, Pose[] ballPoses) {
         return ballPoses[closestBallIdx(robotPose, ballPoses)];
     }
 
-    public Pose[] patherOptimal(Pose robotPose, Pose[] ballPoses, int nBalls) {
+    public static Pose[] patherOptimal(Pose robotPose, Pose[] ballPoses, int nBalls) {
         double[][] dist = new double[nBalls][nBalls];
         ArrayList<int[]> permutations = generatePermutations(ballPoses.length, nBalls);
 
@@ -111,10 +112,10 @@ public class Pather {
                 currentDist += dist[i+1][i];
             }
 
-//            if (dist < minDist) {
-//                minDist = dist;
-//                bestPerm = perm;
-//            }
+            if (currentDist < minDist) {
+                minDist = currentDist;
+                bestPerm = perm;
+            }
         }
 
         return (Pose[]) Arrays.stream(bestPerm).mapToObj(i -> ballPoses[i]).toArray();

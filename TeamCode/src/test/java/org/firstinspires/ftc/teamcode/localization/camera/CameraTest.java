@@ -9,11 +9,12 @@ class CameraTest {
     @Test
     void project() {
         Camera cam = new Camera(
-                Math.toRadians(120),
+                Math.toRadians(54.5),
+                Math.toRadians(42),
                 1920,
                 1080,
-                Math.toRadians(-10),
-                Math.toRadians(90),
+                Math.toRadians(0),
+                Math.toRadians(0),
                 Math.toRadians(0),
                 new Vec3D(0, 0, 1)
         );
