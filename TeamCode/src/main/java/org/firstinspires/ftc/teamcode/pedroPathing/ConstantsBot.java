@@ -15,11 +15,13 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 
 @Configurable
 public class ConstantsBot {
-    public static boolean motifIsBusy = true;
+    public static Pose robotPose = new Pose(0, 0, 0);
+    public static ShootSide side = ShootSide.LEFT;
     public static GoBildaPinpointDriver.DeviceStatus deviceStatus = GoBildaPinpointDriver.DeviceStatus.FAULT_BAD_READ;
     public static FollowerConstants followerConstants = new FollowerConstants()
             .forwardZeroPowerAcceleration(-39)//TUNED
