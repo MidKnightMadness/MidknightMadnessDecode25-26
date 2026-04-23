@@ -153,6 +153,7 @@ public class MainTeleOpTurret extends CommandOpMode {
     int activeSpindexerSpot = 0;
     public static double settleTime = 100;
     public static long fastSmoothTime = 100;
+    public static int timerPerShot = 100;
     public static double slowSmoothTime = 0.7;
     boolean driveFieldOriented = true;
     Limelight3A limelight;
@@ -503,9 +504,12 @@ public class MainTeleOpTurret extends CommandOpMode {
         }
     }
     double diffRadians;
-    public static double velocityMovingThreshold = 1;//in/sec
-    public static double turretVelocityTheshold = Math.toRadians(3);//rad/s
+    public static double driveMovingThreshold = 0.5;//in/sec
+    public static double driveRotatingThreshold = Math.toRadians(1);
+    public static double turretVelocityTheshold = Math.toRadians(0.5); //rad/s
+    double cameraLastReadTime = 0;
     boolean driveStationary = true;
+    boolean driveRotateStationary = true;
     boolean turretStationary = true;
     double stableVisionHeading = 0;//RAD
     public double leftAprilOffset = Math.toRadians(2);
@@ -519,12 +523,15 @@ public class MainTeleOpTurret extends CommandOpMode {
         detected = false;
         AprilTagDetection detection = null;
 
-        driveStationary = Math.abs(follower.getVelocity().getMagnitude()) < velocityMovingThreshold;
+        driveStationary = Math.hypot(follower.getVelocity().getXComponent(), follower.getVelocity().getYComponent()) < driveMovingThreshold;
+        driveRotateStationary = Math.abs(follower.getVelocity().getTheta()) < driveRotatingThreshold;
         turretStationary = Math.abs(turret.getEncoder().getRawVelocity()) < turretVelocityTheshold;;
 
         //only read arducam bearing if stationary, use same correct turret heading as long as drivebase stationary
 //        if (driveStationary && turretStationary && arducamUse && stableVisionHeading == 0) {
-        if(gamepad1.bWasPressed()){
+        boolean updateCamera = driveStationary && driveRotateStationary && turretStationary && arducamUse && timer.getTime() - cameraLastReadTime > 500;
+        if (gamepad1.b){
+            cameraLastReadTime = timer.getTime();
             arducam.update();
             for (AprilTagDetection tag : arducam.getDetectedTags()) {
                 detected = (shootSide == ShootSide.LEFT) ? (tag.id == 20) : (tag.id == 24);
@@ -538,46 +545,25 @@ public class MainTeleOpTurret extends CommandOpMode {
             }
             tag = detection;
             aprilTagBearing = -Math.toRadians(detection.ftcPose.elevation);
-//            stableVisionHeading = turret.getCurrentAngle().getValue() + aprilTagBearing;
-//            if(shootSide == ShootSide.LEFT){
-//                stableVisionHeading += leftAprilOffset;
-//            }
         }
 
-//        if(!driveStationary){//robot base is moving, then arducam reading now wrong
-//            stableVisionHeading = 0;
-//        }
+        if (sotmEnabled) {
+            double[] aimData;
 
-//        if(driveStationary){
-            //use vision based if already have value
-//            if(stableVisionHeading != 0){
-//                wrappedTurretValue = Angle.fromRadians(stableVisionHeading);
-//                turret.setFieldAngleToServo(wrappedTurretValue);
-//            }
-//            //if don't have vision value, use default face point algorithm
-//            else{
-                if(sotmEnabled) {
-                    double[] aimData;
+            aimData = shooter.aimCalculator.targetPowersHeading(
+                    follower.getPose(),
+                    follower.getVelocity(),
+                    TwoWheelShooter2.getShootPoseNew(currentPose, shootSide)
+            );
+            targetHeading = MathFunctions.normalizeAngle(aimData[2]) + aprilTagBearing;
+        }
+        else{//default back to face point algorithm
+            targetHeading = TwoWheelShooter2.getShootHeading(currentPose, shootSide) + aprilTagBearing;
+        }
 
-                    aimData = shooter.aimCalculator.targetPowersHeading(
-                            follower.getPose(),
-                            follower.getVelocity(),
-                            TwoWheelShooter2.getShootPoseNew(currentPose, shootSide)
-                    );
-                    targetHeading = MathFunctions.normalizeAngle(aimData[2]) + aprilTagBearing;
-                    diffRadians = targetHeading - currentPose.getHeading();
-                    wrappedTurretValue = Angle.fromRadians(diffRadians);
-                    turret.setFieldAngleToServo(wrappedTurretValue);
-                }
-                else{//default back to face point algorithm
-                    targetHeading = TwoWheelShooter2.getShootHeading(currentPose, shootSide) + aprilTagBearing;
-                    diffRadians = targetHeading - currentPose.getHeading();
-                    wrappedTurretValue = Angle.fromRadians(diffRadians);
-                    turret.setFieldAngleToServo(wrappedTurretValue);
-                }
-
-
-
+        diffRadians = targetHeading - currentPose.getHeading();
+        wrappedTurretValue = Angle.fromRadians(diffRadians);
+        turret.setFieldAngleToServo(wrappedTurretValue);
 
         //wants wrapped turret angle between -2PI & 2 PI
         //270 current robot, want it to face 0:  0 - 270 + 360 = 90+ = ccw
@@ -613,7 +599,7 @@ public class MainTeleOpTurret extends CommandOpMode {
 
 
         if (!autoDriveToShoot && !driveFieldOriented) {
-            wheelControl.driveRelative(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, currSpeed);
+            wheelControl.driveRelative(gamepad1.left_stick_y, -gamepad1.left_stick_x, gamepad1.right_stick_x, currSpeed);
         }
         else if(!autoDriveToShoot && driveFieldOriented){
             wheelControl.driveFieldCentric(
@@ -706,7 +692,7 @@ public class MainTeleOpTurret extends CommandOpMode {
             activeSpindexerSpot = Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0);
 //            spindexerGotoPositionSmooth = new SpindexerGotoPositionSmooth(spindexer, SpindexerSpotNonCR.getPositionFromIndex(activeSpindexerSpot, SpotType.INTAKE) + SpindexerSpotNonCR.OUTAKE_OFFSET_DEGREES / SpindexerNonCR.totalDegrees, fastSmoothTime);
 //            schedulePosition(spindexerGotoPositionSmooth);
-            outakeSpotsRotation = new OutakeSpotsRotation(spindexer, activeSpindexerSpot +3, fastSmoothTime);
+            outakeSpotsRotation = new OutakeSpotsRotation(spindexer, activeSpindexerSpot +3, timerPerShot);
             schedulePosition(outakeSpotsRotation);
         } else if(gamepad2.yWasPressed()){//SLOWEST: FOR SORTING - SMOOTHED
             stopItServo.setActivePosition();
@@ -908,8 +894,12 @@ public class MainTeleOpTurret extends CommandOpMode {
         telemetry.addData("Target Heading Goal Align", Math.toDegrees(targetHeading));
         telemetry.addData("Turret Stationary", turretStationary);
         telemetry.addData("Robot Stationary", driveStationary);
-        telemetry.addData("Vision Value", Math.toDegrees(stableVisionHeading));
-        telemetry.addData("Robot velocity Magnitude(in/sec)", follower.getVelocity().getMagnitude());//in/sec
+        telemetry.addData("Robot Rotate Stationary", driveRotateStationary);
+        telemetry.addData("Robot translational speed (in/sec)", Math.hypot(follower.getVelocity().getXComponent(), follower.getVelocity().getYComponent()));//in/sec
+        telemetry.addData("Robot angular speed (rad/sec)", follower.getVelocity().getTheta());
+        telemetry.addData("Robot angular speed 2 (rad/sec)", Math.abs(follower.getAngularVelocity()));
+
+
         telemetry.addData("Turret velocity(deg/sec)", Math.toRadians(turret.getEncoder().getRawVelocity()));//deg/sec
 
 
@@ -968,8 +958,7 @@ public class MainTeleOpTurret extends CommandOpMode {
         telemetry.addData("Active spindexer spot", activeSpindexerSpot);
         telemetry.addData("Spindexer Direct Position", spindexerDirectPosition);
         if(outakeSpotsRotation != null) {
-            telemetry.addData("Shoot Timer timer", outakeSpotsRotation.getShootTimerTime());
-            telemetry.addData("Curr Spot", outakeSpotsRotation.currSpot);
+            telemetry.addData("Shoot Timer timer", outakeSpotsRotation.getLastShotTime());
         }
 
         telemetry.update();
