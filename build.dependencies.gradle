@@ -31,5 +31,5 @@ dependencies {
     implementation("com.bylazar.sloth:fullpanels:0.2.4+1.0.12")
 
     // Uncomment for sloth (might break stuff
-//    implementation("dev.frozenmilk.sinister:Sloth:0.2.4")
+    implementation("dev.frozenmilk.sinister:Sloth:0.2.4")
 }

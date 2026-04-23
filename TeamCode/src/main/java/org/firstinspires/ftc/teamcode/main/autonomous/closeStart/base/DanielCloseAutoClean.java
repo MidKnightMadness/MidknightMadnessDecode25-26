@@ -92,21 +92,6 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
         balls21,
         end
     }
-    String directoryName = "competition";
-    FileWriter xFileWriter;
-    FileWriter yFileWriter;
-    FileWriter headingFileWriter;
-    File xFile;
-    File yFile;
-    File headingFile;
-
-    String sideFileName = "side.txt";
-    String xFileName = "robot_x.txt";
-    String yFileName = "robot_y.txt";
-    String headingFileName = "robot_heading.txt";
-    FileWriter sideFileWriter;
-    File sideFile;
-    String outputString;
     State state;
     TwoWheelShooter2 shooter;
     Turret turret;
@@ -247,31 +232,26 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
         follower.update();
         robotPose = follower.getPose();
         robotVel = follower.getVelocity();
-        currVolt = hardwareMap.voltageSensor.iterator().next().getVoltage();
+        currVolt = voltageSensor.getVoltage();
     }
 
 
 
-    public void setTransferOff(){
-        shooter.transfer.stopMotor();
-        pushUpServo.setDown();
-    }
+
     public void initCommands() {
         Command balls1To3 = new CommandBase() {
             final BooleanSupplier shootSupplier = ExtraFns.firstSupplier(
                     () -> ((distToGoal() > 45 && timer.getTime() > 1000) || timer.getTime() > 3000)
             );
-            Timer spinTimer;
-            int currSpot = 3;
+            final Timing.Timer shootTimer = new Timing.Timer(totalShootingTime, TimeUnit.MILLISECONDS);
+            double startPosition = (SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE));
+            double targetPosition = 0;
             public void initialize() {
                 timer.restart();
-                spinTimer = new Timer();
                 state = State.balls3;
                 addRequirements(stopItServo, pushUpServo, shooter, turret);
             }
             boolean start = false;
-            boolean shootStart = false;
-            boolean shootTimerStarted = false;
             public void execute() {
                 if(!start){
                     pushUpServo.setUp();
@@ -287,36 +267,27 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                                 shootAtPose1.getY()
                         )
                 );
-                if (shootSupplier.getAsBoolean() && !shootTimerStarted) {
-                    shootTimerStarted = true;
+                if (shootSupplier.getAsBoolean() && !shootTimer.isTimerOn()) {
+                    shootTimer.start();
                 }
 
                 //ready to shoot
-                if(shootTimerStarted){
-                    if(!shootStart) {
-                        spindexer.setDirectPosition(SpindexerSpotNonCR.getPositionFromIndex(currSpot, SpotType.INTAKE) - 60.0 / SpindexerNonCR.totalDegrees);
-                        shootStart = true;
-                        spinTimer.restart();
-                        currSpot--;
-                    }
-
-                    if(currSpot != 0 && spinTimer.getTime() >= totalShootingTime / 3.0) {
-                        spindexer.setDirectPosition(SpindexerSpotNonCR.getPositionFromIndex(currSpot, SpotType.INTAKE) - 60.0 / SpindexerNonCR.totalDegrees);
-                        spinTimer.restart();
-                        currSpot--;
-                    }
+                if(shootTimer.isTimerOn()){
+                    spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * Math.min(shootTimer.elapsedTime(), totalShootingTime) / totalShootingTime);
                 }
             }
             public boolean isFinished() {
-                return currSpot == 0;
+                return shootTimer.done();
             }
 
             public void end(boolean interrupted) {
-                spindexer.setDirectPosition(SpindexerSpotNonCR.OUTAKE_OFFSET_DEGREES);
+                pushUpServo.setDown();
+                spindexer.setDirectPosition(targetPosition);
                 stopItServo.setInactivePosition();
                 spindexer.setDefault();
             }
         };
+
 
 
         Command balls4To6 = new SequentialCommandGroup(
@@ -332,7 +303,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                                 ), 1)
                         )
                         .setIsFinished(() -> robotPose.getY() < row2Y + 10),
-                new InstantCommand(()-> setTransferOff()),
+                new InstantCommand(()-> shooter.transfer.stopMotor()),
                 // Adjust position and power
                 new LambdaCommand()
                         .setInitialize(() -> timer.restart())
@@ -422,7 +393,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
 
                         //ready to shoot
                         if(shootTimer.isTimerOn()){
-                            spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * Math.max(shootTimer.elapsedTime(), totalShootingTime) / totalShootingTime);
+                            spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * Math.min(shootTimer.elapsedTime(), totalShootingTime) / totalShootingTime);
                         }
                     }
                     public boolean isFinished() {
@@ -430,6 +401,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                     }
 
                     public void end(boolean interrupted) {
+                        pushUpServo.setDown();
                         spindexer.setDirectPosition(targetPosition);
                         stopItServo.setInactivePosition();
                         spindexer.setDefault();
@@ -452,7 +424,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                                 ), 1)
                         )
                         .setIsFinished(() -> robotPose.getY() < gateIntakePose.getY() + 10),
-                new InstantCommand(()-> setTransferOff()),
+                new InstantCommand(()-> shooter.transfer.stopMotor()),
                 // Drive to gate
                 new ParallelRaceGroup(
                     new SequentialCommandGroup(
@@ -535,7 +507,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
 
                         //ready to shoot
                         if(shootTimer.isTimerOn()){
-                            spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * Math.max(shootTimer.elapsedTime(), totalShootingTime) / totalShootingTime);
+                            spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * Math.min(shootTimer.elapsedTime(), totalShootingTime) / totalShootingTime);
                         }
                     }
                     public boolean isFinished() {
@@ -543,6 +515,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                     }
 
                     public void end(boolean interrupted) {
+                        pushUpServo.setDown();
                         spindexer.setDirectPosition(targetPosition);
                         stopItServo.setInactivePosition();
                         spindexer.setDefault();
@@ -569,7 +542,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                                 ), 0.7)
                         )
                         .setIsFinished(() -> robotPose.getY() < row3Y + 1),
-                new InstantCommand(()-> setTransferOff()),
+                new InstantCommand(()-> shooter.transfer.stopMotor()),
                 // Drive straight forward and intake
                 new ParallelRaceGroup(
                     new SequentialCommandGroup(
@@ -655,7 +628,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
 
                         //ready to shoot
                         if(shootTimer.isTimerOn()){
-                            spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * Math.max(shootTimer.elapsedTime(), totalShootingTime) / totalShootingTime);
+                            spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * Math.min(shootTimer.elapsedTime(), totalShootingTime) / totalShootingTime);
                         }
                     }
                     public boolean isFinished() {
@@ -663,6 +636,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                     }
 
                     public void end(boolean interrupted) {
+                        pushUpServo.setDown();
                         spindexer.setDirectPosition(targetPosition);
                         stopItServo.setInactivePosition();
                         spindexer.setDefault();
@@ -713,6 +687,9 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
         telemetry.addData("Robot pose heading", Math.toDegrees(robotPose.getHeading()));
         telemetry.addData("Robot velocity X", robotVel.getXComponent());
         telemetry.addData("Robot velocity Y", robotVel.getYComponent());
+        telemetry.addData("Low Error", shooter.bottomError);
+        telemetry.addData("High Error", shooter.topError);
+        telemetry.addData("Transfer Error", (shooter.transferError));
 
         telemetry.addLine("--------------------");
 
@@ -720,94 +697,12 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
         telemetry.addData("Distance to goal", distToGoal());
         telemetry.update();
     }
+
     @Override
     public void end(){
-        xFile = createFile(xFileName, directoryName);
-        yFile = createFile(yFileName, directoryName);
-        headingFile = createFile(headingFileName, directoryName);
-        try {
-            xFileWriter = new FileWriter(xFile);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        try {
-            yFileWriter = new FileWriter(yFile);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        try {
-            headingFileWriter = new FileWriter(headingFile);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        follower.update();
-        Pose pose = follower.getPose();
-        String xLine = String.format("%.4f", pose.getX());
-        String yLine = String.format("%.4f", pose.getY());
-        String headingLine = String.format("%.4f", pose.getHeading());
-        writeToFile(xFileWriter, xLine);
-        closeFileWriter(xFileWriter);
-
-        writeToFile(yFileWriter, yLine);
-        closeFileWriter(yFileWriter);
-
-        writeToFile(headingFileWriter, headingLine);
-        closeFileWriter(headingFileWriter);
-
-        sideFile = createFile(sideFileName, directoryName);
-        if(getShootSide() == ShootSide.LEFT){
-            outputString = "Left";
-        }
-        else{
-            outputString = "Right";
-        }
-        try {
-            sideFileWriter = new FileWriter(sideFile);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        //write shoot side
-        try {
-            sideFileWriter.write(outputString);
-            sideFileWriter.flush();
-        } catch (IOException e) {
-            RobotLog.ee("Log", "No file writer detected: " + e.getMessage());
-        }
-        //close shoot side
-        try {
-            sideFileWriter.close();
-        } catch (IOException e) {
-            RobotLog.ee("Log", "Cannot close file writer: " + e.getMessage());
-        }
+        ConstantsBot.robotPose = robotPose;
+        ConstantsBot.side = side;
     }
 
-
-    private static File createFile(String fileName, String dirName){
-        File dir = new File(Environment.getExternalStorageDirectory(), dirName);
-        if(!dir.exists()){
-            dir.mkdirs();
-        }
-        File file = new File(dir, fileName);
-        return file;
-    }
-
-
-    private void writeToFile(FileWriter fileWriter, String s){
-        try {
-            fileWriter.write(s);
-            fileWriter.flush();
-        } catch (IOException e) {
-            RobotLog.ee("Log", "No file writer detected: " + e.getMessage());
-        }
-    }
-
-    private void closeFileWriter(FileWriter fileWriter){
-        try {
-            fileWriter.close();
-        } catch (IOException e) {
-            RobotLog.ee("Log", "Cannot close file writer: " + e.getMessage());
-        }
-    }
 
 }

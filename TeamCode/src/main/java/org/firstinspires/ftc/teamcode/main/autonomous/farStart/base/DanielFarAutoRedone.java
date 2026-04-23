@@ -18,9 +18,7 @@ import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.LambdaCommand;
-import com.seattlesolvers.solverslib.command.ParallelDeadlineGroup;
 import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
-import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 
@@ -57,11 +55,12 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
     public static Pose startPose = new Pose(55.5, 8.8, Math.toRadians(90));
     public static Pose endPose = new Pose(45, 34);
     public static double shootTimeout = 700;
-    public static double rowXInner = 40;
-    public static double rowXOuter = 20;
+    public static double rowXInner = 45;
+    public static double rowXOuter = 15;
     public static double row1Y = 38;
     public static double row2Y = 62;
     public static double row3Y = 85;
+
     public static double headingFacingEdge = -Math.PI;
     PIDController driveController = new PIDController(0.05, 0, 0.001);
     PIDController headingController = new PIDController(1.0, 0, 0.01);
@@ -82,6 +81,8 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
     double[] aimData;
     double cornerX;
     double zoneIntakeY = 15;
+    double zoneTwoIntakeY = 25;
+    double zoneThreeIntakeY = 35;
 
     enum State {
         init,
@@ -96,21 +97,6 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
         end
     }
     State state;
-    String directoryName = "competition";
-    FileWriter xFileWriter;
-    FileWriter yFileWriter;
-    FileWriter headingFileWriter;
-    File xFile;
-    File yFile;
-    File headingFile;
-
-    String sideFileName = "side.txt";
-    String xFileName = "robot_x.txt";
-    String yFileName = "robot_y.txt";
-    String headingFileName = "robot_heading.txt";
-    FileWriter sideFileWriter;
-    File sideFile;
-    String outputString;
     TwoWheelShooter2 shooter;
     Turret turret;
     Intake intake;
@@ -122,8 +108,7 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
     boolean useBulkMode = true;
 
     Angle wrappedTurretValue;
-    public static long totalShootingTime = 480;
-    public static double timePerShot = 200;
+    public static long totalShootingTime = 600;
     double spindexerSettleTime = 100;
     double turretHeadingError;
 
@@ -147,11 +132,11 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
         follower.setStartingPose(side.fromLeftPose(startPose));
         initializeSubsystems();
         register(intake, shooter, spindexer, pushUpServo, turret);
+
         if(useBulkMode) {
             CommandScheduler.getInstance().setBulkReading(
                     hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
             );
-//            PhotonCore.disable();
         }
         else{
             CommandScheduler.getInstance().setBulkReading(
@@ -242,7 +227,7 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
         follower.update();
         robotPose = follower.getPose();
         robotVel = follower.getVelocity();
-        currVolt = hardwareMap.voltageSensor.iterator().next().getVoltage();
+        currVolt = voltageSensor.getVoltage();
     }
 
     public void initCommands() {
@@ -258,24 +243,22 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
             public void initialize() {
                 timer.restart();
                 shootTimer = new Timer();
-                addRequirements(stopItServo, pushUpServo, shooter, turret);
+                addRequirements(spindexer, shooter, turret);
             }
             boolean start;
             public void execute() {
-                if(!start){
-                    start = true;
-                }
+
                 calculateAlign(true);
                 setTransferPower();
+                setShooterPower(false);
                 if (shootSupplier.getAsBoolean() && !timeStarted) {
-                    shootTimer = new Timer();
+                    shootTimer.restart();
                     timeStarted = true;
                 }
 
 
                 //ready to shoot
                 if(timeStarted) {
-                    spindexerPosition = startPosition + (targetPosition - startPosition) * Math.max(shootTimer.getTime(), totalShootingTime) / totalShootingTime;
                     spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * shootTimer.getTime() / totalShootingTime);
                 }
             }
@@ -287,7 +270,8 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                 spindexer.setDirectPosition(targetPosition);
                 stopItServo.setInactivePosition();
                 spindexer.setDefault();
-                shooter.transfer.stopMotor();
+                pushUpServo.setDown();
+                shooter.stopFlywheels();
             }
         };
 
@@ -340,29 +324,27 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                 new InstantCommand(()-> resetIntake()),
                 new InstantCommand(() -> stopItServo.setActivePosition()),
                 new InstantCommand(()-> spindexer.setDirectPosition(SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE))),
+                new LambdaCommand()
+                        .setInitialize(() -> timer.restart())
+                        .setExecute(() -> {
+                            if(timer.getTime() > 300){
+                                setTransferPower();
+                                pushUpServo.setUp();
+                            }
+                            calculateAlign(true);
+                            setShooterPower(false);
+                            drive.pid(robotPose, new Pose(
+                                    side.fromLeftX(shootAtPose2.getX()),
+                                    shootAtPose2.getY(),
+                                    targetHeading
+                            ), 1);
+                        })
+                        .setIsFinished(() -> ExtraFns.farZoneDist(robotPose) < 10),
 
-
-                // Drive to shoot
-                new ParallelDeadlineGroup(
-                        new LambdaCommand()
-                                .setInitialize(() -> timer.restart())
-                                .setExecute(() -> {
-                                    calculateAlign(true);
-                                    drive.pid(robotPose, new Pose(
-                                            side.fromLeftX(shootAtPose2.getX()),
-                                            shootAtPose2.getY(),
-                                            targetHeading
-                                    ), 1);
-                                })
-                                .setIsFinished(() -> ExtraFns.farZoneDist(robotPose) < 10),
-                        new RunCommand(()-> setTransferPower())
-                ),
-                new InstantCommand(()-> pushUpServo.setUp()),
                 new InstantCommand(() -> drive.stop()),
-                new WaitCommand(500),
                 new CommandBase() {
                     final BooleanSupplier shootSupplier = ExtraFns.firstSupplier(
-                            () -> ((shooter.readyToShoot() && timer.getTime() > 1000)
+                            () -> ((shooter.readyToShoot() && timer.getTime() > 500)
                                     || timer.getTime() > 3000)
                     );
                     Timer shootTimer;
@@ -372,24 +354,20 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                     public void initialize() {
                         timer.restart();
                         shootTimer = new Timer();
-                        addRequirements(stopItServo, pushUpServo, shooter, turret);
+                        addRequirements(spindexer, shooter, turret);
                     }
-                    boolean start;
                     public void execute() {
-                        if(!start){
-                            start = true;
-                        }
                         calculateAlign(true);
                         setTransferPower();
+                        setShooterPower(false);
                         if (shootSupplier.getAsBoolean() && !timeStarted) {
-                            shootTimer = new Timer();
+                            shootTimer.restart();
                             timeStarted = true;
                         }
 
 
                         //ready to shoot
                         if(timeStarted) {
-                            spindexerPosition = startPosition + (targetPosition - startPosition) * Math.max(shootTimer.getTime(), totalShootingTime) / totalShootingTime;
                             spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * shootTimer.getTime() / totalShootingTime);
                         }
                     }
@@ -400,8 +378,9 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                     public void end(boolean interrupted) {
                         spindexer.setDirectPosition(targetPosition);
                         stopItServo.setInactivePosition();
+                        pushUpServo.setDown();
                         spindexer.setDefault();
-                        shooter.transfer.stopMotor();
+                        shooter.stopAll();
                     }
                 }
         );
@@ -472,29 +451,198 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                             spindexerSettleTime
                     )
                 ),
+                new InstantCommand(() -> stopItServo.setActivePosition()),
                 new LambdaCommand()
                         .setInitialize(() -> timer.restart())
                         .setExecute(() -> {
                             calculateAlign(true);
+                            setShooterPower(false);
+                            if(timer.getTime() > 300) {
+                                pushUpServo.setUp();
+                                setTransferPower();
+                            }
                             drive.pidNoHeading(robotPose, new Pose(
                                     side.fromLeftX(shootAtPose2.getX()),
                                     zoneIntakeY + 8
                             ), 1);
                         })
                         .setIsFinished(() -> ExtraFns.farZoneDist(robotPose) < 7),
-                // TODO: actually shoot
+
+                new InstantCommand(()-> drive.stop()),
+                new CommandBase() {
+                    final BooleanSupplier shootSupplier = ExtraFns.firstSupplier(
+                            () -> ((shooter.readyToShoot() && timer.getTime() > 500)
+                                    || timer.getTime() > 3000)
+                    );
+                    Timer shootTimer;
+                    boolean timeStarted;
+                    double startPosition = (SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE));
+                    double targetPosition = 0;
+                    public void initialize() {
+                        timer.restart();
+                        shootTimer = new Timer();
+                        addRequirements(spindexer, shooter, turret);
+                    }
+                    boolean start;
+                    public void execute() {
+                        if(!start){
+                            start = true;
+                        }
+                        setShooterPower(false);
+                        setTransferPower();
+
+                        calculateAlign(true);
+                        if (shootSupplier.getAsBoolean() && !timeStarted) {
+                            shootTimer.restart();
+                            timeStarted = true;
+                        }
+
+
+                        //ready to shoot
+                        if(timeStarted) {
+                            spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * shootTimer.getTime() / totalShootingTime);
+                        }
+                    }
+                    public boolean isFinished() {
+                        return shootTimer.getTime() > totalShootingTime && timeStarted;
+                    }
+
+                    public void end(boolean interrupted) {
+                        spindexer.setDirectPosition(targetPosition);
+                        stopItServo.setInactivePosition();
+                        spindexer.setDefault();
+                        shooter.stopAll();
+                        pushUpServo.setDown();
+                    }
+                }
+        );
+        Function<State, Command> secondaryIntakeShoot = state -> new SequentialCommandGroup(
+                new InstantCommand(() -> this.state = state),
+                // Full send to almost there
                 new LambdaCommand()
-                        .setInitialize(() -> {
-                            timer.restart();
-                            drive.stop();
+                        .setInitialize(() -> timer.restart())
+                        .setExecute(() -> drive.pid(
+                                robotPose, side.fromLeftPose(new Pose(
+                                        rowXInner,
+                                        zoneTwoIntakeY,
+                                        headingFacingEdge
+                                )), 1)
+                        )
+                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) < rowXInner),
+                // Drive to corner
+                new ParallelRaceGroup(
+                        new SequentialCommandGroup(
+                                new LambdaCommand()
+                                        .setInitialize(() -> timer.restart())
+                                        .setExecute(() -> drive.pid(
+                                                robotPose,
+                                                side.fromLeftPose(new Pose(0, zoneTwoIntakeY, headingFacingEdge)),
+                                                0.4
+                                        ))
+                                        .setEnd(() -> cornerX = side.fromLeftX(robotPose.getX()))
+                                        .setIsFinished(() -> timer.getTime() > 850 || follower.getVelocity().getMagnitude() < 5),
+                                // Drive straight back
+                                new LambdaCommand()
+                                        .setInitialize(() -> timer.restart())
+                                        .setExecute(() -> drive.pid(
+                                                robotPose,
+                                                side.fromLeftPose(new Pose(cornerX + 5, zoneTwoIntakeY, headingFacingEdge)),
+                                                1
+                                        ))
+                                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) > cornerX + 5),
+                                // Drive forward again
+                                new LambdaCommand()
+                                        .setInitialize(() -> timer.restart())
+                                        .setExecute(() -> drive.pid(
+                                                robotPose,
+                                                side.fromLeftPose(new Pose(-30, zoneThreeIntakeY, headingFacingEdge)),
+                                                0.4
+                                        ))
+                                        .setIsFinished(() -> timer.getTime() > 300 && follower.getVelocity().getMagnitude() < 5),
+                                new InstantCommand(()-> drive.stop()),
+                                new WaitCommand(1400)
+                        ),
+                        new AutoIntakeCommandTime(
+                                spindexer,
+                                intake,
+                                1.0,
+                                false,
+                                voltageSensor,
+                                0,
+                                1,
+                                spindexerSettleTime
+                        )
+                ),
+                new InstantCommand(() -> stopItServo.setActivePosition()),
+                new LambdaCommand()
+                        .setInitialize(() -> timer.restart())
+                        .setExecute(() -> {
+                            calculateAlign(true);
+                            setShooterPower(false);
+                            if(timer.getTime() > 300) {
+                                pushUpServo.setUp();
+                                setTransferPower();
+                            }
+                            drive.pidNoHeading(robotPose, new Pose(
+                                    side.fromLeftX(shootAtPose2.getX()),
+                                    zoneIntakeY + 8
+                            ), 1);
                         })
-                        .setIsFinished(() -> timer.getTime() > 500)
+                        .setIsFinished(() -> ExtraFns.farZoneDist(robotPose) < 7),
+
+                new InstantCommand(()-> drive.stop()),
+                new CommandBase() {
+                    final BooleanSupplier shootSupplier = ExtraFns.firstSupplier(
+                            () -> ((shooter.readyToShoot() && timer.getTime() > 500)
+                                    || timer.getTime() > 3000)
+                    );
+                    Timer shootTimer;
+                    boolean timeStarted;
+                    double startPosition = (SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE));
+                    double targetPosition = 0;
+                    public void initialize() {
+                        timer.restart();
+                        shootTimer = new Timer();
+                        addRequirements(spindexer, shooter, turret);
+                    }
+                    boolean start;
+                    public void execute() {
+                        if(!start){
+                            start = true;
+                        }
+                        setShooterPower(false);
+                        setTransferPower();
+
+                        calculateAlign(true);
+                        if (shootSupplier.getAsBoolean() && !timeStarted) {
+                            shootTimer.restart();
+                            timeStarted = true;
+                        }
+
+
+                        //ready to shoot
+                        if(timeStarted) {
+                            spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * shootTimer.getTime() / totalShootingTime);
+                        }
+                    }
+                    public boolean isFinished() {
+                        return shootTimer.getTime() > totalShootingTime && timeStarted;
+                    }
+
+                    public void end(boolean interrupted) {
+                        spindexer.setDirectPosition(targetPosition);
+                        stopItServo.setInactivePosition();
+                        spindexer.setDefault();
+                        shooter.stopAll();
+                        pushUpServo.setDown();
+                    }
+                }
         );
 
         Command balls7to9 = cornerIntakeShoot.apply(State.balls9);
-        Command balls9to12 = cornerIntakeShoot.apply(State.balls12);
-        Command balls12to15 = cornerIntakeShoot.apply(State.balls15);
-        Command balls16to18 = cornerIntakeShoot.apply(State.balls18);
+        Command balls9to12 = secondaryIntakeShoot.apply(State.balls12);
+        Command balls12to15 = secondaryIntakeShoot.apply(State.balls15);
+        Command balls16to18 = secondaryIntakeShoot.apply(State.balls18);
 
         Command driveToEnd = new LambdaCommand()
                 .setInitialize(() -> {
@@ -510,19 +658,14 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
         });
 
         main = new SequentialCommandGroup(
-                new ParallelDeadlineGroup(
-                        new SequentialCommandGroup(
-                                balls1To3,
-                                balls4To6,
-                                balls7to9,
-                                balls9to12,
-                                balls12to15,
-                                driveToEnd,
-                                stop
-                        ),
-                        new RunCommand(() -> setShooterPower(false))
-                ),
-                new InstantCommand(()-> stopFlywheels())
+                balls1To3,
+                balls4To6,
+                balls7to9,
+                balls9to12,
+                balls12to15,
+                balls16to18,
+                driveToEnd,
+                stop
         );
     }
     public void resetIntake(){
@@ -541,101 +684,16 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
         shooter.setTransferPower(TwoWheelShooter2.transferVelocity, currVolt);
     }
 
-    public void stopFlywheels(){
-        shooter.stopAll();
-    }
-
 
     public double distToGoal() {
         return TwoWheelShooter2.getShootPose(side).distanceFrom(robotPose);
     }
     @Override
     public void end(){
-        xFile = createFile(xFileName, directoryName);
-        yFile = createFile(yFileName, directoryName);
-        headingFile = createFile(headingFileName, directoryName);
-        try {
-            xFileWriter = new FileWriter(xFile);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        try {
-            yFileWriter = new FileWriter(yFile);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        try {
-            headingFileWriter = new FileWriter(headingFile);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        follower.update();
-        Pose pose = follower.getPose();
-        String xLine = String.format("%.4f", pose.getX());
-        String yLine = String.format("%.4f", pose.getY());
-        String headingLine = String.format("%.4f", pose.getHeading());
-        writeToFile(xFileWriter, xLine);
-        closeFileWriter(xFileWriter);
-
-        writeToFile(yFileWriter, yLine);
-        closeFileWriter(yFileWriter);
-
-        writeToFile(headingFileWriter, headingLine);
-        closeFileWriter(headingFileWriter);
-
-        sideFile = createFile(sideFileName, directoryName);
-        if(getShootSide() == ShootSide.LEFT){
-            outputString = "Left";
-        }
-        else{
-            outputString = "Right";
-        }
-        try {
-            sideFileWriter = new FileWriter(sideFile);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        //write shoot side
-        try {
-            sideFileWriter.write(outputString);
-            sideFileWriter.flush();
-        } catch (IOException e) {
-            RobotLog.ee("Log", "No file writer detected: " + e.getMessage());
-        }
-        //close shoot side
-        try {
-            sideFileWriter.close();
-        } catch (IOException e) {
-            RobotLog.ee("Log", "Cannot close file writer: " + e.getMessage());
-        }
-    }
-    private static File createFile(String fileName, String dirName){
-        File dir = new File(Environment.getExternalStorageDirectory(), dirName);
-        if(!dir.exists()){
-            dir.mkdirs();
-        }
-        File file = new File(dir, fileName);
-        return file;
+        ConstantsBot.robotPose = robotPose;
+        ConstantsBot.side = side;
     }
 
-
-    private void writeToFile(FileWriter fileWriter, String s){
-        try {
-            fileWriter.write(s);
-            fileWriter.flush();
-        } catch (IOException e) {
-            RobotLog.ee("Log", "No file writer detected: " + e.getMessage());
-        }
-    }
-
-    private void closeFileWriter(FileWriter fileWriter){
-        try {
-            fileWriter.close();
-        } catch (IOException e) {
-            RobotLog.ee("Log", "Cannot close file writer: " + e.getMessage());
-        }
-    }
 
     public void updateTelemetry() {
         telemetry.addData("Update Rate", 1000.0/ timer.getDeltaTime());
@@ -647,6 +705,9 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
         telemetry.addData("Robot pose heading", Math.toDegrees(robotPose.getHeading()));
         telemetry.addData("Robot velocity X", robotVel.getXComponent());
         telemetry.addData("Robot velocity Y", robotVel.getYComponent());
+        telemetry.addData("Low Error", shooter.bottomError);
+        telemetry.addData("High Error", shooter.topError);
+        telemetry.addData("Transfer Error", (shooter.transferError));
 
         telemetry.addLine("--------------------");
 

@@ -92,17 +92,6 @@ public class SpindexerNonCR extends SubsystemBase {
     }
 
 
-    public void setTeleOpStartIntake(){
-        setPosition(startTeleOpIntakePosition);
-    }
-    public void setStartOuttakePosition(){
-        setPosition(startOutakePosition);
-    }
-
-    public void setEndOuttakePosition(){
-        setPosition(endOutakePosition);
-    }
-
     public void setPosition(double position) {
         turner.setPosition(position);
         turner2.setPosition(position);
@@ -114,12 +103,6 @@ public class SpindexerNonCR extends SubsystemBase {
     }
 
 
-    public double getTimeForRotation(double degrees) {
-        return Math.abs(degrees) / DEGREES_PER_SECOND;
-    }
-
-
-
     public double getCurrentSpindexerPosition(){
         return currentTurnerPosition;
     }
@@ -129,12 +112,6 @@ public class SpindexerNonCR extends SubsystemBase {
         currentAngle = AngleNonCR.fromDegrees(currentTurnerPosition / totalDegrees);
     }
 
-
-    public SpindexerNonCR initAngle() {
-        return initAngle(AngleNonCR.fromDegrees(0));
-    }
-
-    public double targetSpot;
 
     // angle is relative to spot 0, so take negative
     public SpindexerNonCR initAngle(AngleNonCR angle) {

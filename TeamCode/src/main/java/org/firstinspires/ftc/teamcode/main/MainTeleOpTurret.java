@@ -115,7 +115,7 @@ public class MainTeleOpTurret extends CommandOpMode {
 
     SpindexerGotoPositionSmooth spindexerGotoPositionSmooth;
 
-    Telemetry dashboardTelemetry;
+//    Telemetry dashboardTelemetry;
     TwoWheelShooter2.ShootDist currentShootDist;
 
     public static boolean useDistanceSensor = true;
@@ -126,7 +126,6 @@ public class MainTeleOpTurret extends CommandOpMode {
     public static double turretAngleTest = 90;//degrees
 
     boolean hasRumbledAllOccupied = false;
-    public static boolean readFile = true;//true
     boolean triggerBallShot = false;
     int recentTriggeredSpot = -1;
     BallColor[] currSpindexerBallColors;
@@ -152,6 +151,8 @@ public class MainTeleOpTurret extends CommandOpMode {
     double targetSpindexerPosition;
     int activeSpindexerSpot = 0;
     public static double settleTime = 100;
+    public static long fastSmoothTime = 500;
+    public static long fastInBetweenTime = 300;
     public static long fastSmoothTime = 100;
     public static int timerPerShot = 100;
     public static double slowSmoothTime = 0.7;
@@ -173,14 +174,9 @@ public class MainTeleOpTurret extends CommandOpMode {
 
         timer = new Timer();
 
-        if (readFile) {
-            double robotX = readDoubleFromPose(botXFileName);
-            double robotY = readDoubleFromPose(botYFileName);
-            double robotHeading = readDoubleFromPose(botHeadingFileName);
 
-            shootSide = readShootSideFromFile(sideFileName);
-            startPose = new Pose(robotX, robotY, robotHeading);
-        }
+        shootSide = ConstantsBot.side;
+        startPose = ConstantsBot.robotPose;
 
         gameTimer = new Timer();
 
@@ -209,8 +205,8 @@ public class MainTeleOpTurret extends CommandOpMode {
 
         telemetry.setMsTransmissionInterval(500);
 
-        FtcDashboard dashboard = FtcDashboard.getInstance();
-        dashboardTelemetry = dashboard.getTelemetry();
+//        FtcDashboard dashboard = FtcDashboard.getInstance();
+//        dashboardTelemetry = dashboard.getTelemetry();
 
     }
 
@@ -278,7 +274,6 @@ public class MainTeleOpTurret extends CommandOpMode {
             spindexer.setDirectPosition(spindexerDirectPosition);
             pushUpServo.setDown();
             stopItServo.setActivePosition();
-//            turret.setServos(turret.servoCenter);
             start = true;
             gameTimer.restart();
         }
@@ -466,10 +461,20 @@ public class MainTeleOpTurret extends CommandOpMode {
         driveRobot();//includes automations
         manualChangeShootSide();
         speedChange();
+        spindexerOffsetChange();
 
 
     }
+    double spindexOffset = 5;
 
+    public void spindexerOffsetChange(){
+        if(gamepad1.dpadUpWasPressed()){//cw offset
+            SpindexerSpotNonCR.OUTAKE_OFFSET_DEGREES += spindexOffset;
+        }
+        if(gamepad1.dpadDownWasPressed()){//ccw offset
+            SpindexerSpotNonCR.OUTAKE_OFFSET_DEGREES -= spindexOffset;
+        }
+    }
     public void turretCommands(){
         //click b, wait for servos to go to 0.5 position, click a to reset encoder
         if(gamepad2.bWasPressed()){
@@ -512,7 +517,6 @@ public class MainTeleOpTurret extends CommandOpMode {
     boolean driveRotateStationary = true;
     boolean turretStationary = true;
     double stableVisionHeading = 0;//RAD
-    public double leftAprilOffset = Math.toRadians(2);
     private void autoAlign() {
         if (gamepad1.leftBumperWasPressed()) {
             autoAlign = !autoAlign;
@@ -523,6 +527,7 @@ public class MainTeleOpTurret extends CommandOpMode {
         detected = false;
         AprilTagDetection detection = null;
 
+        if(gamepad1.bWasPressed()) {
         driveStationary = Math.hypot(follower.getVelocity().getXComponent(), follower.getVelocity().getYComponent()) < driveMovingThreshold;
         driveRotateStationary = Math.abs(follower.getVelocity().getTheta()) < driveRotatingThreshold;
         turretStationary = Math.abs(turret.getEncoder().getRawVelocity()) < turretVelocityTheshold;;
@@ -535,7 +540,7 @@ public class MainTeleOpTurret extends CommandOpMode {
             arducam.update();
             for (AprilTagDetection tag : arducam.getDetectedTags()) {
                 detected = (shootSide == ShootSide.LEFT) ? (tag.id == 20) : (tag.id == 24);
-                if (detected){
+                if (detected) {
                     detection = tag;
                     break;
                 }
@@ -585,7 +590,6 @@ public class MainTeleOpTurret extends CommandOpMode {
     }
 
     private void driveRobot() {
-
         if (gamepad1.dpadRightWasPressed()) {
             if (followPathCommand != null && !followPathCommand.isFinished()) {
                 CommandScheduler.getInstance().cancel(followPathCommand);
@@ -690,11 +694,20 @@ public class MainTeleOpTurret extends CommandOpMode {
             stopItServo.setActivePosition();
             prepareSpindexer();
             activeSpindexerSpot = Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0);
+            spindexerGotoPositionSmooth = new SpindexerGotoPositionSmooth(spindexer, SpindexerSpotNonCR.getPositionFromIndex(activeSpindexerSpot, SpotType.INTAKE) + SpindexerSpotNonCR.OUTAKE_OFFSET_DEGREES / SpindexerNonCR.totalDegrees, fastSmoothTime);
+            schedulePosition(spindexerGotoPositionSmooth);
+        }
+        else if(gamepad2.startWasPressed()){
+            stopItServo.setActivePosition();
+            prepareSpindexer();
+            outakeSpotsRotation = new OutakeSpotsRotation(spindexer, activeSpindexerSpot, fastInBetweenTime);
+            activeSpindexerSpot = Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0);
 //            spindexerGotoPositionSmooth = new SpindexerGotoPositionSmooth(spindexer, SpindexerSpotNonCR.getPositionFromIndex(activeSpindexerSpot, SpotType.INTAKE) + SpindexerSpotNonCR.OUTAKE_OFFSET_DEGREES / SpindexerNonCR.totalDegrees, fastSmoothTime);
 //            schedulePosition(spindexerGotoPositionSmooth);
             outakeSpotsRotation = new OutakeSpotsRotation(spindexer, activeSpindexerSpot +3, timerPerShot);
             schedulePosition(outakeSpotsRotation);
-        } else if(gamepad2.yWasPressed()){//SLOWEST: FOR SORTING - SMOOTHED
+        }
+        else if(gamepad2.yWasPressed()){//SLOWEST: FOR SORTING - SMOOTHED
             stopItServo.setActivePosition();
             prepareSpindexer();
             activeSpindexerSpot = Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0);
@@ -820,8 +833,7 @@ public class MainTeleOpTurret extends CommandOpMode {
                     transferRunmode == TwoWheelShooter2.RunMode.VelocityControl ? TwoWheelShooter2.transferVelocity : TwoWheelShooter2.transferPower,
                     currVolt);
         } else if (gamepad2.right_trigger > 0.3) {
-            shooter.stopFlywheels();
-            shooter.transfer.setPower(0);
+            shooter.stopAll();
             stopItServo.setInactivePosition();
             pushUpServo.setDown();
             setBallColorsDefault();
@@ -952,9 +964,9 @@ public class MainTeleOpTurret extends CommandOpMode {
             telemetry.addData("Wrapped Turret Angle(Deg)", Math.toDegrees(wrappedTurretValue.getValue()));
         }
         telemetry.addData("Target Heading", targetHeading);
-        dashboardTelemetry.addData("Low Error", shooter.bottomError);
-        dashboardTelemetry.addData("High Error", shooter.topError);
-        dashboardTelemetry.addData("Transfer Error", (shooter.transferError));
+//        dashboardTelemetry.addData("Low Error", shooter.bottomError);
+//        dashboardTelemetry.addData("High Error", shooter.topError);
+//        dashboardTelemetry.addData("Transfer Error", (shooter.transferError));
         telemetry.addData("Active spindexer spot", activeSpindexerSpot);
         telemetry.addData("Spindexer Direct Position", spindexerDirectPosition);
         if(outakeSpotsRotation != null) {
@@ -962,7 +974,7 @@ public class MainTeleOpTurret extends CommandOpMode {
         }
 
         telemetry.update();
-        dashboardTelemetry.update();
+//        dashboardTelemetry.update();
 
     }
 }
