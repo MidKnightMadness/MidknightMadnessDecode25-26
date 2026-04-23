@@ -29,8 +29,7 @@ public class ShootUpdateCommand extends CommandBase {
                               Follower follower,
                               ShootSide shootSide,
                               VoltageSensor voltageSensor,
-                              boolean sotmEnabled,
-                              double maxTime){
+                              boolean sotmEnabled){
         this.spindexer = spindexer;
         this.shooter = shooter;
         this.turret = turret;
@@ -38,7 +37,6 @@ public class ShootUpdateCommand extends CommandBase {
         this.shootSide = shootSide;
         this.voltageSensor = voltageSensor;
         this.sotmEnabled = sotmEnabled;
-        this.maxTime = maxTime;
         timer = new Timer();
         addRequirements(spindexer, shooter, turret);
     }

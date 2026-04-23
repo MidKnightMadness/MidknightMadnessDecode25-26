@@ -139,7 +139,7 @@ public class Turret extends SubsystemBase {
         if (diff < -Math.PI) diff += 2 * Math.PI;
         return diff;
     }
-    public static double servoCenter = 0.487;
+    public static double servoCenter = 0.5;
     public double angleToServo(AngleNonCR angle){
         return servoCenter + Math.min(Math.max(-cappedRangeRadians / 2, angle.getValue()), cappedRangeRadians / 2) / totalRangeRadians;
     }

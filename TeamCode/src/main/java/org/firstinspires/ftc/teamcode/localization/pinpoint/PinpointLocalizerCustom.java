@@ -72,9 +72,9 @@ public class PinpointLocalizerCustom implements Localizer {
 
         setStartPose(setStartPose);
         totalHeading = 0;
-        pinpointPose = startPose;
         currentVelocity = new Pose();
         previousHeading = setStartPose.getHeading();
+        pinpointPose = startPose;
     }
 
     /**

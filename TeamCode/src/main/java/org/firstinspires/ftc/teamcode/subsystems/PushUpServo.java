@@ -9,8 +9,8 @@ import org.firstinspires.ftc.teamcode.util.ConfigNames;
 
 @Configurable
 public class PushUpServo extends SubsystemBase {
-    public static double minPos = 0.25;
-    public static double maxPos = 0.57;
+    public static double minPos = 0.5;
+    public static double maxPos = 0.95;
     public static double initPos = minPos;
     public static double cachingTolerance = 0.001;
     public static Servo.Direction dir = Servo.Direction.FORWARD;

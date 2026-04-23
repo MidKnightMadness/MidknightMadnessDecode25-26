@@ -22,21 +22,21 @@ public enum SpindexerSpotNonCR {
     ),
     SPOT1(
             1,
-            (120 + + SpindexerNonCR.SPINDEXER_OFFSET_DEGREES) / SpindexerNonCR.totalDegrees,
+            (120 +  SpindexerNonCR.SPINDEXER_OFFSET_DEGREES) / SpindexerNonCR.totalDegrees,
             300d / SpindexerNonCR.totalDegrees,
             Double.NaN,
             Double.NaN
     ),
     SPOT2(
             2,
-            (240d+ + SpindexerNonCR.SPINDEXER_OFFSET_DEGREES) / SpindexerNonCR.totalDegrees,
+            (240d+  SpindexerNonCR.SPINDEXER_OFFSET_DEGREES) / SpindexerNonCR.totalDegrees,
             420d / SpindexerNonCR.totalDegrees,
             Double.NaN,
             60d / SpindexerNonCR.totalDegrees
     ),
     SPOT3(
             3,
-            (360d+ + SpindexerNonCR.SPINDEXER_OFFSET_DEGREES) / SpindexerNonCR.totalDegrees,
+            (360d+  SpindexerNonCR.SPINDEXER_OFFSET_DEGREES) / SpindexerNonCR.totalDegrees,
             60d / SpindexerNonCR.totalDegrees,
             Double.NaN,
             Double.NaN

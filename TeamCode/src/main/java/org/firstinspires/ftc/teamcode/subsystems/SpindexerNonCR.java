@@ -9,7 +9,6 @@ import com.seattlesolvers.solverslib.command.SubsystemBase;
 
 import org.firstinspires.ftc.teamcode.game.SpindexerSpotNonCR;
 import org.firstinspires.ftc.teamcode.hardware.GobildaDistance;
-import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
 import org.firstinspires.ftc.teamcode.game.SpotType;
 
 import org.firstinspires.ftc.teamcode.hardware.RangerMode;
@@ -23,7 +22,7 @@ import java.util.ArrayList;
 public class SpindexerNonCR extends SubsystemBase {
     public double startOutakePosition = 1;
     public double endOutakePosition = 0;
-    public static double SPINDEXER_OFFSET_DEGREES = 0d;
+    public static double SPINDEXER_OFFSET_DEGREES = 75d;
     public double startTeleOpIntakePosition = SpindexerSpotNonCR.fromIndex(1).getIntakePositions().get(0);
     public static int totalDegrees = 791;//817 extended gr?
     public static AngleNonCR defaultFinishedThreshold = AngleNonCR.fromDegrees(5); // Threshold at which it's finished turning to a spot
@@ -223,121 +222,6 @@ public class SpindexerNonCR extends SubsystemBase {
         return dist1Check || dist2Check;
     }
 
-    public void updateShootOn(boolean shootOn){
-        this.shootOn = shootOn;
-    }
-//    private SpindexerSpot[] sequenceForMotif(MotifEnums.Motif motif, SpindexerSpot greenSpot) {//outtake
-//        if(motif.equals(MotifEnums.Motif.NONE)) return null;
-//        SpindexerSpot[] seq = new SpindexerSpot[NUM_SPOTS];
-//
-//        int momentum = 0;
-//        for (int i = 0; i < NUM_SPOTS; i++) {
-//            SpindexerSpot spot;
-//            if (i == motif.getGreenPosInd()) {
-//                spot = greenSpot;
-//            } else {
-//                spot = getNextOuttakeSpot(seq, i, momentum, motif.getBallColorFromIndex(i));
-//            }
-//            seq[i] = spot;
-//            momentum = computeMomentum(seq, SpotType.OUTTAKE, i);
-//        }
-//        return seq;
-//    }
-
-//    private SpindexerSpot[] sequenceDefault(int totalCount) {
-//        SpindexerSpot[] seq = new SpindexerSpot[NUM_SPOTS];
-//        int momentum = 0;
-//
-//        for (int i = 0; i < totalCount; i++) {
-//            SpindexerSpot spot = getNextOuttakeSpot(seq, i, momentum);
-//            seq[i] = spot;
-//            momentum = computeMomentum(seq, SpotType.OUTTAKE, i);
-//        }
-//
-//        return seq;
-//    }
-//
-//
-//    public SpindexerSpot[] getOptimalSequence(MotifEnums.Motif motif) {
-//        SpindexerSpot[] sequence;
-//        int greenSpot = -1, greenCount = 0, purpleCount = 0, noneCount = 0;
-//        if(ballColors == null){
-//            return sequenceDefault(NUM_SPOTS);
-//        }
-//        for (int i = 0; i < ballColors.length; i++) {
-//            if (ballColors[i] == BallColor.GREEN) {
-//                greenCount++;
-//                greenSpot = i;`
-//            }
-//            else if (ballColors[i] == BallColor.PURPLE) purpleCount++;
-//            else noneCount++;
-//        }
-//        if(noneCount == NUM_SPOTS){
-//            return sequenceDefault(NUM_SPOTS);
-//        }
-//
-//        if (!motif.equals(MotifEnums.Motif.NONE) && ((greenCount == 1 && purpleCount == 2) || (greenCount == 2 && purpleCount == 1))){
-//            sequence = sequenceForMotif(motif, SpindexerSpot.fromIndex(greenSpot));
-//        } else {
-//            sequence = sequenceDefault(greenCount + purpleCount);
-//        }
-//        this.sequence = sequence;
-//        return sequence;
-//    }
-
-
-
-    // The current angle of a spot relative to the outtake
-    public AngleNonCR getRelativeAngle(SpindexerSpot spot, SpotType spotType, int num) {
-        return currentAngle.diff(getAbsoluteAngle(spot, spotType, num));
-    }
-
-
-    public AngleNonCR getAbsoluteAngle(SpindexerSpot spot, SpotType spotType, int num) {
-        return AngleNonCR.fromDegrees(spot.getSpotAngle(spotType).getValue()  * totalDegrees);
-    }
-
-//    public SpindexerSpotNonCR findNearestSpot(AngleNonCR query, SpotType spotType, BallColor matchColorOrNull) {
-//        SpindexerSpotNonCR bestSpot = null;
-//        double smallestGap = 300;
-//        for (int i = 0; i < SpindexerSpotNonCR.values().length; i++) {
-//            SpindexerSpotNonCR spot = SpindexerSpotNonCR.fromIndex(i);
-//            if (matchColorOrNull != null && ballColors[i] != matchColorOrNull) continue;
-//            double gap = query.absGap(spot.getSpotAngle(spotType)).toDegrees();
-//            if (gap < smallestGap) {
-//                smallestGap = gap;
-//                bestSpot = spot;
-//            }
-//        }
-//        return bestSpot;
-//    }
-
-
-//    public SpindexerSpotNonCR getNearestSpot(AngleNonCR query, SpotType spotType) {
-//        return findNearestSpot(query, spotType, null);
-//    }
-
-    //    public SpindexerSpotNonCR getNearestEmptyIntakeSpot(){
-//        return getNearestSpot(currentAngle, SpotType.INTAKE, BallColor.NONE);
-//    }
-    public double getNearestIntakePosition(SpotType spotType) {
-        double smallestGap = 1;
-        double bestValue = 0;
-        for (int i = 0; i < SpindexerSpotNonCR.values().length; i++) {
-            SpindexerSpotNonCR spot = SpindexerSpotNonCR.fromIndex(i);
-            ArrayList<Double> spotPositions = spot.getSpotPosition(spotType);
-            for(double j : spotPositions){
-                if(j != -1){
-                    double gap = Math.abs(j - currentTurnerPosition);
-                    if (gap < smallestGap) {
-                        smallestGap = gap;
-                        bestValue = j;
-                    }
-                }
-            }
-        }
-        return bestValue;
-    }
 
     public boolean isAtPosition(double position){
         double angle = position * totalDegrees;

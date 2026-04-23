@@ -67,6 +67,7 @@ public class Intake extends SubsystemBase {
 //        double motorPower = Math.clampOutput(power, -1, 1);
 //        intakeMotorLeft.setPower(motorPower);
 //        setPower(motorPower);
+        intakeMotorRight.setPower(power);
     }
 
     public void setDirectPower(double power, double currVolt){

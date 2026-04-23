@@ -5,14 +5,11 @@ import static org.firstinspires.ftc.teamcode.main.MainTeleOpTurret.settleTime;
 import android.os.Environment;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.telemetry.PanelsTelemetry;
-import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.MathFunctions;
 import com.pedropathing.math.Vector;
 import com.qualcomm.hardware.lynx.LynxModule;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.seattlesolvers.solverslib.command.Command;
@@ -23,34 +20,26 @@ import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.LambdaCommand;
 import com.seattlesolvers.solverslib.command.ParallelDeadlineGroup;
 import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
+import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.util.Timing;
 
-import org.firstinspires.ftc.teamcode.commands.Robot;
-import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommandTime;
-import org.firstinspires.ftc.teamcode.commands.shooter.ShootUpdateCommand;
+import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommandTime;;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpotNonCR;
 import org.firstinspires.ftc.teamcode.game.SpotType;
 import org.firstinspires.ftc.teamcode.newpid.PIDController;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
-import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.pedroPathing.motorTesting.WheelControl2;
-import org.firstinspires.ftc.teamcode.subsystems.GobildaLightBlock;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.PushUpServo;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexerNonCR;
 import org.firstinspires.ftc.teamcode.subsystems.StopItServo;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
-import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter2;
-import org.firstinspires.ftc.teamcode.tests.camera.AprilTagWebcam;
-import org.firstinspires.ftc.teamcode.util.AllConfigs;
 import org.firstinspires.ftc.teamcode.util.Angle;
-import org.firstinspires.ftc.teamcode.util.AngleNonCR;
-import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.teamcode.util.ExtraFns;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
@@ -64,14 +53,14 @@ import java.util.function.Function;
 @Configurable
 public abstract class DanielCloseAutoClean extends CommandOpMode {
     public static Pose shootAtPose1 = new Pose(48, 92);
-    public static Pose shootAtPose2 = new Pose(55, 83);
-    public static Pose gateIntakePose = new Pose(14, 56.2, Math.toRadians(150));
-    public static Pose startPose = new Pose(22, 120, Math.toRadians(142));
+    public static Pose shootAtPose2 = new Pose(50, 88);
+    public static Pose gateIntakePose = new Pose(8, 56.5, Math.toRadians(150));
+    public static Pose startPose = new Pose(20, 120, Math.toRadians(142));
     public static double shootTimeout = 700;
     public static double rowXInner = 40;
-    public static double rowXOuter = 25;
+    public static double rowXOuter = 15;
     public static double row1Y = 38;
-    public static double row2Y = 61;
+    public static double row2Y = 58;
     public static double row3Y = 85;
     public static double headingFacingEdge = -Math.PI;
     PIDController driveController = new PIDController(0.05, 0, 0.001);
@@ -129,14 +118,14 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
     boolean useBulkMode = true;
     Angle wrappedTurretValue;
     double targetHeading;
-    public static long totalShootingTime = 450;
+    public static long totalShootingTime = 2000;
     double spindexerSettleTime = 100;
     public abstract ShootSide getShootSide();
 
     @Override
     public void initialize() {
         super.reset();
-        Robot.config = AllConfigs.oldBot;
+//        Robot.config = AllConfigs.oldBot;
         side = getShootSide();
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
@@ -154,7 +143,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
             CommandScheduler.getInstance().setBulkReading(
                     hardwareMap, LynxModule.BulkCachingMode.MANUAL // Scheduler will clean cache for you
             );
-
+//            PhotonCore.disable();
         }
         else{
             CommandScheduler.getInstance().setBulkReading(
@@ -182,21 +171,26 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
         stopItServo = new StopItServo(hardwareMap, true);
     }
 
+    boolean reset;
+    boolean start;
+
     public void resetEncoders(){
+        if(!start){
+            timer.restart();
+            start = true;
+        }
         //set spindexer to spot 3
         spindexer.setDirectPosition(
-                SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE) + SpindexerSpotNonCR.OUTAKE_OFFSET_DEGREES / SpindexerNonCR.totalDegrees);
-        waitThread(5000);
-        //wait for turret to recenter
-        turret.resetEncoderPosition();
-    }
-    public void waitThread(long time){
-        try{
-            Thread.sleep(time);
+                SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE));
 
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+        if(timer.getTime() >= 3000 && !reset){
+            turret.resetEncoderPosition();
+            reset = true;
         }
+        //wait for turret to recenter
+
+        pushUpServo.setUp();
+        stopItServo.setActivePosition();
     }
 
     @Override
@@ -217,21 +211,24 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
         updateTelemetry();
     }
 
-    public void calculateAlign(boolean useSOTM) {
-        if(useSOTM){
-            double[] aimData;
-            aimData = shooter.aimCalculator.targetPowersHeading(
-                    follower.getPose(),
-                    follower.getVelocity(),
-                    TwoWheelShooter2.getShootPoseNew(robotPose, side)
-            );
-            targetHeading = MathFunctions.normalizeAngle(aimData[2]);
-        } else{
-            targetHeading = TwoWheelShooter2.getShootHeading(robotPose, side);
-        }
-        wrappedTurretValue = Angle.fromRadians(ExtraFns.normAnglePlusMinusPI(targetHeading - robotPose.getHeading()));
-        turret.setServos(turret.angleToServo(wrappedTurretValue));
-        turretHeadingError = turret.getTurretHeadingError(wrappedTurretValue);
+    public void resetIntake(){
+        intake.setDirectPower(0);
+    }
+  public void calculateAlign(boolean useSOTM) {
+            if(useSOTM){
+                double[] aimData;
+                aimData = shooter.aimCalculator.targetPowersHeading(
+                        follower.getPose(),
+                        follower.getVelocity(),
+                        TwoWheelShooter2.getShootPoseNew(robotPose, side)
+                );
+                targetHeading = MathFunctions.normalizeAngle(aimData[2]);
+            } else{
+                targetHeading = TwoWheelShooter2.getShootHeading(robotPose, side);
+            }
+            wrappedTurretValue = Angle.fromRadians(ExtraFns.normAnglePlusMinusPI(targetHeading - robotPose.getHeading()));
+            turret.setServos(turret.angleToServo(wrappedTurretValue));
+            turretHeadingError = turret.getTurretHeadingError(wrappedTurretValue);
     }
     public void setShooterPower(boolean useSOTM){
         //set motors & transfer
@@ -240,6 +237,9 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
         } else{
             shooter.setFlywheelLUT(follower, side, currVolt);
         }
+    }
+
+    public void setTransferPower(){
         shooter.setTransferPower(TwoWheelShooter2.transferVelocity, currVolt);
     }
 
@@ -250,22 +250,28 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
         currVolt = hardwareMap.voltageSensor.iterator().next().getVoltage();
     }
 
+
+
+    public void setTransferOff(){
+        shooter.transfer.stopMotor();
+        pushUpServo.setDown();
+    }
     public void initCommands() {
         Command balls1To3 = new CommandBase() {
             final BooleanSupplier shootSupplier = ExtraFns.firstSupplier(
-                    () -> ((distToGoal() > 30 && shooter.readyToShoot()
-                            && turret.isAtAngle(wrappedTurretValue, false))
-                            || timer.getTime() > 3000)
+                    () -> ((distToGoal() > 45 && timer.getTime() > 1000) || timer.getTime() > 3000)
             );
-            final Timing.Timer shootTimer = new Timing.Timer(totalShootingTime, TimeUnit.MILLISECONDS);
-            double startPosition = spindexer.getCurrentSpindexerPosition();
-            double targetPosition =  SpindexerSpotNonCR.OUTAKE_OFFSET_DEGREES / SpindexerNonCR.totalDegrees;
+            Timer spinTimer;
+            int currSpot = 3;
             public void initialize() {
                 timer.restart();
+                spinTimer = new Timer();
                 state = State.balls3;
                 addRequirements(stopItServo, pushUpServo, shooter, turret);
             }
             boolean start = false;
+            boolean shootStart = false;
+            boolean shootTimerStarted = false;
             public void execute() {
                 if(!start){
                     pushUpServo.setUp();
@@ -273,7 +279,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                     start = true;
                 }
                 calculateAlign(true);
-                setShooterPower(true);
+                setTransferPower();
                 drive.pidNoHeading(
                         robotPose,
                         new Pose(
@@ -281,27 +287,37 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                                 shootAtPose1.getY()
                         )
                 );
-                if (shootSupplier.getAsBoolean() && !shootTimer.isTimerOn()) {
-                    shootTimer.start();
+                if (shootSupplier.getAsBoolean() && !shootTimerStarted) {
+                    shootTimerStarted = true;
                 }
 
                 //ready to shoot
-                if(shootTimer.isTimerOn()){
-                    spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * Math.max(shootTimer.elapsedTime(), totalShootingTime) / totalShootingTime);
+                if(shootTimerStarted){
+                    if(!shootStart) {
+                        spindexer.setDirectPosition(SpindexerSpotNonCR.getPositionFromIndex(currSpot, SpotType.INTAKE) - 60.0 / SpindexerNonCR.totalDegrees);
+                        shootStart = true;
+                        spinTimer.restart();
+                        currSpot--;
+                    }
+
+                    if(currSpot != 0 && spinTimer.getTime() >= totalShootingTime / 3.0) {
+                        spindexer.setDirectPosition(SpindexerSpotNonCR.getPositionFromIndex(currSpot, SpotType.INTAKE) - 60.0 / SpindexerNonCR.totalDegrees);
+                        spinTimer.restart();
+                        currSpot--;
+                    }
                 }
             }
             public boolean isFinished() {
-                return shootTimer.done();
+                return currSpot == 0;
             }
 
             public void end(boolean interrupted) {
-                spindexer.setDirectPosition(targetPosition);
+                spindexer.setDirectPosition(SpindexerSpotNonCR.OUTAKE_OFFSET_DEGREES);
                 stopItServo.setInactivePosition();
-                pushUpServo.setDown();
-                shooter.stopAll();
                 spindexer.setDefault();
             }
         };
+
 
         Command balls4To6 = new SequentialCommandGroup(
                 new InstantCommand(() -> state = State.balls6),
@@ -316,6 +332,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                                 ), 1)
                         )
                         .setIsFinished(() -> robotPose.getY() < row2Y + 10),
+                new InstantCommand(()-> setTransferOff()),
                 // Adjust position and power
                 new LambdaCommand()
                         .setInitialize(() -> timer.restart())
@@ -329,30 +346,40 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                         .setIsFinished(() -> side.toLeftX(robotPose.getX()) < rowXInner + 1),
                 // Drive straight forward and intake
                 new ParallelRaceGroup(
-                    new LambdaCommand()
-                            .setInitialize(() -> timer.restart())
-                            .setExecute(() -> drive.pid(
-                                    robotPose, new Pose(side.fromLeftX(rowXOuter), row2Y, side.fromLeftHeading(headingFacingEdge)), 0.5)
-                            )
-                            .setIsFinished(() -> side.toLeftX(robotPose.getX()) < rowXOuter),
+                    new SequentialCommandGroup(
+                        new LambdaCommand()
+                                .setInitialize(() -> timer.restart())
+                                .setExecute(() -> drive.pid(
+                                        robotPose, new Pose(side.fromLeftX(rowXOuter), row2Y + 4, side.fromLeftHeading(headingFacingEdge)), 0.4)
+                                )
+                                .setIsFinished(() -> side.toLeftX(robotPose.getX()) < rowXOuter),
+                        new InstantCommand(() -> drive.stop()),
+                        new WaitCommand(900)
+                    ),
                     new AutoIntakeCommandTime(
                             spindexer,
                             intake,
                             1.0,
-                            true,
+                            false,
                             voltageSensor,
                             0,
                             1,
                             spindexerSettleTime
                     )
                 ),
+                new InstantCommand(()-> resetIntake()),
+                new InstantCommand(() -> stopItServo.setActivePosition()),
+                new InstantCommand(()-> spindexer.setDirectPosition(SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE))),
+
+
                 // Drive straight back
                 new LambdaCommand()
                         .setInitialize(() -> timer.restart())
                         .setExecute(() -> drive.pid(
                                 robotPose, new Pose(side.fromLeftX(rowXInner), row2Y, side.fromLeftHeading(headingFacingEdge)), 1)
                         )
-                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) > rowXInner - 14),
+                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) > rowXInner - 18),
+                new InstantCommand(()-> pushUpServo.setUp()),
 
                 // Drive to shoot & power flywheels at same time
                 new ParallelDeadlineGroup(
@@ -367,38 +394,28 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                                             ), 1);
                                         })
                                         .setIsFinished(() -> ExtraFns.closeZoneDist(robotPose) < 7),
-                                new LambdaCommand()
-                                        .setInitialize(() -> {
-                                            timer.restart();
-                                            drive.stop();
-                                        })
-                                        .setIsFinished(() -> timer.getTime() > 500)
+                                new InstantCommand(() -> drive.stop())
                         ),
-                        new ShootUpdateCommand(spindexer, shooter, turret, follower, side, voltageSensor, false, 5000)
+                        new RunCommand(()-> setTransferPower())
                 ),
                 new CommandBase() {
                     final BooleanSupplier shootSupplier = ExtraFns.firstSupplier(
-                            () -> ((ExtraFns.closeZoneDist(robotPose) < 7 && shooter.readyToShoot()
-                                    && turret.isAtAngle(wrappedTurretValue, false))
+                            () -> ((shooter.readyToShoot()
+//                                    && turret.isAtAngle(wrappedTurretValue, false))
                                     || timer.getTime() > 3000)
-                    );
+                    ));
                     final Timing.Timer shootTimer = new Timing.Timer(totalShootingTime, TimeUnit.MILLISECONDS);
-                    double startPosition = spindexer.getCurrentSpindexerPosition();
-                    double targetPosition =  SpindexerSpotNonCR.OUTAKE_OFFSET_DEGREES / SpindexerNonCR.totalDegrees;
+                    double startPosition = (SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE));
+                    double targetPosition = 0;
                     public void initialize() {
                         timer.restart();
                         state = State.balls6;
                         addRequirements(stopItServo, pushUpServo, shooter, turret);
                     }
-                    boolean start = false;
                     public void execute() {
-                        if(!start){
-                            pushUpServo.setUp();
-                            stopItServo.setActivePosition();
-                            start = true;
-                        }
+
                         calculateAlign(false);
-                        setShooterPower(false);
+                        setTransferPower();
                         if (shootSupplier.getAsBoolean() && !shootTimer.isTimerOn()) {
                             shootTimer.start();
                         }
@@ -415,8 +432,6 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                     public void end(boolean interrupted) {
                         spindexer.setDirectPosition(targetPosition);
                         stopItServo.setInactivePosition();
-                        pushUpServo.setDown();
-                        shooter.stopAll();
                         spindexer.setDefault();
                     }
                 }
@@ -437,6 +452,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                                 ), 1)
                         )
                         .setIsFinished(() -> robotPose.getY() < gateIntakePose.getY() + 10),
+                new InstantCommand(()-> setTransferOff()),
                 // Drive to gate
                 new ParallelRaceGroup(
                     new SequentialCommandGroup(
@@ -446,19 +462,24 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                                 .setIsFinished(() -> timer.getTime() > 850 || follower.getVelocity().getMagnitude() < 5),
                         // Wait for gate intake
                         new InstantCommand(() -> drive.stop()),
-                        new WaitCommand(700)
+                        new WaitCommand(2000)
                     ),
                     new AutoIntakeCommandTime(
                             spindexer,
                             intake,
                             1.0,
-                            true,
+                            false,
                             voltageSensor,
                             0,
                             1,
                             spindexerSettleTime
                     )
                 ),
+                new InstantCommand(()-> resetIntake()),
+
+                new InstantCommand(() -> stopItServo.setActivePosition()),
+                new InstantCommand(()-> spindexer.setDirectPosition(SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE))),
+
 
                 // Drive straight back
                 new LambdaCommand()
@@ -466,7 +487,9 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                         .setExecute(() -> drive.pidNoHeading(
                                 robotPose, new Pose(side.fromLeftX(rowXInner), row2Y), 1)
                         )
-                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) > rowXInner - 9),
+                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) > rowXInner - 15),
+
+                new InstantCommand(()-> pushUpServo.setUp()),
                 // Drive to shoot
                 new ParallelDeadlineGroup(
                         new SequentialCommandGroup(
@@ -480,24 +503,19 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                                             ), 1);
                                         })
                                         .setIsFinished(() -> ExtraFns.closeZoneDist(robotPose) < 7),
-                                new LambdaCommand()
-                                        .setInitialize(() -> {
-                                            timer.restart();
-                                            drive.stop();
-                                        })
-                                        .setIsFinished(() -> timer.getTime() > 500)
+                                new InstantCommand(()-> drive.stop())
                         ),
-                        new ShootUpdateCommand(spindexer, shooter, turret, follower, side, voltageSensor, false, 5000)
+                        new RunCommand(()-> setTransferPower())
                 ),
                 new CommandBase() {
                     final BooleanSupplier shootSupplier = ExtraFns.firstSupplier(
-                            () -> ((ExtraFns.closeZoneDist(robotPose) < 7 && shooter.readyToShoot()
-                                    && turret.isAtAngle(wrappedTurretValue, false))
+                            () -> (shooter.readyToShoot()
+//                                    && turret.isAtAngle(wrappedTurretValue, false))
                                     || timer.getTime() > 3000)
                     );
                     final Timing.Timer shootTimer = new Timing.Timer(totalShootingTime, TimeUnit.MILLISECONDS);
-                    double startPosition = spindexer.getCurrentSpindexerPosition();
-                    double targetPosition =  SpindexerSpotNonCR.OUTAKE_OFFSET_DEGREES / SpindexerNonCR.totalDegrees;
+                    double startPosition =  (SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE));
+                    double targetPosition = 0;
                     public void initialize() {
                         timer.restart();
                         addRequirements(stopItServo, pushUpServo, shooter, turret);
@@ -510,7 +528,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                             start = true;
                         }
                         calculateAlign(false);
-                        setShooterPower(false);
+                        setTransferPower();
                         if (shootSupplier.getAsBoolean() && !shootTimer.isTimerOn()) {
                             shootTimer.start();
                         }
@@ -527,8 +545,6 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                     public void end(boolean interrupted) {
                         spindexer.setDirectPosition(targetPosition);
                         stopItServo.setInactivePosition();
-                        pushUpServo.setDown();
-                        shooter.stopAll();
                         spindexer.setDefault();
                     }
                 }
@@ -550,32 +566,41 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                                         side.fromLeftX(rowXInner + 2),
                                         row3Y,
                                         side.fromLeftHeading(headingFacingEdge)
-                                ), 0.5)
+                                ), 0.7)
                         )
                         .setIsFinished(() -> robotPose.getY() < row3Y + 1),
+                new InstantCommand(()-> setTransferOff()),
                 // Drive straight forward and intake
                 new ParallelRaceGroup(
-                    new LambdaCommand()
-                            .setInitialize(() -> timer.restart())
-                            .setExecute(() -> drive.pid(
-                                    robotPose, new Pose(
-                                            side.fromLeftX(rowXOuter),
-                                            row3Y,
-                                            side.fromLeftHeading(headingFacingEdge)
-                                    ), 0.5)
-                            )
-                            .setIsFinished(() -> side.toLeftX(robotPose.getX()) < rowXOuter),
+                    new SequentialCommandGroup(
+                        new LambdaCommand()
+                                .setInitialize(() -> timer.restart())
+                                .setExecute(() -> drive.pid(
+                                        robotPose, new Pose(
+                                                side.fromLeftX(rowXOuter),
+                                                row3Y,
+                                                side.fromLeftHeading(headingFacingEdge)
+                                        ), 0.5)
+                                )
+                                .setIsFinished(() -> side.toLeftX(robotPose.getX()) < rowXOuter),
+                            new InstantCommand(() -> drive.stop()),
+                            new WaitCommand(500)
+                    ),
                     new AutoIntakeCommandTime(
                             spindexer,
                             intake,
                             1.0,
-                            true,
+                            false,
                             voltageSensor,
                             0,
                             1,
                             spindexerSettleTime
                     )
                 ),
+                new InstantCommand(() -> stopItServo.setActivePosition()),
+                new InstantCommand(()-> spindexer.setDirectPosition(SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE))),
+
+
                 // Drive straight back
                 new LambdaCommand()
                         .setInitialize(() -> timer.restart())
@@ -583,6 +608,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                                 robotPose, new Pose(side.fromLeftX(rowXInner), row3Y, side.fromLeftHeading(headingFacingEdge)), 1)
                         )
                         .setIsFinished(() -> side.toLeftX(robotPose.getX()) > rowXInner - 14),
+                new InstantCommand(()-> pushUpServo.setUp()),
                 // Drive to shoot
                 new ParallelDeadlineGroup(
                         new SequentialCommandGroup(
@@ -596,25 +622,20 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                                             ), 1);
                                         })
                                         .setIsFinished(() -> ExtraFns.closeZoneDist(robotPose) < 7),
-                                new LambdaCommand()
-                                        .setInitialize(() -> {
-                                            timer.restart();
-                                            drive.stop();
-                                        })
-                                        .setIsFinished(() -> timer.getTime() > 500)
+                                new InstantCommand(()-> drive.stop())
                         ),
-                        new ShootUpdateCommand(spindexer, shooter, turret, follower, side, voltageSensor, false, 5000)
-
+                        new RunCommand(()-> setTransferPower())
                 ),
                 new CommandBase() {
                     final BooleanSupplier shootSupplier = ExtraFns.firstSupplier(
-                            () -> ((ExtraFns.closeZoneDist(robotPose) < 7 && shooter.readyToShoot()
-                                    && turret.isAtAngle(wrappedTurretValue, false))
+                            () -> ((shooter.readyToShoot()
+//                                    && turret.isAtAngle(wrappedTurretValue, false))
+                            )
                                     || timer.getTime() > 3000)
                     );
                     final Timing.Timer shootTimer = new Timing.Timer(totalShootingTime, TimeUnit.MILLISECONDS);
                     double startPosition = spindexer.getCurrentSpindexerPosition();
-                    double targetPosition =  SpindexerSpotNonCR.OUTAKE_OFFSET_DEGREES / SpindexerNonCR.totalDegrees;
+                    double targetPosition = 0;
                     public void initialize() {
                         timer.restart();
                         addRequirements(stopItServo, pushUpServo, shooter, turret);
@@ -627,7 +648,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                             start = true;
                         }
                         calculateAlign(false);
-                        setShooterPower(false);
+                        setTransferPower();
                         if (shootSupplier.getAsBoolean() && !shootTimer.isTimerOn()) {
                             shootTimer.start();
                         }
@@ -644,8 +665,6 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                     public void end(boolean interrupted) {
                         spindexer.setDirectPosition(targetPosition);
                         stopItServo.setInactivePosition();
-                        pushUpServo.setDown();
-                        shooter.stopAll();
                         spindexer.setDefault();
                     }
                 }
@@ -657,22 +676,36 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
         });
 
         main = new SequentialCommandGroup(
-                balls1To3,
-                balls4To6,
-                balls7To9,
-                balls10To12,
-                balls13To15,
-                balls16To18,
-                balls19To21,
-                stop
+                new ParallelDeadlineGroup(
+                        new SequentialCommandGroup(
+                            balls1To3,
+                            balls4To6,
+                            balls7To9,
+                            balls10To12,
+                            balls13To15,
+//                            balls16To18
+                            balls19To21,
+                            stop
+                        ),
+                        new RunCommand(() -> setShooterPower(true))
+                ),
+                new InstantCommand(()-> stopFlywheels())
+
+//
         );
     }
 
+    public void stopFlywheels(){
+        shooter.stopAll();
+    }
+
     public double distToGoal() {
-        return TwoWheelShooter.getShootPose(side).distanceFrom(robotPose);
+        return TwoWheelShooter2.getShootPose(side).distanceFrom(robotPose);
     }
 
     public void updateTelemetry() {
+        telemetry.addData("Update Rate", 1000.0/ timer.getDeltaTime());
+        telemetry.addData("Turret Heading Error", turretHeadingError);;
         telemetry.addData("Auto time elapsed", autoElapsed.getTime());
         telemetry.addData("Timer", timer.getTime());
         telemetry.addData("Robot pose X", robotPose.getX());
@@ -685,10 +718,10 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
 
         telemetry.addData("State", state);
         telemetry.addData("Distance to goal", distToGoal());
+        telemetry.update();
     }
     @Override
     public void end(){
-
         xFile = createFile(xFileName, directoryName);
         yFile = createFile(yFileName, directoryName);
         headingFile = createFile(headingFileName, directoryName);

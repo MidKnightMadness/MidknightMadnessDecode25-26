@@ -23,9 +23,8 @@ import org.firstinspires.ftc.teamcode.commands.Robot;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.newpid.PIDController;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
-import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
 import org.firstinspires.ftc.teamcode.pedroPathing.motorTesting.WheelControl2;
-import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter;
+import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter2;
 import org.firstinspires.ftc.teamcode.util.AllConfigs;
 import org.firstinspires.ftc.teamcode.util.ExtraFns;
 import org.firstinspires.ftc.teamcode.util.Timer;
@@ -142,7 +141,7 @@ public abstract class DanielCloseAutoCleanPathing extends CommandOpMode {
 //        headingError = MathFunctions.normalizeAngleSigned(
 //                follower.getPose().getHeading() - targetHeading
 //        );
-        targetHeading = TwoWheelShooter.getShootPose(side).minus(robotPose).getAsVector().getTheta();
+        targetHeading = TwoWheelShooter2.getShootPose(side).minus(robotPose).getAsVector().getTheta();
         headingError = MathFunctions.normalizeAngleSigned(
                 follower.getPose().getHeading() - targetHeading
         );
@@ -366,7 +365,7 @@ public abstract class DanielCloseAutoCleanPathing extends CommandOpMode {
     }
 
     public double distToGoal() {
-        return TwoWheelShooter.getShootPose(side).distanceFrom(robotPose);
+        return TwoWheelShooter2.getShootPose(side).distanceFrom(robotPose);
     }
 
     public void updateTelemetry() {
