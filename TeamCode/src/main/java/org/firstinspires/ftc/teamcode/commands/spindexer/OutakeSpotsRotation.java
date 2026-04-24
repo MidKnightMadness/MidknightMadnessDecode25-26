@@ -13,13 +13,23 @@ public class OutakeSpotsRotation extends CommandBase {
     long timePerShot;
     Timer shootTimer;
 
-    double startPosition;
+    double startSpot;
+    boolean waitEnd;
 
-    public OutakeSpotsRotation(SpindexerNonCR spindexerNonCR, int startPosition, long spotTime){
+    public OutakeSpotsRotation(SpindexerNonCR spindexerNonCR, int startSpot, long spotTime, boolean waitEnd){
         this.spindexer = spindexerNonCR;
         this.timePerShot = spotTime;
-        this.startPosition = SpindexerSpotNonCR.getPositionFromIndex(startPosition, SpotType.INTAKE) - 60.0 / SpindexerNonCR.totalDegrees;
+        this.startSpot = SpindexerSpotNonCR.getPositionFromIndex(startSpot, SpotType.INTAKE) - 60.0 / SpindexerNonCR.totalDegrees;
+        this.waitEnd = waitEnd;
+        shootTimer = new Timer();
+        addRequirements(this.spindexer);
+    }
 
+    public OutakeSpotsRotation(SpindexerNonCR spindexerNonCR, int startSpot, long spotTime){
+        this.spindexer = spindexerNonCR;
+        this.timePerShot = spotTime;
+        this.startSpot = SpindexerSpotNonCR.getPositionFromIndex(startSpot, SpotType.INTAKE) - 60.0 / SpindexerNonCR.totalDegrees;
+        this.waitEnd = false;
         shootTimer = new Timer();
         addRequirements(this.spindexer);
     }
@@ -33,6 +43,8 @@ public class OutakeSpotsRotation extends CommandBase {
     }
 
     boolean firstRun = true;
+    double endTime = -1;
+
 
     @Override
     public void execute() {
@@ -46,7 +58,7 @@ public class OutakeSpotsRotation extends CommandBase {
             lastShotTime = shootTimer.getTime();
         }
 
-        spindexer.setPosition(startPosition - interval * rotationIndex);
+        spindexer.setPosition(startSpot - interval * rotationIndex);
     }
 
     public double getLastShotTime(){
@@ -54,6 +66,6 @@ public class OutakeSpotsRotation extends CommandBase {
     }
     @Override
     public boolean isFinished() {
-        return rotationIndex >= 2;
+        return rotationIndex >= (waitEnd ? 3 : 2);
     }
 }

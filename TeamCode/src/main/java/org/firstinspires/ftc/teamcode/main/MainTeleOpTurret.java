@@ -115,7 +115,7 @@ public class MainTeleOpTurret extends CommandOpMode {
 
     SpindexerGotoPositionSmooth spindexerGotoPositionSmooth;
 
-    //    Telemetry dashboardTelemetry;
+        Telemetry dashboardTelemetry;
     TwoWheelShooter2.ShootDist currentShootDist;
 
     public static boolean useDistanceSensor = true;
@@ -145,14 +145,17 @@ public class MainTeleOpTurret extends CommandOpMode {
     PushUpServo pushUpServo;
     double spindexerRawPower;
     AprilTagDetection tag;
-    public static Pose failsafeLeftPose = new Pose(8, 8.85, Math.toRadians(270));
-    public static Pose failsafeRightPose = failsafeLeftPose.mirror();
+    public static Pose failsafeLeftPose = new Pose(8, 8, Math.toRadians(270));
+    public static Pose failsafeRightPose = new Pose(133, 8, Math.toRadians(270));;
     double currTurnerPosition;
     double targetSpindexerPosition;
     int activeSpindexerSpot = 0;
     public static double settleTime = 100;
     public static long fastSmoothTime = 500;
     public static long fastInBetweenTime = 120;
+    public static long mediumInBetweenTime = 200;
+    public static long slowInBetweenTime = 300;
+
     public static double slowSmoothTime = 0.7;
     boolean driveFieldOriented = true;
     Limelight3A limelight;
@@ -203,8 +206,8 @@ public class MainTeleOpTurret extends CommandOpMode {
 
         telemetry.setMsTransmissionInterval(500);
 
-//        FtcDashboard dashboard = FtcDashboard.getInstance();
-//        dashboardTelemetry = dashboard.getTelemetry();
+        FtcDashboard dashboard = FtcDashboard.getInstance();
+        dashboardTelemetry = dashboard.getTelemetry();
 
     }
 
@@ -467,10 +470,10 @@ public class MainTeleOpTurret extends CommandOpMode {
 
     public void spindexerOffsetChange(){
         if(gamepad1.dpadUpWasPressed()){//cw offset
-            SpindexerSpotNonCR.OUTAKE_OFFSET_DEGREES += spindexOffset;
+            SpindexerNonCR.SPINDEXER_OFFSET_DEGREES += spindexOffset;
         }
         if(gamepad1.dpadDownWasPressed()){//ccw offset
-            SpindexerSpotNonCR.OUTAKE_OFFSET_DEGREES -= spindexOffset;
+            SpindexerNonCR.SPINDEXER_OFFSET_DEGREES -= spindexOffset;
         }
     }
     public void turretCommands(){
@@ -696,26 +699,32 @@ public class MainTeleOpTurret extends CommandOpMode {
             spindexerGotoPositionSmooth = new SpindexerGotoPositionSmooth(spindexer, SpindexerSpotNonCR.getPositionFromIndex(activeSpindexerSpot, SpotType.INTAKE) + SpindexerSpotNonCR.OUTAKE_OFFSET_DEGREES / SpindexerNonCR.totalDegrees, fastSmoothTime);
             schedulePosition(spindexerGotoPositionSmooth);
         }
-        else if(gamepad2.startWasPressed()){
+        else if(gamepad2.shareWasPressed()){
             stopItServo.setActivePosition();
             prepareSpindexer();
-            outakeSpotsRotation = new OutakeSpotsRotation(spindexer, activeSpindexerSpot, fastInBetweenTime);
+            outakeSpotsRotation = new OutakeSpotsRotation(spindexer, activeSpindexerSpot, mediumInBetweenTime);
             activeSpindexerSpot = Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0);
             schedulePosition(outakeSpotsRotation);
         }
         else if(gamepad2.yWasPressed()){//SLOWEST: FOR SORTING - SMOOTHED
             stopItServo.setActivePosition();
             prepareSpindexer();
+//            activeSpindexerSpot = Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0);
+//            spindexerGotoPositionSmooth = new SpindexerGotoPositionSmooth(spindexer, SpindexerSpotNonCR.getPositionFromIndex(activeSpindexerSpot, SpotType.INTAKE) + SpindexerSpotNonCR.OUTAKE_OFFSET_DEGREES / SpindexerNonCR.totalDegrees, slowSmoothTime);
+//            schedulePosition(spindexerGotoPositionSmooth);
+            outakeSpotsRotation = new OutakeSpotsRotation(spindexer, activeSpindexerSpot, slowInBetweenTime);
             activeSpindexerSpot = Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0);
-            spindexerGotoPositionSmooth = new SpindexerGotoPositionSmooth(spindexer, SpindexerSpotNonCR.getPositionFromIndex(activeSpindexerSpot, SpotType.INTAKE) + SpindexerSpotNonCR.OUTAKE_OFFSET_DEGREES / SpindexerNonCR.totalDegrees, slowSmoothTime);
-            schedulePosition(spindexerGotoPositionSmooth);
+            schedulePosition(outakeSpotsRotation);
         } else if(gamepad2.optionsWasPressed()){//FASTEST
             stopItServo.setActivePosition();
             prepareSpindexer();
+//            activeSpindexerSpot = Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0);
+//            setSpotDirect(activeSpindexerSpot);
+//            directSpinShootTimer.restart();
+//            directSpinShootActivated = true;
+            outakeSpotsRotation = new OutakeSpotsRotation(spindexer, activeSpindexerSpot, fastInBetweenTime);
             activeSpindexerSpot = Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0);
-            setSpotDirect(activeSpindexerSpot);
-            directSpinShootTimer.restart();
-            directSpinShootActivated = true;
+            schedulePosition(outakeSpotsRotation);
         }
 
         if(directSpinShootActivated && directSpinShootTimer.getTime() > 3 * spindexer.STRICT_SPOT_TIME){
@@ -956,14 +965,14 @@ public class MainTeleOpTurret extends CommandOpMode {
             telemetry.addData("Wrapped Turret Angle(Deg)", Math.toDegrees(wrappedTurretValue.getValue()));
         }
         telemetry.addData("Target Heading", targetHeading);
-//        dashboardTelemetry.addData("Low Error", shooter.bottomError);
-//        dashboardTelemetry.addData("High Error", shooter.topError);
-//        dashboardTelemetry.addData("Transfer Error", (shooter.transferError));
+        dashboardTelemetry.addData("Low Error", shooter.bottomError);
+        dashboardTelemetry.addData("High Error", shooter.topError);
+        dashboardTelemetry.addData("Transfer Error", (shooter.transferError));
         telemetry.addData("Active spindexer spot", activeSpindexerSpot);
         telemetry.addData("Spindexer Direct Position", spindexerDirectPosition);
 
         telemetry.update();
-//        dashboardTelemetry.update();
+        dashboardTelemetry.update();
 
     }
 }

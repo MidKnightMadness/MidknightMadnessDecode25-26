@@ -42,7 +42,7 @@ public class TwoWheelShooter2 extends SubsystemBase {
 
 
     public static double transferPower = 1.0;
-    public static double transferVelocity = 1350;//1300
+    public static double transferVelocity = 1150;//1300
     //DEFAULT GAINS
     public static double[] kTransferGains = new double[]{0.0313141, 0.000353782, 0};
     public static double[] pidTransferGains = new double[]{0.0012, 0, 0};
@@ -110,8 +110,8 @@ public class TwoWheelShooter2 extends SubsystemBase {
         //ticks in sec for 3: 1 direct driven gear ratios
         public static int iterations = 10; // For tuning targetDistance
         public static double[] dist = {40, 50, 60, 70, 80, 90, 100, 112, 128, 145, 156.0, 179};//inches
-        public static double[] bottomVel = {560, 580, 610, 630, 650, 680, 700, 700, 730, 750, 780, 800};
-        public static double[] topVel = {670, 630, 610, 630, 660, 720, 780, 940, 980, 1030, 1060, 1090};
+        public static double[] bottomVel = {530, 560, 590, 600, 630, 650, 700, 700, 730, 750, 760, 780};
+        public static double[] topVel = {650, 610, 590, 610, 630, 680, 840, 890, 960, 1000, 1030, 1060};
         public static double[] velCorrectionFactor = {0.4, 0.5, 0.6, 0.54, 0.85, 0.9, 0.96, 1.02, 1.1, 1.18, 1.25, 1.31}; // take time in the air and then subtract a bit
 
         public AimCalculator() {
@@ -189,13 +189,13 @@ public class TwoWheelShooter2 extends SubsystemBase {
         transferError = transfer.getVelocity() - predictedTransferVel;
 
         if(useAggressiveRecovery) {
-            if (Math.abs(bottomError) > shotDropThreshold) {
+            if (Math.abs(bottomError) > shotDropThreshold && bottomError < 0) {
                 setAggressiveGainsBottom();
             } else {
                 resetDefaultGainsBottom();
             }
 
-            if (Math.abs(topError) > shotDropThreshold) {
+            if (Math.abs(topError) > shotDropThreshold  && topError < 0) {
                 setAggressiveGainsTop();
             } else {
                 resetDefaultGainsTop();
@@ -468,7 +468,7 @@ public class TwoWheelShooter2 extends SubsystemBase {
         if (shootSide == ShootSide.LEFT) {
             control1 = close ? new Pose(0,140) : new Pose(0, 144);
         } else {
-            control1 = close ? new Pose(141.5,140) : new Pose(138, 144);
+            control1 = close ? new Pose(141.5,140) : new Pose(136, 144);
 
         }
         double angle1 = ExtraFns.getTargetAngle(robotPose, control1);
@@ -495,7 +495,7 @@ public class TwoWheelShooter2 extends SubsystemBase {
         if (shootSide == ShootSide.LEFT) {
             control1 = close ? new Pose(0,144) : new Pose(2, 142);//5
         } else {
-            control1 = close ? new Pose(141.5,144) : new Pose(138, 144);
+            control1 = close ? new Pose(141.5,144) : new Pose(136, 144);
 
 
         }

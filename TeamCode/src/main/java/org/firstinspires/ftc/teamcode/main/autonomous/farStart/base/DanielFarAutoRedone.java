@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.main.autonomous.farStart.base;
 
 import android.os.Environment;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
@@ -22,7 +23,9 @@ import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommandTime;
+import org.firstinspires.ftc.teamcode.commands.spindexer.OutakeSpotsRotation;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpotNonCR;
@@ -108,7 +111,7 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
     boolean useBulkMode = true;
 
     Angle wrappedTurretValue;
-    public static long totalShootingTime = 600;
+    public static long totalShootingTime = 520;
     double spindexerSettleTime = 100;
     double turretHeadingError;
 
@@ -146,6 +149,8 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
         telemetry.setMsTransmissionInterval(500);
         resetEncoders();
         initCommands();
+        FtcDashboard dashboard = FtcDashboard.getInstance();
+        dashboardTelemetry = dashboard.getTelemetry();
     }
 
     public void initializeSubsystems() {
@@ -202,6 +207,11 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
             main.schedule();
             started = true;
         }
+
+        if(autoElapsed.getTime() >= 29800){
+            ConstantsBot.robotPose = robotPose;
+            ConstantsBot.side = side;
+        }
         updateTelemetry();
     }
 
@@ -238,9 +248,10 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
             );
             Timer shootTimer;
             boolean timeStarted;
-            double startPosition = (SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE));
+            OutakeSpotsRotation command;
             double targetPosition = 0;
             public void initialize() {
+                command = new OutakeSpotsRotation(spindexer, 3, totalShootingTime / 3, true);
                 timer.restart();
                 shootTimer = new Timer();
                 addRequirements(spindexer, shooter, turret);
@@ -259,11 +270,11 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
 
                 //ready to shoot
                 if(timeStarted) {
-                    spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * shootTimer.getTime() / totalShootingTime);
+                   command.execute();
                 }
             }
             public boolean isFinished() {
-                return shootTimer.getTime() > totalShootingTime && timeStarted;
+                return command.isFinished();
             }
 
             public void end(boolean interrupted) {
@@ -349,14 +360,20 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                     );
                     Timer shootTimer;
                     boolean timeStarted;
-                    double startPosition = (SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE));
+                    OutakeSpotsRotation command;
                     double targetPosition = 0;
+
                     public void initialize() {
+                        command = new OutakeSpotsRotation(spindexer, 3, totalShootingTime / 3, true);
                         timer.restart();
                         shootTimer = new Timer();
                         addRequirements(spindexer, shooter, turret);
                     }
+
+                    boolean start;
+
                     public void execute() {
+
                         calculateAlign(true);
                         setTransferPower();
                         setShooterPower(false);
@@ -367,19 +384,20 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
 
 
                         //ready to shoot
-                        if(timeStarted) {
-                            spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * shootTimer.getTime() / totalShootingTime);
+                        if (timeStarted) {
+                            command.execute();
                         }
                     }
+
                     public boolean isFinished() {
-                        return shootTimer.getTime() > totalShootingTime && timeStarted;
+                        return command.isFinished();
                     }
 
                     public void end(boolean interrupted) {
                         spindexer.setDirectPosition(targetPosition);
                         stopItServo.setInactivePosition();
-                        pushUpServo.setDown();
                         spindexer.setDefault();
+                        pushUpServo.setDown();
                         shooter.stopAll();
                     }
                 }
@@ -476,22 +494,23 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                     );
                     Timer shootTimer;
                     boolean timeStarted;
-                    double startPosition = (SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE));
+                    OutakeSpotsRotation command;
                     double targetPosition = 0;
+
                     public void initialize() {
+                        command = new OutakeSpotsRotation(spindexer, 3, totalShootingTime / 3, true);
                         timer.restart();
                         shootTimer = new Timer();
                         addRequirements(spindexer, shooter, turret);
                     }
+
                     boolean start;
+
                     public void execute() {
-                        if(!start){
-                            start = true;
-                        }
-                        setShooterPower(false);
-                        setTransferPower();
 
                         calculateAlign(true);
+                        setTransferPower();
+                        setShooterPower(false);
                         if (shootSupplier.getAsBoolean() && !timeStarted) {
                             shootTimer.restart();
                             timeStarted = true;
@@ -499,20 +518,21 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
 
 
                         //ready to shoot
-                        if(timeStarted) {
-                            spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * shootTimer.getTime() / totalShootingTime);
+                        if (timeStarted) {
+                            command.execute();
                         }
                     }
+
                     public boolean isFinished() {
-                        return shootTimer.getTime() > totalShootingTime && timeStarted;
+                        return command.isFinished();
                     }
 
                     public void end(boolean interrupted) {
                         spindexer.setDirectPosition(targetPosition);
                         stopItServo.setInactivePosition();
                         spindexer.setDefault();
-                        shooter.stopAll();
                         pushUpServo.setDown();
+                        shooter.stopAll();
                     }
                 }
         );
@@ -598,22 +618,20 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                     );
                     Timer shootTimer;
                     boolean timeStarted;
-                    double startPosition = (SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE));
+                    OutakeSpotsRotation command;
                     double targetPosition = 0;
                     public void initialize() {
+                        command = new OutakeSpotsRotation(spindexer, 3, totalShootingTime / 3, true);
                         timer.restart();
                         shootTimer = new Timer();
                         addRequirements(spindexer, shooter, turret);
                     }
                     boolean start;
                     public void execute() {
-                        if(!start){
-                            start = true;
-                        }
-                        setShooterPower(false);
-                        setTransferPower();
 
                         calculateAlign(true);
+                        setTransferPower();
+                        setShooterPower(false);
                         if (shootSupplier.getAsBoolean() && !timeStarted) {
                             shootTimer.restart();
                             timeStarted = true;
@@ -622,19 +640,19 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
 
                         //ready to shoot
                         if(timeStarted) {
-                            spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * shootTimer.getTime() / totalShootingTime);
+                            command.execute();
                         }
                     }
                     public boolean isFinished() {
-                        return shootTimer.getTime() > totalShootingTime && timeStarted;
+                        return command.isFinished();
                     }
 
                     public void end(boolean interrupted) {
                         spindexer.setDirectPosition(targetPosition);
                         stopItServo.setInactivePosition();
                         spindexer.setDefault();
-                        shooter.stopAll();
                         pushUpServo.setDown();
+                        shooter.stopAll();
                     }
                 }
         );
@@ -688,13 +706,13 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
     public double distToGoal() {
         return TwoWheelShooter2.getShootPose(side).distanceFrom(robotPose);
     }
-    @Override
-    public void end(){
-        ConstantsBot.robotPose = robotPose;
-        ConstantsBot.side = side;
-    }
+//    @Override
+//    public void end(){
+//        ConstantsBot.robotPose = robotPose;
+//        ConstantsBot.side = side;
+//    }
 
-
+    Telemetry dashboardTelemetry;
     public void updateTelemetry() {
         telemetry.addData("Update Rate", 1000.0/ timer.getDeltaTime());
         telemetry.addData("Turret Heading Error", turretHeadingError);;
@@ -711,10 +729,14 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
 
         telemetry.addLine("--------------------");
 
+        dashboardTelemetry.addData("Low Error", shooter.bottomError);
+        dashboardTelemetry.addData("High Error", shooter.topError);
+        dashboardTelemetry.addData("Transfer Error", (shooter.transferError));
         telemetry.addData("State", state);
         telemetry.addData("Distance to goal", distToGoal());
         telemetry.addData("Spindexer position", spindexerPosition);
 
+        dashboardTelemetry.update();
         telemetry.update();
     }
 }
