@@ -20,7 +20,7 @@ class CameraTest {
         );
         Plane floor = new Plane(0, 0, 1, 0);
         Vec3D projected = cam.project(960, 1000, floor);
-        Vec3D expected = new Vec3D(0, 1.754, 0);
+        Vec3D expected = new Vec3D(3.058148, 0, 0);
         assertEquals(expected.x, projected.x, 0.01);
         assertEquals(expected.y, projected.y, 0.01);
         assertEquals(expected.z, projected.z, 0.01);

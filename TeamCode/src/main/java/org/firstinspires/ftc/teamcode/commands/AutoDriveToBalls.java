@@ -4,23 +4,17 @@ import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
-import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
-import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.geometry.Vector2d;
 
 import org.firstinspires.ftc.teamcode.hardware.LimelightDetector;
-import org.firstinspires.ftc.teamcode.localization.camera.Pather;
+import org.firstinspires.ftc.teamcode.localization.camera.BallPather;
 import org.firstinspires.ftc.teamcode.pedroPathing.motorTesting.WheelControl2;
-
-import java.util.Arrays;
-import java.util.List;
 
 public class AutoDriveToBalls extends CommandBase {
     Pose robotPose;
     Follower follower;
-    Pather pather;
+    BallPather ballPather;
     LimelightDetector limelightDetector;
     WheelControl2 drive;
     double drivePower;
@@ -29,19 +23,19 @@ public class AutoDriveToBalls extends CommandBase {
 
     public AutoDriveToBalls(
             Follower follower,
-            Pather pather,
+            BallPather ballPather,
             LimelightDetector limelightDetector,
             WheelControl2 drive,
             double drivePower
     ) {
         this.follower = follower;
-        this.pather = pather;
+        this.ballPather = ballPather;
         this.limelightDetector = limelightDetector;
         this.drive = drive;
         this.drivePower = drivePower;
         this.telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 
-        addRequirements();
+        addRequirements(limelightDetector);
     }
 
     @Override
@@ -51,17 +45,23 @@ public class AutoDriveToBalls extends CommandBase {
 
     @Override
     public void execute() {
+        follower.update();
         robotPose = follower.getPose();
 
-        Vector2d[] ballPixels = limelightDetector.getBallPixels();
-        Pose[] ballPoses = limelightDetector.getBallPoses(robotPose, ballPixels);
-        Pose nextPose = Pather.patherGreedy(robotPose, ballPoses);
-        double targetHeading = nextPose.minus(robotPose).getAsVector().getTheta();
-        drive.pid(robotPose, nextPose.withHeading(targetHeading), drivePower);
+        Pose[] ballPoses = limelightDetector.getBallPoses();
+        Pose[] nextPoses = ballPather.findPath(robotPose, ballPoses, 3);
+        if (nextPoses.length > 0) {
+            Pose nextPose = nextPoses[0];
+            double targetHeading = nextPose.minus(robotPose).getAsVector().getTheta();
+            Pose targetPose = nextPose.withHeading(targetHeading);
+            drive.pid(robotPose, targetPose, drivePower);
+            telemetryM.addData("Target heading", targetHeading);
+            telemetryM.addData("Target pose", targetPose);
+        } else {
+            drive.stop();
+        }
 
         telemetryM.addData("Robot pose", robotPose);
-        telemetryM.addData("Target heading", targetHeading);
-        telemetryM.addData("Next pose", nextPose);
     }
 
     @Override

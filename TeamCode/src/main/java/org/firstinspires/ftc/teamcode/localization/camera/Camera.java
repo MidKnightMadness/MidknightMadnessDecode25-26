@@ -28,8 +28,8 @@ public class Camera {
         this.roll = roll;
         this.pos = pos;
 
-        this.fPixX = this.resX / (2 * Math.tan(this.fovX / 2));
-        this.fPixY = this.resY / (2 * Math.tan(this.fovY / 2));
+        this.fPixX = Math.abs(this.resX / (2 * Math.tan(this.fovX / 2)));
+        this.fPixY = Math.abs(this.resY / (2 * Math.tan(this.fovY / 2)));
         this.centerX = this.resX / 2.0;
         this.centerY = this.resY / 2.0;
         this.rot = rotMatrix();
@@ -38,15 +38,15 @@ public class Camera {
     public void setFov(double fovX, double fovY) {
         this.fovX = fovX;
         this.fovY = fovY;
-        this.fPixX = this.resX / (2 * Math.tan(this.fovX / 2));
-        this.fPixY = this.resY / (2 * Math.tan(this.fovY / 2));
+        this.fPixX = Math.abs(this.resX / (2 * Math.tan(this.fovX / 2)));
+        this.fPixY = Math.abs(this.resY / (2 * Math.tan(this.fovY / 2)));
     }
 
     public void setRes(int resX, int resY) {
         this.resX = resX;
         this.resY = resY;
-        this.fPixX = this.resX / (2 * Math.tan(this.fovX / 2));
-        this.fPixY = this.resY / (2 * Math.tan(this.fovY / 2));
+        this.fPixX = Math.abs(this.resX / (2 * Math.tan(this.fovX / 2)));
+        this.fPixY = Math.abs(this.resY / (2 * Math.tan(this.fovY / 2)));
         this.centerX = this.resX / 2.0;
         this.centerY = this.resY / 2.0;
     }
@@ -62,7 +62,7 @@ public class Camera {
         this.pos = pos;
     }
 
-    public Matrix rotMatrix() {
+    private Matrix rotMatrix() {
         Matrix rRoll = new Matrix(new double[][] {
                 new double[] {1, 0, 0},
                 new double[] {0, Math.cos(roll), -Math.sin(roll)},
@@ -88,6 +88,9 @@ public class Camera {
         Matrix directionCam = new Vec3D(1, (centerX - pixX) / fPixX, (centerY - pixY) / fPixY)
                 .toMatrix()
                 .transposed();
+
+        System.out.println(fPixY);
+        System.out.println((centerY - pixY) / fPixY);
 
         Matrix directionWorld = rot.multiply(directionCam);
         Ray ray = new Ray(pos, Vec3D.fromMatrix(directionWorld));
