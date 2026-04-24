@@ -26,6 +26,7 @@ import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.util.Timing;
 
 import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommandTime;;
+import org.firstinspires.ftc.teamcode.commands.spindexer.OuttakeSpotsRotation;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpotNonCR;
@@ -103,7 +104,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
     boolean useBulkMode = true;
     Angle wrappedTurretValue;
     double targetHeading;
-    public static long totalShootingTime = 2000;
+    public static long totalShootingTime = 360;
     double spindexerSettleTime = 100;
     public abstract ShootSide getShootSide();
 
@@ -246,10 +247,14 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
             final Timing.Timer shootTimer = new Timing.Timer(totalShootingTime, TimeUnit.MILLISECONDS);
             double startPosition = (SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE));
             double targetPosition = 0;
+            OuttakeSpotsRotation outtakeSpotsRotation;
+
             public void initialize() {
                 timer.restart();
                 state = State.balls3;
                 addRequirements(stopItServo, pushUpServo, shooter, turret);
+                outtakeSpotsRotation = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, true);
+                outtakeSpotsRotation.initialize();
             }
             boolean start = false;
             public void execute() {
@@ -273,11 +278,11 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
 
                 //ready to shoot
                 if(shootTimer.isTimerOn()){
-                    spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * Math.min(shootTimer.elapsedTime(), totalShootingTime) / totalShootingTime);
+                    outtakeSpotsRotation.execute();
                 }
             }
             public boolean isFinished() {
-                return shootTimer.done();
+                return outtakeSpotsRotation.isFinished();
             }
 
             public void end(boolean interrupted) {
