@@ -25,7 +25,7 @@ import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.util.Timing;
 
-import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommandTime;;
+import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommandTime;
 import org.firstinspires.ftc.teamcode.commands.spindexer.OuttakeSpotsRotation;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
