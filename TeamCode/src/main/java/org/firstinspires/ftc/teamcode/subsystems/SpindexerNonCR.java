@@ -22,7 +22,7 @@ import java.util.ArrayList;
 public class SpindexerNonCR extends SubsystemBase {
     public double startOutakePosition = 1;
     public double endOutakePosition = 0;
-    public static double SPINDEXER_OFFSET_DEGREES = 90d;
+    public static double SPINDEXER_OFFSET_DEGREES = 5;
     public double startTeleOpIntakePosition = SpindexerSpotNonCR.fromIndex(1).getIntakePositions().get(0);
     public static int totalDegrees = 791;//817 extended gr?
     public static AngleNonCR defaultFinishedThreshold = AngleNonCR.fromDegrees(5); // Threshold at which it's finished turning to a spot

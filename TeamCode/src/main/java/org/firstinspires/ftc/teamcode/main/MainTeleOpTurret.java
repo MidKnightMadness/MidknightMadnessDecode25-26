@@ -31,7 +31,7 @@ import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommandTime;
-import org.firstinspires.ftc.teamcode.commands.spindexer.OutakeSpotsRotation;
+import org.firstinspires.ftc.teamcode.commands.spindexer.OuttakeSpotsRotation;
 import org.firstinspires.ftc.teamcode.commands.spindexer.SpindexerGotoPositionSmooth;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpotNonCR;
@@ -348,6 +348,7 @@ public class MainTeleOpTurret extends CommandOpMode {
 
     private void updateArducamUse(){
         if(arducamUse != previousArducamUse){
+            aprilTagBearing = 0;
             controlLight2.setColor(
                     !arducamUse ? GobildaLightBlock.Color.YELLOW :
                             GobildaLightBlock.Color.GREEN
@@ -388,23 +389,12 @@ public class MainTeleOpTurret extends CommandOpMode {
     private void emergencyStops() {
         //PWM Disable servo if emergency servo is held
         if(gamepad2.dpad_up){
-            if (spindexer.getServoImplEx1().isPwmEnabled()){
-                spindexer.getServoImplEx1().setPwmDisable();
-            }
-            else {
-                if (!spindexer.getServoImplEx1().isPwmEnabled()) {
-                    spindexer.getServoImplEx1().setPwmEnable();
-                }
-            }
-
-            if (spindexer.getServoImplEx2().isPwmEnabled()){
-                spindexer.getServoImplEx2().setPwmDisable();
-            }
-            else {
-                if (!spindexer.getServoImplEx2().isPwmEnabled()) {
-                    spindexer.getServoImplEx2().setPwmEnable();
-                }
-            }
+            spindexer.getServoImplEx1().setPwmDisable();
+            spindexer.getServoImplEx2().setPwmDisable();
+        }
+        else {
+            spindexer.getServoImplEx1().setPwmEnable();
+            spindexer.getServoImplEx2().setPwmEnable();
         }
 
         if (gamepad2.dpadUpWasPressed()) {
@@ -499,8 +489,10 @@ public class MainTeleOpTurret extends CommandOpMode {
     private void manualResetPose() {//resets bot pose in the corners
         if (gamepad1.left_trigger > 0.3) {
             follower.setPose(failsafeLeftPose);
+            aprilTagBearing = 0;
         } else if (gamepad1.right_trigger > 0.3) {
             follower.setPose(failsafeRightPose);
+            aprilTagBearing = 0;
         }
     }
 
@@ -562,10 +554,10 @@ public class MainTeleOpTurret extends CommandOpMode {
                     follower.getVelocity(),
                     TwoWheelShooter2.getShootPoseNew(currentPose, shootSide)
             );
-            targetHeading = MathFunctions.normalizeAngle(aimData[2]) + aprilTagBearing;
+            targetHeading = MathFunctions.normalizeAngle(aimData[2]) + (arducamUse ? aprilTagBearing : 0);
         }
         else{//default back to face point algorithm
-            targetHeading = TwoWheelShooter2.getShootHeading(currentPose, shootSide) + aprilTagBearing;
+            targetHeading = TwoWheelShooter2.getShootHeading(currentPose, shootSide) + (arducamUse ? aprilTagBearing : 0);
         }
 
         diffRadians = targetHeading - currentPose.getHeading();
@@ -690,7 +682,7 @@ public class MainTeleOpTurret extends CommandOpMode {
     }
 
     boolean directSpinShootActivated = false;
-    OutakeSpotsRotation outakeSpotsRotation;
+    OuttakeSpotsRotation outtakeSpotsRotation;
     private void shootingSpindexerMovements(){
         if (gamepad2.rightBumperWasPressed()) {//MEDIUM SPEED -SMOOTHED
             stopItServo.setActivePosition();
@@ -702,9 +694,9 @@ public class MainTeleOpTurret extends CommandOpMode {
         else if(gamepad2.shareWasPressed()){
             stopItServo.setActivePosition();
             prepareSpindexer();
-            outakeSpotsRotation = new OutakeSpotsRotation(spindexer, activeSpindexerSpot, mediumInBetweenTime);
+            outtakeSpotsRotation = new OuttakeSpotsRotation(spindexer, activeSpindexerSpot, mediumInBetweenTime);
             activeSpindexerSpot = Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0);
-            schedulePosition(outakeSpotsRotation);
+            schedulePosition(outtakeSpotsRotation);
         }
         else if(gamepad2.yWasPressed()){//SLOWEST: FOR SORTING - SMOOTHED
             stopItServo.setActivePosition();
@@ -712,9 +704,9 @@ public class MainTeleOpTurret extends CommandOpMode {
 //            activeSpindexerSpot = Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0);
 //            spindexerGotoPositionSmooth = new SpindexerGotoPositionSmooth(spindexer, SpindexerSpotNonCR.getPositionFromIndex(activeSpindexerSpot, SpotType.INTAKE) + SpindexerSpotNonCR.OUTAKE_OFFSET_DEGREES / SpindexerNonCR.totalDegrees, slowSmoothTime);
 //            schedulePosition(spindexerGotoPositionSmooth);
-            outakeSpotsRotation = new OutakeSpotsRotation(spindexer, activeSpindexerSpot, slowInBetweenTime);
+            outtakeSpotsRotation = new OuttakeSpotsRotation(spindexer, activeSpindexerSpot, slowInBetweenTime);
             activeSpindexerSpot = Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0);
-            schedulePosition(outakeSpotsRotation);
+            schedulePosition(outtakeSpotsRotation);
         } else if(gamepad2.optionsWasPressed()){//FASTEST
             stopItServo.setActivePosition();
             prepareSpindexer();
@@ -722,9 +714,9 @@ public class MainTeleOpTurret extends CommandOpMode {
 //            setSpotDirect(activeSpindexerSpot);
 //            directSpinShootTimer.restart();
 //            directSpinShootActivated = true;
-            outakeSpotsRotation = new OutakeSpotsRotation(spindexer, activeSpindexerSpot, fastInBetweenTime);
+            outtakeSpotsRotation = new OuttakeSpotsRotation(spindexer, activeSpindexerSpot, fastInBetweenTime);
             activeSpindexerSpot = Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0);
-            schedulePosition(outakeSpotsRotation);
+            schedulePosition(outtakeSpotsRotation);
         }
 
         if(directSpinShootActivated && directSpinShootTimer.getTime() > 3 * spindexer.STRICT_SPOT_TIME){

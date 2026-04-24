@@ -7,7 +7,7 @@ import org.firstinspires.ftc.teamcode.game.SpotType;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexerNonCR;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
-public class OutakeSpotsRotation extends CommandBase {
+public class OuttakeSpotsRotation extends CommandBase {
 
     SpindexerNonCR spindexer;
     long timePerShot;
@@ -16,7 +16,7 @@ public class OutakeSpotsRotation extends CommandBase {
     double startSpot;
     boolean waitEnd;
 
-    public OutakeSpotsRotation(SpindexerNonCR spindexerNonCR, int startSpot, long spotTime, boolean waitEnd){
+    public OuttakeSpotsRotation(SpindexerNonCR spindexerNonCR, int startSpot, long spotTime, boolean waitEnd){
         this.spindexer = spindexerNonCR;
         this.timePerShot = spotTime;
         this.startSpot = SpindexerSpotNonCR.getPositionFromIndex(startSpot, SpotType.INTAKE) - 60.0 / SpindexerNonCR.totalDegrees;
@@ -25,7 +25,7 @@ public class OutakeSpotsRotation extends CommandBase {
         addRequirements(this.spindexer);
     }
 
-    public OutakeSpotsRotation(SpindexerNonCR spindexerNonCR, int startSpot, long spotTime){
+    public OuttakeSpotsRotation(SpindexerNonCR spindexerNonCR, int startSpot, long spotTime){
         this.spindexer = spindexerNonCR;
         this.timePerShot = spotTime;
         this.startSpot = SpindexerSpotNonCR.getPositionFromIndex(startSpot, SpotType.INTAKE) - 60.0 / SpindexerNonCR.totalDegrees;
