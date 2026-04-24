@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.main.autonomous.farStart.base;
 
-import android.os.Environment;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -12,7 +10,6 @@ import com.pedropathing.math.MathFunctions;
 import com.pedropathing.math.Vector;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
-import com.qualcomm.robotcore.util.RobotLog;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
@@ -25,7 +22,7 @@ import com.seattlesolvers.solverslib.command.WaitCommand;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommandTime;
-import org.firstinspires.ftc.teamcode.commands.spindexer.OutakeSpotsRotation;
+import org.firstinspires.ftc.teamcode.commands.spindexer.OuttakeSpotsRotation;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpotNonCR;
@@ -43,9 +40,6 @@ import org.firstinspires.ftc.teamcode.util.Angle;
 import org.firstinspires.ftc.teamcode.util.ExtraFns;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
@@ -111,7 +105,7 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
     boolean useBulkMode = true;
 
     Angle wrappedTurretValue;
-    public static long totalShootingTime = 520;
+    public static long totalShootingTime = 700;
     double spindexerSettleTime = 100;
     double turretHeadingError;
 
@@ -248,10 +242,10 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
             );
             Timer shootTimer;
             boolean timeStarted;
-            OutakeSpotsRotation command;
+            OuttakeSpotsRotation command;
             double targetPosition = 0;
             public void initialize() {
-                command = new OutakeSpotsRotation(spindexer, 3, totalShootingTime / 3, true);
+                command = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, true);
                 timer.restart();
                 shootTimer = new Timer();
                 addRequirements(spindexer, shooter, turret);
@@ -360,11 +354,11 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                     );
                     Timer shootTimer;
                     boolean timeStarted;
-                    OutakeSpotsRotation command;
+                    OuttakeSpotsRotation command;
                     double targetPosition = 0;
 
                     public void initialize() {
-                        command = new OutakeSpotsRotation(spindexer, 3, totalShootingTime / 3, true);
+                        command = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, true);
                         timer.restart();
                         shootTimer = new Timer();
                         addRequirements(spindexer, shooter, turret);
@@ -494,11 +488,11 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                     );
                     Timer shootTimer;
                     boolean timeStarted;
-                    OutakeSpotsRotation command;
+                    OuttakeSpotsRotation command;
                     double targetPosition = 0;
 
                     public void initialize() {
-                        command = new OutakeSpotsRotation(spindexer, 3, totalShootingTime / 3, true);
+                        command = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, true);
                         timer.restart();
                         shootTimer = new Timer();
                         addRequirements(spindexer, shooter, turret);
@@ -618,10 +612,10 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                     );
                     Timer shootTimer;
                     boolean timeStarted;
-                    OutakeSpotsRotation command;
+                    OuttakeSpotsRotation command;
                     double targetPosition = 0;
                     public void initialize() {
-                        command = new OutakeSpotsRotation(spindexer, 3, totalShootingTime / 3, true);
+                        command = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, true);
                         timer.restart();
                         shootTimer = new Timer();
                         addRequirements(spindexer, shooter, turret);
