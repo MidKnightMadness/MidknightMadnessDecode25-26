@@ -31,6 +31,7 @@ import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpotNonCR;
 import org.firstinspires.ftc.teamcode.game.SpotType;
+import org.firstinspires.ftc.teamcode.main.MainTeleOpTurret;
 import org.firstinspires.ftc.teamcode.newpid.PIDController;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 import org.firstinspires.ftc.teamcode.pedroPathing.motorTesting.WheelControl2;
@@ -55,10 +56,10 @@ import java.util.function.Function;
 public abstract class DanielCloseAutoClean extends CommandOpMode {
     public static Pose shootAtPose1 = new Pose(48, 92);
     public static Pose shootAtPose2 = new Pose(50, 88);
-    public static Pose gateIntakePose = new Pose(8, 54, Math.toRadians(150));
+    public static Pose gateIntakePose = new Pose(4, 54, Math.toRadians(150));
     public static Pose startPose = new Pose(20, 120, Math.toRadians(142));
     public static double shootTimeout = 700;
-    public static double rowXInner = 40;
+    public static double rowXInner = 42;
     public static double rowXOuter = 15;
     public static double row1Y = 38;
     public static double row2Y = 58;
@@ -77,6 +78,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
     Pose robotPose;
     Vector robotVel;
     double currVolt;
+    Pose gateHoldPose;
     boolean started = false;
     double targetTurretAngle;
     double turretHeadingError;
@@ -195,6 +197,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
             started = true;
         }
         updateTelemetry();
+        writePose();
     }
 
     public void resetIntake(){
@@ -242,7 +245,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
     public void initCommands() {
         Command balls1To3 = new CommandBase() {
             final BooleanSupplier shootSupplier = ExtraFns.firstSupplier(
-                    () -> ((distToGoal() > 45 && timer.getTime() > 1000) || timer.getTime() > 3000)
+                    () -> ((distToGoal() > 40 && timer.getTime() > 800) || timer.getTime() > 3000)
             );
             final Timing.Timer shootTimer = new Timing.Timer(totalShootingTime, TimeUnit.MILLISECONDS);
             double startPosition = (SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE));
@@ -316,7 +319,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                                         side.fromLeftX(rowXInner),
                                         row2Y,
                                         side.fromLeftHeading(headingFacingEdge)
-                                ), 0.5)
+                                ), 0.6)
                         )
                         .setIsFinished(() -> side.toLeftX(robotPose.getX()) < rowXInner + 1),
                 // Drive straight forward and intake
@@ -329,7 +332,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                                 )
                                 .setIsFinished(() -> side.toLeftX(robotPose.getX()) < rowXOuter),
                         new InstantCommand(() -> drive.stop()),
-                        new WaitCommand(900)
+                        new WaitCommand(700)
                     ),
                     new AutoIntakeCommandTime(
                             spindexer,
@@ -423,11 +426,11 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                         .setExecute(() -> drive.pid(
                                 robotPose, new Pose(
                                         side.fromLeftX(rowXInner),
-                                        gateIntakePose.getY(),
+                                        gateIntakePose.getY() + 15,
                                         side.fromLeftHeading(gateIntakePose.getHeading())
                                 ), 1)
                         )
-                        .setIsFinished(() -> robotPose.getY() < gateIntakePose.getY() + 10),
+                        .setIsFinished(() -> robotPose.getY() < gateIntakePose.getY() + 18),
                 new InstantCommand(()-> shooter.transfer.stopMotor()),
                 // Drive to gate
                 new ParallelRaceGroup(
@@ -435,9 +438,10 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                         new LambdaCommand()
                                 .setInitialize(() -> timer.restart())
                                 .setExecute(() -> drive.pid(robotPose, side.fromLeftPose(gateIntakePose)))
+//                                .setEnd(() -> gateHoldPose = robotPose)
                                 .setIsFinished(() -> timer.getTime() > 850 || follower.getVelocity().getMagnitude() < 5),
                         // Wait for gate intake
-                        new InstantCommand(() -> drive.stop()),
+//                        new InstantCommand(() -> drive.driveRelative(0.05, 0, 0, 1)),
                         new WaitCommand(2000)
                     ),
                     new AutoIntakeCommandTime(
@@ -461,7 +465,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                 new LambdaCommand()
                         .setInitialize(() -> timer.restart())
                         .setExecute(() -> drive.pidNoHeading(
-                                robotPose, new Pose(side.fromLeftX(rowXInner), row2Y), 1)
+                                robotPose, new Pose(side.fromLeftX(rowXInner), row2Y + 14), 1)
                         )
                         .setIsFinished(() -> side.toLeftX(robotPose.getX()) > rowXInner - 15),
 
@@ -557,7 +561,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                                                 side.fromLeftX(rowXOuter),
                                                 row3Y,
                                                 side.fromLeftHeading(headingFacingEdge)
-                                        ), 0.5)
+                                        ), 0.7)
                                 )
                                 .setIsFinished(() -> side.toLeftX(robotPose.getX()) < rowXOuter),
                             new InstantCommand(() -> drive.stop()),
@@ -573,7 +577,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                             1,
                             spindexerSettleTime
                     )
-                ),
+                ).withTimeout(2500),
                 new InstantCommand(() -> stopItServo.setActivePosition()),
                 new InstantCommand(()-> spindexer.setDirectPosition(SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE))),
 
@@ -594,8 +598,8 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                                         .setExecute(() -> {
                                             calculateAlign(false);
                                             drive.pidNoHeading(robotPose, new Pose(
-                                                    side.fromLeftX(shootAtPose2.getX()),
-                                                    shootAtPose2.getY()
+                                                    side.fromLeftX(shootAtPose1.getX()),
+                                                    shootAtPose1.getY()
                                             ), 1);
                                         })
                                         .setIsFinished(() -> ExtraFns.closeZoneDist(robotPose) < 7),
@@ -704,9 +708,14 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
 
     @Override
     public void end(){
-        ConstantsBot.robotPose = robotPose;
-        ConstantsBot.side = side;
+        writePose();
     }
 
+    public void writePose() {
+        MainTeleOpTurret.startPoseX = robotPose.getX();
+        MainTeleOpTurret.startPoseY = robotPose.getY();
+        MainTeleOpTurret.startPoseHeading = robotPose.getHeading();
 
+        ConstantsBot.side = side;
+    }
 }

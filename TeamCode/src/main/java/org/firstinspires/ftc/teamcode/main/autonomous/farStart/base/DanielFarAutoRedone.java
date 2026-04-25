@@ -27,6 +27,7 @@ import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpotNonCR;
 import org.firstinspires.ftc.teamcode.game.SpotType;
+import org.firstinspires.ftc.teamcode.main.MainTeleOpTurret;
 import org.firstinspires.ftc.teamcode.newpid.PIDController;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 import org.firstinspires.ftc.teamcode.pedroPathing.motorTesting.WheelControl2;
@@ -202,11 +203,8 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
             started = true;
         }
 
-        if(autoElapsed.getTime() >= 29800){
-            ConstantsBot.robotPose = robotPose;
-            ConstantsBot.side = side;
-        }
         updateTelemetry();
+        writePose();
     }
 
     public void calculateAlign(boolean useSOTM) {
@@ -700,11 +698,18 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
     public double distToGoal() {
         return TwoWheelShooter2.getShootPose(side).distanceFrom(robotPose);
     }
-//    @Override
-//    public void end(){
-//        ConstantsBot.robotPose = robotPose;
-//        ConstantsBot.side = side;
-//    }
+    @Override
+    public void end(){
+        writePose();
+    }
+
+    public void writePose() {
+        MainTeleOpTurret.startPoseX = robotPose.getX();
+        MainTeleOpTurret.startPoseY  = robotPose.getY();
+        MainTeleOpTurret.startPoseHeading = robotPose.getHeading();
+
+        ConstantsBot.side = side;
+    }
 
     Telemetry dashboardTelemetry;
     public void updateTelemetry() {

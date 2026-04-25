@@ -79,14 +79,11 @@ public class MainTeleOpTurret extends CommandOpMode {
     double currSpeed = maxSpeed;
     double intakePower = 1.0;
     double maxIntakePower = 1.0;
-    public static double leftOffsetShoot = Math.toRadians(4);
+    public static double leftOffsetShoot = Math.toRadians(2);
     WheelControl2 wheelControl;
     Pose parkRight = new Pose(104, 33, Math.toRadians(90));
     Pose parkLeft = new Pose(144 - 104, 33, Math.toRadians(90));
     ShootSide shootSide = ShootSide.LEFT;
-    double rightAprilAngle = Math.toRadians(38.565);
-    double leftAprilAngle = Math.toRadians(180 - 38.565);
-
     boolean autoAlign = false;
     public static double cameraAlignThresholdDegrees = 5;
     boolean autoSpindexer = false;
@@ -162,8 +159,11 @@ public class MainTeleOpTurret extends CommandOpMode {
     public static boolean intakeVoltageCompensated = false;
     VoltageSensor voltageSensor;
 
-    @Override
+    public static Double startPoseX;
+    public static Double startPoseY;
+    public static Double startPoseHeading;
 
+    @Override
     public void initialize() {
         //TODO: Bulk read testing
 
@@ -177,7 +177,7 @@ public class MainTeleOpTurret extends CommandOpMode {
 
 
         shootSide = ConstantsBot.side;
-        startPose = ConstantsBot.robotPose;
+        startPose = new Pose(startPoseX, startPoseY, startPoseHeading);
 
         gameTimer = new Timer();
 
@@ -348,7 +348,6 @@ public class MainTeleOpTurret extends CommandOpMode {
 
     private void updateArducamUse(){
         if(arducamUse != previousArducamUse){
-            aprilTagBearing = 0;
             controlLight2.setColor(
                     !arducamUse ? GobildaLightBlock.Color.ORANGE :
                             GobildaLightBlock.Color.GREEN
@@ -542,7 +541,8 @@ public class MainTeleOpTurret extends CommandOpMode {
                 return;
             }
             tag = detection;
-            aprilTagBearing = -Math.toRadians(detection.ftcPose.elevation);
+            double offset = (shootSide == ShootSide.LEFT) ? leftOffsetShoot : 0;
+            aprilTagBearing = -Math.toRadians(detection.ftcPose.elevation) + offset;
         }
 
         if (sotmEnabled) {
