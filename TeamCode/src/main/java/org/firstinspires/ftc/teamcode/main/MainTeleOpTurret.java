@@ -350,7 +350,7 @@ public class MainTeleOpTurret extends CommandOpMode {
         if(arducamUse != previousArducamUse){
             aprilTagBearing = 0;
             controlLight2.setColor(
-                    !arducamUse ? GobildaLightBlock.Color.YELLOW :
+                    !arducamUse ? GobildaLightBlock.Color.ORANGE :
                             GobildaLightBlock.Color.GREEN
             );
         }
@@ -526,7 +526,6 @@ public class MainTeleOpTurret extends CommandOpMode {
         turretStationary = Math.abs(turret.getEncoder().getRawVelocity()) < turretVelocityTheshold;;
 
         //only read arducam bearing if stationary, use same correct turret heading as long as drivebase stationary
-//        if (driveStationary && turretStationary && arducamUse && stableVisionHeading == 0) {
         boolean updateCamera = driveStationary && driveRotateStationary && turretStationary && arducamUse && timer.getTime() - cameraLastReadTime > 500;
 
         if (gamepad1.b){
@@ -577,8 +576,6 @@ public class MainTeleOpTurret extends CommandOpMode {
         }
     }
 
-
-
     public void setBallColorsDefault() {
         spindexer.setDefault();
     }
@@ -597,7 +594,7 @@ public class MainTeleOpTurret extends CommandOpMode {
 
 
         if (!autoDriveToShoot && !driveFieldOriented) {
-            wheelControl.driveRelative(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, currSpeed);
+            wheelControl.driveRelative(gamepad1.left_stick_y, -gamepad1.left_stick_x, gamepad1.right_stick_x, currSpeed);
         }
         else if(!autoDriveToShoot && driveFieldOriented){
             wheelControl.driveFieldCentric(

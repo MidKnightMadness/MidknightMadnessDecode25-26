@@ -48,7 +48,7 @@ import java.util.function.Function;
 public abstract class DanielFarAutoRedone extends CommandOpMode {
     //    public static Pose shootAtPose1 = new Pose(48, 92);
     public static Pose shootAtPose2 = new Pose(60, 10);
-    public static Pose gateIntakePose = new Pose(3, 60, Math.toRadians(150));
+    public static Pose gateIntakePose = new Pose(3, 58, Math.toRadians(150));
     public static Pose startPose = new Pose(55.5, 8.8, Math.toRadians(90));
     public static Pose endPose = new Pose(45, 34);
     public static double shootTimeout = 700;
@@ -245,7 +245,7 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
             OuttakeSpotsRotation command;
             double targetPosition = 0;
             public void initialize() {
-                command = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, true);
+                command = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, totalShootingTime / 2);
                 timer.restart();
                 shootTimer = new Timer();
                 addRequirements(spindexer, shooter, turret);
@@ -358,7 +358,7 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                     double targetPosition = 0;
 
                     public void initialize() {
-                        command = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, true);
+                        command = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, totalShootingTime / 2);
                         timer.restart();
                         shootTimer = new Timer();
                         addRequirements(spindexer, shooter, turret);
@@ -475,10 +475,10 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                             }
                             drive.pidNoHeading(robotPose, new Pose(
                                     side.fromLeftX(shootAtPose2.getX()),
-                                    zoneIntakeY + 8
+                                    zoneIntakeY + 3
                             ), 1);
                         })
-                        .setIsFinished(() -> ExtraFns.farZoneDist(robotPose) < 7),
+                        .setIsFinished(() -> ExtraFns.farZoneDist(robotPose) < 12),
 
                 new InstantCommand(()-> drive.stop()),
                 new CommandBase() {
@@ -492,7 +492,7 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                     double targetPosition = 0;
 
                     public void initialize() {
-                        command = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, true);
+                        command = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, totalShootingTime / 2);
                         timer.restart();
                         shootTimer = new Timer();
                         addRequirements(spindexer, shooter, turret);
@@ -615,7 +615,7 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                     OuttakeSpotsRotation command;
                     double targetPosition = 0;
                     public void initialize() {
-                        command = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, true);
+                        command = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, totalShootingTime / 2);
                         timer.restart();
                         shootTimer = new Timer();
                         addRequirements(spindexer, shooter, turret);

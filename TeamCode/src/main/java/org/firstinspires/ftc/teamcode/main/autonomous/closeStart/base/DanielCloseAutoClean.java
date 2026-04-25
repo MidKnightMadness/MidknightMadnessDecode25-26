@@ -55,7 +55,7 @@ import java.util.function.Function;
 public abstract class DanielCloseAutoClean extends CommandOpMode {
     public static Pose shootAtPose1 = new Pose(48, 92);
     public static Pose shootAtPose2 = new Pose(50, 88);
-    public static Pose gateIntakePose = new Pose(8, 56.5, Math.toRadians(150));
+    public static Pose gateIntakePose = new Pose(8, 54, Math.toRadians(150));
     public static Pose startPose = new Pose(20, 120, Math.toRadians(142));
     public static double shootTimeout = 700;
     public static double rowXInner = 40;
@@ -253,8 +253,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                 timer.restart();
                 state = State.balls3;
                 addRequirements(stopItServo, pushUpServo, shooter, turret);
-                outtakeSpotsRotation = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, true);
-                outtakeSpotsRotation.initialize();
+                outtakeSpotsRotation = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, totalShootingTime / 2);
             }
             boolean start = false;
             public void execute() {
