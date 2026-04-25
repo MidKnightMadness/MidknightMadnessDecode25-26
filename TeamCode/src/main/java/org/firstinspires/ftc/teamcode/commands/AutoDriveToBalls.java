@@ -3,7 +3,9 @@ package org.firstinspires.ftc.teamcode.commands;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.Path;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.geometry.Vector2d;
 
@@ -48,13 +50,16 @@ public class AutoDriveToBalls extends CommandBase {
         follower.update();
         robotPose = follower.getPose();
 
-        Pose[] ballPoses = limelightDetector.getBallPoses();
+        Vector2d[] ballPixels = limelightDetector.getBallPixels();
+        Pose[] ballPoses = limelightDetector.getBallPoses(robotPose, ballPixels);
         Pose[] nextPoses = ballPather.findPath(robotPose, ballPoses, 3);
         if (nextPoses.length > 0) {
             Pose nextPose = nextPoses[0];
             double targetHeading = nextPose.minus(robotPose).getAsVector().getTheta();
             Pose targetPose = nextPose.withHeading(targetHeading);
+//            follower.followPath(new Path(new BezierLine(robotPose, targetPose)));
             drive.pid(robotPose, targetPose, drivePower);
+
             telemetryM.addData("Target heading", targetHeading);
             telemetryM.addData("Target pose", targetPose);
         } else {
