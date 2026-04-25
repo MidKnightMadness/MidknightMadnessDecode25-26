@@ -15,13 +15,13 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.localization.kalmanFilter.KalmanPinpointAprilConstants;
+import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 
 @Configurable
 public class ConstantsBot {
-    public static boolean motifIsBusy = true;
-    public static GoBildaPinpointDriver.DeviceStatus deviceStatus = GoBildaPinpointDriver.DeviceStatus.FAULT_BAD_READ;
+    public static Pose robotPose = new Pose(0, 0, 0);
+    public static ShootSide side = ShootSide.LEFT;
     public static FollowerConstants followerConstants = new FollowerConstants()
             .forwardZeroPowerAcceleration(-39)//TUNED
             .lateralZeroPowerAcceleration(-70)//TUNED
@@ -61,23 +61,6 @@ public class ConstantsBot {
             .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED)
             .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
-
-    public static KalmanPinpointAprilConstants mergedLocalizerConstants = new KalmanPinpointAprilConstants()
-            .setIMUName(ConfigNames.imu)
-            .setLimelightName(ConfigNames.limelight)
-            .setLeftPipelineNum(0)
-            .setRightPipelineNum(2)
-            .setStartPipeline(2)
-            .setPinpointHardwareConfig(ConfigNames.pinpoint1)
-            .setQ(0.01)
-            .setR(2)
-            .setMotifTrue(true)
-            .setXOffset(138.874)
-            .setYOffset(33)
-            .setDistUnit(DistanceUnit.MM)
-            .setStartPipeline(1)
-            .setEncoderXDir(GoBildaPinpointDriver.EncoderDirection.FORWARD)
-            .setEncoderYDir(GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
     public static MecanumConstants driveConstants = new MecanumConstants()
             .maxPower(1)
@@ -128,24 +111,7 @@ public class ConstantsBot {
     }
 
     //TODO: Modify so it allows to odo pods and avg both
-    public static Follower createDoublePinpointFollower(HardwareMap hardwareMap) {
-        return new FollowerBuilder(followerConstants, hardwareMap)
-                .doublePinpointLocalizer(pinpointLocalizer1Constants, pinpointLocalizer2Constants)
-                .mecanumDrivetrain(driveConstants)
-                .pathConstraints(pathConstraints)
-                .build();
-    }
 
-
-    public static Follower createKalmanPinpointAprilFollower(HardwareMap hardwareMap, Pose startPose, Telemetry telemetry){//global startPose
-        return new FollowerBuilder(followerConstants, hardwareMap)
-                .mergedKalmanLocalizer(mergedLocalizerConstants, startPose, telemetry)
-                .mecanumDrivetrain(driveConstants)
-                .pathConstraints(pathConstraints)
-                .build();
-
-
-    }
 
 
 }

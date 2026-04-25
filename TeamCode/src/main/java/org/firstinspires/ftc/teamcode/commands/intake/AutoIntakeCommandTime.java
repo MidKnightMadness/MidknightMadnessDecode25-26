@@ -5,11 +5,9 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.seattlesolvers.solverslib.command.CommandBase;
 
 import org.firstinspires.ftc.teamcode.game.BallColor;
-import org.firstinspires.ftc.teamcode.game.SpindexerSpot;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpotNonCR;
 import org.firstinspires.ftc.teamcode.game.SpotType;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
-import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexerNonCR;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
@@ -82,14 +80,16 @@ public class AutoIntakeCommandTime extends CommandBase {
             start = true;
         }
 
-        if (voltageCompensated) {
-            intake.setDirectPower(power, voltageSensor.getVoltage());
-        }
+//        if (voltageCompensated) {
+//            intake.setDirectPower(power, voltageSensor.getVoltage());
+//        }
+
 
 
         if (!atSpot && timer.getTime() >= spindexer.SPOT_CHANGE_TIME) {
             waitingToSettle = true;
             timer.restart();
+//            intake.setDirectPower(1);
         }
 
         if (waitingToSettle && timer.getTime() >= settleTime) {
@@ -105,6 +105,7 @@ public class AutoIntakeCommandTime extends CommandBase {
 
         if (ballDetected) {
             currNumSpot += dir;
+//            intake.setDirectPower(0);
 
 //            if(currNumSpot == startSpot - 3){
 //                spindexer.setPosition(

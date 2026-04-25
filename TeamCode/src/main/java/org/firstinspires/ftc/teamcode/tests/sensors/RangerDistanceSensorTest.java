@@ -97,7 +97,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.hardware.GobildaDistance;
 import org.firstinspires.ftc.teamcode.hardware.RangerMode;
-import org.firstinspires.ftc.teamcode.hardware.SwyftRanger;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 
 @Disabled

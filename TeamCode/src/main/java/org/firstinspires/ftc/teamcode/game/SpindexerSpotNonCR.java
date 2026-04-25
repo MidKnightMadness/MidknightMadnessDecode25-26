@@ -15,28 +15,28 @@ public enum SpindexerSpotNonCR {
     //-1 = not possible
     SPOT0(
             0,
-            0 + SpindexerNonCR.SPINDEXER_OFFSET_DEGREES / SpindexerNonCR.totalDegrees,
+            0,
             180d / SpindexerNonCR.totalDegrees,
             (double)360/439,
             Double.NaN
     ),
     SPOT1(
             1,
-            (120 + + SpindexerNonCR.SPINDEXER_OFFSET_DEGREES) / SpindexerNonCR.totalDegrees,
+            120d / SpindexerNonCR.totalDegrees,
             300d / SpindexerNonCR.totalDegrees,
             Double.NaN,
             Double.NaN
     ),
     SPOT2(
             2,
-            (240d+ + SpindexerNonCR.SPINDEXER_OFFSET_DEGREES) / SpindexerNonCR.totalDegrees,
+            240d / SpindexerNonCR.totalDegrees,
             420d / SpindexerNonCR.totalDegrees,
             Double.NaN,
             60d / SpindexerNonCR.totalDegrees
     ),
     SPOT3(
             3,
-            (360d+ + SpindexerNonCR.SPINDEXER_OFFSET_DEGREES) / SpindexerNonCR.totalDegrees,
+            360d  / SpindexerNonCR.totalDegrees,
             60d / SpindexerNonCR.totalDegrees,
             Double.NaN,
             Double.NaN
@@ -127,9 +127,6 @@ public enum SpindexerSpotNonCR {
         return outakePosition1;
     }
 
-    public double applyLayer(double position, int layer){
-        return position + layer * 360 / SpindexerNonCR.totalDegrees;
-    }
 
     public static double getPositionFromIndex(int globalIndex, SpotType type) {
         int baseIndex = globalIndex % NUM_SPOTS;//base spot
@@ -138,8 +135,8 @@ public enum SpindexerSpotNonCR {
         SpindexerSpotNonCR spot = fromIndex(baseIndex);
 
         double basePosition;
-        if (type == SpotType.INTAKE) {
-            basePosition = spot.getIntakePositionSolo();
+        if (type == SpotType.INTAKE) {//applies offset here
+            basePosition = spot.getIntakePositionSolo() + SpindexerNonCR.SPINDEXER_OFFSET_DEGREES / SpindexerNonCR.totalDegrees;
         } else {
             basePosition = spot.getOuttakePositionSolo();
         }

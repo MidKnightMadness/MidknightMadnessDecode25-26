@@ -2,9 +2,6 @@ package org.firstinspires.ftc.teamcode.commands;
 
 import com.seattlesolvers.solverslib.command.CommandBase;
 
-import org.firstinspires.ftc.teamcode.hardware.CRServoEx2;
-import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
-import org.firstinspires.ftc.teamcode.subsystems.SpindexerNonCR;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
 import org.firstinspires.ftc.teamcode.util.Angle;
 import org.firstinspires.ftc.teamcode.util.Timer;

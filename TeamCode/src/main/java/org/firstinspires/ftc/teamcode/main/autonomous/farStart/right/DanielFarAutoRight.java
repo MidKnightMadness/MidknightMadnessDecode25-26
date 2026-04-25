@@ -1,12 +1,11 @@
 package org.firstinspires.ftc.teamcode.main.autonomous.farStart.right;
-
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.game.ShootSide;
-import org.firstinspires.ftc.teamcode.main.autonomous.farStart.base.DanielFarAutoClean;
+import org.firstinspires.ftc.teamcode.main.autonomous.farStart.base.DanielFarAutoRedone;
 
 @Autonomous
-public class DanielFarAutoRight extends DanielFarAutoClean {
+public class DanielFarAutoRight extends DanielFarAutoRedone {
     @Override
     public ShootSide getShootSide() {
         return ShootSide.RIGHT;

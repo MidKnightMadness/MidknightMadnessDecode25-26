@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.game.ShootSide;
+import org.firstinspires.ftc.teamcode.hardware.Motor;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 
 //
@@ -20,15 +21,20 @@ public class WheelControl {
     public WheelControl(HardwareMap hardwareMap) {
         this.BR = hardwareMap.get(DcMotorEx.class, ConfigNames.BR);
         this.BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        this.BR.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         this.FR = hardwareMap.get(DcMotorEx.class, ConfigNames.FR);
         this.FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        this.FR.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         this.BL = hardwareMap.get(DcMotorEx.class, ConfigNames.BL);
         this.BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        this.BL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         this.FL = hardwareMap.get(DcMotorEx.class, ConfigNames.FL);
         this.FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        this.FL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         this.BL.setDirection(DcMotorEx.Direction.REVERSE);
         this.FL.setDirection(DcMotorEx.Direction.REVERSE);
+
     }
 
     public void setF(double vf, double hf, double rf) {

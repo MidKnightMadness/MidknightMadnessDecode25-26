@@ -1,24 +1,17 @@
 package org.firstinspires.ftc.teamcode.pedroPathing.robotDrive;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
-import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
-import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsOldBot;
-import org.firstinspires.ftc.teamcode.util.PanelsDrawing;
 import org.firstinspires.ftc.teamcode.util.Timer;
-
-import java.util.concurrent.TimeUnit;
 
 @Configurable
 @Autonomous(name = "LinearPath", group = "Tuning")
@@ -49,7 +42,6 @@ public class LinearPath extends CommandOpMode {
     @Override
     public void initialize() {
         super.reset();
-        PanelsDrawing.init();
         timer = new Timer();
 //        telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 //        graphM = PanelsGraph.INSTANCE.getManager();

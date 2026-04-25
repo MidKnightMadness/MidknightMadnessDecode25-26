@@ -16,7 +16,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.commands.Robot;
-import org.firstinspires.ftc.teamcode.localization.kalmanFilter.KalmanPinpointAprilConstants;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 
 @Configurable
@@ -48,22 +47,6 @@ public class ConstantsOldBot {
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
             .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
             .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD);
-    public static KalmanPinpointAprilConstants mergedLocalizerConstants = new KalmanPinpointAprilConstants()
-            .setIMUName(ConfigNames.imu)
-            .setLimelightName(ConfigNames.limelight)
-            .setLeftPipelineNum(0)
-            .setRightPipelineNum(2)
-            .setStartPipeline(2)
-            .setPinpointHardwareConfig(Robot.config.get("pinpoint"))
-            .setQ(0.01)
-            .setR(2)
-            .setMotifTrue(true)
-            .setXOffset(138.874)
-            .setYOffset(33)
-            .setDistUnit(DistanceUnit.MM)
-            .setStartPipeline(1)
-            .setEncoderXDir(GoBildaPinpointDriver.EncoderDirection.FORWARD)
-            .setEncoderYDir(GoBildaPinpointDriver.EncoderDirection.FORWARD);
 
     public static MecanumConstants driveConstants = new MecanumConstants()
             .maxPower(1)
@@ -78,15 +61,7 @@ public class ConstantsOldBot {
             .rightFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
             .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD);
 
-    public static Follower createKalmanPinpointAprilFollower(HardwareMap hardwareMap, Pose startPose, Telemetry telemetry){//global startPose
-        return new FollowerBuilder(followerConstants, hardwareMap)
-                .mergedKalmanLocalizer(mergedLocalizerConstants, startPose, telemetry)
-                .mecanumDrivetrain(driveConstants)
-                .pathConstraints(pathConstraints)
-                .build();
 
-
-    }
 
     public static Follower createPinpointFollower(HardwareMap hardwareMap) {
         return new com.pedropathing.ftc.FollowerBuilder(followerConstants, hardwareMap)

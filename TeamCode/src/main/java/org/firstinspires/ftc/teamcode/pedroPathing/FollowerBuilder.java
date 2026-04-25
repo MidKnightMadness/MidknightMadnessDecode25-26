@@ -22,9 +22,6 @@ import com.pedropathing.paths.PathConstraints;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.localization.kalmanFilter.KalmanPinpointAprilConstants;
-import org.firstinspires.ftc.teamcode.localization.kalmanFilter.KalmanPinpointAprilLocalizer;
-import org.firstinspires.ftc.teamcode.localization.pinpoint.DoublePinpointLocalizer;
 import org.firstinspires.ftc.teamcode.localization.pinpoint.PinpointLocalizerCustom;
 
 
@@ -67,9 +64,6 @@ public class FollowerBuilder {
     public FollowerBuilder pinpointLocalizer(PinpointConstants lConstants) {
         return setLocalizer(new com.pedropathing.ftc.localization.localizers.PinpointLocalizer(hardwareMap, lConstants));
     }
-    public FollowerBuilder doublePinpointLocalizer(PinpointConstants constants1, PinpointConstants constants2) {
-        return setLocalizer(new DoublePinpointLocalizer(hardwareMap, constants1, constants2));
-    }
 
     public FollowerBuilder threeWheelIMULocalizer(ThreeWheelIMUConstants lConstants) {
         return setLocalizer(new ThreeWheelIMULocalizer(hardwareMap, lConstants));
@@ -82,10 +76,6 @@ public class FollowerBuilder {
     public FollowerBuilder twoWheelLocalizer(TwoWheelConstants lConstants) {
         return setLocalizer(new TwoWheelLocalizer(hardwareMap, lConstants));
     }
-    public FollowerBuilder mergedKalmanLocalizer(KalmanPinpointAprilConstants mConstants, Pose startPose, Telemetry telemetry){
-        return setLocalizer(new KalmanPinpointAprilLocalizer(hardwareMap, mConstants, startPose, telemetry));
-    }
-
 
     public FollowerBuilder setDrivetrain(Drivetrain drivetrain) {
         this.drivetrain = drivetrain;

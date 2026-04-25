@@ -31,7 +31,7 @@ public class ServoSetting extends OpMode {
         spindexerServo.setPwmRange(new PwmControl.PwmRange(500, 2500));
         stopItServo = hardwareMap.get(Servo.class, ConfigNames.stopItServo);
 
-        currentServo = stopItServo;
+        currentServo = pushUpServo;
 //        turret1Servo = hardwareMap.get(Servo.class, ConfigNames.turretServoLeft);
 //        turret2Servo = hardwareMap.get(Servo.class, ConfigNames.turretServoRight);
     }
@@ -39,7 +39,7 @@ public class ServoSetting extends OpMode {
     @Override
     public void loop() {
 
-        stopItServo.setPosition(setPos);
+        pushUpServo.setPosition(setPos);
 
         if(gamepad1.dpad_up){
             setPos+= increment;
@@ -48,16 +48,16 @@ public class ServoSetting extends OpMode {
             setPos -= increment;
         }
 
-        if(gamepad1.dpadLeftWasPressed()){
-            useSpindexer = !useSpindexer;
-        }
+//        if(gamepad1.dpadLeftWasPressed()){
+//            useSpindexer = !useSpindexer;
+//        }
 
-        if(gamepad1.leftBumperWasPressed()){
-            spindexerServo.setPosition(0);
-        }
-        if(gamepad1.rightBumperWasPressed()){
-            spindexerServo.setPosition(1);
-        }
+//        if(gamepad1.leftBumperWasPressed()){
+//            spindexerServo.setPosition(0);
+//        }
+//        if(gamepad1.rightBumperWasPressed()){
+//            spindexerServo.setPosition(1);
+//        }
 
         telemetry.addData("Current Pos", setPos);
 //        telemetry.addData("Current Servo", currentServo.toString());1

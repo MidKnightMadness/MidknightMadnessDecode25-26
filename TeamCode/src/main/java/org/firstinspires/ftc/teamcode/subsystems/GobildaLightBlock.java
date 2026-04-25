@@ -42,7 +42,7 @@ public class GobildaLightBlock {
     //anything else
     public void setColor(Color color){
         if(color.equals(Color.RED)){
-            lightControl.setPosition(0.277);
+            lightControl.setPosition(0.28);
         } else if(color.equals(Color.ORANGE)){
             lightControl.setPosition(0.333);
         } else if(color.equals(Color.YELLOW)){
@@ -58,7 +58,7 @@ public class GobildaLightBlock {
         } else if(color.equals(Color.INDIGO)){
             lightControl.setPosition(0.666);
         } else if(color.equals(Color.VIOLET)){
-            lightControl.setPosition(0.722);
+            lightControl.setPosition(0.72);
         } else if(color.equals(Color.WHITE)){
             lightControl.setPosition(1.0);
         }
