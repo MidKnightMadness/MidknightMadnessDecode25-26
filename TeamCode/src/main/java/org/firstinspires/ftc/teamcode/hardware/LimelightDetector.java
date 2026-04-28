@@ -10,7 +10,7 @@ import com.seattlesolvers.solverslib.geometry.Vector2d;
 
 import org.firstinspires.ftc.teamcode.localization.camera.BallLocator;
 import org.firstinspires.ftc.teamcode.localization.camera.Plane;
-import org.firstinspires.ftc.teamcode.util.PoseBuffer;
+import org.firstinspires.ftc.teamcode.util.Timer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,8 +26,10 @@ public class LimelightDetector extends SubsystemBase {
     Limelight3A limelight;
     BallLocator locator;
     LLResult prevResult;
+    Timer timer;
     Vector2d[] cachedBallPixels;
     PoseHistory poseHistory;
+    Pose[] cachedPoses;
 
     public static class PoseHistory {
         private static final int MAX_SIZE = 300;
@@ -101,6 +103,8 @@ public class LimelightDetector extends SubsystemBase {
         this.limelight = limelight;
         this.locator = new BallLocator(fovX, fovY, resX, resY, pitch, roll, z, floor);
         this.poseHistory = new PoseHistory();
+        this.timer = new Timer();
+        timer.restart();
     }
 
     public Limelight3A getLimelight() {
@@ -126,7 +130,7 @@ public class LimelightDetector extends SubsystemBase {
 //        if (prevResult != null && result.getCaptureLatency() == prevResult.getCaptureLatency()) {
 //            return cachedBallPixels;
 //        }
-        lastUpdateMillis = System.currentTimeMillis();
+//        lastUpdateMillis = System.currentTimeMillis();
 //
 //        lastUpdateMillis = result.getControlHubTimeStamp();
 //                - (long)(result.getCaptureLatency() + result.getTargetingLatency());
@@ -151,6 +155,10 @@ public class LimelightDetector extends SubsystemBase {
 
     public Pose[] getBallPoses(Pose robotPose, Vector2d[] ballPixels) {
 //        poseHistory.addPose(robotPose);
-        return locator.ballPoses(poseHistory.poseAtTime(lastUpdateMillis), ballPixels);
+//        return locator.ballPoses(poseHistory.poseAtTime(lastUpdateMillis), ballPixels);
+        if (cachedPoses == null || timer.getTime() > 500) {
+            cachedPoses = locator.ballPoses(robotPose, ballPixels);
+        }
+        return cachedPoses;
     }
 }

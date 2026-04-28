@@ -239,7 +239,6 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                             || timer.getTime() > 3000)
             );
             Timer shootTimer;
-            boolean timeStarted;
             OuttakeSpotsRotation command;
             double targetPosition = 0;
             public void initialize() {
@@ -248,21 +247,13 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                 shootTimer = new Timer();
                 addRequirements(spindexer, shooter, turret);
             }
-            boolean start;
-            public void execute() {
 
+            public void execute() {
                 calculateAlign(true);
                 setTransferPower();
                 setShooterPower(true);
-                if (shootSupplier.getAsBoolean() && !timeStarted) {
-                    shootTimer.restart();
-                    timeStarted = true;
-                }
-
-
-                //ready to shoot
-                if(timeStarted) {
-                   command.execute();
+                if (shootSupplier.getAsBoolean()) {
+                    command.execute();
                 }
             }
             public boolean isFinished() {
@@ -283,11 +274,11 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                 new LambdaCommand()
                         .setInitialize(() -> timer.restart())
                         .setExecute(() -> drive.pid(
-                                robotPose, new Pose(
-                                        side.fromLeftX(rowXInner),
+                                robotPose, side.fromLeftPose(new Pose(
+                                        rowXInner,
                                         row1Y,
-                                        side.fromLeftHeading(headingFacingEdge)
-                                ), 1)
+                                        headingFacingEdge
+                                )), 1)
                         )
                         .setIsFinished(() -> robotPose.getY() > row1Y - 3),
                 // Adjust position and power
@@ -297,17 +288,17 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                                 new LambdaCommand()
                                         .setInitialize(() -> timer.restart())
                                         .setExecute(() -> drive.pid(
-                                                robotPose, new Pose(
-                                                        side.fromLeftX(rowXInner),
+                                                robotPose, side.fromLeftPose(new Pose(
+                                                        rowXInner,
                                                         row1Y,
-                                                        side.fromLeftHeading(headingFacingEdge)
-                                                ), 0.5)
+                                                        headingFacingEdge
+                                                )), 0.5)
                                         )
                                         .setIsFinished(() -> side.toLeftX(robotPose.getX()) < rowXInner + 1),
                                 new LambdaCommand()
                                         .setInitialize(() -> timer.restart())
                                         .setExecute(() -> drive.pid(
-                                                robotPose, new Pose(side.fromLeftX(rowXOuter), row1Y, side.fromLeftHeading(headingFacingEdge)), 0.4)
+                                                robotPose, side.fromLeftPose(new Pose(rowXOuter, row1Y, headingFacingEdge)), 0.4)
                                         )
                                         .setIsFinished(() -> side.toLeftX(robotPose.getX()) < rowXOuter),
                                 new InstantCommand(() -> drive.stop()),
@@ -424,10 +415,10 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                                 pushUpServo.setUp();
                                 setTransferPower();
                             }
-                            drive.pidNoHeading(robotPose, new Pose(
-                                    side.fromLeftX(shootAtPose2.getX()),
+                            drive.pidNoHeading(robotPose, side.fromLeftPose(new Pose(
+                                    shootAtPose2.getX(),
                                     zoneIntakeY + 3
-                            ), 1);
+                            )), 1);
                         })
                         .setIsFinished(() -> ExtraFns.farZoneDist(robotPose) < 12),
 
@@ -501,10 +492,10 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                                 pushUpServo.setUp();
                                 setTransferPower();
                             }
-                            drive.pidNoHeading(robotPose, new Pose(
-                                    side.fromLeftX(shootAtPose2.getX()),
+                            drive.pidNoHeading(robotPose, side.fromLeftPose(new Pose(
+                                    shootAtPose2.getX(),
                                     zoneIntakeY + 8
-                            ), 1);
+                            )), 1);
                         })
                         .setIsFinished(() -> ExtraFns.farZoneDist(robotPose) < 7),
 

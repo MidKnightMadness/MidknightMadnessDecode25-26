@@ -16,6 +16,15 @@ public class Timer {
         restart();
     }
 
+    public void setTime(double time) {
+        setTime(time, defaultUnit);
+    }
+
+    public void setTime(double time, TimeUnit unit) {
+        startTime = System.nanoTime() - (long) toNanos(time, unit);
+        previousTime = startTime;
+    }
+
     public void restart() {
         startTime = System.nanoTime();
         previousTime = startTime;
@@ -50,7 +59,7 @@ public class Timer {
         return fromNanos(elapsed, unit);
     }
 
-    private static double fromNanos(long nanos, TimeUnit unit) {
+    private static double fromNanos(double nanos, TimeUnit unit) {
         switch (unit) {
             case NANOSECONDS: return nanos;
             case MICROSECONDS: return nanos / 1_000.0;
@@ -59,6 +68,19 @@ public class Timer {
             case MINUTES: return nanos / 60_000_000_000.0;
             case HOURS: return nanos / 3_600_000_000_000.0;
             case DAYS: return nanos / 86_400_000_000_000.0;
+            default: throw new IllegalArgumentException("Unsupported TimeUnit");
+        }
+    }
+
+    private static double toNanos(double time, TimeUnit unit) {
+        switch (unit) {
+            case NANOSECONDS: return time;
+            case MICROSECONDS: return time * 1_000.0;
+            case MILLISECONDS: return time * 1_000_000.0;
+            case SECONDS: return time * 1_000_000_000.0;
+            case MINUTES: return time * 60_000_000_000.0;
+            case HOURS: return time * 3_600_000_000_000.0;
+            case DAYS: return time * 86_400_000_000_000.0;
             default: throw new IllegalArgumentException("Unsupported TimeUnit");
         }
     }
