@@ -21,6 +21,10 @@ import org.firstinspires.ftc.teamcode.util.ConfigNames;
 @Configurable
 public class ConstantsBot {
     public static Pose robotPose = new Pose(0, 0, 0);
+    public static Double robotPoseX;
+    public static Double robotPoseY;
+    public static Double robotPoseHeading;
+
     public static ShootSide side = ShootSide.LEFT;
     public static FollowerConstants followerConstants = new FollowerConstants()
             .forwardZeroPowerAcceleration(-39)//TUNED

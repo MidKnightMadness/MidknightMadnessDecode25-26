@@ -15,32 +15,26 @@ public class OuttakeSpotsRotation extends CommandBase {
 
     double startSpot;
     boolean waitEnd;
+    double waitTime;
 
-    public OuttakeSpotsRotation(SpindexerNonCR spindexerNonCR, int startSpot, long spotTime, boolean waitEnd){
+    public OuttakeSpotsRotation(SpindexerNonCR spindexerNonCR, int startSpot, long spotTime, long waitTime){
         this.spindexer = spindexerNonCR;
         this.timePerShot = spotTime;
         this.startSpot = SpindexerSpotNonCR.getPositionFromIndex(startSpot, SpotType.INTAKE) - 60.0 / SpindexerNonCR.totalDegrees;
-        this.waitEnd = waitEnd;
+        this.waitTime = waitTime;
         shootTimer = new Timer();
         addRequirements(this.spindexer);
     }
 
     public OuttakeSpotsRotation(SpindexerNonCR spindexerNonCR, int startSpot, long spotTime){
-        this.spindexer = spindexerNonCR;
-        this.timePerShot = spotTime;
-        this.startSpot = SpindexerSpotNonCR.getPositionFromIndex(startSpot, SpotType.INTAKE) - 60.0 / SpindexerNonCR.totalDegrees;
-        this.waitEnd = false;
-        shootTimer = new Timer();
-        addRequirements(this.spindexer);
+        this(spindexerNonCR, startSpot, spotTime, 0);
     }
 
     public int rotationIndex = 0;
     double lastShotTime = 0;
     double interval = 120.0 / SpindexerNonCR.totalDegrees;
     @Override
-    public void initialize(){
-        shootTimer = new Timer();
-    }
+    public void initialize(){ }
 
     boolean firstRun = true;
     double endTime = -1;
@@ -59,6 +53,10 @@ public class OuttakeSpotsRotation extends CommandBase {
         }
 
         spindexer.setPosition(startSpot - interval * rotationIndex);
+
+        if (rotationIndex >= 2 && endTime == -1) {
+            endTime = shootTimer.getTime();
+        }
     }
 
     public double getLastShotTime(){
@@ -66,6 +64,6 @@ public class OuttakeSpotsRotation extends CommandBase {
     }
     @Override
     public boolean isFinished() {
-        return rotationIndex >= (waitEnd ? 3 : 2);
+        return rotationIndex >= 2 && endTime != -1 && shootTimer.getTime() - endTime >= waitTime;
     }
 }

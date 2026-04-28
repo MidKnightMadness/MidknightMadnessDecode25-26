@@ -19,8 +19,8 @@ import org.firstinspires.ftc.teamcode.util.ConfigNames;
 @Configurable
 //Turret Range [-halfRange, halfRange] -> [0, 1], middle pt of 0.5
 public class Turret extends SubsystemBase {
-    private ServoImplEx leftServo;
-    private ServoImplEx rightServo;
+    public ServoImplEx leftServo;
+    public ServoImplEx rightServo;
     private IncrementalEncoder encoder;
     public static double totalRangeRadians = Math.toRadians(396);
     public static double halfRange = totalRangeRadians / 2.0;

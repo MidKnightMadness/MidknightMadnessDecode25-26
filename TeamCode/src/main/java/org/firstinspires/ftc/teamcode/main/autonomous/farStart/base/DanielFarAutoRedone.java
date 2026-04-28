@@ -27,6 +27,7 @@ import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpotNonCR;
 import org.firstinspires.ftc.teamcode.game.SpotType;
+import org.firstinspires.ftc.teamcode.main.MainTeleOpTurret;
 import org.firstinspires.ftc.teamcode.newpid.PIDController;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
 import org.firstinspires.ftc.teamcode.pedroPathing.motorTesting.WheelControl2;
@@ -48,7 +49,7 @@ import java.util.function.Function;
 public abstract class DanielFarAutoRedone extends CommandOpMode {
     //    public static Pose shootAtPose1 = new Pose(48, 92);
     public static Pose shootAtPose2 = new Pose(60, 10);
-    public static Pose gateIntakePose = new Pose(3, 60, Math.toRadians(150));
+    public static Pose gateIntakePose = new Pose(3, 58, Math.toRadians(150));
     public static Pose startPose = new Pose(55.5, 8.8, Math.toRadians(90));
     public static Pose endPose = new Pose(45, 34);
     public static double shootTimeout = 700;
@@ -202,11 +203,8 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
             started = true;
         }
 
-        if(autoElapsed.getTime() >= 29800){
-            ConstantsBot.robotPose = robotPose;
-            ConstantsBot.side = side;
-        }
         updateTelemetry();
+        writePose();
     }
 
     public void calculateAlign(boolean useSOTM) {
@@ -245,7 +243,7 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
             OuttakeSpotsRotation command;
             double targetPosition = 0;
             public void initialize() {
-                command = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, true);
+                command = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, totalShootingTime / 2);
                 timer.restart();
                 shootTimer = new Timer();
                 addRequirements(spindexer, shooter, turret);
@@ -255,7 +253,7 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
 
                 calculateAlign(true);
                 setTransferPower();
-                setShooterPower(false);
+                setShooterPower(true);
                 if (shootSupplier.getAsBoolean() && !timeStarted) {
                     shootTimer.restart();
                     timeStarted = true;
@@ -337,7 +335,7 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                                 pushUpServo.setUp();
                             }
                             calculateAlign(true);
-                            setShooterPower(false);
+                            setShooterPower(true);
                             drive.pid(robotPose, new Pose(
                                     side.fromLeftX(shootAtPose2.getX()),
                                     shootAtPose2.getY(),
@@ -347,54 +345,7 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                         .setIsFinished(() -> ExtraFns.farZoneDist(robotPose) < 10),
 
                 new InstantCommand(() -> drive.stop()),
-                new CommandBase() {
-                    final BooleanSupplier shootSupplier = ExtraFns.firstSupplier(
-                            () -> ((shooter.readyToShoot() && timer.getTime() > 500)
-                                    || timer.getTime() > 3000)
-                    );
-                    Timer shootTimer;
-                    boolean timeStarted;
-                    OuttakeSpotsRotation command;
-                    double targetPosition = 0;
-
-                    public void initialize() {
-                        command = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, true);
-                        timer.restart();
-                        shootTimer = new Timer();
-                        addRequirements(spindexer, shooter, turret);
-                    }
-
-                    boolean start;
-
-                    public void execute() {
-
-                        calculateAlign(true);
-                        setTransferPower();
-                        setShooterPower(false);
-                        if (shootSupplier.getAsBoolean() && !timeStarted) {
-                            shootTimer.restart();
-                            timeStarted = true;
-                        }
-
-
-                        //ready to shoot
-                        if (timeStarted) {
-                            command.execute();
-                        }
-                    }
-
-                    public boolean isFinished() {
-                        return command.isFinished();
-                    }
-
-                    public void end(boolean interrupted) {
-                        spindexer.setDirectPosition(targetPosition);
-                        stopItServo.setInactivePosition();
-                        spindexer.setDefault();
-                        pushUpServo.setDown();
-                        shooter.stopAll();
-                    }
-                }
+                shootCommand()
         );
         Function<State, Command> cornerIntakeShoot = state -> new SequentialCommandGroup(
                 new InstantCommand(() -> this.state = state),
@@ -468,67 +419,20 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                         .setInitialize(() -> timer.restart())
                         .setExecute(() -> {
                             calculateAlign(true);
-                            setShooterPower(false);
+                            setShooterPower(true);
                             if(timer.getTime() > 300) {
                                 pushUpServo.setUp();
                                 setTransferPower();
                             }
                             drive.pidNoHeading(robotPose, new Pose(
                                     side.fromLeftX(shootAtPose2.getX()),
-                                    zoneIntakeY + 8
+                                    zoneIntakeY + 3
                             ), 1);
                         })
-                        .setIsFinished(() -> ExtraFns.farZoneDist(robotPose) < 7),
+                        .setIsFinished(() -> ExtraFns.farZoneDist(robotPose) < 12),
 
                 new InstantCommand(()-> drive.stop()),
-                new CommandBase() {
-                    final BooleanSupplier shootSupplier = ExtraFns.firstSupplier(
-                            () -> ((shooter.readyToShoot() && timer.getTime() > 500)
-                                    || timer.getTime() > 3000)
-                    );
-                    Timer shootTimer;
-                    boolean timeStarted;
-                    OuttakeSpotsRotation command;
-                    double targetPosition = 0;
-
-                    public void initialize() {
-                        command = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, true);
-                        timer.restart();
-                        shootTimer = new Timer();
-                        addRequirements(spindexer, shooter, turret);
-                    }
-
-                    boolean start;
-
-                    public void execute() {
-
-                        calculateAlign(true);
-                        setTransferPower();
-                        setShooterPower(false);
-                        if (shootSupplier.getAsBoolean() && !timeStarted) {
-                            shootTimer.restart();
-                            timeStarted = true;
-                        }
-
-
-                        //ready to shoot
-                        if (timeStarted) {
-                            command.execute();
-                        }
-                    }
-
-                    public boolean isFinished() {
-                        return command.isFinished();
-                    }
-
-                    public void end(boolean interrupted) {
-                        spindexer.setDirectPosition(targetPosition);
-                        stopItServo.setInactivePosition();
-                        spindexer.setDefault();
-                        pushUpServo.setDown();
-                        shooter.stopAll();
-                    }
-                }
+                shootCommand()
         );
         Function<State, Command> secondaryIntakeShoot = state -> new SequentialCommandGroup(
                 new InstantCommand(() -> this.state = state),
@@ -592,7 +496,7 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                         .setInitialize(() -> timer.restart())
                         .setExecute(() -> {
                             calculateAlign(true);
-                            setShooterPower(false);
+                            setShooterPower(true);
                             if(timer.getTime() > 300) {
                                 pushUpServo.setUp();
                                 setTransferPower();
@@ -605,50 +509,8 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                         .setIsFinished(() -> ExtraFns.farZoneDist(robotPose) < 7),
 
                 new InstantCommand(()-> drive.stop()),
-                new CommandBase() {
-                    final BooleanSupplier shootSupplier = ExtraFns.firstSupplier(
-                            () -> ((shooter.readyToShoot() && timer.getTime() > 500)
-                                    || timer.getTime() > 3000)
-                    );
-                    Timer shootTimer;
-                    boolean timeStarted;
-                    OuttakeSpotsRotation command;
-                    double targetPosition = 0;
-                    public void initialize() {
-                        command = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, true);
-                        timer.restart();
-                        shootTimer = new Timer();
-                        addRequirements(spindexer, shooter, turret);
-                    }
-                    boolean start;
-                    public void execute() {
+                shootCommand()
 
-                        calculateAlign(true);
-                        setTransferPower();
-                        setShooterPower(false);
-                        if (shootSupplier.getAsBoolean() && !timeStarted) {
-                            shootTimer.restart();
-                            timeStarted = true;
-                        }
-
-
-                        //ready to shoot
-                        if(timeStarted) {
-                            command.execute();
-                        }
-                    }
-                    public boolean isFinished() {
-                        return command.isFinished();
-                    }
-
-                    public void end(boolean interrupted) {
-                        spindexer.setDirectPosition(targetPosition);
-                        stopItServo.setInactivePosition();
-                        spindexer.setDefault();
-                        pushUpServo.setDown();
-                        shooter.stopAll();
-                    }
-                }
         );
 
         Command balls7to9 = cornerIntakeShoot.apply(State.balls9);
@@ -680,6 +542,52 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                 stop
         );
     }
+
+    public Command shootCommand(){
+        return new CommandBase() {
+            final BooleanSupplier shootSupplier = ExtraFns.firstSupplier(
+                    () -> ((shooter.readyToShoot() && timer.getTime() > 500)
+                            || timer.getTime() > 3000)
+            );
+            Timer shootTimer;
+            boolean timeStarted;
+            OuttakeSpotsRotation command;
+            double targetPosition = 0;
+            public void initialize() {
+                command = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, totalShootingTime / 2);
+                timer.restart();
+                shootTimer = new Timer();
+                addRequirements(spindexer, shooter, turret);
+            }
+            public void execute() {
+
+                calculateAlign(true);
+                setTransferPower();
+                setShooterPower(true);
+                if (shootSupplier.getAsBoolean() && !timeStarted) {
+                    shootTimer.restart();
+                    timeStarted = true;
+                }
+
+
+                //ready to shoot
+                if(timeStarted) {
+                    command.execute();
+                }
+            }
+            public boolean isFinished() {
+                return command.isFinished();
+            }
+
+            public void end(boolean interrupted) {
+                spindexer.setDirectPosition(targetPosition);
+                stopItServo.setInactivePosition();
+                spindexer.setDefault();
+                pushUpServo.setDown();
+                shooter.stopAll();
+            }
+        };
+    }
     public void resetIntake(){
         intake.setDirectPower(0);
     }
@@ -700,11 +608,18 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
     public double distToGoal() {
         return TwoWheelShooter2.getShootPose(side).distanceFrom(robotPose);
     }
-//    @Override
-//    public void end(){
-//        ConstantsBot.robotPose = robotPose;
-//        ConstantsBot.side = side;
-//    }
+    @Override
+    public void end(){
+        writePose();
+    }
+
+    public void writePose() {
+        MainTeleOpTurret.startPoseX = robotPose.getX();
+        MainTeleOpTurret.startPoseY  = robotPose.getY();
+        MainTeleOpTurret.startPoseHeading = robotPose.getHeading();
+
+        ConstantsBot.side = side;
+    }
 
     Telemetry dashboardTelemetry;
     public void updateTelemetry() {
