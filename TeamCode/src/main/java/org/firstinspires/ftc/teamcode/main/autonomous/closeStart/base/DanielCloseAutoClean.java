@@ -376,45 +376,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                         ),
                         new RunCommand(()-> setTransferPower())
                 ),
-                new CommandBase() {
-                    final BooleanSupplier shootSupplier = ExtraFns.firstSupplier(
-                            () -> ((shooter.readyToShoot()
-//                                    && turret.isAtAngle(wrappedTurretValue, false))
-                                    || timer.getTime() > 3000)
-                    ));
-                    final Timing.Timer shootTimer = new Timing.Timer(totalShootingTime, TimeUnit.MILLISECONDS);
-                    double startPosition = (SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE));
-                    double targetPosition = 0;
-                    public void initialize() {
-                        timer.restart();
-                        state = State.balls6;
-                        addRequirements(stopItServo, pushUpServo, shooter, turret);
-                    }
-                    public void execute() {
-
-                        calculateAlign(false);
-                        setTransferPower();
-                        if (shootSupplier.getAsBoolean() && !shootTimer.isTimerOn()) {
-                            shootTimer.start();
-                        }
-
-                        //ready to shoot
-                        if(shootTimer.isTimerOn()){
-                            spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * Math.min(shootTimer.elapsedTime(), totalShootingTime) / totalShootingTime);
-                        }
-                    }
-                    public boolean isFinished() {
-                        return shootTimer.done();
-                    }
-
-                    public void end(boolean interrupted) {
-                        pushUpServo.setDown();
-                        spindexer.setDirectPosition(targetPosition);
-                        stopItServo.setInactivePosition();
-                        spindexer.setDefault();
-                    }
-                }
-
+                shootCommand()
 
         );
 
@@ -487,48 +449,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                         ),
                         new RunCommand(()-> setTransferPower())
                 ),
-                new CommandBase() {
-                    final BooleanSupplier shootSupplier = ExtraFns.firstSupplier(
-                            () -> (shooter.readyToShoot()
-//                                    && turret.isAtAngle(wrappedTurretValue, false))
-                                    || timer.getTime() > 3000)
-                    );
-                    final Timing.Timer shootTimer = new Timing.Timer(totalShootingTime, TimeUnit.MILLISECONDS);
-                    double startPosition =  (SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE));
-                    double targetPosition = 0;
-                    public void initialize() {
-                        timer.restart();
-                        addRequirements(stopItServo, pushUpServo, shooter, turret);
-                    }
-                    boolean start = false;
-                    public void execute() {
-                        if(!start){
-                            pushUpServo.setUp();
-                            stopItServo.setActivePosition();
-                            start = true;
-                        }
-                        calculateAlign(false);
-                        setTransferPower();
-                        if (shootSupplier.getAsBoolean() && !shootTimer.isTimerOn()) {
-                            shootTimer.start();
-                        }
-
-                        //ready to shoot
-                        if(shootTimer.isTimerOn()){
-                            spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * Math.min(shootTimer.elapsedTime(), totalShootingTime) / totalShootingTime);
-                        }
-                    }
-                    public boolean isFinished() {
-                        return shootTimer.done();
-                    }
-
-                    public void end(boolean interrupted) {
-                        pushUpServo.setDown();
-                        spindexer.setDirectPosition(targetPosition);
-                        stopItServo.setInactivePosition();
-                        spindexer.setDefault();
-                    }
-                }
+                shootCommand()
 
         );
 
@@ -607,50 +528,9 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                         ),
                         new RunCommand(()-> setTransferPower())
                 ),
-                new CommandBase() {
-                    final BooleanSupplier shootSupplier = ExtraFns.firstSupplier(
-                            () -> ((shooter.readyToShoot()
-//                                    && turret.isAtAngle(wrappedTurretValue, false))
-                            )
-                                    || timer.getTime() > 3000)
-                    );
-                    final Timing.Timer shootTimer = new Timing.Timer(totalShootingTime, TimeUnit.MILLISECONDS);
-                    double startPosition = spindexer.getCurrentSpindexerPosition();
-                    double targetPosition = 0;
-                    public void initialize() {
-                        timer.restart();
-                        addRequirements(stopItServo, pushUpServo, shooter, turret);
-                    }
-                    boolean start = false;
-                    public void execute() {
-                        if(!start){
-                            pushUpServo.setUp();
-                            stopItServo.setActivePosition();
-                            start = true;
-                        }
-                        calculateAlign(false);
-                        setTransferPower();
-                        if (shootSupplier.getAsBoolean() && !shootTimer.isTimerOn()) {
-                            shootTimer.start();
-                        }
-
-                        //ready to shoot
-                        if(shootTimer.isTimerOn()){
-                            spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * Math.min(shootTimer.elapsedTime(), totalShootingTime) / totalShootingTime);
-                        }
-                    }
-                    public boolean isFinished() {
-                        return shootTimer.done();
-                    }
-
-                    public void end(boolean interrupted) {
-                        pushUpServo.setDown();
-                        spindexer.setDirectPosition(targetPosition);
-                        stopItServo.setInactivePosition();
-                        spindexer.setDefault();
-                    }
-                }
+                shootCommand()
         );
+
 
         Command stop = new InstantCommand(() -> {
             drive.stop();
@@ -677,6 +557,54 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
         );
     }
 
+    public Command shootCommand() {
+        return new CommandBase() {
+            final BooleanSupplier shootSupplier = ExtraFns.firstSupplier(
+                    () -> (shooter.readyToShoot()
+//                                    && turret.isAtAngle(wrappedTurretValue, false))
+                            || timer.getTime() > 3000)
+            );
+            final Timing.Timer shootTimer = new Timing.Timer(totalShootingTime, TimeUnit.MILLISECONDS);
+            double startPosition = (SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE));
+            double targetPosition = 0;
+
+            public void initialize() {
+                timer.restart();
+                addRequirements(stopItServo, pushUpServo, shooter, turret);
+            }
+
+            boolean start = false;
+
+            public void execute() {
+                if (!start) {
+                    pushUpServo.setUp();
+                    stopItServo.setActivePosition();
+                    start = true;
+                }
+                calculateAlign(false);
+                setTransferPower();
+                if (shootSupplier.getAsBoolean() && !shootTimer.isTimerOn()) {
+                    shootTimer.start();
+                }
+
+                //ready to shoot
+                if (shootTimer.isTimerOn()) {
+                    spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * Math.min(shootTimer.elapsedTime(), totalShootingTime) / totalShootingTime);
+                }
+            }
+
+            public boolean isFinished() {
+                return shootTimer.done();
+            }
+
+            public void end(boolean interrupted) {
+                pushUpServo.setDown();
+                spindexer.setDirectPosition(targetPosition);
+                stopItServo.setInactivePosition();
+                spindexer.setDefault();
+            }
+        };
+    }
     public void stopFlywheels(){
         shooter.stopAll();
     }

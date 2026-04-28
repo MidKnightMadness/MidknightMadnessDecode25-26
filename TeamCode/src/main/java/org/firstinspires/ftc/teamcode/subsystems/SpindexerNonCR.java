@@ -20,10 +20,7 @@ import java.util.ArrayList;
 
 @Configurable
 public class SpindexerNonCR extends SubsystemBase {
-    public double startOutakePosition = 1;
-    public double endOutakePosition = 0;
     public static double SPINDEXER_OFFSET_DEGREES = 105;
-    public double startTeleOpIntakePosition = SpindexerSpotNonCR.fromIndex(1).getIntakePositions().get(0);
     public static int totalDegrees = 791;//817 extended gr?
     public static AngleNonCR defaultFinishedThreshold = AngleNonCR.fromDegrees(5); // Threshold at which it's finished turning to a spot
     public static AngleNonCR finishedThreshold = AngleNonCR.fromDegrees(15);//TODO: Change to 15 for auto?
@@ -42,12 +39,7 @@ public class SpindexerNonCR extends SubsystemBase {
     //0 - 4 for swyft distance sensor
     public static double distSensorLowerThreshold = 0.5;
     public static double distSensorUpperThreshold = 2.5;
-    double cachingTolerance = 0.01;
-    public final double DEGREES_PER_SECOND = 120.0 / SPOT_CHANGE_TIME;//deg per ms
-    public static double SPOT_CHANGE_TIME = 150;
-
-    public static double STRICT_SPOT_TIME = 120;
-
+    public static double SPOT_CHANGE_TIME = 200;
 
     double currentTurnerPosition = 0;
     public SpindexerNonCR(HardwareMap hardwareMap, boolean useDistanceSensors, BallColor[] ballColors) {
@@ -113,13 +105,6 @@ public class SpindexerNonCR extends SubsystemBase {
     }
 
 
-    // angle is relative to spot 0, so take negative
-    public SpindexerNonCR initAngle(AngleNonCR angle) {
-        currentAngle = angle;
-        return this;
-    }
-
-
     public AngleNonCR getCurrentAngle() {
         return currentAngle;
     }
@@ -149,9 +134,6 @@ public class SpindexerNonCR extends SubsystemBase {
         return this;
     }
 
-    public BallColor newBallDetected(){
-        return newBallType;
-    }
 
     public boolean distCheck = false;
 
@@ -257,15 +239,4 @@ public class SpindexerNonCR extends SubsystemBase {
         return ballsColored;
     }
 
-    public void setAngleTolerance(AngleNonCR angle) {
-        finishedThreshold = angle;
-    }
-
-    public void setDefaultAngleTolerance() {
-        finishedThreshold = defaultFinishedThreshold;
-    }
-
-    public void setBallColorIndex(int triggeredSpot, BallColor ballColor) {
-        ballColors[triggeredSpot] = ballColor;
-    }
 }
