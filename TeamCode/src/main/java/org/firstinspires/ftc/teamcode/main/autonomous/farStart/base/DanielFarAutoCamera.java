@@ -506,6 +506,9 @@ public abstract class DanielFarAutoCamera extends CommandOpMode {
         Command driveToEnd = new LambdaCommand()
                 .setInitialize(() -> {
                     state = State.driveToEnd;
+                    shooter.stopAll();
+                    intake.setDirectPower(0);
+
                     timer.restart();
                 })
                 .setExecute(() -> drive.pidNoHeading(robotPose, side.fromLeftPose(endPose)))
@@ -517,12 +520,14 @@ public abstract class DanielFarAutoCamera extends CommandOpMode {
         });
 
         main = new SequentialCommandGroup(
-                balls1To3,
-                balls4To6,
-                balls7to9,
-                balls9to12,
-                balls12to15,
-                balls16to18,
+                new SequentialCommandGroup(
+                        balls1To3,
+                        balls4To6,
+                        balls7to9,
+                        balls9to12,
+                        balls12to15,
+                        balls16to18
+                ).withTimeout(28000),
                 driveToEnd,
                 stop
         );
