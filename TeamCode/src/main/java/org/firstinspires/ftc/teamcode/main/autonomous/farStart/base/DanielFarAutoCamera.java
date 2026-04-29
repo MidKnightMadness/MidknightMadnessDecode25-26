@@ -21,12 +21,15 @@ import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.commands.AutoDriveToBalls;
 import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommandTime;
 import org.firstinspires.ftc.teamcode.commands.spindexer.OuttakeSpotsRotation;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.game.SpindexerSpotNonCR;
 import org.firstinspires.ftc.teamcode.game.SpotType;
+import org.firstinspires.ftc.teamcode.hardware.LimelightDetector;
+import org.firstinspires.ftc.teamcode.localization.camera.NormalPather;
 import org.firstinspires.ftc.teamcode.main.MainTeleOpTurret;
 import org.firstinspires.ftc.teamcode.newpid.PIDController;
 import org.firstinspires.ftc.teamcode.pedroPathing.ConstantsBot;
@@ -47,7 +50,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 @Configurable
-public abstract class DanielFarAutoRedone extends CommandOpMode {
+public abstract class DanielFarAutoCamera extends CommandOpMode {
     //    public static Pose shootAtPose1 = new Pose(48, 92);
     public static Pose shootAtPose2 = new Pose(60, 10);
     public static Pose gateIntakePose = new Pose(3, 58, Math.toRadians(150));
@@ -104,6 +107,7 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
     SpindexerNonCR spindexer;
     StopItServo stopItServo;
     VoltageSensor voltageSensor;
+    LimelightDetector limelightDetector;
     boolean useBulkMode = true;
 
     Angle wrappedTurretValue;
@@ -339,6 +343,7 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                 new InstantCommand(() -> drive.stop()),
                 shootCommand()
         );
+        
         Function<State, Command> cornerIntakeShoot = state -> new SequentialCommandGroup(
                 new InstantCommand(() -> this.state = state),
                 // Full send to almost there
@@ -355,56 +360,56 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                 // Drive to corner
                 new ParallelRaceGroup(
                         new SequentialCommandGroup(
-                            new LambdaCommand()
-                                    .setInitialize(() -> timer.restart())
-                                    .setExecute(() -> drive.pid(
-                                            robotPose,
-                                            side.fromLeftPose(new Pose(0, zoneIntakeY, headingFacingEdge)),
-                                            0.4
-                                    ))
-                                    .setEnd(() -> cornerX = side.fromLeftX(robotPose.getX()))
-                                    .setIsFinished(() -> timer.getTime() > 1200 && follower.getVelocity().getMagnitude() < 2),
-                            // Drive straight back
-                            new LambdaCommand()
-                                    .setInitialize(() -> timer.restart())
-                                    .setExecute(() -> drive.pid(
-                                            robotPose,
-                                            side.fromLeftPose(new Pose(cornerX + 5, zoneIntakeY, headingFacingEdge)),
-                                            1
-                                    ))
-                                    .setIsFinished(() -> side.toLeftX(robotPose.getX()) > cornerX + 5),
-                            // Drive into wall
-                            new LambdaCommand()
-                                    .setInitialize(() -> timer.restart())
-                                    .setExecute(() -> drive.pid(
-                                            robotPose,
-                                            side.fromLeftPose(new Pose(cornerX + 5, 0, headingFacingEdge)),
-                                            1
-                                    ))
-                                    .setEnd(() -> zoneIntakeY = robotPose.getY() + 7)
-                                    .setIsFinished(() -> timer.getTime() > 300 && Math.abs(robotVel.getYComponent()) < 2),
-                            // Drive forward again
-                            new LambdaCommand()
-                                    .setInitialize(() -> timer.restart())
-                                    .setExecute(() -> drive.pid(
-                                            robotPose,
-                                            side.fromLeftPose(new Pose(-30, 0, headingFacingEdge)),
-                                            0.4
-                                    ))
-                                    .setIsFinished(() -> timer.getTime() > 300 && follower.getVelocity().getMagnitude() < 2),
-                            new InstantCommand(()-> drive.stop()),
-                            new WaitCommand(1400)
-                    ),
-                    new AutoIntakeCommandTime(
-                            spindexer,
-                            intake,
-                            1.0,
-                            false,
-                            voltageSensor,
-                            0,
-                            1,
-                            spindexerSettleTime
-                    )
+                                new LambdaCommand()
+                                        .setInitialize(() -> timer.restart())
+                                        .setExecute(() -> drive.pid(
+                                                robotPose,
+                                                side.fromLeftPose(new Pose(0, zoneIntakeY, headingFacingEdge)),
+                                                0.4
+                                        ))
+                                        .setEnd(() -> cornerX = side.fromLeftX(robotPose.getX()))
+                                        .setIsFinished(() -> timer.getTime() > 1200 && follower.getVelocity().getMagnitude() < 2),
+                                // Drive straight back
+                                new LambdaCommand()
+                                        .setInitialize(() -> timer.restart())
+                                        .setExecute(() -> drive.pid(
+                                                robotPose,
+                                                side.fromLeftPose(new Pose(cornerX + 5, zoneIntakeY, headingFacingEdge)),
+                                                1
+                                        ))
+                                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) > cornerX + 5),
+                                // Drive into wall
+                                new LambdaCommand()
+                                        .setInitialize(() -> timer.restart())
+                                        .setExecute(() -> drive.pid(
+                                                robotPose,
+                                                side.fromLeftPose(new Pose(cornerX + 5, 0, headingFacingEdge)),
+                                                1
+                                        ))
+                                        .setEnd(() -> zoneIntakeY = robotPose.getY() + 7)
+                                        .setIsFinished(() -> timer.getTime() > 300 && Math.abs(robotVel.getYComponent()) < 2),
+                                // Drive forward again
+                                new LambdaCommand()
+                                        .setInitialize(() -> timer.restart())
+                                        .setExecute(() -> drive.pid(
+                                                robotPose,
+                                                side.fromLeftPose(new Pose(-30, 0, headingFacingEdge)),
+                                                0.4
+                                        ))
+                                        .setIsFinished(() -> timer.getTime() > 300 && follower.getVelocity().getMagnitude() < 2),
+                                new InstantCommand(()-> drive.stop()),
+                                new WaitCommand(1400)
+                        ),
+                        new AutoIntakeCommandTime(
+                                spindexer,
+                                intake,
+                                1.0,
+                                false,
+                                voltageSensor,
+                                0,
+                                1,
+                                spindexerSettleTime
+                        )
                 ),
                 new InstantCommand(() -> stopItServo.setActivePosition()),
                 new LambdaCommand()
@@ -426,6 +431,8 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                 new InstantCommand(()-> drive.stop()),
                 shootCommand()
         );
+
+        Predicate<Pose> constraints = pose -> side.toLeftX(pose.getX()) < 60 && pose.getY() < 40;
         Function<State, Command> secondaryIntakeShoot = state -> new SequentialCommandGroup(
                 new InstantCommand(() -> this.state = state),
                 // Full send to almost there
@@ -442,17 +449,15 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                 // Drive to corner
                 new ParallelRaceGroup(
                         new SequentialCommandGroup(
-                                // Drive curve
-                                new LambdaCommand()
-                                        .setInitialize(() -> timer.restart())
-                                        .setExecute(() -> drive.pid(
-                                                robotPose,
-                                                side.fromLeftPose(new Pose(cornerX + 10, zoneTwoIntakeY + 20, Math.toRadians(90))),
-                                                1
-                                        ))
-                                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) > cornerX + 5),
-                                new InstantCommand(()-> drive.stop()),
-                                new WaitCommand(1400)
+                                // Auto drive
+                                new AutoDriveToBalls(
+                                        follower,
+                                        new NormalPather(),
+                                        limelightDetector,
+                                        drive,
+                                        0.5
+                                ).withConstraints(constraints),
+                                new InstantCommand(()-> drive.stop())
                         ),
                         new AutoIntakeCommandTime(
                                 spindexer,
