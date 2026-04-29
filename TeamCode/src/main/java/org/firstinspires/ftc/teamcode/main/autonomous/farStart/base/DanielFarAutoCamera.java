@@ -8,6 +8,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.MathFunctions;
 import com.pedropathing.math.Vector;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.seattlesolvers.solverslib.command.Command;
@@ -41,6 +42,7 @@ import org.firstinspires.ftc.teamcode.subsystems.StopItServo;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter2;
 import org.firstinspires.ftc.teamcode.util.Angle;
+import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.teamcode.util.ExtraFns;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
@@ -112,7 +114,7 @@ public abstract class DanielFarAutoCamera extends CommandOpMode {
 
     Angle wrappedTurretValue;
     public static long totalShootingTime = 700;
-    double spindexerSettleTime = 100;
+    double spindexerSettleTime = 0;
     double turretHeadingError;
 
 
@@ -166,6 +168,9 @@ public abstract class DanielFarAutoCamera extends CommandOpMode {
         pushUpServo = new PushUpServo(hardwareMap, true);
         turret = new Turret(hardwareMap, true);
         stopItServo = new StopItServo(hardwareMap, true);
+
+        Limelight3A limelight = hardwareMap.get(Limelight3A.class, ConfigNames.limelight);
+        limelightDetector = new LimelightDetector(limelight);
 
     }
 
@@ -415,12 +420,12 @@ public abstract class DanielFarAutoCamera extends CommandOpMode {
                 new LambdaCommand()
                         .setInitialize(() -> timer.restart())
                         .setExecute(() -> {
+                            if(timer.getTime() > 300) {
+                                setTransferPower();
+                                pushUpServo.setUp();
+                            }
                             calculateAlign(true);
                             setShooterPower(true);
-                            if(timer.getTime() > 300) {
-                                pushUpServo.setUp();
-                                setTransferPower();
-                            }
                             drive.pidNoHeading(robotPose, side.fromLeftPose(new Pose(
                                     shootAtPose2.getX(),
                                     zoneIntakeY + 3
@@ -457,7 +462,8 @@ public abstract class DanielFarAutoCamera extends CommandOpMode {
                                         drive,
                                         0.5
                                 ).withConstraints(constraints),
-                                new InstantCommand(()-> drive.stop())
+                                new InstantCommand(()-> drive.stop()),
+                                new WaitCommand(400)
                         ),
                         new AutoIntakeCommandTime(
                                 spindexer,
@@ -474,12 +480,12 @@ public abstract class DanielFarAutoCamera extends CommandOpMode {
                 new LambdaCommand()
                         .setInitialize(() -> timer.restart())
                         .setExecute(() -> {
+                            if(timer.getTime() > 300) {
+                                setTransferPower();
+                                pushUpServo.setUp();
+                            }
                             calculateAlign(true);
                             setShooterPower(true);
-                            if(timer.getTime() > 300) {
-                                pushUpServo.setUp();
-                                setTransferPower();
-                            }
                             drive.pidNoHeading(robotPose, side.fromLeftPose(new Pose(
                                     shootAtPose2.getX(),
                                     zoneIntakeY + 8
@@ -539,9 +545,7 @@ public abstract class DanielFarAutoCamera extends CommandOpMode {
                 addRequirements(spindexer, shooter, turret);
             }
             public void execute() {
-
                 calculateAlign(true);
-                setTransferPower();
                 setShooterPower(true);
                 if (shootSupplier.getAsBoolean() && !timeStarted) {
                     shootTimer.restart();
@@ -602,29 +606,30 @@ public abstract class DanielFarAutoCamera extends CommandOpMode {
 
     Telemetry dashboardTelemetry;
     public void updateTelemetry() {
-        telemetry.addData("Update Rate", 1000.0/ timer.getDeltaTime());
-        telemetry.addData("Turret Heading Error", turretHeadingError);;
-        telemetry.addData("Auto time elapsed", autoElapsed.getTime());
-        telemetry.addData("Timer", timer.getTime());
-        telemetry.addData("Robot pose X", robotPose.getX());
-        telemetry.addData("Robot pose Y", robotPose.getY());
-        telemetry.addData("Robot pose heading", Math.toDegrees(robotPose.getHeading()));
-        telemetry.addData("Robot velocity X", robotVel.getXComponent());
-        telemetry.addData("Robot velocity Y", robotVel.getYComponent());
-        telemetry.addData("Low Error", shooter.bottomError);
-        telemetry.addData("High Error", shooter.topError);
-        telemetry.addData("Transfer Error", (shooter.transferError));
+        telemetryM.addData("Update Rate", 1000.0/ timer.getDeltaTime());
+        telemetryM.addData("Turret Heading Error", turretHeadingError);;
+        telemetryM.addData("Auto time elapsed", autoElapsed.getTime());
+        telemetryM.addData("Timer", timer.getTime());
+        telemetryM.addData("Robot pose X", robotPose.getX());
+        telemetryM.addData("Robot pose Y", robotPose.getY());
+        telemetryM.addData("Robot pose heading", Math.toDegrees(robotPose.getHeading()));
+        telemetryM.addData("Robot velocity X", robotVel.getXComponent());
+        telemetryM.addData("Robot velocity Y", robotVel.getYComponent());
+        telemetryM.addData("Low Error", shooter.bottomError);
+        telemetryM.addData("High Error", shooter.topError);
+        telemetryM.addData("Transfer Error", (shooter.transferError));
 
-        telemetry.addLine("--------------------");
+        telemetryM.addLine("--------------------");
 
         dashboardTelemetry.addData("Low Error", shooter.bottomError);
         dashboardTelemetry.addData("High Error", shooter.topError);
         dashboardTelemetry.addData("Transfer Error", (shooter.transferError));
-        telemetry.addData("State", state);
-        telemetry.addData("Distance to goal", distToGoal());
-        telemetry.addData("Spindexer position", spindexerPosition);
+//        telemetry.addData("State", state);
+//        telemetry.addData("Distance to goal", distToGoal());
+//        telemetry.addData("Spindexer position", spindexerPosition);
 
         dashboardTelemetry.update();
-        telemetry.update();
+//        telemetry.update();
+        telemetryM.update(telemetry);
     }
 }

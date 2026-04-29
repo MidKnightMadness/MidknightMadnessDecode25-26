@@ -54,6 +54,7 @@ import java.util.function.Function;
 public abstract class DanielCloseAutoClean extends CommandOpMode {
     public static Pose shootAtPose1 = new Pose(48, 92);
     public static Pose shootAtPose2 = new Pose(50, 88);
+    public static Pose shootAtPoseLast = new Pose(38, 110);
     public static Pose gateIntakePose = new Pose(4, 54, Math.toRadians(150));
     public static Pose startPose = new Pose(20, 120, Math.toRadians(142));
     public static double shootTimeout = 700;
@@ -105,7 +106,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
     Angle wrappedTurretValue;
     double targetHeading;
     public static long totalShootingTime = 360;
-    double spindexerSettleTime = 100;
+    double spindexerSettleTime = 0;
     public abstract ShootSide getShootSide();
 
     @Override
@@ -362,7 +363,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                 new LambdaCommand()
                         .setInitialize(() -> timer.restart())
                         .setExecute(() -> {
-                            calculateAlign(false);
+                            calculateAlign(true);
                             setTransferPower();
                             setShooterPower(true);
                             drive.pidNoHeading(robotPose, new Pose(
@@ -431,7 +432,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                 new LambdaCommand()
                         .setInitialize(() -> timer.restart())
                         .setExecute(() -> {
-                            calculateAlign(false);
+                            calculateAlign(true);
                             setTransferPower();
                             setShooterPower(true);
                             drive.pidNoHeading(robotPose, new Pose(
@@ -506,13 +507,10 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                 new LambdaCommand()
                         .setInitialize(() -> timer.restart())
                         .setExecute(() -> {
-                            calculateAlign(false);
+                            calculateAlign(true);
                             setTransferPower();
                             setShooterPower(true);
-                            drive.pidNoHeading(robotPose, new Pose(
-                                    side.fromLeftX(shootAtPose1.getX()),
-                                    shootAtPose1.getY()
-                            ), 1);
+                            drive.pidNoHeading(robotPose, side.fromLeftPose(shootAtPoseLast), 1);
                         })
                         .setIsFinished(() -> ExtraFns.closeZoneDist(robotPose) < 7),
                 new InstantCommand(()-> drive.stop()),
@@ -559,9 +557,9 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                     stopItServo.setActivePosition();
                     start = true;
                 }
-                calculateAlign(false);
+                calculateAlign(true);
                 setTransferPower();
-                setShooterPower(false);
+                setShooterPower(true);
                 if (shootSupplier.getAsBoolean() && !shootTimer.isTimerOn()) {
                     shootTimer.start();
                 }
@@ -570,6 +568,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                 if (shootTimer.isTimerOn()) {
                     spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * Math.min(shootTimer.elapsedTime(), totalShootingTime) / totalShootingTime);
                 }
+//                spindexer.setDirectPosition(targetPosition);
             }
 
             public boolean isFinished() {
