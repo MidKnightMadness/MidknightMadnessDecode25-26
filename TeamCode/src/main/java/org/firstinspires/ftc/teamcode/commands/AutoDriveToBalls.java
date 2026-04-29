@@ -13,6 +13,10 @@ import org.firstinspires.ftc.teamcode.hardware.LimelightDetector;
 import org.firstinspires.ftc.teamcode.localization.camera.BallPather;
 import org.firstinspires.ftc.teamcode.pedroPathing.motorTesting.WheelControl2;
 
+import java.util.Arrays;
+import java.util.function.Function;
+import java.util.function.Predicate;
+
 public class AutoDriveToBalls extends CommandBase {
     Pose robotPose;
     Follower follower;
@@ -22,6 +26,7 @@ public class AutoDriveToBalls extends CommandBase {
     double drivePower;
 
     TelemetryManager telemetryM;
+    Predicate<Pose> constraints;
 
     public AutoDriveToBalls(
             Follower follower,
@@ -40,6 +45,11 @@ public class AutoDriveToBalls extends CommandBase {
         addRequirements(limelightDetector);
     }
 
+    public AutoDriveToBalls withConstraints(Predicate<Pose> constraints) {
+        this.constraints = constraints;
+        return this;
+    }
+
     @Override
     public void initialize() {
         limelightDetector.start();
@@ -51,7 +61,13 @@ public class AutoDriveToBalls extends CommandBase {
         robotPose = follower.getPose();
 
         Vector2d[] ballPixels = limelightDetector.getBallPixels();
-        Pose[] ballPoses = limelightDetector.getBallPoses(robotPose, ballPixels);
+        Pose[] ballPoses = limelightDetector.getBallPoses(robotPose, ballPixels); // TODO: filter with constraint
+//        if (constraints == null) {
+//            ballPoses = limelightDetector.getBallPoses(robotPose, ballPixels);
+//        } else {
+//            ballPoses = Arrays.stream(limelightDetector.getBallPoses(robotPose, ballPixels)
+//                    .filter(pose -> constraints.apply(pose)));
+//        }
         Pose[] nextPoses = ballPather.findPath(robotPose, ballPoses, 3);
         if (nextPoses.length > 0) {
             Pose nextPose = nextPoses[0];
