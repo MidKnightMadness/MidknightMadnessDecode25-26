@@ -442,7 +442,7 @@ public abstract class DanielFarAutoCamera extends CommandOpMode {
                                 robotPose, side.fromLeftPose(new Pose(
                                         rowXInner,
                                         zoneTwoIntakeY,
-                                        headingFacingEdge
+                                        Math.toRadians(110)
                                 )), 1)
                         )
                         .setIsFinished(() -> side.toLeftX(robotPose.getX()) < rowXInner),

@@ -447,11 +447,11 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                                         .setInitialize(() -> timer.restart())
                                         .setExecute(() -> drive.pid(
                                                 robotPose,
-                                                side.fromLeftPose(new Pose(cornerX + 10, zoneTwoIntakeY + 20, Math.toRadians(90))),
+                                                side.fromLeftPose(new Pose(cornerX + 10, zoneTwoIntakeY + 5, Math.toRadians(90))),
                                                 1
                                         ))
                                         .setIsFinished(() -> side.toLeftX(robotPose.getX()) > cornerX + 5),
-                                new InstantCommand(()-> drive.stop()),
+                                new InstantCommand(() -> drive.stop()),
                                 new WaitCommand(1400)
                         ),
                         new AutoIntakeCommandTime(
