@@ -107,7 +107,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
     Angle wrappedTurretValue;
     double targetHeading;
     public static long totalShootingTime = 360;
-    double spindexerSettleTime = 0;
+    double spindexerSettleTime = 100;
     public abstract ShootSide getShootSide();
 
     @Override
@@ -293,6 +293,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                 spindexer.setDirectPosition(targetPosition);
                 stopItServo.setInactivePosition();
                 spindexer.setDefault();
+                shooter.stopAll();
             }
         };
 
@@ -549,11 +550,13 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                     () -> (shooter.readyToShoot() || timer.getTime() > 3000)
             );
             final Timing.Timer shootTimer = new Timing.Timer(totalShootingTime, TimeUnit.MILLISECONDS);
-            double startPosition = (SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE));
+            OuttakeSpotsRotation outtakeSpotsRotation;
+//            double startPosition = (SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE));
             double targetPosition = 0;
 
             public void initialize() {
                 timer.restart();
+                outtakeSpotsRotation = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, totalShootingTime / 2);
                 addRequirements(stopItServo, pushUpServo, shooter, turret);
             }
 
@@ -573,14 +576,23 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                 }
 
                 //ready to shoot
-                if (shootTimer.isTimerOn()) {
-                    spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * Math.min(shootTimer.elapsedTime(), totalShootingTime) / totalShootingTime);
+//                if (shootTimer.isTimerOn()) {
+//                    spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * Math.min(shootTimer.elapsedTime(), totalShootingTime) / totalShootingTime);
+//                }
+
+                if (shootSupplier.getAsBoolean() && !shootTimer.isTimerOn()) {
+                    shootTimer.start();
+                }
+
+                //ready to shoot
+                if(shootTimer.isTimerOn()){
+                    outtakeSpotsRotation.execute();
                 }
 //                spindexer.setDirectPosition(targetPosition);
             }
 
             public boolean isFinished() {
-                return shootTimer.done();
+                return outtakeSpotsRotation.isFinished();
             }
 
             public void end(boolean interrupted) {
@@ -588,6 +600,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                 spindexer.setDirectPosition(targetPosition);
                 stopItServo.setInactivePosition();
                 spindexer.setDefault();
+                shooter.stopAll();
             }
         };
     }
@@ -622,7 +635,6 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
 
     @Override
     public void end(){
-        writePose();
     }
 
     public void writePose() {

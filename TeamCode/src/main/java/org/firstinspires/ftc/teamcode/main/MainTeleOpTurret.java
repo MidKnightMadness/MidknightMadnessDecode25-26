@@ -136,8 +136,8 @@ public class MainTeleOpTurret extends CommandOpMode {
     double currTurnerPosition;
     double targetSpindexerPosition;
     int activeSpindexerSpot = 0;
-    public static double settleTime = 0;
-    public static long fastSmoothTime = 500;
+    public static double settleTime = 100;
+    public static long fastSmoothTime = 380;
     public static long fastInBetweenTime = 120;
     public static long mediumInBetweenTime = 150;
     public static long slowInBetweenTime = 200;
@@ -645,7 +645,7 @@ public class MainTeleOpTurret extends CommandOpMode {
     boolean directSpinShootActivated = false;
     OuttakeSpotsRotation outtakeSpotsRotation;
     private void shootingSpindexerMovements(){
-        if (gamepad2.rightBumperWasPressed()) {//MEDIUM SPEED -SMOOTHED
+        if (gamepad2.rightBumperWasPressed()) {//FAST SPEED -SMOOTHED
             stopItServo.setActivePosition();
             prepareSpindexer();
             spindexerGotoPositionSmooth = new SpindexerGotoPositionSmooth(spindexer, activeSpindexerSpot,  Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0), fastSmoothTime);
@@ -869,6 +869,10 @@ public class MainTeleOpTurret extends CommandOpMode {
         telemetry.addData("Low Error", (shooter.bottomError));
         telemetry.addData("High Error", (shooter.topError));
         telemetry.addData("Transfer Error", (shooter.transferError));
+
+        dashboardTelemetry.addData("Low Error", (shooter.bottomError));
+        dashboardTelemetry.addData("High Error", (shooter.topError));
+        dashboardTelemetry.addData("Transfer Error", (shooter.transferError));
 
 
         telemetry.addLine("--------------------------------");
