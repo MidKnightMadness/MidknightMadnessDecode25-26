@@ -167,13 +167,13 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
             timer.restart();
             start = true;
         }
+        spindexer.setDirectPosition(
+                SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE));
 
         if(timer.getTime() >= 3000 && !reset){
             turret.resetEncoderPosition();
             reset = true;
             //set spindexer to spot 3
-            spindexer.setDirectPosition(
-                    SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE));
 
         }
         //wait for turret to recenter
@@ -256,7 +256,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                 timer.restart();
                 state = State.balls3;
                 addRequirements(stopItServo, pushUpServo, shooter, turret);
-                outtakeSpotsRotation = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, totalShootingTime / 2);
+                outtakeSpotsRotation = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, totalShootingTime *2/3);
             }
             boolean start = false;
             public void execute() {
@@ -556,7 +556,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
 
             public void initialize() {
                 timer.restart();
-                outtakeSpotsRotation = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, totalShootingTime / 2);
+                outtakeSpotsRotation = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, totalShootingTime * 2/3);
                 addRequirements(stopItServo, pushUpServo, shooter, turret);
             }
 
@@ -638,9 +638,9 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
     }
 
     public void writePose() {
-        MainTeleOpTurret.startPoseX = robotPose.getX();
-        MainTeleOpTurret.startPoseY = robotPose.getY();
-        MainTeleOpTurret.startPoseHeading = robotPose.getHeading();
+        MainTeleOpTurret.startPoseX = follower.getPose().getX();
+        MainTeleOpTurret.startPoseY = follower.getPose().getY();
+        MainTeleOpTurret.startPoseHeading = follower.getPose().getHeading();
 
         ConstantsBot.side = side;
     }
