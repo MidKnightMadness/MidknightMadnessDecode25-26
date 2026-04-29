@@ -108,7 +108,7 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
 
     Angle wrappedTurretValue;
     public static long totalShootingTime = 700;
-    double spindexerSettleTime = 0;
+    double spindexerSettleTime = 100;
     double turretHeadingError;
 
 

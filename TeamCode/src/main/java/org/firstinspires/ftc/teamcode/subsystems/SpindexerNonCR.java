@@ -20,7 +20,7 @@ import java.util.ArrayList;
 
 @Configurable
 public class SpindexerNonCR extends SubsystemBase {
-    public static double SPINDEXER_OFFSET_DEGREES = 80;
+    public static double SPINDEXER_OFFSET_DEGREES = 0d;
     public static int totalDegrees = 791;//817 extended gr?
     public static AngleNonCR defaultFinishedThreshold = AngleNonCR.fromDegrees(5); // Threshold at which it's finished turning to a spot
     public static AngleNonCR finishedThreshold = AngleNonCR.fromDegrees(15);//TODO: Change to 15 for auto?
@@ -39,7 +39,7 @@ public class SpindexerNonCR extends SubsystemBase {
     //0 - 4 for swyft distance sensor
     public static double distSensorLowerThreshold = 0.5;
     public static double distSensorUpperThreshold = 2.5;
-    public static double SPOT_CHANGE_TIME = 200;
+    public static double SPOT_CHANGE_TIME = 150;
 
     double currentTurnerPosition = 0;
     public SpindexerNonCR(HardwareMap hardwareMap, boolean useDistanceSensors, BallColor[] ballColors) {
