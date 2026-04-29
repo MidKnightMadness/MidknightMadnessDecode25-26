@@ -148,9 +148,9 @@ public class MainTeleOpTurret extends CommandOpMode {
     public static boolean intakeVoltageCompensated = false;
     VoltageSensor voltageSensor;
 
-    public static Double startPoseX;
-    public static Double startPoseY;
-    public static Double startPoseHeading;
+    public static double startPoseX = 0;
+    public static double startPoseY = 0;
+    public static double startPoseHeading = 0;
 
     @Override
     public void initialize() {
