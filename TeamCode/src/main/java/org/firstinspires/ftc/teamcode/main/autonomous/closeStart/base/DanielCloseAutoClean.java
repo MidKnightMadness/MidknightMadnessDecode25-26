@@ -18,6 +18,7 @@ import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.LambdaCommand;
+import com.seattlesolvers.solverslib.command.ParallelDeadlineGroup;
 import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
@@ -54,8 +55,8 @@ import java.util.function.Function;
 public abstract class DanielCloseAutoClean extends CommandOpMode {
     public static Pose shootAtPose1 = new Pose(48, 92);
     public static Pose shootAtPose2 = new Pose(50, 88);
-    public static Pose shootAtPoseLast = new Pose(38, 110);
-    public static Pose gateIntakePose = new Pose(4, 54, Math.toRadians(150));
+    public static Pose shootAtPoseLast = new Pose(30, 130);
+    public static Pose gateIntakePose = new Pose(4, 54, Math.toRadians(160));
     public static Pose startPose = new Pose(20, 120, Math.toRadians(142));
     public static double shootTimeout = 700;
     public static double rowXInner = 42;
@@ -514,8 +515,15 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                             drive.pidNoHeading(robotPose, side.fromLeftPose(shootAtPoseLast), 1);
                         })
                         .setIsFinished(() -> ExtraFns.closeZoneDist(robotPose) < 7),
-                new InstantCommand(()-> drive.stop()),
-                shootCommand()
+                new ParallelDeadlineGroup(
+                        shootCommand(),
+                        new LambdaCommand()
+                                .setInitialize(() -> timer.restart())
+                                .setExecute(() -> {
+                                    drive.pidNoHeading(robotPose, side.fromLeftPose(shootAtPoseLast), 1);
+                                })
+                ),
+                new InstantCommand(()-> drive.stop())
         );
 
 

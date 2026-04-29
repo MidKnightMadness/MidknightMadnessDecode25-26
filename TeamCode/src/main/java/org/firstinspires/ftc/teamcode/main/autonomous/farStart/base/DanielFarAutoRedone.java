@@ -455,19 +455,19 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                                         .setInitialize(() -> timer.restart())
                                         .setExecute(() -> drive.pid(
                                                 robotPose,
-                                                side.fromLeftPose(new Pose(cornerX + 10, zoneTwoIntakeY + 5, Math.toRadians(90))),
+                                                side.fromLeftPose(new Pose(cornerX, 35, Math.toRadians(-90))),
                                                 0.5
                                         ))
-                                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) > cornerX + 5),
+                                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) < cornerX + 6),
                                 // Drive curve
                                 new LambdaCommand()
                                         .setInitialize(() -> timer.restart())
                                         .setExecute(() -> drive.pid(
                                                 robotPose,
-                                                side.fromLeftPose(new Pose(cornerX + 10, zoneTwoIntakeY + 25, Math.toRadians(90))),
+                                                side.fromLeftPose(new Pose(cornerX + 2, 5, Math.toRadians(-90))),
                                                 0.5
                                         ))
-                                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) > cornerX + 5),
+                                        .setIsFinished(() -> robotPose.getY() < 13),
                                 new InstantCommand(() -> drive.stop()),
                                 new WaitCommand(1400)
                         ),
@@ -481,7 +481,7 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                                 1,
                                 spindexerSettleTime
                         )
-                ),
+                ).withTimeout(5000),
                 new InstantCommand(() -> stopItServo.setActivePosition()),
                 new LambdaCommand()
                         .setInitialize(() -> timer.restart())
