@@ -251,6 +251,7 @@ public abstract class DanielFarAutoCamera extends CommandOpMode {
             Timer shootTimer;
             OuttakeSpotsRotation command;
             double targetPosition = 0;
+            boolean timeStarted = false;
             public void initialize() {
                 command = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, totalShootingTime / 2);
                 timer.restart();
@@ -262,7 +263,14 @@ public abstract class DanielFarAutoCamera extends CommandOpMode {
                 calculateAlign(true);
                 setTransferPower();
                 setShooterPower(true);
-                if (shootSupplier.getAsBoolean()) {
+                if (shootSupplier.getAsBoolean() && !timeStarted) {
+                    shootTimer.restart();
+                    timeStarted = true;
+                }
+
+
+                //ready to shoot
+                if(timeStarted) {
                     command.execute();
                 }
             }
@@ -598,7 +606,7 @@ public abstract class DanielFarAutoCamera extends CommandOpMode {
     }
     @Override
     public void end(){
-        writePose();
+//        writePose();
     }
 
     public void writePose() {
