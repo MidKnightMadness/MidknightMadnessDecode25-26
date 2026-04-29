@@ -177,13 +177,13 @@ public class TwoWheelShooter2 extends SubsystemBase {
         transferError = transfer.getVelocity() - predictedTransferVel;
 
         if(useAggressiveRecovery) {
-            if (Math.abs(bottomError) > shotDropThreshold && bottomError < 0) {
+            if (Math.abs(bottomError) > shotDropThreshold && bottomError < 0) {//TODO: CHECK
                 setAggressiveGainsBottom();
             } else {
                 resetDefaultGainsBottom();
             }
 
-            if (Math.abs(topError) > shotDropThreshold  && topError < 0) {
+            if (Math.abs(topError) > shotDropThreshold  && topError < 0) {//TODO: CHECK
                 setAggressiveGainsTop();
             } else {
                 resetDefaultGainsTop();

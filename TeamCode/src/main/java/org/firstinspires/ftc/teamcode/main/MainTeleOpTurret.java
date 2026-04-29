@@ -616,19 +616,19 @@ public class MainTeleOpTurret extends CommandOpMode {
         if (gamepad2.dpadLeftWasPressed()) {
             stopItServo.setActivePosition();
             prepareSpindexer();
-            activeSpindexerSpot = spindexer.getSpotOptimal(-1, activeSpindexerSpot);
+            activeSpindexerSpot = spindexer.getSpotOptimal(1, activeSpindexerSpot);
             setSpotDirect(activeSpindexerSpot);
         }
         if (gamepad2.dpadRightWasPressed()) {
             stopItServo.setActivePosition();
             prepareSpindexer();
-            activeSpindexerSpot = spindexer.getSpotOptimal(1, activeSpindexerSpot);
+            activeSpindexerSpot = spindexer.getSpotOptimal(-1, activeSpindexerSpot);
             setSpotDirect(activeSpindexerSpot);
         }
     }
 
     private void boundsSpindexerPositions(){
-        if (gamepad2.leftBumperWasPressed()) {
+        if (gamepad2.leftStickButtonWasPressed()) {
             stopItServo.setActivePosition();
             prepareSpindexer();
             activeSpindexerSpot = 0;
@@ -784,13 +784,21 @@ public class MainTeleOpTurret extends CommandOpMode {
 
 
         if (gamepad2.left_trigger > 0.3) {
-            setShooterPower(currVolt);
+            setShooterPower(currVolt, true);
             pushUpServo.setUp();
             stopItServo.setActivePosition();
             shooter.setTransferPower(
                     transferRunmode == TwoWheelShooter2.RunMode.VelocityControl ? TwoWheelShooter2.transferVelocity : TwoWheelShooter2.transferPower,
                     currVolt);
-        } else if (gamepad2.right_trigger > 0.3) {
+        } else if(gamepad2.left_bumper){
+            setShooterPower(currVolt, false);
+            pushUpServo.setUp();
+            stopItServo.setActivePosition();
+            shooter.setTransferPower(
+                    transferRunmode == TwoWheelShooter2.RunMode.VelocityControl ? TwoWheelShooter2.transferVelocity : TwoWheelShooter2.transferPower,
+                    currVolt);
+        }
+        else if (gamepad2.right_trigger > 0.3) {
             shooter.stopAll();
             stopItServo.setInactivePosition();
             pushUpServo.setDown();
@@ -800,9 +808,9 @@ public class MainTeleOpTurret extends CommandOpMode {
 
     }
 
-    private void setShooterPower(double currVolt) {
+    private void setShooterPower(double currVolt, boolean sotm) {
         if (!setCustomPower) {
-            if(sotmEnabled){
+            if(sotm){
                 shooter.setFlywheelNew(follower.getPose(), follower.getVelocity(), shootSide, currVolt);
             }
             else{
