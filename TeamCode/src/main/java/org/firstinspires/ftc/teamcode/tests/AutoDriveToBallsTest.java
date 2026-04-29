@@ -46,26 +46,6 @@ public class AutoDriveToBallsTest extends CommandOpMode {
     public void run() {
         super.run();
         follower.update();
-
-//        Pose robotPose = follower.getPose();
-//        if (path == null || path.length == 0) {
-//            Vector2d[] ballPixels = limelightDetector.getBallPixels();
-//            Pose[] ballPoses = limelightDetector.getBallPoses(follower.getPose(), ballPixels);
-//            path = ballPather.findPath(follower.getPose(), ballPoses, 3);
-////            started = true;
-//        } else {
-//            Pose target = path[0].withHeading(path[0].minus(robotPose).getAsVector().getTheta());
-//            follower.holdPoint(target);
-//        }
-
-//        telemetryM.addData("Ball pose length", ballPoses.length);
-//        for (int i = 0; i < ballPoses.length; i++) {
-//            telemetryM.addData("Ball " + i, ballPoses[i]);
-//        }
-//        for (int i = 0; i < ballPixels.length; i++) {
-//            telemetryM.addLine("Ball " + i + " pixel x: " + ballPixels[i].getX());
-//            telemetryM.addLine("Ball " + i + " pixel y: " + ballPixels[i].getY());
-//        }
         if (!started) {
             driveCommand.schedule();
             started = true;

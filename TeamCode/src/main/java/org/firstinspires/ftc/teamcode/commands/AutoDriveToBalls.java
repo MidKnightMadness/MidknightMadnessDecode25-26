@@ -70,6 +70,16 @@ public class AutoDriveToBalls extends CommandBase {
                     .toArray(Pose[]::new);
         }
         Pose[] nextPoses = ballPather.findPath(robotPose, ballPoses, 3);
+
+        telemetryM.addData("Ball pose length", ballPoses.length);
+        for (int i = 0; i < ballPoses.length; i++) {
+            telemetryM.addData("Ball " + i, ballPoses[i]);
+        }
+        for (int i = 0; i < ballPixels.length; i++) {
+            telemetryM.addLine("Ball " + i + " pixel x: " + ballPixels[i].getX());
+            telemetryM.addLine("Ball " + i + " pixel y: " + ballPixels[i].getY());
+        }
+
         if (nextPoses.length > 0) {
             Pose nextPose = nextPoses[0];
             double targetHeading = nextPose.minus(robotPose).getAsVector().getTheta();
@@ -84,6 +94,7 @@ public class AutoDriveToBalls extends CommandBase {
         }
 
         telemetryM.addData("Robot pose", robotPose);
+        telemetryM.addData("Robot heading", robotPose.getHeading());
     }
 
     @Override
