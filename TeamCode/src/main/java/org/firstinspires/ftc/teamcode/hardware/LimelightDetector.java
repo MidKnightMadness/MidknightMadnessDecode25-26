@@ -156,9 +156,9 @@ public class LimelightDetector extends SubsystemBase {
     public Pose[] getBallPoses(Pose robotPose, Vector2d[] ballPixels) {
 //        poseHistory.addPose(robotPose);
 //        return locator.ballPoses(poseHistory.poseAtTime(lastUpdateMillis), ballPixels);
-        if (cachedPoses == null/* || timer.getTime() > 500*/) {
-            cachedPoses = locator.ballPoses(robotPose, ballPixels);
-        }
-        return cachedPoses;
+//        if (cachedPoses == null || timer.getTime() > 500) {
+//            cachedPoses = locator.ballPoses(robotPose, ballPixels);
+//        }
+        return locator.ballPoses(robotPose, ballPixels);
     }
 }
