@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.math.MathFunctions;
 import com.pedropathing.util.PoseHistory;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
@@ -86,8 +87,8 @@ public class LimelightDetector extends SubsystemBase {
             double y = a.getY() + (b.getY() - a.getY()) * t;
 
             // IMPORTANT: handle angle wraparound properly
-            double dTheta = normalizeAngle(b.getHeading() - a.getHeading());
-            double heading = a.getHeading() + dTheta * t;
+            double dTheta = b.getHeading() - a.getHeading();
+            double heading = normalizeAngle(a.getHeading() + dTheta * t);
 
             return new Pose(x, y, heading);
         }
