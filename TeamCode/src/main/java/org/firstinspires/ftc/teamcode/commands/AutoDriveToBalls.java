@@ -61,13 +61,14 @@ public class AutoDriveToBalls extends CommandBase {
         robotPose = follower.getPose();
 
         Vector2d[] ballPixels = limelightDetector.getBallPixels();
-        Pose[] ballPoses = limelightDetector.getBallPoses(robotPose, ballPixels); // TODO: filter with constraint
-//        if (constraints == null) {
-//            ballPoses = limelightDetector.getBallPoses(robotPose, ballPixels);
-//        } else {
-//            ballPoses = Arrays.stream(limelightDetector.getBallPoses(robotPose, ballPixels)
-//                    .filter(pose -> constraints.apply(pose)));
-//        }
+        Pose[] ballPoses; // TODO: filter with constraint
+        if (constraints == null) {
+            ballPoses = limelightDetector.getBallPoses(robotPose, ballPixels);
+        } else {
+            ballPoses = Arrays.stream(limelightDetector.getBallPoses(robotPose, ballPixels))
+                    .filter(constraints)
+                    .toArray(Pose[]::new);
+        }
         Pose[] nextPoses = ballPather.findPath(robotPose, ballPoses, 3);
         if (nextPoses.length > 0) {
             Pose nextPose = nextPoses[0];
