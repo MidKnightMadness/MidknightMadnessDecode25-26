@@ -435,7 +435,7 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                                 robotPose, side.fromLeftPose(new Pose(
                                         rowXInner,
                                         zoneTwoIntakeY,
-                                        headingFacingEdge
+                                        Math.toRadians(160)
                                 )), 1)
                         )
                         .setIsFinished(() -> side.toLeftX(robotPose.getX()) < rowXInner),
@@ -448,7 +448,16 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                                         .setExecute(() -> drive.pid(
                                                 robotPose,
                                                 side.fromLeftPose(new Pose(cornerX + 10, zoneTwoIntakeY + 5, Math.toRadians(90))),
-                                                1
+                                                0.5
+                                        ))
+                                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) > cornerX + 5),
+                                // Drive curve
+                                new LambdaCommand()
+                                        .setInitialize(() -> timer.restart())
+                                        .setExecute(() -> drive.pid(
+                                                robotPose,
+                                                side.fromLeftPose(new Pose(cornerX + 10, zoneTwoIntakeY + 25, Math.toRadians(90))),
+                                                0.5
                                         ))
                                         .setIsFinished(() -> side.toLeftX(robotPose.getX()) > cornerX + 5),
                                 new InstantCommand(() -> drive.stop()),
