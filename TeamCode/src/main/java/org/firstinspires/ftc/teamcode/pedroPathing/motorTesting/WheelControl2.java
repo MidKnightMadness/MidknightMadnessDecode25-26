@@ -24,16 +24,16 @@ public class WheelControl2 {
 
     public WheelControl2(HardwareMap hardwareMap) {
         this.BR = hardwareMap.get(DcMotorEx.class, ConfigNames.BR);
-        this.BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        this.BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 //        this.BR.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         this.FR = hardwareMap.get(DcMotorEx.class, ConfigNames.FR);
-        this.FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        this.FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 //        this.FR.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         this.BL = hardwareMap.get(DcMotorEx.class, ConfigNames.BL);
-        this.BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        this.BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 //        this.BL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         this.FL = hardwareMap.get(DcMotorEx.class, ConfigNames.FL);
-        this.FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        this.FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 //        this.FL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
