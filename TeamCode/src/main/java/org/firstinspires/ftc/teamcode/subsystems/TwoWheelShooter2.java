@@ -333,7 +333,7 @@ public class TwoWheelShooter2 extends SubsystemBase {
     public boolean readyToShoot(){
         return Math.abs(low.getVelocity() - predictedBotVel) <= readyToShootBot &&
                 Math.abs(high.getVelocity() - predictedTopVel) <= readyToShootTop &&
-                Math.abs(transfer.getVelocity() - predictedTransferVel)<= readyToShootTransfer;
+                Math.abs(transfer.getVelocity() -predictedTransferVel)<= readyToShootTransfer;
     }
     public boolean readyToShoot(double lowTolerance, double highTolerance, double transferTolerance){
         return Math.abs(low.getVelocity() - predictedBotVel) <= lowTolerance &&
