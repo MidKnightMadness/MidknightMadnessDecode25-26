@@ -611,17 +611,26 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
             public boolean isFinished() {
                 return shootTimer.getTime() > totalShootingTime && timeStarted;
             }
+
+            public void end(boolean interrupted) {
+                pushUpServo.setDown();
+                spindexer.setDirectPosition(targetPosition);
+                stopItServo.setInactivePosition();
+                spindexer.setDefault();
+                shooter.stopAll();
+            }
         };
     }
 
 
 
     public void writePose() {
-        MainTeleOpTurret.startPoseX = follower.getPose().getX();
-        MainTeleOpTurret.startPoseY  = follower.getPose().getY();
-        MainTeleOpTurret.startPoseHeading = follower.getPose().getHeading();
-
+//        MainTeleOpTurret.startPoseX = follower.getPose().getX();
+//        MainTeleOpTurret.startPoseY  = follower.getPose().getY();
+//        MainTeleOpTurret.startPoseHeading = follower.getPose().getHeading();
+//
         ConstantsBot.side = side;
+        blackboard.put(ConstantsBot.END_POSE_KEY, follower.getPose());
     }
     Telemetry dashboardTelemetry;
     public void updateTelemetry() {

@@ -609,11 +609,12 @@ public abstract class DanielFarAutoCamera extends CommandOpMode {
     }
 
     public void writePose() {
-        MainTeleOpTurret.startPoseX = robotPose.getX();
-        MainTeleOpTurret.startPoseY  = robotPose.getY();
-        MainTeleOpTurret.startPoseHeading = robotPose.getHeading();
-
+//        MainTeleOpTurret.startPoseX = follower.getPose().getX();
+//        MainTeleOpTurret.startPoseY  = follower.getPose().getY();
+//        MainTeleOpTurret.startPoseHeading = follower.getPose().getHeading();
+//
         ConstantsBot.side = side;
+        blackboard.put(ConstantsBot.END_POSE_KEY, follower.getPose());
     }
 
     Telemetry dashboardTelemetry;

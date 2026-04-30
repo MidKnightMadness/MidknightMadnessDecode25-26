@@ -56,7 +56,6 @@ import org.firstinspires.ftc.teamcode.commands.TurretGotoPositionSmooth;
 
 import java.io.File;
 
-@Configurable
 @Config
 @TeleOp(name = "Main TeleOp Turret", group = "aCompetition")
 public class MainTeleOpTurret extends CommandOpMode {
@@ -101,7 +100,7 @@ public class MainTeleOpTurret extends CommandOpMode {
 
     SpindexerGotoPositionSmooth spindexerGotoPositionSmooth;
 
-        Telemetry dashboardTelemetry;
+    Telemetry dashboardTelemetry;
     TwoWheelShooter2.ShootDist currentShootDist;
 
     public static boolean useDistanceSensor = true;
@@ -137,9 +136,9 @@ public class MainTeleOpTurret extends CommandOpMode {
     double targetSpindexerPosition;
     int activeSpindexerSpot = 0;
     public static double settleTime = 100;
-    public static long fastSmoothTime = 380;
-    public static double slowSmoothTime = 450;
-    public static long mediumSmoothTime = 480;
+    public static long fastSmoothTime = 350;
+    public static double slowSmoothTime = 550;
+    public static long mediumSmoothTime = 450;
     public static long fastInBetweenTime = 120;
     public static long mediumInBetweenTime = 150;
     public static long slowInBetweenTime = 200;
@@ -167,8 +166,7 @@ public class MainTeleOpTurret extends CommandOpMode {
 
 
         shootSide = ConstantsBot.side;
-        startPose = new Pose(startPoseX, startPoseY, startPoseHeading);
-
+        Pose startPose = (Pose) blackboard.getOrDefault(ConstantsBot.END_POSE_KEY, shootSide == ShootSide.LEFT? ConstantsBot.BLUE_END_AUTO_POSE : ConstantsBot.RED_END_AUTO_POSE);
         gameTimer = new Timer();
 
         follower = ConstantsBot.createPinpointFollower(hardwareMap);
@@ -723,15 +721,15 @@ public class MainTeleOpTurret extends CommandOpMode {
 
     private void intakeCommands() {
         if (gamepad2.xWasPressed()) {
-            if(activeSpindexerSpot + 3 > SpindexerNonCR.TOTAL_SPOTS){//go back three shots first,
-                stopItServo.setActivePosition();
-                prepareSpindexer();
-                activeSpindexerSpot = Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0);
-                setSpotDirect(activeSpindexerSpot);
-                directSpinShootTimer.restart();
-                directSpinShootActivated = true;
-                return;
-            }
+//            if(activeSpindexerSpot + 3 > SpindexerNonCR.TOTAL_SPOTS){//go back three shots first,
+//                stopItServo.setActivePosition();
+//                prepareSpindexer();
+//                activeSpindexerSpot = Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0);
+//                setSpotDirect(activeSpindexerSpot);
+//                directSpinShootTimer.restart();
+//                directSpinShootActivated = true;
+//                return;
+//            }
 
             autoIntake = true;
             stopItServo.setInactivePosition();

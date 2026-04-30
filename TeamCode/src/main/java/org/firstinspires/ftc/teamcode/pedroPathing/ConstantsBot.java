@@ -21,9 +21,9 @@ import org.firstinspires.ftc.teamcode.util.ConfigNames;
 @Configurable
 public class ConstantsBot {
     public static Pose robotPose = new Pose(0, 0, 0);
-    public static Double robotPoseX;
-    public static Double robotPoseY;
-    public static Double robotPoseHeading;
+    public static String END_POSE_KEY = "WRITE_POSE";
+    public static Pose BLUE_END_AUTO_POSE = new Pose(45, 34, 0);
+    public static Pose RED_END_AUTO_POSE = new Pose(141.5-45, 34, 0);
 
     public static ShootSide side = ShootSide.LEFT;
     public static FollowerConstants followerConstants = new FollowerConstants()

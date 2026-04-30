@@ -247,17 +247,21 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
             final BooleanSupplier shootSupplier = ExtraFns.firstSupplier(
                     () -> ((distToGoal() > 40 && timer.getTime() > 800) || timer.getTime() > 3000)
             );
-            final Timing.Timer shootTimer = new Timing.Timer(totalShootingTime, TimeUnit.MILLISECONDS);
+
+            Timer shootTimer;
             double startPosition = (SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE));
             double targetPosition = 0;
-            OuttakeSpotsRotation outtakeSpotsRotation;
+//            OuttakeSpotsRotation outtakeSpotsRotation;
+
 
             public void initialize() {
                 timer.restart();
                 state = State.balls3;
+                shootTimer = new Timer();
                 addRequirements(stopItServo, pushUpServo, shooter, turret);
-                outtakeSpotsRotation = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, totalShootingTime / 2);
+//                outtakeSpotsRotation = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, totalShootingTime / 2);
             }
+            boolean timeStarted;
             boolean start = false;
             public void execute() {
                 if(!start){
@@ -275,19 +279,20 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                                 shootAtPose1.getY()
                         )
                 );
-                if (shootSupplier.getAsBoolean() && !shootTimer.isTimerOn()) {
-                    shootTimer.start();
+                if (shootSupplier.getAsBoolean() && !timeStarted) {
+                    shootTimer.restart();
+                    timeStarted = true;
                 }
 
                 //ready to shoot
-                if(shootTimer.isTimerOn()){
-                    outtakeSpotsRotation.execute();
+                if (timeStarted) {
+                    spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * shootTimer.getTime() / totalShootingTime);
                 }
             }
-            public boolean isFinished() {
-                return outtakeSpotsRotation.isFinished();
-            }
 
+            public boolean isFinished() {
+                return shootTimer.getTime() > totalShootingTime && timeStarted;
+            }
             public void end(boolean interrupted) {
                 pushUpServo.setDown();
                 spindexer.setDirectPosition(targetPosition);
@@ -554,18 +559,20 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
             final BooleanSupplier shootSupplier = ExtraFns.firstSupplier(
                     () -> (shooter.readyToShoot() || timer.getTime() > 3000)
             );
-            final Timing.Timer shootTimer = new Timing.Timer(totalShootingTime, TimeUnit.MILLISECONDS);
-            OuttakeSpotsRotation outtakeSpotsRotation;
-//            double startPosition = (SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE));
+            Timer shootTimer;
+//            OuttakeSpotsRotation outtakeSpotsRotation;
+            double startPosition = (SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE));
             double targetPosition = 0;
 
             public void initialize() {
                 timer.restart();
-                outtakeSpotsRotation = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, totalShootingTime / 2);
+                shootTimer = new Timer();
+//                outtakeSpotsRotation = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, totalShootingTime / 2);
                 addRequirements(stopItServo, pushUpServo, shooter, turret);
             }
 
             boolean start = false;
+            boolean timeStarted;
 
             public void execute() {
                 if (!start) {
@@ -576,28 +583,18 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                 calculateAlign(true);
                 setTransferPower();
                 setShooterPower(true);
-                if (shootSupplier.getAsBoolean() && !shootTimer.isTimerOn()) {
-                    shootTimer.start();
+                if (shootSupplier.getAsBoolean() && !timeStarted) {
+                    shootTimer.restart();
                 }
 
                 //ready to shoot
-//                if (shootTimer.isTimerOn()) {
-//                    spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * Math.min(shootTimer.elapsedTime(), totalShootingTime) / totalShootingTime);
-//                }
-
-                if (shootSupplier.getAsBoolean() && !shootTimer.isTimerOn()) {
-                    shootTimer.start();
+                if (timeStarted) {
+                    spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * shootTimer.getTime() / totalShootingTime);
                 }
-
-                //ready to shoot
-                if(shootTimer.isTimerOn()){
-                    outtakeSpotsRotation.execute();
-                }
-//                spindexer.setDirectPosition(targetPosition);
             }
 
             public boolean isFinished() {
-                return outtakeSpotsRotation.isFinished();
+                return shootTimer.getTime() > totalShootingTime && timeStarted;
             }
 
             public void end(boolean interrupted) {
@@ -643,10 +640,11 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
     }
 
     public void writePose() {
-        MainTeleOpTurret.startPoseX = robotPose.getX();
-        MainTeleOpTurret.startPoseY = robotPose.getY();
-        MainTeleOpTurret.startPoseHeading = robotPose.getHeading();
-
+//        MainTeleOpTurret.startPoseX = follower.getPose().getX();
+//        MainTeleOpTurret.startPoseY  = follower.getPose().getY();
+//        MainTeleOpTurret.startPoseHeading = follower.getPose().getHeading();
+//
         ConstantsBot.side = side;
+        blackboard.put(ConstantsBot.END_POSE_KEY, follower.getPose());
     }
 }
