@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.main.autonomous.farStart.base.DanielFarAutoRedone;
 
-@Autonomous
+//@Autonomous
 public class DanielFarAutoRight extends DanielFarAutoRedone {
     @Override
     public ShootSide getShootSide() {

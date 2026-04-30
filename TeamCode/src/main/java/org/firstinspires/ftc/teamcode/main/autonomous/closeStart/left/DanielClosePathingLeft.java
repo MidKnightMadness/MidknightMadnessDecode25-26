@@ -7,7 +7,7 @@ import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.main.autonomous.closeStart.base.DanielCloseAutoClean;
 import org.firstinspires.ftc.teamcode.main.autonomous.closeStart.base.DanielCloseAutoCleanPathing;
 
-@Autonomous
+//@Autonomous
 public class DanielClosePathingLeft extends DanielCloseAutoCleanPathing {
     @Override
     public ShootSide getShootSide() {

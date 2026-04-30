@@ -22,7 +22,7 @@ import com.seattlesolvers.solverslib.command.WaitCommand;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.commands.intake.AutoIntakeCommandTime;
-//import org.firstinspires.ftc.teamcode.commands.spindexer.OuttakeSpotsRotation;
+import org.firstinspires.ftc.teamcode.commands.spindexer.OuttakeSpotsRotation;
 import org.firstinspires.ftc.teamcode.commands.spindexer.OuttakeSpotsRotation;
 import org.firstinspires.ftc.teamcode.game.BallColor;
 import org.firstinspires.ftc.teamcode.game.ShootSide;
@@ -45,8 +45,10 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 
-@Configurable
+@Config
 public abstract class DanielFarAutoReverted extends CommandOpMode {
     //    public static Pose shootAtPose1 = new Pose(48, 92);
     public static Pose shootAtPose2 = new Pose(60, 10);
@@ -114,7 +116,7 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
 
     public abstract ShootSide getShootSide();
 
-    public static double offsetVelocity = 700;
+    public static double offsetVelocity = 50;
     @Override
     public void initialize() {
 //        Robot.config = AllConfigs.oldBot;
@@ -148,8 +150,8 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
         telemetry.setMsTransmissionInterval(500);
         resetEncoders();
         initCommands();
-        FtcDashboard dashboard = FtcDashboard.getInstance();
-        dashboardTelemetry = dashboard.getTelemetry();
+//        FtcDashboard dashboard = FtcDashboard.getInstance();
+//        dashboardTelemetry = dashboard.getTelemetry();
     }
 
     public void initializeSubsystems() {
@@ -211,6 +213,11 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
         writePose();
     }
 
+//    @Override
+//    public void end(){
+//        writePose();
+//    }
+
     public void calculateAlign(boolean useSOTM) {
         if(useSOTM){
             double[] aimData;
@@ -244,11 +251,11 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
             );
             Timer shootTimer;
             boolean timeStarted;
-//            OuttakeSpotsRotation command;
-            double startPosition = SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE);
+            OuttakeSpotsRotation command;
+            //double startPosition = SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE);
             double targetPosition = 0;
             public void initialize() {
-//                command = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, totalShootingTime / 2);
+                command = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, totalShootingTime / 2);
                 timer.restart();
                 shootTimer = new Timer();
                 addRequirements(spindexer, shooter, turret);
@@ -266,12 +273,13 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
 
                 //ready to shoot
                 if(timeStarted) {
-                    spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * shootTimer.getTime() / totalShootingTime);
+                    command.execute();
                 }
             }
             public boolean isFinished() {
-                return shootTimer.getTime() > totalShootingTime && timeStarted;
+                return command.isFinished();
             }
+
 
             public void end(boolean interrupted) {
                 spindexer.setDirectPosition(targetPosition);
@@ -482,7 +490,7 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
                                         ))
                                         .setIsFinished(() -> timer.getTime() > 300 && follower.getVelocity().getMagnitude() < 5),
                                 new InstantCommand(()-> drive.stop()),
-                                new WaitCommand(1400)
+                                new WaitCommand(500)
                         ),
                         new AutoIntakeCommandTime(
                                 spindexer,
@@ -540,7 +548,7 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
                 balls7to9,
                 balls9to12,
                 balls12to15,
-                balls16to18,
+//                balls16to18,
                 driveToEnd,
                 stop
         );
@@ -581,11 +589,11 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
             Timer shootTimer;
             boolean timeStarted;
             OuttakeSpotsRotation command;
-            double startPosition = SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE);
+//            double startPosition = SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE);
             double targetPosition = 0;
 
             public void initialize() {
-//                command = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, totalShootingTime / 2);
+                command = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, totalShootingTime / 2);
                 timer.restart();
                 shootTimer = new Timer();
                 addRequirements(spindexer, shooter, turret);
@@ -595,7 +603,7 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
 
                 calculateAlign(true);
                 setTransferPower();
-                setShooterPower(true);
+                setShooterPower(false);
                 if (shootSupplier.getAsBoolean() && !timeStarted) {
                     shootTimer.restart();
                     timeStarted = true;
@@ -603,14 +611,15 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
 
 
                 //ready to shoot
-                if (timeStarted) {
-                    spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * shootTimer.getTime() / totalShootingTime);
+                if(timeStarted) {
+                    command.execute();
                 }
             }
-
             public boolean isFinished() {
-                return shootTimer.getTime() > totalShootingTime && timeStarted;
+                return command.isFinished();
             }
+
+
 
             public void end(boolean interrupted) {
                 pushUpServo.setDown();
@@ -630,7 +639,11 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
 //        MainTeleOpTurret.startPoseHeading = follower.getPose().getHeading();
 //
         ConstantsBot.side = side;
-        blackboard.put(ConstantsBot.END_POSE_KEY, follower.getPose());
+        follower.update();
+        blackboard.put(ConstantsBot.X, follower.getPose().getX());
+        blackboard.put(ConstantsBot.Y, follower.getPose().getY());
+        blackboard.put(ConstantsBot.H, follower.getPose().getHeading());
+//        blackboard.put(ConstantsBot.END_POSE_KEY, follower.getPose());
     }
     Telemetry dashboardTelemetry;
     public void updateTelemetry() {
@@ -649,14 +662,18 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
 
         telemetry.addLine("--------------------");
 
-        dashboardTelemetry.addData("Low Error", shooter.bottomError);
-        dashboardTelemetry.addData("High Error", shooter.topError);
-        dashboardTelemetry.addData("Transfer Error", (shooter.transferError));
+//        dashboardTelemetry.addData("Low Error", shooter.bottomError);
+//        dashboardTelemetry.addData("High Error", shooter.topError);
+//        dashboardTelemetry.addData("Transfer Error", (shooter.transferError));
+//
+//        dashboardTelemetry.addData("Low vel", shooter.low.getVelocity());
+//        dashboardTelemetry.addData("High vel", shooter.high.getVelocity());
+//        dashboardTelemetry.addData("Transfer vel", (shooter.transfer.getVelocity()));
         telemetry.addData("State", state);
         telemetry.addData("Distance to goal", distToGoal());
         telemetry.addData("Spindexer position", spindexerPosition);
 
-        dashboardTelemetry.update();
+//        dashboardTelemetry.update();
         telemetry.update();
     }
 }

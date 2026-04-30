@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.main;
 
+import android.annotation.SuppressLint;
 import android.os.Environment;
 
 
@@ -60,7 +61,7 @@ import java.io.File;
 @TeleOp(name = "Main TeleOp Turret", group = "aCompetition")
 public class MainTeleOpTurret extends CommandOpMode {
     Follower follower;
-    Pose startPose = new Pose(72, 8, Math.toRadians(90));
+    Pose startPose =  new Pose(45, 34, 0);
     Pose currentPose;
     Timer timer;
     SpindexerNonCR spindexer;
@@ -136,10 +137,10 @@ public class MainTeleOpTurret extends CommandOpMode {
     double targetSpindexerPosition;
     int activeSpindexerSpot = 0;
     public static double settleTime = 100;
-    public static long fastSmoothTime = 350;
-    public static double slowSmoothTime = 550;
-    public static long mediumSmoothTime = 450;
-    public static long fastInBetweenTime = 120;
+    public static long fastSmoothTime = 600;
+    public static long slowSmoothTime = 850;
+    public static long mediumSmoothTime = 700;
+    public static long fastInBetweenTime = 200;
     public static long mediumInBetweenTime = 150;
     public static long slowInBetweenTime = 200;
 
@@ -166,8 +167,12 @@ public class MainTeleOpTurret extends CommandOpMode {
 
 
         shootSide = ConstantsBot.side;
-        Pose startPose = (Pose) blackboard.getOrDefault(ConstantsBot.END_POSE_KEY, shootSide == ShootSide.LEFT? ConstantsBot.BLUE_END_AUTO_POSE : ConstantsBot.RED_END_AUTO_POSE);
+//        startPose = (Pose) blackboard.getOrDefault(ConstantsBot.END_POSE_KEY, shootSide == ShootSide.LEFT? ConstantsBot.BLUE_END_AUTO_POSE : ConstantsBot.RED_END_AUTO_POSE);
         gameTimer = new Timer();
+//        double x = (double) blackboard.getOrDefault(ConstantsBot.X, 3);
+//        double y = (double) blackboard.getOrDefault(ConstantsBot.Y, 3);
+//        double h = (double) blackboard.getOrDefault(ConstantsBot.H, 0);
+//        startPose = new Pose(x, y, h);
 
         follower = ConstantsBot.createPinpointFollower(hardwareMap);
         follower.setPose(startPose);
@@ -202,6 +207,7 @@ public class MainTeleOpTurret extends CommandOpMode {
 
     @Override
     public void initialize_loop() {
+        telemetry.addData("Start Pose", startPose.getPose());
         telemetry.addData("Follower Pose", follower.getPose());
         telemetry.addData("Spindexer Ball Colors", spindexer.getBallColors());
         telemetry.addData("Spindexer Curr Angle", spindexer.getCurrentAngle());
@@ -644,34 +650,22 @@ public class MainTeleOpTurret extends CommandOpMode {
 
     boolean directSpinShootActivated = false;
     OuttakeSpotsRotation outtakeSpotsRotation;
-    private void shootingSpindexerMovements(){
-        if (gamepad2.rightBumperWasPressed()) {//FAST SPEED -SMOOTHED
-            stopItServo.setActivePosition();
-            prepareSpindexer();
-            spindexerGotoPositionSmooth = new SpindexerGotoPositionSmooth(spindexer, activeSpindexerSpot,  Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0), mediumSmoothTime);
-            activeSpindexerSpot = Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0);
-            schedulePosition(spindexerGotoPositionSmooth);
-        }
+    private void shootingSpindexerMovements(){ 
         if(gamepad2.optionsWasPressed()){//Medium Speed - Outtake spots
             stopItServo.setActivePosition();
             prepareSpindexer();
-            spindexerGotoPositionSmooth = new SpindexerGotoPositionSmooth(spindexer, activeSpindexerSpot,  Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0), fastSmoothTime);
+            outtakeSpotsRotation = new OuttakeSpotsRotation(spindexer, activeSpindexerSpot, mediumSmoothTime / 3);
             activeSpindexerSpot = Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0);
-            schedulePosition(spindexerGotoPositionSmooth);
         }
         else if(gamepad2.yWasPressed()){//Slow Speed(Sorting) - Outtake spots
             stopItServo.setActivePosition();
             prepareSpindexer();
-            spindexerGotoPositionSmooth = new SpindexerGotoPositionSmooth(spindexer, activeSpindexerSpot,  Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0), slowSmoothTime);
+            outtakeSpotsRotation = new OuttakeSpotsRotation(spindexer, activeSpindexerSpot, slowSmoothTime / 3);
             activeSpindexerSpot = Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0);
-            schedulePosition(spindexerGotoPositionSmooth);
+            schedulePosition(outtakeSpotsRotation);
         } else if(gamepad2.shareWasPressed()){//Fast Speed - Outtake spots
             stopItServo.setActivePosition();
             prepareSpindexer();
-//            activeSpindexerSpot = Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0);
-//            setSpotDirect(activeSpindexerSpot);
-//            directSpinShootTimer.restart();
-//            directSpinShootActivated = true;
             outtakeSpotsRotation = new OuttakeSpotsRotation(spindexer, activeSpindexerSpot, fastInBetweenTime);
             activeSpindexerSpot = Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0);
             schedulePosition(outtakeSpotsRotation);
@@ -822,23 +816,22 @@ public class MainTeleOpTurret extends CommandOpMode {
 
     //TODO: REORGANIZE TELEMETRY
     private void updateTelem() {
-        telemetry.addData("Turret Encoder Position", Math.toDegrees(turret.getCurrentAngle().getValue()));
-        telemetry.addData("Turret Servo Left Position", turret.getServoLeftPosition());
-        telemetry.addData("Turret Servo Right Position", turret.getServoRightPosition());
-        telemetry.addData("Current Encoder To Servo Position", turret.getCurrLeftPosition());
 
-        telemetry.addData("update rate", 1000.0 / gameTimer.getDeltaTime());
-
+        telemetry.addLine(String.format("Current Pose: (%.2f, %.2f, %.2f)",  currentPose.getX(), currentPose.getY(), Math.toDegrees(currentPose.getHeading())));
+        telemetry.addData("Update Rate", 1000.0 / gameTimer.getDeltaTime());
+        telemetry.addData("Camera Bearing", Math.toDegrees(aprilTagBearing));
+        telemetry.addData("Distance From Goal", shooter.getDistance(currentPose, shootSide));
+        telemetry.addData("Shoot Side", shootSide);
+        //        telemetry.addData("Turret Encoder Position", Math.toDegrees(turret.getCurrentAngle().getValue()));
+//        telemetry.addData("Turret Servo Left Position", turret.getServoLeftPosition());
+//        telemetry.addData("Turret Servo Right Position", turret.getServoRightPosition());
+//        telemetry.addData("Current Encoder To Servo Position", turret.getCurrLeftPosition());
 
         telemetry.addData("follower velocity X,Y,T", "%f , %f, %f", follower.getVelocity().getXComponent(), follower.getVelocity().getYComponent(), follower.getVelocity().getTheta());
 
         telemetry.addData("Shoot Mode", shooterRunMode);
         telemetry.addData("Current Voltage", currVolt);
         telemetry.addData("Start Pose", startPose.getPose().toString());
-        telemetry.addLine("Current Pose" + currentPose.getX() + "; " + currentPose.getY() + "; " + Math.toDegrees(currentPose.getHeading()));
-        telemetry.addLine("------------------------------------");
-
-
         telemetry.addLine("------------------------------------");
         telemetry.addData("Shoot Side", shootSide);
         telemetry.addData("Current Shoot Dist", currentShootDist);
@@ -850,11 +843,10 @@ public class MainTeleOpTurret extends CommandOpMode {
         telemetry.addData("Camera Yaw Rel", Math.toDegrees(cameraYawRelative));
         telemetry.addData("Tag", tag == null ? "NONE" : tag.id);
         telemetry.addData("AprilTag Detected", detected);
-        telemetry.addData("Bearing", Math.toDegrees(aprilTagBearing));
+        telemetry.addData("Camera Bearing", Math.toDegrees(aprilTagBearing));
 //        telemetry.addData("Latency", arducam.getLatencyMs());
         telemetry.addData("Camera Align", arducamUse);
         telemetry.addData("Target Heading Goal Align", Math.toDegrees(targetHeading));
-        telemetry.addData("Vision Value", Math.toDegrees(stableVisionHeading));
         telemetry.addData("Robot velocity Magnitude(in/sec)", follower.getVelocity().getMagnitude());//in/sec
         telemetry.addData("Turret velocity(deg/sec)", Math.toRadians(turret.getEncoder().getRawVelocity()));//deg/sec
 
@@ -870,6 +862,10 @@ public class MainTeleOpTurret extends CommandOpMode {
         dashboardTelemetry.addData("Low Error", (shooter.bottomError));
         dashboardTelemetry.addData("High Error", (shooter.topError));
         dashboardTelemetry.addData("Transfer Error", (shooter.transferError));
+
+        dashboardTelemetry.addData("Low Vel", (shooter.low.getVelocity()));
+        dashboardTelemetry.addData("High Vel", (shooter.high.getVelocity()));
+        dashboardTelemetry.addData("Transfer Vel", (shooter.transfer.getVelocity()));
 
 
         telemetry.addLine("--------------------------------");

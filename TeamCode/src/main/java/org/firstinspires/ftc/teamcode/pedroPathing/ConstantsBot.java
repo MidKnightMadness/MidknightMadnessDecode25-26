@@ -24,6 +24,10 @@ public class ConstantsBot {
     public static String END_POSE_KEY = "WRITE_POSE";
     public static Pose BLUE_END_AUTO_POSE = new Pose(45, 34, 0);
     public static Pose RED_END_AUTO_POSE = new Pose(141.5-45, 34, 0);
+    public static String X = "X";
+    public static String Y = "Y";
+    public static String H= "H";
+
 
     public static ShootSide side = ShootSide.LEFT;
     public static FollowerConstants followerConstants = new FollowerConstants()
