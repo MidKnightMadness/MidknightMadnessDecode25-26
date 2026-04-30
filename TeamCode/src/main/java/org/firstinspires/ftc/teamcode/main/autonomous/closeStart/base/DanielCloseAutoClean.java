@@ -56,7 +56,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
     public static Pose shootAtPose1 = new Pose(48, 92);
     public static Pose shootAtPose2 = new Pose(50, 88);
     public static Pose shootAtPoseLast = new Pose(45, 135);
-    public static Pose gateIntakePose = new Pose(4, 54, Math.toRadians(160));
+    public static Pose gateIntakePose = new Pose(4, 53, Math.toRadians(160));
     public static Pose startPose = new Pose(20, 120, Math.toRadians(142));
     public static double shootTimeout = 700;
     public static double rowXInner = 42;
@@ -167,13 +167,13 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
             timer.restart();
             start = true;
         }
-        spindexer.setDirectPosition(
-                SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE));
 
         if(timer.getTime() >= 3000 && !reset){
             turret.resetEncoderPosition();
             reset = true;
             //set spindexer to spot 3
+            spindexer.setDirectPosition(
+                    SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE));
 
         }
         //wait for turret to recenter
@@ -256,7 +256,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                 timer.restart();
                 state = State.balls3;
                 addRequirements(stopItServo, pushUpServo, shooter, turret);
-                outtakeSpotsRotation = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, totalShootingTime *2/3);
+                outtakeSpotsRotation = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, totalShootingTime / 2);
             }
             boolean start = false;
             public void execute() {
@@ -395,32 +395,31 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                 new InstantCommand(()-> shooter.transfer.stopMotor()),
                 // Drive to gate
                 new ParallelRaceGroup(
-                    new SequentialCommandGroup(
-                        new LambdaCommand()
-                                .setInitialize(() -> timer.restart())
-                                .setExecute(() -> drive.pid(robotPose, side.fromLeftPose(gateIntakePose)))
-                                .setEnd(() -> gateHoldPose = new Pose(
-                                        robotPose.getX(),
-                                        robotPose.getY(),
-                                        side.fromLeftHeading(gateIntakePose.getHeading())
-                                ))
-                                .setIsFinished(() -> timer.getTime() > 850 || follower.getVelocity().getMagnitude() < 5),
-                        // Wait for gate intake
-                        new LambdaCommand()
-                                .setInitialize(() -> timer.restart())
-                                .setExecute(() -> drive.pid(robotPose, gateHoldPose))
-                                .withTimeout(2000)
-//                        new InstantCommand(() -> drive.driveRelative(0.05, 0, 0, 1)),
-                    ),
-                    new AutoIntakeCommandTime(
-                            spindexer,
-                            intake,
-                            1.0,
-                            false,
-                            voltageSensor,
-                            0,
-                            1,
-                            spindexerSettleTime
+                        new SequentialCommandGroup(
+                                new LambdaCommand()
+                                        .setInitialize(() -> timer.restart())
+                                        .setExecute(() -> drive.pid(robotPose, side.fromLeftPose(gateIntakePose)))
+                                        .setEnd(() -> gateHoldPose = new Pose(
+                                                robotPose.getX(),
+                                                robotPose.getY(),
+                                                gateIntakePose.getHeading()
+                                        ))
+                                        .setIsFinished(() -> timer.getTime() > 850 || follower.getVelocity().getMagnitude() < 5),
+                                // Wait for gate intake
+                                new LambdaCommand()
+                                        .setInitialize(() -> timer.restart())
+                                        .setExecute(() -> drive.pid(robotPose, gateHoldPose))
+                                        .withTimeout(2000),
+                        new AutoIntakeCommandTime(
+                                spindexer,
+                                intake,
+                                1.0,
+                                false,
+                                voltageSensor,
+                                0,
+                                1,
+                                spindexerSettleTime
+                        )
                     )
                 ),
                 new InstantCommand(()-> resetIntake()),
@@ -452,7 +451,6 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                         .setIsFinished(() -> ExtraFns.closeZoneDist(robotPose) < 7),
                 new InstantCommand(()-> drive.stop()),
                 shootCommand()
-
         );
 
         Command balls7To9 = gateIntakeShoot.apply(State.balls9);
@@ -563,7 +561,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
 
             public void initialize() {
                 timer.restart();
-                outtakeSpotsRotation = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, totalShootingTime * 2/3);
+                outtakeSpotsRotation = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, totalShootingTime / 2);
                 addRequirements(stopItServo, pushUpServo, shooter, turret);
             }
 
@@ -645,9 +643,9 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
     }
 
     public void writePose() {
-        MainTeleOpTurret.startPoseX = follower.getPose().getX();
-        MainTeleOpTurret.startPoseY  = follower.getPose().getY();
-        MainTeleOpTurret.startPoseHeading = follower.getPose().getHeading();
+        MainTeleOpTurret.startPoseX = robotPose.getX();
+        MainTeleOpTurret.startPoseY = robotPose.getY();
+        MainTeleOpTurret.startPoseHeading = robotPose.getHeading();
 
         ConstantsBot.side = side;
     }
