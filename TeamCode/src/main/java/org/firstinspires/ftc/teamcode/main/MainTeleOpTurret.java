@@ -138,11 +138,12 @@ public class MainTeleOpTurret extends CommandOpMode {
     int activeSpindexerSpot = 0;
     public static double settleTime = 100;
     public static long fastSmoothTime = 380;
+    public static double slowSmoothTime = 450;
+    public static long mediumSmoothTime = 480;
     public static long fastInBetweenTime = 120;
     public static long mediumInBetweenTime = 150;
     public static long slowInBetweenTime = 200;
 
-    public static double slowSmoothTime = 0.7;
     boolean driveFieldOriented = true;
     Limelight3A limelight;
     public static boolean intakeVoltageCompensated = false;
@@ -175,6 +176,7 @@ public class MainTeleOpTurret extends CommandOpMode {
         currentPose = startPose;
 
         initializeSubsystems();
+        shooter.setOffsetVelocity(0);
 
         wheelControl = new WheelControl2(hardwareMap);
 
@@ -648,27 +650,24 @@ public class MainTeleOpTurret extends CommandOpMode {
         if (gamepad2.rightBumperWasPressed()) {//FAST SPEED -SMOOTHED
             stopItServo.setActivePosition();
             prepareSpindexer();
+            spindexerGotoPositionSmooth = new SpindexerGotoPositionSmooth(spindexer, activeSpindexerSpot,  Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0), mediumSmoothTime);
+            activeSpindexerSpot = Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0);
+            schedulePosition(spindexerGotoPositionSmooth);
+        }
+        if(gamepad2.optionsWasPressed()){//Medium Speed - Outtake spots
+            stopItServo.setActivePosition();
+            prepareSpindexer();
             spindexerGotoPositionSmooth = new SpindexerGotoPositionSmooth(spindexer, activeSpindexerSpot,  Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0), fastSmoothTime);
             activeSpindexerSpot = Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0);
             schedulePosition(spindexerGotoPositionSmooth);
         }
-        if(gamepad2.shareWasPressed()){//Medium Speed - Outtake spots
-            stopItServo.setActivePosition();
-            prepareSpindexer();
-            outtakeSpotsRotation = new OuttakeSpotsRotation(spindexer, activeSpindexerSpot, mediumInBetweenTime);
-            activeSpindexerSpot = Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0);
-            schedulePosition(outtakeSpotsRotation);
-        }
         else if(gamepad2.yWasPressed()){//Slow Speed(Sorting) - Outtake spots
             stopItServo.setActivePosition();
             prepareSpindexer();
-//            activeSpindexerSpot = Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0);
-//            spindexerGotoPositionSmooth = new SpindexerGotoPositionSmooth(spindexer, SpindexerSpotNonCR.getPositionFromIndex(activeSpindexerSpot, SpotType.INTAKE) + SpindexerSpotNonCR.OUTAKE_OFFSET_DEGREES / SpindexerNonCR.totalDegrees, slowSmoothTime);
-//            schedulePosition(spindexerGotoPositionSmooth);
-            outtakeSpotsRotation = new OuttakeSpotsRotation(spindexer, activeSpindexerSpot, slowInBetweenTime);
+            spindexerGotoPositionSmooth = new SpindexerGotoPositionSmooth(spindexer, activeSpindexerSpot,  Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0), slowSmoothTime);
             activeSpindexerSpot = Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0);
-            schedulePosition(outtakeSpotsRotation);
-        } else if(gamepad2.optionsWasPressed()){//Fast Speed - Outtake spots
+            schedulePosition(spindexerGotoPositionSmooth);
+        } else if(gamepad2.shareWasPressed()){//Fast Speed - Outtake spots
             stopItServo.setActivePosition();
             prepareSpindexer();
 //            activeSpindexerSpot = Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0);

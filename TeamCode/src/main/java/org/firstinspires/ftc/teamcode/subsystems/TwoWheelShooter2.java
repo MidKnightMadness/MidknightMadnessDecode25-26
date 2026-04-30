@@ -85,7 +85,6 @@ public class TwoWheelShooter2 extends SubsystemBase {
 
     double actualRecoveryTime = 0;
 
-    public static double targetVoltage = 12.5;
     public static double[] closeTargetVelocities = new double[] {1600, 1750};
     public static double[] farTargetVelocities = new double[]{1700, 2000};
     public static double[] closeTargetPowers = new double[]{0.7, 0.8};
@@ -110,16 +109,18 @@ public class TwoWheelShooter2 extends SubsystemBase {
         //ticks in sec for 3: 1 direct driven gear ratios
         public static int iterations = 10; // For tuning targetDistance
         public static double[] dist =                {40,  50,  60,  70,  80,  90,  100, 112, 120, 128, 130, 145,  156.0, 180};//inches
-        public static double[] bottomVel =           {530, 560, 590, 600, 630, 650, 700, 700, 710, 720, 730, 750,  760,  780};
-        public static double[] topVel =              {650, 610, 590, 610, 630, 680, 720, 760, 840, 890, 960, 1000, 1030, 1060};
+        public static double[] bottomVel =           {530, 560, 590, 600, 630, 650, 700, 700, 710, 720, 730, 800,  860,  890};
+        public static double[] topVel =              {650, 610, 590, 610, 630, 680, 720, 760, 840, 890, 960, 1050, 1100, 1130};
 //        public static double[] bottomVel =           {530, 540, 550, 560, 570, 570, 570, 600, 610, 620, 630, 650,  660,  680};
 ////        public static double[] topVel =              {650, 650, 650, 670, 690, 750, 850, 860, 940, 990, 1060, 1100, 1130, 1200};
         public static double[] velCorrectionFactor = {0.4, 0.5, 0.6,0.54, 0.85,0.9,0.96,1.02,1.07, 1.1, 1.14,1.18,1.25,1.31}; // take time in the air and then subtract a bit
-
+        //
         public AimCalculator() {
             distToLowVel = new InterpLUT();
             distToHighVel = new InterpLUT();
             distToKCorrection = new InterpLUT();
+
+
             for (int i = 0; i < dist.length; i++) {
                 distToLowVel.add(dist[i], bottomVel[i]);
                 distToHighVel.add(dist[i], topVel[i]);
@@ -185,6 +186,12 @@ public class TwoWheelShooter2 extends SubsystemBase {
     public double bottomError;
     public double topError;
     public double transferError;
+    public double offset = 0;
+
+    public void setOffsetVelocity(double offset){
+        this.offset = offset;
+    }
+
     public void updateRecoveryState() {
         bottomError = low.getVelocity() - predictedBotVel;
         topError = high.getVelocity() - predictedTopVel;
@@ -216,9 +223,6 @@ public class TwoWheelShooter2 extends SubsystemBase {
     }
 
 
-    public double getTargetVoltage(){
-        return targetVoltage;
-    }
 
     public TwoWheelShooter2(HardwareMap hardwareMap, RunMode shooterRunMode, RunMode transferRunMode) {
         this.map = hardwareMap;
@@ -346,8 +350,8 @@ public class TwoWheelShooter2 extends SubsystemBase {
             predictedTopPower = topVelocity;
         }
 
-        low.set(botVelocity, botMultiplier, currVolt);
-        high.set(topVelocity, topMultiplier, currVolt);
+        low.set(botVelocity + offset, botMultiplier, currVolt);
+        high.set(topVelocity + offset, topMultiplier, currVolt);
         updateRecoveryState();
     }
 
@@ -468,7 +472,7 @@ public class TwoWheelShooter2 extends SubsystemBase {
         }
         Pose control1;
         if (shootSide == ShootSide.LEFT) {
-            control1 = close ? new Pose(0,140) : new Pose(0, 144);
+            control1 = close ? new Pose(0,140) : new Pose(2, 144);
         } else {
             control1 = close ? new Pose(141.5,140) : new Pose(136, 144);
 
@@ -497,7 +501,7 @@ public class TwoWheelShooter2 extends SubsystemBase {
         if (shootSide == ShootSide.LEFT) {
             control1 = close ? new Pose(0,144) : new Pose(2, 142);//5
         } else {
-            control1 = close ? new Pose(141.5,144) : new Pose(136, 144);
+            control1 = close ? new Pose(144,144) : new Pose(136, 144);
 
 
         }

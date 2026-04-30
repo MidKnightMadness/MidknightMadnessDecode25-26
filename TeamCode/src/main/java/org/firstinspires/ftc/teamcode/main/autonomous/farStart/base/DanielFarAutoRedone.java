@@ -49,7 +49,7 @@ import java.util.function.Predicate;
 @Configurable
 public abstract class DanielFarAutoRedone extends CommandOpMode {
     //    public static Pose shootAtPose1 = new Pose(48, 92);
-    public static Pose shootAtPose2 = new Pose(60, 10);
+    public static Pose shootAtPose2 = new Pose(57, 7);
     public static Pose gateIntakePose = new Pose(3, 58, Math.toRadians(150));
     public static Pose startPose = new Pose(55.5, 8.8, Math.toRadians(90));
     public static Pose endPose = new Pose(45, 34);
@@ -113,12 +113,13 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
 
 
     public abstract ShootSide getShootSide();
+    public static double offsetVelocity = 70;
 
     @Override
     public void initialize() {
 //        Robot.config = AllConfigs.oldBot;
-
         super.reset();
+        shooter.setOffsetVelocity(offsetVelocity);
         side = getShootSide();
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
@@ -242,6 +243,7 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
             Timer shootTimer;
             OuttakeSpotsRotation command;
             boolean timeStarted;
+            double startPosition = SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE);
             double targetPosition = 0;
             public void initialize() {
                 command = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, totalShootingTime / 2);
@@ -260,13 +262,12 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                 }
 
 
-                //ready to shoot
                 if(timeStarted) {
-                    command.execute();
+                    spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * shootTimer.getTime() / totalShootingTime);
                 }
             }
             public boolean isFinished() {
-                return command.isFinished();
+                return shootTimer.getTime() > totalShootingTime && timeStarted;
             }
 
             public void end(boolean interrupted) {
@@ -342,7 +343,7 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                                     targetHeading
                             ), 1);
                         })
-                        .setIsFinished(() -> ExtraFns.farZoneDist(robotPose) < 10),
+                        .setIsFinished(() -> ExtraFns.farZoneDist(robotPose) < 13),
 
                 new InstantCommand(() -> drive.stop()),
                 shootCommand()
@@ -354,7 +355,7 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                         .setInitialize(() -> timer.restart())
                         .setExecute(() -> drive.pid(
                                 robotPose, side.fromLeftPose(new Pose(
-                                        rowXInner,
+                                        rowXOuter + 5,
                                         zoneIntakeY,
                                         headingFacingEdge
                                 )), 1)
@@ -401,7 +402,7 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                                     ))
                                     .setIsFinished(() -> timer.getTime() > 300 && follower.getVelocity().getMagnitude() < 2),
                             new InstantCommand(()-> drive.stop()),
-                            new WaitCommand(1400)
+                            new WaitCommand(1000)
                     ),
                     new AutoIntakeCommandTime(
                             spindexer,
@@ -436,17 +437,17 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
         );
         Function<State, Command> secondaryIntakeShoot = state -> new SequentialCommandGroup(
                 new InstantCommand(() -> this.state = state),
-                // Full send to almost there
-                new LambdaCommand()
-                        .setInitialize(() -> timer.restart())
-                        .setExecute(() -> drive.pid(
-                                robotPose, side.fromLeftPose(new Pose(
-                                        rowXInner,
-                                        zoneTwoIntakeY,
-                                        Math.toRadians(160)
-                                )), 1)
-                        )
-                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) < rowXInner),
+//                // Full send to almost there
+//                new LambdaCommand()
+//                        .setInitialize(() -> timer.restart())
+//                        .setExecute(() -> drive.pid(
+//                                robotPose, side.fromLeftPose(new Pose(
+//                                        rowXInner,
+//                                        zoneTwoIntakeY,
+//                                        Math.toRadians(160)
+//                                )), 1)
+//                        )
+//                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) < rowXInner),
                 // Drive to corner
                 new ParallelRaceGroup(
                         new SequentialCommandGroup(
@@ -455,16 +456,16 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                                         .setInitialize(() -> timer.restart())
                                         .setExecute(() -> drive.pid(
                                                 robotPose,
-                                                side.fromLeftPose(new Pose(cornerX, 35, Math.toRadians(-90))),
-                                                0.5
+                                                side.fromLeftPose(new Pose(cornerX, 40, Math.toRadians(-90))),
+                                                1
                                         ))
-                                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) < cornerX + 6),
+                                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) < cornerX + 15),
                                 // Drive curve
                                 new LambdaCommand()
                                         .setInitialize(() -> timer.restart())
                                         .setExecute(() -> drive.pid(
                                                 robotPose,
-                                                side.fromLeftPose(new Pose(cornerX + 2, 5, Math.toRadians(-90))),
+                                                side.fromLeftPose(new Pose(cornerX, 5, Math.toRadians(-90))),
                                                 0.5
                                         ))
                                         .setIsFinished(() -> robotPose.getY() < 13),
@@ -481,7 +482,7 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                                 1,
                                 spindexerSettleTime
                         )
-                ).withTimeout(5000),
+                ).withTimeout(3500),
                 new InstantCommand(() -> stopItServo.setActivePosition()),
                 new LambdaCommand()
                         .setInitialize(() -> timer.restart())
@@ -497,7 +498,7 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                                     zoneIntakeY + 8
                             )), 1);
                         })
-                        .setIsFinished(() -> ExtraFns.farZoneDist(robotPose) < 7),
+                        .setIsFinished(() -> ExtraFns.farZoneDist(robotPose) < 13),
 
                 new InstantCommand(()-> drive.stop()),
                 shootCommand()
@@ -548,9 +549,10 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
             Timer shootTimer;
             boolean timeStarted;
             OuttakeSpotsRotation command;
+            double startPosition = SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE);
             double targetPosition = 0;
             public void initialize() {
-                command = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, totalShootingTime / 2);
+//                command = new OuttakeSpotsRotation(spindexer, 3, totalShootingTime / 3, totalShootingTime / 2);
                 timer.restart();
                 shootTimer = new Timer();
                 addRequirements(spindexer, shooter, turret);
@@ -568,12 +570,13 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
 
                 //ready to shoot
                 if(timeStarted) {
-                    command.execute();
+                    spindexer.setDirectPosition(startPosition + (targetPosition - startPosition) * shootTimer.getTime() / totalShootingTime);
                 }
             }
             public boolean isFinished() {
-                return command.isFinished();
+                return shootTimer.getTime() > totalShootingTime && timeStarted;
             }
+
 
             public void end(boolean interrupted) {
                 spindexer.setDirectPosition(targetPosition);

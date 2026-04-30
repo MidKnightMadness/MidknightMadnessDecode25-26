@@ -20,7 +20,8 @@ public class MotorEx extends Motor {
 
     // The minimum difference between the current and requested motor power between motor writes
     private double cachingTolerance = 0.0001;
-    public static double REFERENCE_VOLTAGE = 12.5;
+    public static double REFERENCE_VOLTAGE = 13;
+    public static double VOLTAGE_COMPENSATION = 5;
 
     /**
      * Constructs the instance motor for the wrapper
@@ -61,7 +62,8 @@ public class MotorEx extends Motor {
     @Override
     public void set(double output, double currVoltage) {
         if (runmode == RunMode.VelocityControl) {
-            setPower((veloController.calculate(getCorrectedVelocity(), output) + feedforward.calculate(output, getAcceleration())) * REFERENCE_VOLTAGE / currVoltage);
+//            setPower((veloController.calculate(getCorrectedVelocity(), output) + feedforward.calculate(output, getAcceleration())) * (REFERENCE_VOLTAGE - VOLTAGE_COMPENSATION) / (currVoltage - VOLTAGE_COMPENSATION));
+            setPower((veloController.calculate(getCorrectedVelocity(), output) + feedforward.calculate(output, getAcceleration())) * (REFERENCE_VOLTAGE) / (currVoltage));
         } else if (runmode == RunMode.PositionControl) {
             double error = positionController.calculate(encoder.getPosition());
             setPower(output * error);
@@ -77,7 +79,8 @@ public class MotorEx extends Motor {
 
     public void set(double output, double multiplier, double currVoltage) {
         if (runmode == RunMode.VelocityControl) {
-            setPower((veloController.calculate(getCorrectedVelocity(), output) + feedforward.calculate(output, getAcceleration())) * REFERENCE_VOLTAGE / currVoltage);
+//            setPower((veloController.calculate(getCorrectedVelocity(), output) + feedforward.calculate(output, getAcceleration())) * (REFERENCE_VOLTAGE - VOLTAGE_COMPENSATION) / (currVoltage - VOLTAGE_COMPENSATION));
+            setPower((veloController.calculate(getCorrectedVelocity(), output) + feedforward.calculate(output, getAcceleration())) * (REFERENCE_VOLTAGE) / (currVoltage));
         } else if (runmode == RunMode.PositionControl) {
             double error = positionController.calculate(encoder.getPosition());
             setPower(output * error);

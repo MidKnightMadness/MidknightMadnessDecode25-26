@@ -55,7 +55,7 @@ import java.util.function.Function;
 public abstract class DanielCloseAutoClean extends CommandOpMode {
     public static Pose shootAtPose1 = new Pose(48, 92);
     public static Pose shootAtPose2 = new Pose(50, 88);
-    public static Pose shootAtPoseLast = new Pose(30, 130);
+    public static Pose shootAtPoseLast = new Pose(45, 135);
     public static Pose gateIntakePose = new Pose(4, 54, Math.toRadians(160));
     public static Pose startPose = new Pose(20, 120, Math.toRadians(142));
     public static double shootTimeout = 700;
@@ -399,11 +399,18 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                         new LambdaCommand()
                                 .setInitialize(() -> timer.restart())
                                 .setExecute(() -> drive.pid(robotPose, side.fromLeftPose(gateIntakePose)))
-//                                .setEnd(() -> gateHoldPose = robotPose)
+                                .setEnd(() -> gateHoldPose = new Pose(
+                                        robotPose.getX(),
+                                        robotPose.getY(),
+                                        side.fromLeftHeading(gateIntakePose.getHeading())
+                                ))
                                 .setIsFinished(() -> timer.getTime() > 850 || follower.getVelocity().getMagnitude() < 5),
                         // Wait for gate intake
+                        new LambdaCommand()
+                                .setInitialize(() -> timer.restart())
+                                .setExecute(() -> drive.pid(robotPose, gateHoldPose))
+                                .withTimeout(2000)
 //                        new InstantCommand(() -> drive.driveRelative(0.05, 0, 0, 1)),
-                        new WaitCommand(2000)
                     ),
                     new AutoIntakeCommandTime(
                             spindexer,
@@ -639,7 +646,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
 
     public void writePose() {
         MainTeleOpTurret.startPoseX = follower.getPose().getX();
-        MainTeleOpTurret.startPoseY = follower.getPose().getY();
+        MainTeleOpTurret.startPoseY  = follower.getPose().getY();
         MainTeleOpTurret.startPoseHeading = follower.getPose().getHeading();
 
         ConstantsBot.side = side;
