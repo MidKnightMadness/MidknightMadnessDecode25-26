@@ -97,15 +97,9 @@ public class MainTeleOpTurret extends CommandOpMode {
     TwoWheelShooter2.ShootDist currentShootDist;
 
     public static boolean useDistanceSensor = true;
-    public static double timeOutConstraint = 0;
     double targetHeading = 0;
     StopItServo stopItServo;
-
-    public static double turretAngleTest = 90;//degrees
-
     boolean hasRumbledAllOccupied = false;
-    boolean triggerBallShot = false;
-    int recentTriggeredSpot = -1;
     BallColor[] currSpindexerBallColors;
 
     public double powerAutoIntake = 1.0;
@@ -121,7 +115,6 @@ public class MainTeleOpTurret extends CommandOpMode {
     boolean velAgressiveComp = false;
     public static boolean useBulkMode = true;
     PushUpServo pushUpServo;
-    double spindexerRawPower;
     AprilTagDetection tag;
     public static Pose failsafeLeftPose = new Pose(8, 8, Math.toRadians(270));
     public static Pose failsafeRightPose = new Pose(133, 8, Math.toRadians(270));;
@@ -136,7 +129,6 @@ public class MainTeleOpTurret extends CommandOpMode {
     Limelight3A limelight;
     public static boolean intakeVoltageCompensated = false;
     VoltageSensor voltageSensor;
-
     public static double startPoseX = 0;
     public static double startPoseY = 0;
     public static double startPoseHeading = 0;
@@ -160,7 +152,9 @@ public class MainTeleOpTurret extends CommandOpMode {
 //        double x = (double) blackboard.getOrDefault(ConstantsBot.X, 3);
 //        double y = (double) blackboard.getOrDefault(ConstantsBot.Y, 3);
 //        double h = (double) blackboard.getOrDefault(ConstantsBot.H, 0);
+
 //        startPose = new Pose(x, y, h);
+        startPose = new Pose(startPoseX, startPoseY, startPoseHeading);
 
         follower = ConstantsBot.createPinpointFollower(hardwareMap);
         follower.setPose(startPose);
@@ -427,7 +421,8 @@ public class MainTeleOpTurret extends CommandOpMode {
     public void turretCommands(){
         //click b, wait for servos to go to 0.5 position, click a to reset encoder
         if(gamepad2.bWasPressed()){
-            turret.setServos(turret.servoCenter);
+            turret.setServos(Turret.servoCenter);
+            autoAlign = false;
         }
         if(gamepad2.aWasPressed()){
             turret.resetEncoderPosition();
