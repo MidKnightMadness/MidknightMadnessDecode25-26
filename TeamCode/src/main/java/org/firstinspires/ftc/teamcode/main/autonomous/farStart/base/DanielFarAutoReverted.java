@@ -262,7 +262,7 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
             }
             public void execute() {
 
-                calculateAlign(true);
+                calculateAlign(false);
                 setTransferPower();
                 setShooterPower(false);
                 if (shootSupplier.getAsBoolean() && !timeStarted) {
@@ -346,7 +346,7 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
                                 setTransferPower();
                                 pushUpServo.setUp();
                             }
-                            calculateAlign(true);
+                            calculateAlign(false);
                             setShooterPower(false);
                             drive.pid(robotPose, new Pose(
                                     side.fromLeftX(shootAtPose2.getX()),
@@ -430,7 +430,7 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
                 new LambdaCommand()
                         .setInitialize(() -> timer.restart())
                         .setExecute(() -> {
-                            calculateAlign(true);
+                            calculateAlign(false);
                             setShooterPower(false);
                             if(timer.getTime() > 300) {
                                 pushUpServo.setUp();
@@ -507,7 +507,7 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
                 new LambdaCommand()
                         .setInitialize(() -> timer.restart())
                         .setExecute(() -> {
-                            calculateAlign(true);
+                            calculateAlign(false);
                             setShooterPower(false);
                             if(timer.getTime() > 300) {
                                 pushUpServo.setUp();
@@ -601,7 +601,7 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
 
             public void execute() {
 
-                calculateAlign(true);
+                calculateAlign(false);
                 setTransferPower();
                 setShooterPower(false);
                 if (shootSupplier.getAsBoolean() && !timeStarted) {

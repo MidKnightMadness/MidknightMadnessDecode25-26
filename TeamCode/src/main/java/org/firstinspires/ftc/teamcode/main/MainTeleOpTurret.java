@@ -1,12 +1,8 @@
 package org.firstinspires.ftc.teamcode.main;
 
-import android.annotation.SuppressLint;
-import android.os.Environment;
-
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
-import com.bylazar.configurables.annotations.Configurable;
 //import com.bylazar.graph.GraphManager;
 //import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
@@ -19,7 +15,6 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
-import com.qualcomm.robotcore.util.ReadWriteFile;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 
@@ -49,13 +44,10 @@ import org.firstinspires.ftc.teamcode.game.ShootSide;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter2;
 import org.firstinspires.ftc.teamcode.tests.camera.AprilTagWebcam;
 import org.firstinspires.ftc.teamcode.util.Angle;
-import org.firstinspires.ftc.teamcode.util.AngleNonCR;
 import org.firstinspires.ftc.teamcode.util.ConfigNames;
 import org.firstinspires.ftc.teamcode.util.Timer;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.teamcode.commands.TurretGotoPositionSmooth;
-
-import java.io.File;
 
 @Config
 @TeleOp(name = "Main TeleOp Turret", group = "aCompetition")
@@ -137,13 +129,9 @@ public class MainTeleOpTurret extends CommandOpMode {
     double targetSpindexerPosition;
     int activeSpindexerSpot = 0;
     public static double settleTime = 100;
-    public static long fastSmoothTime = 600;
-    public static long slowSmoothTime = 850;
-    public static long mediumSmoothTime = 700;
-    public static long fastInBetweenTime = 200;
-    public static long mediumInBetweenTime = 150;
     public static long slowInBetweenTime = 200;
-
+    public static long mediumInBetweenTime = 160;
+    public static long fastInBetweenTime = 120;
     boolean driveFieldOriented = true;
     Limelight3A limelight;
     public static boolean intakeVoltageCompensated = false;
@@ -235,7 +223,10 @@ public class MainTeleOpTurret extends CommandOpMode {
         turret = new Turret(hardwareMap, false);
         stopItServo = new StopItServo(hardwareMap, false);
         directSpinShootTimer = new Timer();
-
+        controlLight2.setColor(
+                !arducamUse ? GobildaLightBlock.Color.ORANGE :
+                        GobildaLightBlock.Color.GREEN
+        );
     }
     boolean start;
 
@@ -282,7 +273,7 @@ public class MainTeleOpTurret extends CommandOpMode {
     //1 for ready to shoot
     int spindexerBallCt = 0;
     int previousSpindexerBallCt = 0;
-    boolean arducamUse = false;
+    boolean arducamUse = true;
     boolean previousArducamUse = false;
     boolean readyToShoot = false;
     boolean previousReadyToShoot = false;
@@ -339,13 +330,6 @@ public class MainTeleOpTurret extends CommandOpMode {
             if(doneShootingTimer.getTime() >= DONE_SHOOTING_GREEN_MS){
                 doneShooting = false;
             }
-        }
-
-        if(doneShooting != previousDoneShooting){
-            expansionLight2.setColor(
-                    !doneShooting ? GobildaLightBlock.Color.YELLOW :
-                            GobildaLightBlock.Color.GREEN
-            );
         }
         doneShooting = previousDoneShooting;
     }
@@ -418,6 +402,7 @@ public class MainTeleOpTurret extends CommandOpMode {
 
         if(gamepad1.startWasPressed()){
             arducamUse = !arducamUse;
+            aprilTagBearing = 0;
         }
 
         manualResetPose();
@@ -581,6 +566,10 @@ public class MainTeleOpTurret extends CommandOpMode {
 
         if(gamepad1.rightStickButtonWasPressed()){
             driveFieldOriented = !driveFieldOriented;
+            expansionLight2.setColor(
+                    driveFieldOriented ? GobildaLightBlock.Color.SAGE :
+                            GobildaLightBlock.Color.VIOLET
+            );
         }
     }
 
@@ -654,13 +643,14 @@ public class MainTeleOpTurret extends CommandOpMode {
         if(gamepad2.optionsWasPressed()){//Medium Speed - Outtake spots
             stopItServo.setActivePosition();
             prepareSpindexer();
-            outtakeSpotsRotation = new OuttakeSpotsRotation(spindexer, activeSpindexerSpot, mediumSmoothTime / 3);
+            outtakeSpotsRotation = new OuttakeSpotsRotation(spindexer, activeSpindexerSpot, mediumInBetweenTime);
             activeSpindexerSpot = Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0);
+            schedulePosition(outtakeSpotsRotation);
         }
         else if(gamepad2.yWasPressed()){//Slow Speed(Sorting) - Outtake spots
             stopItServo.setActivePosition();
             prepareSpindexer();
-            outtakeSpotsRotation = new OuttakeSpotsRotation(spindexer, activeSpindexerSpot, slowSmoothTime / 3);
+            outtakeSpotsRotation = new OuttakeSpotsRotation(spindexer, activeSpindexerSpot, slowInBetweenTime);
             activeSpindexerSpot = Math.max(activeSpindexerSpot - SpindexerNonCR.NUM_SPOTS, 0);
             schedulePosition(outtakeSpotsRotation);
         } else if(gamepad2.shareWasPressed()){//Fast Speed - Outtake spots
@@ -684,9 +674,9 @@ public class MainTeleOpTurret extends CommandOpMode {
     }
 
     private void clearExistingSpindexerCommand() {
-        if (spindexerGotoPositionSeq != null) {
-            CommandScheduler.getInstance().cancel(spindexerGotoPositionSeq);
-        }
+//        if (spindexerGotoPositionSeq != null) {
+//            CommandScheduler.getInstance().cancel(spindexerGotoPositionSeq);
+//        }
     }
     private void clearExistingTurretCommand() {
         if (turretGotoPositionSmooth != null) {

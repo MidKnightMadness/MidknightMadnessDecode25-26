@@ -44,17 +44,18 @@ public class TwoWheelShooter2 extends SubsystemBase {
     public static double transferPower = 1.0;
     public static double transferVelocity = 1300;//1300
     //DEFAULT GAINS
-    public static double[] kTransferGains = new double[]{0.0313141, 0.000353782, 0};
-    public static double[] pidTransferGains = new double[]{0.0012, 0, 0};
     public static double[] kBotGains = new double[]{0.058, 0.000393, 0};
+    public static double[] kTopGains = new double[]{0.033, 0.000427, 0};
+    public static double[] kTransferGains = new double[]{0.0313141, 0.000353782, 0};
+
     public static double[] pidTopGains = new double[]{0.008, 0, 0};
     public static double[] pidBotGains = new double[]{0.008, 0, 0};
-    public static double[] kTopGains = new double[]{0.033, 0.000427, 0};
+    public static double[] pidTransferGains = new double[]{0.0012, 0, 0};
 
     //AGGRESSIVE GAINS
-    public static double[] pidBotAggressiveGains = new double[]{0.04, 0, 0};
     public static double[] pidTopAggressiveGains = new double[]{0.04, 0, 0};
-    public static double[] pidTransferAggressiveGains = new double[]{0.008, 0, 0};
+    public static double[] pidBotAggressiveGains = new double[]{0.04, 0, 0};
+    public static double[] pidTransferAggressiveGains = new double[]{0.004, 0, 0};
     public boolean useAggressiveRecovery = true;
     public boolean inRecoveryMode = false;
     //AGGRESSIVE GAINS: FOR RECOVERY - gain scheduling
@@ -101,6 +102,7 @@ public class TwoWheelShooter2 extends SubsystemBase {
     double botMultiplier = 0;
     public AimCalculator aimCalculator;
 
+    @Config
     public static class AimCalculator {
         InterpLUT distToLowVel;
         InterpLUT distToHighVel;
@@ -109,8 +111,8 @@ public class TwoWheelShooter2 extends SubsystemBase {
         //ticks in sec for 3: 1 direct driven gear ratios
         public static int iterations = 10; // For tuning targetDistance
         public static double[] dist =                {40,  50,  60,  70,  80,  90,  100, 112, 120, 128, 130, 145,  156.0, 180};//inches
-        public static double[] bottomVel =           {530, 560, 590, 600, 630, 650, 700, 700, 710, 720, 730, 750,  760,  780};
-        public static double[] topVel =              {650, 610, 590, 610, 630, 680, 720, 760, 840, 890, 960, 1000, 1030, 1060};
+        public static double[] bottomVel =           {530, 560, 590, 600, 630, 650, 700, 700, 710, 750, 800, 800,  850,  900};
+        public static double[] topVel =              {650, 610, 590, 610, 630, 680, 720, 760, 840, 890, 900, 900, 950, 1000};
         public static double[] velCorrectionFactor = {0.4, 0.5, 0.6,0.54, 0.85,0.9,0.96,1.02,1.07, 1.1, 1.14,1.18,1.25,1.31}; // take time in the air and then subtract a bit
         //
         public AimCalculator() {
@@ -180,7 +182,7 @@ public class TwoWheelShooter2 extends SubsystemBase {
 
 
     public static double shotDropThreshold = 50;
-    public static double transferShotDropThreshold = 50;
+    public static double transferShotDropThreshold = 80;
     public double bottomError;
     public double topError;
     public double transferError;
@@ -472,7 +474,7 @@ public class TwoWheelShooter2 extends SubsystemBase {
         if (shootSide == ShootSide.LEFT) {
             control1 = close ? new Pose(0,140) : new Pose(2, 144);
         } else {
-            control1 = close ? new Pose(141.5,140) : new Pose(134, 144);
+            control1 = close ? new Pose(141.5,140) : new Pose(136, 144);
 
         }
         double angle1 = ExtraFns.getTargetAngle(robotPose, control1);
@@ -499,7 +501,7 @@ public class TwoWheelShooter2 extends SubsystemBase {
         if (shootSide == ShootSide.LEFT) {
             control1 = close ? new Pose(0,144) : new Pose(0, 142);//5
         } else {
-            control1 = close ? new Pose(144,144) : new Pose(134, 144);
+            control1 = close ? new Pose(144,144) : new Pose(136, 144);
 
 
         }
