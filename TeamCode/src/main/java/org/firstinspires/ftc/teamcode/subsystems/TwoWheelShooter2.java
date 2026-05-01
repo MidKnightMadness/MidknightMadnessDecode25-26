@@ -53,8 +53,8 @@ public class TwoWheelShooter2 extends SubsystemBase {
     public static double[] pidTransferGains = new double[]{0.0012, 0, 0};
 
     //AGGRESSIVE GAINS
-    public static double[] pidTopAggressiveGains = new double[]{0.04, 0, 0};
-    public static double[] pidBotAggressiveGains = new double[]{0.04, 0, 0};
+    public static double[] pidTopAggressiveGains = new double[]{0.016, 0, 0};
+    public static double[] pidBotAggressiveGains = new double[]{0.016, 0, 0};
     public static double[] pidTransferAggressiveGains = new double[]{0.004, 0, 0};
     public boolean useAggressiveRecovery = true;
     public boolean inRecoveryMode = false;
