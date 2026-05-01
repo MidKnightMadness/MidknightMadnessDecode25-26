@@ -86,7 +86,7 @@ public class AutoIntakeCommandTime extends CommandBase {
 
 
 
-        if (!atSpot && timer.getTime() >= spindexer.SPOT_CHANGE_TIME) {
+        if (!atSpot && timer.getTime() >= SpindexerNonCR.SPOT_CHANGE_TIME) {
             waitingToSettle = true;
             timer.restart();
 //            intake.setDirectPower(1);
@@ -104,23 +104,13 @@ public class AutoIntakeCommandTime extends CommandBase {
 
 
         if (ballDetected) {
-            currNumSpot += dir;
-//            intake.setDirectPower(0);
-
-//            if(currNumSpot == startSpot - 3){
-//                spindexer.setPosition(
-//                        SpindexerSpotNonCR.getPositionFromIndex(currNumSpot, SpotType.INTAKE) + SpindexerSpotNonCR.OUTAKE_OFFSET_DEGREES / SpindexerNonCR.totalDegrees
-//                );
-//            }
-//            else {
-                spindexer.setPosition(
-                        SpindexerSpotNonCR.getPositionFromIndex(currNumSpot, SpotType.INTAKE)
-                );
-//            }
-
             if (spindexer.allOccuppiedBallColors()) {
                 intake.setDirectPower(-1);
                 exit = true;
+            }
+            else {
+                currNumSpot += dir;
+                spindexer.setPosition(SpindexerSpotNonCR.getPositionFromIndex(currNumSpot, SpotType.INTAKE));
             }
 
             ballDetected = false;

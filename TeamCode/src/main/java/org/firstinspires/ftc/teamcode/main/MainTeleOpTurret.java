@@ -725,7 +725,7 @@ public class MainTeleOpTurret extends CommandOpMode {
                     powerAutoIntake,
                     intakeVoltageCompensated,
                     voltageSensor,
-                    activeSpindexerSpot,
+                    activeSpindexerSpot + 1,
                     1,
                     settleTime
             );

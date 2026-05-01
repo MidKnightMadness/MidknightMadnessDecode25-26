@@ -73,8 +73,6 @@ public class SpindexerNonCR extends SubsystemBase {
         return turner2;
     }
 
-
-
     public ServoImplEx getServoImplEx1(){
         return turner;
     }
@@ -104,7 +102,6 @@ public class SpindexerNonCR extends SubsystemBase {
         currentAngle = AngleNonCR.fromDegrees(currentTurnerPosition / totalDegrees);
     }
 
-
     public AngleNonCR getCurrentAngle() {
         return currentAngle;
     }
@@ -133,7 +130,6 @@ public class SpindexerNonCR extends SubsystemBase {
         this.ballColors[2] = BallColor.NONE;
         return this;
     }
-
 
     public boolean distCheck = false;
 
@@ -238,5 +234,4 @@ public class SpindexerNonCR extends SubsystemBase {
         }
         return ballsColored;
     }
-
 }
