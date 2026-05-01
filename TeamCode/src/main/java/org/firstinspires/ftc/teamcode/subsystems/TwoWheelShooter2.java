@@ -42,7 +42,7 @@ public class TwoWheelShooter2 extends SubsystemBase {
 
 
     public static double transferPower = 1.0;
-    public static double transferVelocity = 1300;//1300
+    public static double transferVelocity = 1400;
     //DEFAULT GAINS
     public static double[] kBotGains = new double[]{0.058, 0.000393, 0};
     public static double[] kTopGains = new double[]{0.033, 0.000427, 0};

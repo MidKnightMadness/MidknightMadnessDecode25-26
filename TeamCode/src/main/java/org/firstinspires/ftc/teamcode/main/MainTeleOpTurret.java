@@ -81,7 +81,7 @@ public class MainTeleOpTurret extends CommandOpMode {
     FollowPathCommand followPathCommand;
     double headingError;
     public static Intake.RunMode intakeRunMode = Intake.RunMode.RawPower;
-    public static boolean sotmEnabled = true;
+    public static boolean sotmEnabled = false;
     SpotType activeSpotType = null;
     public static boolean setCustomPower = false;
     public static double customTopTargetVel = 1000;
@@ -102,6 +102,7 @@ public class MainTeleOpTurret extends CommandOpMode {
     boolean hasRumbledAllOccupied = false;
     BallColor[] currSpindexerBallColors;
 
+    public static double robotHeadingAimCorrectionFactor = 0.00; // rotate extra 1 deg if robot is 100 deg from 0
     public double powerAutoIntake = 1.0;
     GobildaLightBlock controlLight1;
     GobildaLightBlock controlLight2;
@@ -513,10 +514,11 @@ public class MainTeleOpTurret extends CommandOpMode {
             targetHeading = TwoWheelShooter2.getShootHeading(currentPose, shootSide) + (arducamUse ? aprilTagBearing : 0);
         }
 
+        targetHeading += ((shootSide == ShootSide.LEFT) ? 1 : -1) * robotHeadingAimCorrectionFactor * currentPose.getHeading();
+
         diffRadians = targetHeading - currentPose.getHeading();
         wrappedTurretValue = Angle.fromRadians(diffRadians);
         turret.setFieldAngleToServo(wrappedTurretValue);
-
     }
 
 

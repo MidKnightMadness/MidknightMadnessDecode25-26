@@ -468,7 +468,7 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                                                 side.fromLeftPose(new Pose(cornerX, 5, Math.toRadians(-90))),
                                                 0.5
                                         ))
-                                        .setIsFinished(() -> robotPose.getY() < 13),
+                                        .setIsFinished(() -> robotPose.getY() < 10),
                                 new InstantCommand(() -> drive.stop()),
                                 new WaitCommand(1400)
                         ),
@@ -498,7 +498,7 @@ public abstract class DanielFarAutoRedone extends CommandOpMode {
                                     zoneIntakeY + 8
                             )), 1);
                         })
-                        .setIsFinished(() -> ExtraFns.farZoneDist(robotPose) < 13),
+                        .setIsFinished(() -> ExtraFns.farZoneDist(robotPose) < 10),
 
                 new InstantCommand(()-> drive.stop()),
                 shootCommand()

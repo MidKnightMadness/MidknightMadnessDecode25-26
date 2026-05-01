@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.main.autonomous;
 
+import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
@@ -16,9 +17,11 @@ public class DoNothingCommandAuto extends CommandOpMode {
 
     double startPoseHeading = Math.PI;
 
+    Follower follower;
+
     @Override
     public void initialize() {
-
+        follower = ConstantsBot.createPinpointFollower(hardwareMap);
     }
 
     @Override
@@ -28,6 +31,8 @@ public class DoNothingCommandAuto extends CommandOpMode {
 
     @Override
     public void run() {
+        follower.update();
+
         startPoseX += 1/40d;
         startPoseY += 1/40d;
         startPoseHeading += Math.toRadians(1/40d);
