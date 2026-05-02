@@ -106,7 +106,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
     boolean useBulkMode = true;
     Angle wrappedTurretValue;
     double targetHeading;
-    public static long totalShootingTime = 360;
+    public static long totalShootingTime = 1000;
     double spindexerSettleTime = 100;
     public static double offsetVelocity = 70;
     public abstract ShootSide getShootSide();
@@ -171,13 +171,14 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
             timer.restart();
             start = true;
         }
+        spindexer.setDirectPosition(
+                SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE));
+
 
         if(timer.getTime() >= 3000 && !reset){
             turret.resetEncoderPosition();
             reset = true;
             //set spindexer to spot 3
-            spindexer.setDirectPosition(
-                    SpindexerSpotNonCR.getPositionFromIndex(3, SpotType.INTAKE));
 
         }
         //wait for turret to recenter
@@ -202,8 +203,8 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
             started = true;
         }
         updateTelemetry();
+        writePose();
     }
-
 
     public void resetIntake(){
         intake.setDirectPower(0);
@@ -249,7 +250,7 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
     public void initCommands() {
         Command balls1To3 = new CommandBase() {
             final BooleanSupplier shootSupplier = ExtraFns.firstSupplier(
-                    () -> ((distToGoal() > 40 && timer.getTime() > 800) || timer.getTime() > 3000)
+                    () -> ((distToGoal() > 40 && timer.getTime() > 1500) || timer.getTime() > 3000)
             );
 
             Timer shootTimer;
@@ -305,8 +306,6 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
                 shooter.stopAll();
             }
         };
-
-
 
         Command balls4To6 = new SequentialCommandGroup(
                 new InstantCommand(() -> state = State.balls6),
@@ -548,11 +547,11 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
 
         main = new SequentialCommandGroup(
             balls1To3,
-            balls4To6,
-            balls7To9,
-            balls10To12,
-            balls13To15,
-//                            balls16To18
+//            balls4To6,
+//            balls7To9,
+//            balls10To12,
+//            balls13To15,
+////                            balls16To18
             balls19To21,
             stop
         );
@@ -643,17 +642,13 @@ public abstract class DanielCloseAutoClean extends CommandOpMode {
     @Override
     public void end(){
     }
-
     public void writePose() {
-////        MainTeleOpTurret.startPoseX = follower.getPose().getX();
-////        MainTeleOpTurret.startPoseY  = follower.getPose().getY();
-////        MainTeleOpTurret.startPoseHeading = follower.getPose().getHeading();
-////
+        if (follower.getPose().getY() != 0 && follower.getPose().getX() != 0) {
+            MainTeleOpTurret.startPoseX = follower.getPose().getX();
+            MainTeleOpTurret.startPoseY  = follower.getPose().getY();
+            MainTeleOpTurret.startPoseHeading = follower.getPose().getHeading();
+        }
+
         ConstantsBot.side = side;
-        follower.update();
-        blackboard.put(ConstantsBot.X, follower.getPose().getX());
-        blackboard.put(ConstantsBot.Y, follower.getPose().getY());
-        blackboard.put(ConstantsBot.H, follower.getPose().getHeading());
-//        blackboard.put(ConstantsBot.END_POSE_KEY, follower.getPose());
     }
 }

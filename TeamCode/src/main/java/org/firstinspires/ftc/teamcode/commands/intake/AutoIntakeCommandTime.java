@@ -49,7 +49,7 @@ public class AutoIntakeCommandTime extends CommandBase {
         this.power = power;
         this.voltageSensor = voltageSensor;
         this.voltageCompensated = voltageCompensated;
-        this.startSpot = startSpot;
+        this.startSpot = startSpot + 1;
         this.dir = dir;
         this.settleTime = settleTime;
 

@@ -114,6 +114,8 @@ public class TwoWheelShooter2 extends SubsystemBase {
         public static double[] bottomVel =           {530, 560, 590, 600, 630, 650, 700, 700, 710, 750, 800, 800,  850,  900};
         public static double[] topVel =              {650, 610, 590, 610, 630, 680, 720, 760, 840, 890, 900, 900, 950, 1000};
         public static double[] velCorrectionFactor = {0.4, 0.5, 0.6,0.54, 0.85,0.9,0.96,1.02,1.07, 1.1, 1.14,1.18,1.25,1.31}; // take time in the air and then subtract a bit
+
+        public static double robotHeadingAimCorrectionFactor = -0;
         //
         public AimCalculator() {
             distToLowVel = new InterpLUT();
@@ -179,7 +181,6 @@ public class TwoWheelShooter2 extends SubsystemBase {
             };
         }
     }
-
 
     public static double shotDropThreshold = 50;
     public static double transferShotDropThreshold = 80;
@@ -502,15 +503,15 @@ public class TwoWheelShooter2 extends SubsystemBase {
             control1 = close ? new Pose(0,144) : new Pose(0, 142);//5
         } else {
             control1 = close ? new Pose(144,144) : new Pose(136, 144);
-
-
         }
         double angle1 = ExtraFns.getTargetAngle(robotPose, control1);
         Vector displacement = new Vector(
                 robotPose.distanceFrom(getShootPose(shootSide)),
                 angle1
         );
-        return displacement.getTheta();
+
+        double deltaTheta = displacement.getTheta() - robotPose.getHeading();
+        return displacement.getTheta() + deltaTheta * AimCalculator.robotHeadingAimCorrectionFactor;
     }
 
     public void stopFlywheels() {

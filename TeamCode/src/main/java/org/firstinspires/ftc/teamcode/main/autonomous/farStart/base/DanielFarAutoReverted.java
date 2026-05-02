@@ -39,6 +39,7 @@ import org.firstinspires.ftc.teamcode.subsystems.StopItServo;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
 import org.firstinspires.ftc.teamcode.subsystems.TwoWheelShooter2;
 import org.firstinspires.ftc.teamcode.util.Angle;
+import org.firstinspires.ftc.teamcode.util.AngleNonCR;
 import org.firstinspires.ftc.teamcode.util.ExtraFns;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
@@ -55,12 +56,14 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
     public static Pose gateIntakePose = new Pose(3, 60, Math.toRadians(150));
     public static Pose startPose = new Pose(55.5, 8.8, Math.toRadians(90));
     public static Pose endPose = new Pose(45, 34);
-    public static double shootTimeout = 700;
     public static double rowXInner = 45;
-    public static double rowXOuter = 15;
-    public static double row1Y = 38;
+    public static double rowXOuter = 10;
+    public static double row1Y = 35;
     public static double row2Y = 62;
     public static double row3Y = 85;
+
+    public static double redAutoShootingOffsetDegrees = 1;
+    public static double blueAutoShootingOffsetDegrees = -2.5;
 
     public static double headingFacingEdge = -Math.PI;
     PIDController driveController = new PIDController(0.05, 0, 0.001);
@@ -81,7 +84,7 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
     double headingError;
     double[] aimData;
     double cornerX;
-    double zoneIntakeY = 15;
+    double zoneIntakeY = 16;
     double zoneTwoIntakeY = 25;
     double zoneThreeIntakeY = 35;
 
@@ -109,14 +112,16 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
     boolean useBulkMode = true;
 
     Angle wrappedTurretValue;
-    public static long totalShootingTime = 700;
+    public static long totalShootingTime = 850;
     double spindexerSettleTime = 100;
     double turretHeadingError;
+
+    public static double presetShootingAngle = 23;
 
 
     public abstract ShootSide getShootSide();
 
-    public static double offsetVelocity = 50;
+    public static double offsetVelocity = 20;
     @Override
     public void initialize() {
 //        Robot.config = AllConfigs.oldBot;
@@ -213,10 +218,10 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
         writePose();
     }
 
-//    @Override
-//    public void end(){
-//        writePose();
-//    }
+    @Override
+    public void end(){
+        writePose();
+    }
 
     public void calculateAlign(boolean useSOTM) {
         if(useSOTM){
@@ -231,6 +236,13 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
             targetHeading = TwoWheelShooter2.getShootHeading(robotPose, side);
         }
         wrappedTurretValue = Angle.fromRadians(ExtraFns.normAnglePlusMinusPI(targetHeading - robotPose.getHeading()));
+        if (side == ShootSide.RIGHT) {
+            wrappedTurretValue = Angle.fromRadians(wrappedTurretValue.toRadians() + Math.toRadians(redAutoShootingOffsetDegrees));
+        }
+        else {
+            wrappedTurretValue = Angle.fromRadians(wrappedTurretValue.toRadians() + Math.toRadians(blueAutoShootingOffsetDegrees));
+        }
+
         turret.setServos(turret.angleToServo(wrappedTurretValue));
         turretHeadingError = turret.getTurretHeadingError(wrappedTurretValue);
     }
@@ -246,7 +258,7 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
     public void initCommands() {
         Command balls1To3 = new CommandBase() {
             final BooleanSupplier shootSupplier = ExtraFns.firstSupplier(
-                    () -> ((shooter.readyToShoot() && timer.getTime() > 1000)
+                    () -> ((shooter.readyToShoot() && timer.getTime() > 2000)
                             || timer.getTime() > 3000)
             );
             Timer shootTimer;
@@ -261,8 +273,13 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
                 addRequirements(spindexer, shooter, turret);
             }
             public void execute() {
+                if (side == ShootSide.LEFT) {
+                    turret.setServos(turret.angleToServo(AngleNonCR.fromDegrees(Math.toRadians(presetShootingAngle + blueAutoShootingOffsetDegrees))));
+                }
+                else {
+                    turret.setServos(turret.angleToServo(AngleNonCR.fromDegrees(Math.toRadians(-presetShootingAngle + redAutoShootingOffsetDegrees))));
+                }
 
-                calculateAlign(false);
                 setTransferPower();
                 setShooterPower(false);
                 if (shootSupplier.getAsBoolean() && !timeStarted) {
@@ -321,9 +338,10 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
                                         .setExecute(() -> drive.pid(
                                                 robotPose, new Pose(side.fromLeftX(rowXOuter), row1Y, side.fromLeftHeading(headingFacingEdge)), 0.4)
                                         )
-                                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) < rowXOuter),
+                                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) < rowXOuter + 5),
                                 new InstantCommand(() -> drive.stop()),
-                                new WaitCommand(2000)
+                                new WaitCommand(1500),
+                                new InstantCommand(() -> intake.stopPower())
                         ),
                         new AutoIntakeCommandTime(
                                 spindexer,
@@ -351,10 +369,10 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
                             drive.pid(robotPose, new Pose(
                                     side.fromLeftX(shootAtPose2.getX()),
                                     shootAtPose2.getY(),
-                                    targetHeading
+                                    side.fromLeftHeading(headingFacingEdge)
                             ), 1);
                         })
-                        .setIsFinished(() -> ExtraFns.farZoneDist(robotPose) < 10),
+                        .setIsFinished(() -> ExtraFns.farZoneDist(robotPose) < 13),
 
                 new InstantCommand(() -> drive.stop()),
                 shootCommand()
@@ -366,12 +384,12 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
                         .setInitialize(() -> timer.restart())
                         .setExecute(() -> drive.pid(
                                 robotPose, side.fromLeftPose(new Pose(
-                                        rowXInner,
+                                        rowXOuter + 20,
                                         zoneIntakeY,
                                         headingFacingEdge
                                 )), 1)
                         )
-                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) < rowXInner),
+                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) < rowXOuter + 20),
                 // Drive to corner
                 new ParallelRaceGroup(
                         new SequentialCommandGroup(
@@ -380,7 +398,7 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
                                         .setExecute(() -> drive.pid(
                                                 robotPose,
                                                 side.fromLeftPose(new Pose(0, zoneIntakeY, headingFacingEdge)),
-                                                0.4
+                                                0.3
                                         ))
                                         .setEnd(() -> cornerX = side.fromLeftX(robotPose.getX()))
                                         .setIsFinished(() -> timer.getTime() > 1200 && follower.getVelocity().getMagnitude() < 2),
@@ -413,7 +431,8 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
                                         ))
                                         .setIsFinished(() -> timer.getTime() > 300 && follower.getVelocity().getMagnitude() < 2),
                                 new InstantCommand(()-> drive.stop()),
-                                new WaitCommand(1400)
+                                new WaitCommand(1500),
+                                new InstantCommand(() -> intake.stopPower())
                         ),
                         new AutoIntakeCommandTime(
                                 spindexer,
@@ -436,16 +455,18 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
                                 pushUpServo.setUp();
                                 setTransferPower();
                             }
-                            drive.pidNoHeading(robotPose, new Pose(
+                            drive.pid(robotPose, new Pose(
                                     side.fromLeftX(shootAtPose2.getX()),
-                                    zoneIntakeY + 8
+                                    zoneIntakeY + 8,
+                                    side.fromLeftHeading(headingFacingEdge)
                             ), 1);
                         })
-                        .setIsFinished(() -> ExtraFns.farZoneDist(robotPose) < 7),
+                        .setIsFinished(() -> ExtraFns.farZoneDist(robotPose) < 12),
 
                 new InstantCommand(()-> drive.stop()),
                 shootCommand()
         );
+
         Function<State, Command> secondaryIntakeShoot = state -> new SequentialCommandGroup(
                 new InstantCommand(() -> this.state = state),
                 // Full send to almost there
@@ -453,12 +474,12 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
                         .setInitialize(() -> timer.restart())
                         .setExecute(() -> drive.pid(
                                 robotPose, side.fromLeftPose(new Pose(
-                                        rowXInner,
-                                        zoneTwoIntakeY,
+                                        rowXOuter + 20,
+                                        zoneIntakeY + 17,
                                         headingFacingEdge
                                 )), 1)
                         )
-                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) < rowXInner),
+                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) < rowXOuter + 20),
                 // Drive to corner
                 new ParallelRaceGroup(
                         new SequentialCommandGroup(
@@ -466,31 +487,42 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
                                         .setInitialize(() -> timer.restart())
                                         .setExecute(() -> drive.pid(
                                                 robotPose,
-                                                side.fromLeftPose(new Pose(0, zoneTwoIntakeY, headingFacingEdge)),
-                                                0.4
+                                                side.fromLeftPose(new Pose(0, zoneIntakeY + 17, headingFacingEdge)),
+                                                0.3
                                         ))
                                         .setEnd(() -> cornerX = side.fromLeftX(robotPose.getX()))
-                                        .setIsFinished(() -> timer.getTime() > 850 || follower.getVelocity().getMagnitude() < 5),
+                                        .setIsFinished(() -> timer.getTime() > 1200 && follower.getVelocity().getMagnitude() < 2),
                                 // Drive straight back
                                 new LambdaCommand()
                                         .setInitialize(() -> timer.restart())
                                         .setExecute(() -> drive.pid(
                                                 robotPose,
-                                                side.fromLeftPose(new Pose(cornerX + 5, zoneTwoIntakeY, headingFacingEdge)),
+                                                side.fromLeftPose(new Pose(cornerX + 5, zoneIntakeY + 17, headingFacingEdge)),
                                                 1
                                         ))
                                         .setIsFinished(() -> side.toLeftX(robotPose.getX()) > cornerX + 5),
+                                // Drive into wall
+                                new LambdaCommand()
+                                        .setInitialize(() -> timer.restart())
+                                        .setExecute(() -> drive.pid(
+                                                robotPose,
+                                                side.fromLeftPose(new Pose(cornerX + 5, 0, headingFacingEdge)),
+                                                1
+                                        ))
+                                        .setEnd(() -> zoneIntakeY = robotPose.getY() + 7)
+                                        .setIsFinished(() -> timer.getTime() > 300 && Math.abs(robotVel.getYComponent()) < 2),
                                 // Drive forward again
                                 new LambdaCommand()
                                         .setInitialize(() -> timer.restart())
                                         .setExecute(() -> drive.pid(
                                                 robotPose,
-                                                side.fromLeftPose(new Pose(-30, zoneThreeIntakeY, headingFacingEdge)),
+                                                side.fromLeftPose(new Pose(-30, 0, headingFacingEdge)),
                                                 0.4
                                         ))
-                                        .setIsFinished(() -> timer.getTime() > 300 && follower.getVelocity().getMagnitude() < 5),
+                                        .setIsFinished(() -> timer.getTime() > 300 && follower.getVelocity().getMagnitude() < 2),
                                 new InstantCommand(()-> drive.stop()),
-                                new WaitCommand(500)
+                                new WaitCommand(1500),
+                                new InstantCommand(() -> intake.stopPower())
                         ),
                         new AutoIntakeCommandTime(
                                 spindexer,
@@ -513,16 +545,96 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
                                 pushUpServo.setUp();
                                 setTransferPower();
                             }
-                            drive.pidNoHeading(robotPose, new Pose(
+                            drive.pid(robotPose, new Pose(
                                     side.fromLeftX(shootAtPose2.getX()),
-                                    zoneIntakeY + 8
+                                    zoneIntakeY + 8,
+                                    side.fromLeftHeading(headingFacingEdge)
                             ), 1);
                         })
-                        .setIsFinished(() -> ExtraFns.farZoneDist(robotPose) < 7),
+                        .setIsFinished(() -> ExtraFns.farZoneDist(robotPose) < 15),
 
                 new InstantCommand(()-> drive.stop()),
                 shootCommand()
         );
+
+
+//        Function<State, Command> secondaryIntakeShoot = state -> new SequentialCommandGroup(
+//                new InstantCommand(() -> this.state = state),
+//                // Full send to almost there
+//                new LambdaCommand()
+//                        .setInitialize(() -> timer.restart())
+//                        .setExecute(() -> drive.pid(
+//                                robotPose, side.fromLeftPose(new Pose(
+//                                        rowXInner,
+//                                        zoneTwoIntakeY,
+//                                        headingFacingEdge
+//                                )), 1)
+//                        )
+//                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) < rowXInner),
+//                // Drive to corner
+//                new ParallelRaceGroup(
+//                        new SequentialCommandGroup(
+//                                new LambdaCommand()
+//                                        .setInitialize(() -> timer.restart())
+//                                        .setExecute(() -> drive.pid(
+//                                                robotPose,
+//                                                side.fromLeftPose(new Pose(0, zoneTwoIntakeY, headingFacingEdge)),
+//                                                0.4
+//                                        ))
+//                                        .setEnd(() -> cornerX = side.fromLeftX(robotPose.getX()))
+//                                        .setIsFinished(() -> timer.getTime() > 850 || follower.getVelocity().getMagnitude() < 5),
+//                                // Drive straight back
+//                                new LambdaCommand()
+//                                        .setInitialize(() -> timer.restart())
+//                                        .setExecute(() -> drive.pid(
+//                                                robotPose,
+//                                                side.fromLeftPose(new Pose(cornerX + 5, zoneTwoIntakeY, headingFacingEdge)),
+//                                                1
+//                                        ))
+//                                        .setIsFinished(() -> side.toLeftX(robotPose.getX()) > cornerX + 5),
+//                                // Drive forward again
+//                                new LambdaCommand()
+//                                        .setInitialize(() -> timer.restart())
+//                                        .setExecute(() -> drive.pid(
+//                                                robotPose,
+//                                                side.fromLeftPose(new Pose(-30, zoneThreeIntakeY, headingFacingEdge)),
+//                                                0.4
+//                                        ))
+//                                        .setIsFinished(() -> timer.getTime() > 300 && follower.getVelocity().getMagnitude() < 5),
+//                                new InstantCommand(()-> drive.stop()),
+//                                new WaitCommand(500)
+//                        ),
+//                        new AutoIntakeCommandTime(
+//                                spindexer,
+//                                intake,
+//                                1.0,
+//                                false,
+//                                voltageSensor,
+//                                0,
+//                                1,
+//                                spindexerSettleTime
+//                        )
+//                ),
+//                new InstantCommand(() -> stopItServo.setActivePosition()),
+//                new LambdaCommand()
+//                        .setInitialize(() -> timer.restart())
+//                        .setExecute(() -> {
+//                            calculateAlign(false);
+//                            setShooterPower(false);
+//                            if(timer.getTime() > 300) {
+//                                pushUpServo.setUp();
+//                                setTransferPower();
+//                            }
+//                            drive.pidNoHeading(robotPose, new Pose(
+//                                    side.fromLeftX(shootAtPose2.getX()),
+//                                    zoneIntakeY + 8
+//                            ), 1);
+//                        })
+//                        .setIsFinished(() -> ExtraFns.farZoneDist(robotPose) < 7),
+//
+//                new InstantCommand(()-> drive.stop()),
+//                shootCommand()
+//        );
 
         Command balls7to9 = cornerIntakeShoot.apply(State.balls9);
         Command balls9to12 = secondaryIntakeShoot.apply(State.balls12);
@@ -634,16 +746,13 @@ public abstract class DanielFarAutoReverted extends CommandOpMode {
 
 
     public void writePose() {
-//        MainTeleOpTurret.startPoseX = follower.getPose().getX();
-//        MainTeleOpTurret.startPoseY  = follower.getPose().getY();
-//        MainTeleOpTurret.startPoseHeading = follower.getPose().getHeading();
-//
+        if (follower.getPose().getY() != 0 && follower.getPose().getX() != 0) {
+            MainTeleOpTurret.startPoseX = follower.getPose().getX();
+            MainTeleOpTurret.startPoseY  = follower.getPose().getY();
+            MainTeleOpTurret.startPoseHeading = follower.getPose().getHeading();
+        }
+
         ConstantsBot.side = side;
-        follower.update();
-        blackboard.put(ConstantsBot.X, follower.getPose().getX());
-        blackboard.put(ConstantsBot.Y, follower.getPose().getY());
-        blackboard.put(ConstantsBot.H, follower.getPose().getHeading());
-//        blackboard.put(ConstantsBot.END_POSE_KEY, follower.getPose());
     }
     Telemetry dashboardTelemetry;
     public void updateTelemetry() {

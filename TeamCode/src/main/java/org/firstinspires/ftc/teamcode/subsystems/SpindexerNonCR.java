@@ -20,7 +20,7 @@ import java.util.ArrayList;
 
 @Configurable
 public class SpindexerNonCR extends SubsystemBase {
-    public static double SPINDEXER_OFFSET_DEGREES = 80;
+    public static double SPINDEXER_OFFSET_DEGREES = 7d;
     public static int totalDegrees = 791;//817 extended gr?
     public static AngleNonCR defaultFinishedThreshold = AngleNonCR.fromDegrees(5); // Threshold at which it's finished turning to a spot
     public static AngleNonCR finishedThreshold = AngleNonCR.fromDegrees(15);//TODO: Change to 15 for auto?

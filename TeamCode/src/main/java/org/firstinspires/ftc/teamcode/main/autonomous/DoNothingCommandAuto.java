@@ -33,23 +33,27 @@ public class DoNothingCommandAuto extends CommandOpMode {
     public void run() {
         follower.update();
 
-        startPoseX += 1/40d;
-        startPoseY += 1/40d;
-        startPoseHeading += Math.toRadians(1/40d);
+        if (follower.getPose().getX() == 0 && follower.getPose().getY() == 0) {
+            return;
+        }
+        startPoseX = follower.getPose().getX();
+        startPoseY = follower.getPose().getY();
+        startPoseHeading = follower.getPose().getHeading();
 
         MainTeleOpTurret.startPoseX = startPoseX;
-        MainTeleOpTurret.startPoseY  = startPoseY;
+        MainTeleOpTurret.startPoseY = startPoseY;
         MainTeleOpTurret.startPoseHeading = startPoseHeading;
 
         ConstantsBot.side = ShootSide.LEFT;
 
         telemetry.addLine(String.format("I will write: (%.2f, %.2f, %.2f)", startPoseX, startPoseY, startPoseHeading));
+        telemetry.update();
     }
 
-    @Override
-    public void end() {
-        MainTeleOpTurret.startPoseX = startPoseX;
-        MainTeleOpTurret.startPoseY  = startPoseY;
-        MainTeleOpTurret.startPoseHeading = startPoseHeading;
-    }
+//    @Override
+//    public void end() {
+//        MainTeleOpTurret.startPoseX = startPoseX;
+//        MainTeleOpTurret.startPoseY  = startPoseY;
+//        MainTeleOpTurret.startPoseHeading = startPoseHeading;
+//    }
 }

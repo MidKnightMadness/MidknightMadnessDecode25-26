@@ -64,7 +64,8 @@ public class MainTeleOpTurret extends CommandOpMode {
     double midSpeed = 0.5;
     double currSpeed = maxSpeed;
     double maxIntakePower = 1.0;
-    public static double leftOffsetShoot = Math.toRadians(2);
+    public static double leftCameraOffset = Math.toRadians(2);
+    public static double rightOffsetShoot = Math.toRadians(0);
     WheelControl2 wheelControl;
     Pose parkRight = new Pose(104, 33, Math.toRadians(90));
     Pose parkLeft = new Pose(144 - 104, 33, Math.toRadians(90));
@@ -73,7 +74,7 @@ public class MainTeleOpTurret extends CommandOpMode {
     boolean autoSpindexer = false;
     boolean autoDriveToShoot = false;
     boolean autoIntake = false;
-
+    public static double offsetVelocity = 20d;
 
     TwoWheelShooter2.RunMode shooterRunMode = TwoWheelShooter2.RunMode.VelocityControl;
     TwoWheelShooter2.RunMode transferRunmode = TwoWheelShooter2.RunMode.VelocityControl;
@@ -86,7 +87,6 @@ public class MainTeleOpTurret extends CommandOpMode {
     public static boolean setCustomPower = false;
     public static double customTopTargetVel = 1000;
     public static double customBotTargetVel = 750;
-    public static double offsetRadians = Math.toRadians(0);
     AutoIntakeCommandTime autoIntakeCommand;
     SequentialCommandGroup seqAutoIntakeCommand;
     SequentialCommandGroup spindexerGotoPositionSeq;
@@ -102,7 +102,7 @@ public class MainTeleOpTurret extends CommandOpMode {
     boolean hasRumbledAllOccupied = false;
     BallColor[] currSpindexerBallColors;
 
-    public static double robotHeadingAimCorrectionFactor = 0.00; // rotate extra 1 deg if robot is 100 deg from 0
+    public static double robotHeadingAimCorrectionFactor = -0.05; // rotate extra 1 deg if robot is 100 deg from 0
     public double powerAutoIntake = 1.0;
     GobildaLightBlock controlLight1;
     GobildaLightBlock controlLight2;
@@ -162,7 +162,7 @@ public class MainTeleOpTurret extends CommandOpMode {
         currentPose = startPose;
 
         initializeSubsystems();
-        shooter.setOffsetVelocity(0);
+        shooter.setOffsetVelocity(offsetVelocity);
 
         wheelControl = new WheelControl2(hardwareMap);
 
@@ -222,6 +222,8 @@ public class MainTeleOpTurret extends CommandOpMode {
                 !arducamUse ? GobildaLightBlock.Color.ORANGE :
                         GobildaLightBlock.Color.GREEN
         );
+        expansionLight2.setColor(
+                autoAlign ? GobildaLightBlock.Color.WHITE : GobildaLightBlock.Color.VIOLET);
     }
     boolean start;
 
@@ -472,6 +474,8 @@ public class MainTeleOpTurret extends CommandOpMode {
     private void autoAlign() {
         if (gamepad1.leftBumperWasPressed()) {
             autoAlign = !autoAlign;
+            expansionLight2.setColor(
+                    autoAlign ? GobildaLightBlock.Color.WHITE : GobildaLightBlock.Color.VIOLET);
         }
 
         if (!autoAlign) return;
@@ -496,8 +500,9 @@ public class MainTeleOpTurret extends CommandOpMode {
             if (!detected || detection == null) {
                 return;
             }
+
             tag = detection;
-            double offset = (shootSide == ShootSide.LEFT) ? leftOffsetShoot : 0;
+            double offset = (shootSide == ShootSide.LEFT) ? leftCameraOffset : 0;
             aprilTagBearing = -Math.toRadians(detection.ftcPose.elevation) + offset;
         }
 
@@ -514,10 +519,10 @@ public class MainTeleOpTurret extends CommandOpMode {
             targetHeading = TwoWheelShooter2.getShootHeading(currentPose, shootSide) + (arducamUse ? aprilTagBearing : 0);
         }
 
-        targetHeading += ((shootSide == ShootSide.LEFT) ? 1 : -1) * robotHeadingAimCorrectionFactor * currentPose.getHeading();
-
         diffRadians = targetHeading - currentPose.getHeading();
-        wrappedTurretValue = Angle.fromRadians(diffRadians);
+
+        double offset = (shootSide == ShootSide.RIGHT) ? rightOffsetShoot : 0;
+        wrappedTurretValue = Angle.fromRadians(diffRadians + offset);
         turret.setFieldAngleToServo(wrappedTurretValue);
     }
 
@@ -563,10 +568,6 @@ public class MainTeleOpTurret extends CommandOpMode {
 
         if(gamepad1.rightStickButtonWasPressed()){
             driveFieldOriented = !driveFieldOriented;
-            expansionLight2.setColor(
-                    driveFieldOriented ? GobildaLightBlock.Color.SAGE :
-                            GobildaLightBlock.Color.VIOLET
-            );
         }
     }
 
@@ -624,7 +625,7 @@ public class MainTeleOpTurret extends CommandOpMode {
             stopItServo.setActivePosition();
             prepareSpindexer();
             activeSpindexerSpot = 0;
-            spindexer.setDirectPosition(0);
+            spindexer.setDirectPosition(SpindexerSpotNonCR.getPositionFromIndex(activeSpindexerSpot, SpotType.INTAKE));
         }
         if (gamepad2.rightStickButtonWasPressed()) {
             stopItServo.setActivePosition();
@@ -722,7 +723,7 @@ public class MainTeleOpTurret extends CommandOpMode {
                     powerAutoIntake,
                     intakeVoltageCompensated,
                     voltageSensor,
-                    activeSpindexerSpot + 1,
+                    activeSpindexerSpot,
                     1,
                     settleTime
             );
@@ -761,17 +762,14 @@ public class MainTeleOpTurret extends CommandOpMode {
         currVolt = hardwareMap.voltageSensor.iterator().next().getVoltage();
 
 
-        if (gamepad2.left_trigger > 0.3) {
-            setShooterPower(currVolt, true);
+        if (gamepad2.left_bumper) {
             pushUpServo.setUp();
             stopItServo.setActivePosition();
-            shooter.setTransferPower(
-                    transferRunmode == TwoWheelShooter2.RunMode.VelocityControl ? TwoWheelShooter2.transferVelocity : TwoWheelShooter2.transferPower,
-                    currVolt);
-        } else if(gamepad2.left_bumper){
+        }
+
+        if(gamepad2.left_trigger > 0.3){
             setShooterPower(currVolt, false);
             pushUpServo.setUp();
-            stopItServo.setActivePosition();
             shooter.setTransferPower(
                     transferRunmode == TwoWheelShooter2.RunMode.VelocityControl ? TwoWheelShooter2.transferVelocity : TwoWheelShooter2.transferPower,
                     currVolt);
